@@ -79,6 +79,13 @@ runs:
           If the request is unclear, ask clarifying questions.
           If the request requires actions you cannot perform, explain what you can and cannot do.
 
+          ## Response Footer
+          Always end your comment with this footer (using markdown):
+          ```
+          ---
+          *Comment by Claude Code* | 👍 if helpful, 👎 if not | Type `@claude` to interact further
+          ```
+
           ${{ inputs.additional-instructions }}
         claude_args: |
           ${{ inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || '' }}

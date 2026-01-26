@@ -89,6 +89,13 @@ runs:
 
           Be constructive and helpful. Focus on significant issues rather than nitpicks.
 
+          ## Response Footer
+          Always end your comment with this footer (using markdown):
+          ```
+          ---
+          *Comment by Claude Code* | 👍 if helpful, 👎 if not | Type `@claude` to interact further
+          ```
+
           ${{ inputs.additional-instructions }}
         claude_args: |
           ${{ inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || '' }}
