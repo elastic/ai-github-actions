@@ -56,6 +56,7 @@ The core action with full configurability.
   with:
     prompt: "Your prompt here"
     claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+    github-token: ${{ github.token }}
     # Optional: allow specific tools
     allowed-tools: "Edit,Write,Bash(npm test)"
 ```
@@ -66,6 +67,7 @@ The core action with full configurability.
 |-------|-------------|----------|---------|
 | `prompt` | Prompt to pass to Claude | Yes | - |
 | `claude-oauth-token` | Claude OAuth token | Yes | - |
+| `github-token` | GitHub token for Claude | Yes | - |
 | `allowed-tools` | Comma-separated list of allowed tools | No | `""` |
 | `model` | Model to use | No | `claude-sonnet-4-20250514` |
 | `allowed-bots` | Allowed bot usernames, or `*` for all | No | `""` |
@@ -97,6 +99,7 @@ jobs:
       - uses: your-org/ai-github-actions/workflows/issue-triage@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
 ```
 
 ### Inputs
@@ -104,6 +107,7 @@ jobs:
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `claude-oauth-token` | Claude OAuth token | Yes | - |
+| `github-token` | GitHub token for Claude | Yes | - |
 | `model` | Model to use | No | `claude-sonnet-4-20250514` |
 | `allowed-tools` | Allowed tools | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
@@ -137,6 +141,7 @@ jobs:
       - uses: your-org/ai-github-actions/workflows/build-failure@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
 ```
 
 ### Inputs
@@ -144,6 +149,7 @@ jobs:
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `claude-oauth-token` | Claude OAuth token | Yes | - |
+| `github-token` | GitHub token for Claude | Yes | - |
 | `model` | Model to use | No | `claude-sonnet-4-20250514` |
 | `allowed-tools` | Allowed tools | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
@@ -173,6 +179,7 @@ jobs:
       - uses: your-org/ai-github-actions/workflows/pr-review@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
 ```
 
 ### Inputs
@@ -180,6 +187,7 @@ jobs:
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `claude-oauth-token` | Claude OAuth token | Yes | - |
+| `github-token` | GitHub token for Claude | Yes | - |
 | `model` | Model to use | No | `claude-sonnet-4-20250514` |
 | `allowed-tools` | Allowed tools | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |

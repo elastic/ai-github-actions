@@ -4,6 +4,7 @@
 #   - uses: your-org/ai-github-actions/workflows/pr-review@v1
 #     with:
 #       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+#       github-token: ${{ github.token }}
 #
 name: "Claude PR Review"
 description: "Review pull requests using Claude"
@@ -15,6 +16,10 @@ branding:
 inputs:
   claude-oauth-token:
     description: "Claude OAuth token for authentication"
+    required: true
+
+  github-token:
+    description: "GitHub token for Claude to operate with"
     required: true
 
   model:
@@ -50,6 +55,7 @@ runs:
       uses: anthropics/claude-code-action@v1
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
+        github_token: ${{ inputs.github-token }}
         prompt: |
           Please review this pull request:
 
