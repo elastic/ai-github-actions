@@ -30,7 +30,7 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    default: ""
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash,mage,build,unitTest,fmt,make,update,llc,mcp__agents-md-generator,mcp__public-code-search"
 
   additional-instructions:
     description: "Additional instructions to include in the prompt"
@@ -76,6 +76,18 @@ runs:
           ```
 
           ## Instructions
+          
+          ### Getting Started
+          **First, get repository context**: Use the `generate_agents_md` tool from the `agents-md-generator` MCP server to generate a repository summary. This will give you essential context about the codebase structure, technologies used, and project conventions. Call this tool at the start of your investigation.
+
+          ### Investigation Approach
+          **Be extremely thorough in your investigations**. Don't rush to conclusions. Take time to:
+          - Understand the full context of the repository
+          - Review all modified files and related code
+          - Check for related issues, PRs, and discussions
+          - Consider edge cases, performance, and security implications
+          - Gather all relevant information before providing feedback
+
           Please review this pull request:
 
           1. **Understand the changes** - Review the PR description and all modified files

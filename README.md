@@ -117,7 +117,9 @@ jobs:
 
 ## Build Failure
 
-Analyze CI build failures and suggest fixes.
+Analyze CI build failures and suggest fixes. Supports both GitHub Actions and Buildkite CI.
+
+### GitHub Actions Example
 
 ```yaml
 name: Build Failure Analysis
@@ -144,16 +146,59 @@ jobs:
           github-token: ${{ github.token }}
 ```
 
+### Buildkite Example
+
+For Buildkite CI, Claude will automatically discover the pipeline and build number from the commit SHA:
+
+```yaml
+name: Build Failure Analysis
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  analyze:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: your-org/ai-github-actions/workflows/build-failure@v1
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
+          buildkite-api-token: ${{ secrets.BUILDKITE_API_TOKEN }}
+          # buildkite-org defaults to "elastic"
+          # buildkite-pipeline auto-discovered from repo name
+          # buildkite-build-number auto-discovered from commit SHA
+```
+
 ### Inputs
 
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `claude-oauth-token` | Claude OAuth token | Yes | - |
 | `github-token` | GitHub token for Claude | Yes | - |
+| `buildkite-api-token` | Buildkite API token (for Buildkite CI) | No | `""` |
+| `buildkite-org` | Buildkite organization slug | No | `"elastic"` |
+| `buildkite-pipeline` | Buildkite pipeline slug (auto-discovered if not provided) | No | `""` |
+| `buildkite-build-number` | Buildkite build number (auto-discovered if not provided) | No | `""` |
 | `model` | Model to use | No | `claude-sonnet-4-20250514` |
 | `allowed-tools` | Allowed tools | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
+| `track-progress` | Track progress with visual indicators | No | `true` |
 | `mcp-servers` | MCP server configuration JSON | No | See [MCP Servers](#mcp-servers) |
+
+**Buildkite Auto-Discovery:**
+- **Pipeline**: Automatically discovered by matching the repository name against available pipelines in the organization
+- **Build Number**: Automatically discovered by searching for builds matching the commit SHA
+- **Organization**: Defaults to `"elastic"` but can be overridden
 
 ---
 
@@ -246,7 +291,11 @@ All actions include an `mcp-servers` input with this default configuration:
 ```
 
 - **agents-md-generator** - Generates repository summaries and AGENTS.md files
+  - Claude automatically calls this tool at startup to get repository context
+  - Provides essential information about codebase structure, technologies, and conventions
 - **public-code-search** - Public code search
+
+**Note**: All workflow actions instruct Claude to be extremely thorough in investigations. Claude will start by generating a repository summary using `agents-md-generator` to understand the codebase context before proceeding with the task.
 
 ### Custom MCP Configuration
 
