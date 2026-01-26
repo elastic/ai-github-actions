@@ -30,7 +30,12 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash,mage,build,unitTest,fmt,make,update,llc,mcp__agents-md-generator,mcp__public-code-search"
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash,mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code"
+
+  extra-allowed-tools:
+    description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
+    required: false
+    default: ""
 
   additional-instructions:
     description: "Additional instructions to include in the prompt"
@@ -76,7 +81,9 @@ runs:
           ## Instructions
           
           ### Getting Started
-          **First, get repository context**: Use the `generate_agents_md` tool from the `agents-md-generator` MCP server to generate a repository summary. This will give you essential context about the codebase structure, technologies used, and project conventions. Call this tool at the start of your investigation.
+          **First, get repository context**: Use the `mcp__agents-md-generator__generate_agents_md` tool to generate a repository summary. This will give you essential context about the codebase structure, technologies used, and project conventions. Call this tool at the start of your investigation.
+          
+          **If you encounter any issues using tools** (e.g., tool not found, permission errors, API failures), mention this in your response with a link to the support channel: https://your-slack-channel-link
 
           ### Investigation Approach
           **Be extremely thorough in your investigations**. Don't rush to conclusions. Take time to:
@@ -84,6 +91,11 @@ runs:
           - Review related code, issues, and PRs
           - Consider edge cases and implications
           - Gather all relevant information before responding
+          
+          **Available tools for investigation**:
+          - **`mcp__public-code-search__search_code`**: Use this to search for code patterns in OTHER repositories (external libraries, modules, or dependencies). The current repository is cloned locally, so use `Grep` or `Read` for searching within this repo. Use `search_code` for finding similar implementations in other projects or understanding how other repositories handle similar issues.
+          - **`WebSearch`**: Use for searching the web for documentation, best practices, or solutions.
+          - **`WebFetch`**: Use to fetch and read content from URLs (documentation, API references, etc.).
 
           You are triaging this new GitHub issue. Please:
 
@@ -109,6 +121,6 @@ runs:
 
           ${{ inputs.additional-instructions }}
         claude_args: |
-          ${{ inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || '' }}
+          ${{ inputs.allowed-tools != '' && inputs.extra-allowed-tools != '' && format('--allowedTools {0},{1}', inputs.allowed-tools, inputs.extra-allowed-tools) || (inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || (inputs.extra-allowed-tools != '' && format('--allowedTools {0}', inputs.extra-allowed-tools) || '')) }}
           --mcp-config '${{ inputs.mcp-servers }}'
           --model ${{ inputs.model }}

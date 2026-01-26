@@ -30,7 +30,12 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash(gh pr review:*),Bash(gh pr comment:*),Bash(gh api:*),Bash,mage,build,unitTest,fmt,make,update,llc,mcp__agents-md-generator,mcp__public-code-search"
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash(gh pr review:*),Bash(gh pr comment:*),Bash(gh api:*),Bash,mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code"
+
+  extra-allowed-tools:
+    description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
+    required: false
+    default: ""
 
   additional-instructions:
     description: "Additional instructions to include in the prompt"
@@ -80,7 +85,9 @@ runs:
           ## Instructions
           
           ### Getting Started
-          **First, get repository context**: Use the `generate_agents_md` tool from the `agents-md-generator` MCP server to generate a repository summary. This will give you essential context about the codebase structure, technologies used, and project conventions. Call this tool at the start of your investigation.
+          **First, get repository context**: Use the `mcp__agents-md-generator__generate_agents_md` tool to generate a repository summary. This will give you essential context about the codebase structure, technologies used, and project conventions. Call this tool at the start of your investigation.
+          
+          **If you encounter any issues using tools** (e.g., tool not found, permission errors, API failures), mention this in your review summary with a link to the support channel: https://your-slack-channel-link
 
           ### Investigation Approach
           **Be extremely thorough in your investigations**. Don't rush to conclusions. Take time to:
@@ -89,6 +96,11 @@ runs:
           - Check for related issues, PRs, and discussions
           - Consider edge cases, performance, and security implications
           - Gather all relevant information before providing feedback
+          
+          **Available tools for investigation**:
+          - **`mcp__public-code-search__search_code`**: Use this to search for code patterns in OTHER repositories (external libraries, modules, or dependencies). The current repository is cloned locally, so use `Grep` or `Read` for searching within this repo. Use `search_code` for finding similar implementations in other projects, checking how other repositories handle similar patterns, or understanding library APIs.
+          - **`WebSearch`**: Use for searching the web for documentation, best practices, or solutions to specific problems.
+          - **`WebFetch`**: Use to fetch and read content from URLs (documentation, API references, etc.).
 
           Review this pull request with a focus on **specific, objective insights** based on codebase context:
 
@@ -189,24 +201,38 @@ runs:
              PATCH=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files --paginate --jq \
                '.[] | select(.filename=="'"$FILE"'") | .patch')
              
-             # Calculate the position (find the line with a unique snippet)
-             POS=$(awk 'BEGIN{pos=0} {pos++; if ($0 ~ /^\+/ && index($0, "<unique-snippet-from-the-changed-line>")>0) {print pos; exit}}' <<< "$PATCH")
+             # Calculate the position (find the line with a unique snippet from the changed line)
+             # Position is 1-based, counting from the first line after the @@ hunk header
+             POS=$(echo "$PATCH" | awk 'BEGIN{pos=0} {pos++; if ($0 ~ /^\+/ && index($0, "<unique-snippet-from-the-changed-line>")>0) {print pos; exit}}')
              
-             # Add the comment to the pending review
-             gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews/$REVIEW_ID/comments \
+             # Verify position was found
+             if [ -z "$POS" ]; then
+               echo "Error: Could not find position for $FILE"
+               exit 1
+             fi
+             
+             # Add the comment (it will automatically be associated with the pending review)
+             gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/comments \
                -X POST \
+               -f commit_id="$HEAD_SHA" \
                -f path="$FILE" \
                -f position="$POS" \
                --raw-field body=$'### Issue: Specific problem\n\n**Problem**: Concrete issue with this code\n\n**Expected**: What should happen\n\n**Fix**: Specific code change\n\n```go\n// example of correct pattern\n```'
              ```
              
+             **Important**: 
+             - Use a unique snippet from the actual changed line (not the entire line if it's very long)
+             - The snippet should be unique enough to match only the line you want
+             - Position must be calculated from the full patch (including the @@ header)
+             - All comments added while a pending review exists will be grouped with that review
+             
              Repeat this for each inline comment you want to add.
              
              **Step 3: Submit the review** (after adding all comments):
              ```bash
-             # Submit the review with your summary
-             gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews/$REVIEW_ID/events \
-               -X POST \
+             # Submit the review with your summary (this will include all pending comments)
+             gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews/$REVIEW_ID \
+               -X PUT \
                -f event="REQUEST_CHANGES" \
                --raw-field body=$'Your review summary here\n\n---\n*Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further'
              
@@ -223,10 +249,19 @@ runs:
              - Focus on objective issues - no general feedback or explanations
              
              **If you have no inline comments** (simple review):
-             - You can use the simpler `gh pr review` command:
-               - **Approve**: `gh pr review ${{ github.event.pull_request.number }} --approve --body "Your review summary"`
-               - **Request changes**: `gh pr review ${{ github.event.pull_request.number }} --request-changes --body "Your review summary"`
-               - **Comment only**: `gh pr review ${{ github.event.pull_request.number }} --comment --body "Your review summary"`
+             - You can use the simpler `gh pr review` command, but be careful with special characters:
+               ```bash
+               # Use --body-file for complex text to avoid shell escaping issues
+               echo "Your review summary here" > review_body.txt
+               gh pr review ${{ github.event.pull_request.number }} --request-changes --body-file review_body.txt
+               ```
+               - Or use `gh api` with `--raw-field` for better control:
+                 ```bash
+                 gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews \
+                   -X POST \
+                   -f event="REQUEST_CHANGES" \
+                   --raw-field body="Your review summary here"
+                 ```
              - However, for thorough reviews, you should add inline comments for specific code issues
              
              **Review summary body should include**:
@@ -249,6 +284,6 @@ runs:
 
           ${{ inputs.additional-instructions }}
         claude_args: |
-          ${{ inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || '' }}
+          ${{ inputs.allowed-tools != '' && inputs.extra-allowed-tools != '' && format('--allowedTools {0},{1}', inputs.allowed-tools, inputs.extra-allowed-tools) || (inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || (inputs.extra-allowed-tools != '' && format('--allowedTools {0}', inputs.extra-allowed-tools) || '')) }}
           --mcp-config '${{ inputs.mcp-servers }}'
           --model ${{ inputs.model }}
