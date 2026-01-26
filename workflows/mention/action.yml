@@ -37,6 +37,11 @@ inputs:
     required: false
     default: ""
 
+  track-progress:
+    description: "Whether Claude should track progress with visual indicators"
+    required: false
+    default: "true"
+
   mcp-servers:
     description: "MCP server configuration JSON"
     required: false
@@ -56,6 +61,7 @@ runs:
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
         github_token: ${{ inputs.github-token }}
+        track_progress: ${{ inputs.track-progress }}
         prompt: |
           ## GitHub Context
           - Repository: ${{ github.repository }}
