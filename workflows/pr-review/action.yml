@@ -90,18 +90,70 @@ runs:
           - Consider edge cases, performance, and security implications
           - Gather all relevant information before providing feedback
 
-          Please review this pull request:
+          Review this pull request with a focus on **specific, objective insights** based on codebase context:
 
-          1. **Understand the changes** - Review the PR description and all modified files
-          2. **Code quality** - Check for:
-             - Code style and consistency
-             - Potential bugs or edge cases
-             - Error handling
-             - Performance considerations
-          3. **Testing** - Verify adequate test coverage for the changes
-          4. **Documentation** - Check if documentation needs updating
-          5. **Security** - Look for any security concerns
-          6. **Provide feedback** - Use GitHub's PR review system to provide comprehensive feedback:
+          ## Review Process
+
+          1. **Understand the broader context**:
+             - Review similar code patterns elsewhere in the codebase for consistency
+             - Check how similar features are implemented in other files/modules
+             - Understand the change's role in the larger system architecture
+             - Identify related code that might be affected or should be updated
+
+          2. **Review code consistency**:
+             - Compare coding patterns, naming conventions, and structure with existing code
+             - Check if error handling follows established patterns
+             - Verify that the code matches the project's style guide and conventions
+             - Look for deviations from established patterns that should be aligned
+
+          3. **Check call sites and usage**:
+             - Find all places where changed functions/methods are called
+             - Verify that call sites are compatible with the changes
+             - Check if other code needs updates to work with these changes
+             - Identify any breaking changes or migration needs
+
+          4. **Review documentation**:
+             - Check if feature documentation exists and is accurate
+             - Verify that API documentation reflects the changes
+             - Look for inline code comments that need updates
+             - Check README files, user guides, and other docs that reference this feature
+
+          5. **Verify test coverage**:
+             - Check if tests cover the new/changed functionality
+             - Verify tests follow the same patterns as existing tests
+             - Look for edge cases that aren't covered
+             - Check if integration tests are needed
+
+          6. **Identify specific issues**:
+             - Look for bugs, logic errors, or incorrect implementations
+             - Check for security vulnerabilities or unsafe patterns
+             - Identify performance issues or inefficiencies
+             - Find missing error handling or edge case coverage
+
+          ## Feedback Guidelines
+
+          **DO:**
+          - Provide specific, actionable feedback on concrete issues
+          - Reference exact lines of code and specific problems
+          - Compare with existing code patterns in the repository
+          - Point out inconsistencies with codebase conventions
+          - Identify missing documentation or outdated docs
+          - Note call sites that need updates
+          - Suggest specific code changes or fixes
+
+          **DO NOT:**
+          - Provide general summaries or explanations of what the PR does
+          - Praise or compliment the changes ("good addition", "nice work", etc.)
+          - Make broad comments about potential system impacts
+          - Question the intentions behind the changes
+          - Provide feedback that isn't tied to specific code issues
+          - Write general observations without concrete examples
+
+          **Focus on objective, fact-based insights** that help improve code quality, consistency, and correctness.
+
+          ## Submitting Your Review
+
+          Use GitHub's PR review system to provide feedback:
              
              **How PR reviews work**: When you submit a PR review, it can include:
              - **Inline comments** - Comments on specific lines of code (shown in the "Files changed" tab)
@@ -111,59 +163,64 @@ runs:
              
              **If you have inline comments** (recommended for thorough reviews):
              
-             **Posting inline comments** (always prefer this for line-specific feedback):
+             **Create a pending review and add comments to it** (all grouped in one review):
              
-             **Step 1: Add inline comments individually** - For each issue you find:
+             **Step 1: Create a pending review**:
+             ```bash
+             # Get HEAD commit SHA
+             HEAD_SHA=$(gh pr view ${{ github.event.pull_request.number }} --json headRefOid --jq .headRefOid)
              
-             1. **Get the file's diff patch** to calculate the correct position:
-                ```bash
-                FILE="path/to/file"
-                PATCH=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files --paginate --jq \
-                  '.[] | select(.filename=="'"$FILE"'") | .patch')
-                ```
+             # Create a pending review and save the review ID
+             REVIEW_ID=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews \
+               -X POST \
+               -f commit_id="$HEAD_SHA" \
+               -f event="PENDING" \
+               --jq .id)
              
-             2. **Calculate the position** of the line you want to comment on:
-                - Identify the exact added/changed line in the PATCH (look for lines starting with `+`)
-                - Find a unique snippet from that line to match it
-                - Calculate position using awk:
-                  ```bash
-                  POS=$(awk 'BEGIN{pos=0} {pos++; if ($0 ~ /^\+/ && index($0, "<unique-snippet-from-the-changed-line>")>0) {print pos; exit}}' <<< "$PATCH")
-                  ```
-                - The position is the line number in the unified diff (1-based, counting from the first `@@` hunk header)
-                - If commenting on a context line (not added), match the nearest `+` line that reflects the fix location
+             echo "Created pending review: $REVIEW_ID"
+             ```
              
-             3. **Get the HEAD commit SHA**:
-                ```bash
-                HEAD_SHA=$(gh pr view ${{ github.event.pull_request.number }} --json headRefOid --jq .headRefOid)
-                ```
+             **Step 2: Add inline comments to the pending review** (repeat for each issue):
              
-             4. **Post the inline comment** using the calculated position:
-                ```bash
-                gh api -X POST \
-                  repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/comments \
-                  -f commit_id="$HEAD_SHA" \
-                  -f path="$FILE" \
-                  -f position="$POS" \
-                  --raw-field body=$'### Issue: <short title>\nWhy: <concrete impact/severity>\nFix: <specific steps/code change>\n\n```go\n// minimal example or patch\n```\n'
-                ```
+             For each issue you find:
+             ```bash
+             # Get the file's diff patch
+             FILE="path/to/file"
+             PATCH=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files --paginate --jq \
+               '.[] | select(.filename=="'"$FILE"'") | .patch')
              
-             **Important rules for inline comments**:
-             - **Always use `position`, never `line`** for the `/comments` endpoint
-             - Calculate position from the PR files API patch (as shown above)
-             - Use structured comment format: Issue title, Why (impact), Fix (specific steps)
-             - Skip if a substantially similar comment already exists for that line
+             # Calculate the position (find the line with a unique snippet)
+             POS=$(awk 'BEGIN{pos=0} {pos++; if ($0 ~ /^\+/ && index($0, "<unique-snippet-from-the-changed-line>")>0) {print pos; exit}}' <<< "$PATCH")
+             
+             # Add the comment to the pending review
+             gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews/$REVIEW_ID/comments \
+               -X POST \
+               -f path="$FILE" \
+               -f position="$POS" \
+               --raw-field body=$'### Issue: Specific problem\n\n**Problem**: Concrete issue with this code\n\n**Expected**: What should happen\n\n**Fix**: Specific code change\n\n```go\n// example of correct pattern\n```'
+             ```
+             
+             Repeat this for each inline comment you want to add.
+             
+             **Step 3: Submit the review** (after adding all comments):
+             ```bash
+             # Submit the review with your summary
+             gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews/$REVIEW_ID/events \
+               -X POST \
+               -f event="REQUEST_CHANGES" \
+               --raw-field body=$'Your review summary here\n\n---\n*Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further'
+             
+             # Or use "APPROVE" or "COMMENT" instead of "REQUEST_CHANGES"
+             ```
+             
+             **Important rules**:
+             - **Always use `position`** (calculated from the diff patch as shown)
+             - Position is the line number in the unified diff (1-based, from first `@@` hunk header)
              - Only comment on lines that were actually changed (lines with `+` in the diff)
-             
-             **Step 2: Submit the review summary** (after adding all inline comments):
-             - All pending inline comments will be included in your review automatically
-             - Submit the review with overall summary:
-               ```bash
-               gh pr review ${{ github.event.pull_request.number }} --approve --body "Your review summary"
-               # or
-               gh pr review ${{ github.event.pull_request.number }} --request-changes --body "Your review summary"
-               # or
-               gh pr review ${{ github.event.pull_request.number }} --comment --body "Your review summary"
-               ```
+             - Use structured comment format: specific problem, expected behavior, fix
+             - Reference existing code patterns when suggesting fixes
+             - All comments added to the same REVIEW_ID will be grouped in one review
+             - Focus on objective issues - no general feedback or explanations
              
              **If you have no inline comments** (simple review):
              - You can use the simpler `gh pr review` command:
@@ -173,19 +230,19 @@ runs:
              - However, for thorough reviews, you should add inline comments for specific code issues
              
              **Review summary body should include**:
-             - Summary of what the PR does and its purpose
-             - Overall assessment (what's good, what needs work)
-             - Key concerns or suggestions (reference inline comments if applicable)
-             - Positive aspects of the changes
-             - Next steps or recommendations
+             - List of specific issues found (reference inline comments)
+             - Code consistency issues compared to existing codebase patterns
+             - Documentation gaps or inaccuracies identified
+             - Call sites or related code that needs updates
+             - Test coverage gaps
              - End with the footer: `---\n*Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type \`@claude\` to interact further`
              
-             **Best practices**:
-             - Be thorough: add inline comments for all significant issues you find
-             - Be constructive: explain why something should change, not just that it should
-             - Be specific: reference exact lines and provide concrete suggestions
-             - Be balanced: highlight positive aspects, not just problems
-             - Focus on significant issues: don't nitpick minor style preferences unless they're part of the project's standards
+             **Review summary guidelines**:
+             - Only include specific, objective issues - no general summaries or praises
+             - Reference inline comments by file/line when applicable
+             - Focus on actionable items that need to be addressed
+             - If no issues found, simply approve with minimal comment (just the footer)
+             - Don't explain what the PR does - focus on what needs to be fixed or improved
              - Submit everything in one review: include all inline comments and the summary in a single API call
 
           **Important**: The footer should be included in your PR review summary body (the `--body` parameter), not in inline comments.
