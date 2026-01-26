@@ -30,7 +30,7 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash,mage,build,unitTest,fmt,make,update,llc,mcp__agents-md-generator,mcp__public-code-search"
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash(gh pr review:*),Bash(gh pr comment:*),Bash(gh api:*),Bash,mage,build,unitTest,fmt,make,update,llc,mcp__agents-md-generator,mcp__public-code-search"
 
   additional-instructions:
     description: "Additional instructions to include in the prompt"
@@ -57,6 +57,8 @@ runs:
   steps:
     - name: Run Claude for PR Review
       id: claude
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
       uses: anthropics/claude-code-action@v1
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
@@ -99,20 +101,78 @@ runs:
           3. **Testing** - Verify adequate test coverage for the changes
           4. **Documentation** - Check if documentation needs updating
           5. **Security** - Look for any security concerns
-          6. **Provide feedback** - Post a review comment that:
-             - Summarizes what the PR does
-             - Highlights any concerns or suggestions
-             - Notes positive aspects of the changes
-             - Provides specific, actionable feedback
+          6. **Provide feedback** - Use GitHub's PR review system to provide comprehensive feedback:
+             
+             **How PR reviews work**: When you submit a PR review, it can include:
+             - **Inline comments** - Comments on specific lines of code (shown in the "Files changed" tab)
+             - **Review summary** - An overall comment with your review state (approve/request changes/comment)
+             
+             **Submit a complete PR review**:
+             
+             **If you have inline comments** (recommended for thorough reviews):
+             - Use `gh api` to submit a review that includes both inline comments and a summary in one API call
+             - Create a JSON file with your review data, then submit it:
+               ```bash
+               # Create review.json with your review
+               cat > review.json << 'EOF'
+               {
+                 "event": "APPROVE",
+                 "body": "Your review summary here",
+                 "comments": [
+                   {
+                     "path": "path/to/file",
+                     "position": 42,
+                     "body": "Your inline comment about this line"
+                   },
+                   {
+                     "path": "another/file.go",
+                     "position": 15,
+                     "body": "Another inline comment"
+                   }
+                 ]
+               }
+               EOF
+               
+               # Submit the review
+               gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews \
+                 -X POST \
+                 -H "Accept: application/vnd.github+json" \
+                 --input review.json
+               ```
+             - Replace `event` in the JSON with:
+               - `"APPROVE"` - To approve the PR
+               - `"REQUEST_CHANGES"` - To request changes  
+               - `"COMMENT"` - For comment-only review
+             - The `comments` array contains all your inline comments - add one object per comment
+             - For comments on new code, use `position` (1-based line number relative to the diff)
+             - For comments on old code (deleted lines), use `line` instead of `position`
+             - For multi-line comments, include both `start_line` and `line` parameters
+             - **Important**: All inline comments and the review summary are submitted together in one review
+             
+             **If you have no inline comments** (simple review):
+             - You can use the simpler `gh pr review` command:
+               - **Approve**: `gh pr review ${{ github.event.pull_request.number }} --approve --body "Your review summary"`
+               - **Request changes**: `gh pr review ${{ github.event.pull_request.number }} --request-changes --body "Your review summary"`
+               - **Comment only**: `gh pr review ${{ github.event.pull_request.number }} --comment --body "Your review summary"`
+             - However, for thorough reviews, you should add inline comments for specific code issues
+             
+             **Review summary body should include**:
+             - Summary of what the PR does and its purpose
+             - Overall assessment (what's good, what needs work)
+             - Key concerns or suggestions (reference inline comments if applicable)
+             - Positive aspects of the changes
+             - Next steps or recommendations
+             - End with the footer: `---\n*Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type \`@claude\` to interact further`
+             
+             **Best practices**:
+             - Be thorough: add inline comments for all significant issues you find
+             - Be constructive: explain why something should change, not just that it should
+             - Be specific: reference exact lines and provide concrete suggestions
+             - Be balanced: highlight positive aspects, not just problems
+             - Focus on significant issues: don't nitpick minor style preferences unless they're part of the project's standards
+             - Submit everything in one review: include all inline comments and the summary in a single API call
 
-          Be constructive and helpful. Focus on significant issues rather than nitpicks.
-
-          ## Response Footer
-          Always end your comment with this footer (using markdown):
-          ```
-          ---
-          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further
-          ```
+          **Important**: The footer should be included in your PR review summary body (the `--body` parameter), not in inline comments.
 
           ${{ inputs.additional-instructions }}
         claude_args: |
