@@ -89,7 +89,7 @@ runs:
           Always end your comment with this footer (using markdown):
           ```
           ---
-          *Comment by Claude Code* | 👍 if helpful, 👎 if not | Type `@claude` to interact further
+          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further
           ```
 
           ${{ inputs.additional-instructions }}

@@ -5,6 +5,8 @@
 #     with:
 #       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
 #       github-token: ${{ github.token }}
+#       # For Buildkite CI (just add the token, org defaults to "elastic"):
+#       buildkite-api-token: ${{ secrets.BUILDKITE_API_TOKEN }}
 #
 name: "Claude Build Failure Analysis"
 description: "Analyze CI build failures and suggest fixes using Claude"
@@ -21,6 +23,26 @@ inputs:
   github-token:
     description: "GitHub token for Claude to operate with"
     required: true
+
+  buildkite-api-token:
+    description: "Buildkite API token for accessing build logs"
+    required: false
+    default: ""
+
+  buildkite-org:
+    description: "Buildkite organization slug"
+    required: false
+    default: "elastic"
+
+  buildkite-pipeline:
+    description: "Buildkite pipeline slug (optional - auto-discovered from repo name if not provided)"
+    required: false
+    default: ""
+
+  buildkite-build-number:
+    description: "Buildkite build number (optional - auto-discovered from commit SHA if not provided)"
+    required: false
+    default: ""
 
   model:
     description: "Model to use for Claude"
@@ -43,9 +65,9 @@ inputs:
     default: "true"
 
   mcp-servers:
-    description: "MCP server configuration JSON"
+    description: "Additional MCP server configuration JSON (merged with defaults)"
     required: false
-    default: '{"mcpServers":{"agents-md-generator":{"type":"http","url":"https://agents-md-generator.fastmcp.app/mcp"},"public-code-search":{"type":"http","url":"https://public-code-search.fastmcp.app/mcp"}}}'
+    default: ""
 
 outputs:
   conclusion:
@@ -55,6 +77,56 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Setup MCP Server Configuration
+      id: mcp-config
+      shell: bash
+      env:
+        BUILDKITE_API_TOKEN: ${{ inputs.buildkite-api-token }}
+        ADDITIONAL_MCP: ${{ inputs.mcp-servers }}
+      run: |
+        mkdir -p /tmp/mcp-config
+        
+        # Start with default servers
+        cat > /tmp/mcp-config/mcp-servers.json << 'EOF'
+        {
+          "mcpServers": {
+            "agents-md-generator": {
+              "type": "http",
+              "url": "https://agents-md-generator.fastmcp.app/mcp"
+            },
+            "public-code-search": {
+              "type": "http",
+              "url": "https://public-code-search.fastmcp.app/mcp"
+            }
+          }
+        }
+        EOF
+        
+        # Add Buildkite MCP server if token is provided
+        if [ -n "$BUILDKITE_API_TOKEN" ]; then
+          cat > /tmp/mcp-config/mcp-servers.json << EOF
+        {
+          "mcpServers": {
+            "agents-md-generator": {
+              "type": "http",
+              "url": "https://agents-md-generator.fastmcp.app/mcp"
+            },
+            "public-code-search": {
+              "type": "http",
+              "url": "https://public-code-search.fastmcp.app/mcp"
+            },
+            "buildkite": {
+              "type": "http",
+              "url": "https://mcp.buildkite.com/mcp/readonly",
+              "headers": {
+                "Authorization": "Bearer $BUILDKITE_API_TOKEN"
+              }
+            }
+          }
+        }
+        EOF
+        fi
+
     - name: Run Claude for Build Failure Analysis
       id: claude
       uses: anthropics/claude-code-action@v1
@@ -65,24 +137,65 @@ runs:
         prompt: |
           ## GitHub Context
           - Repository: ${{ github.repository }}
-          - Failed Workflow: ${{ github.event.workflow_run.name }}
-          - Workflow Run ID: ${{ github.event.workflow_run.id }}
-          - Branch: ${{ github.event.workflow_run.head_branch }}
-          - Commit: ${{ github.event.workflow_run.head_sha }}
-          - Conclusion: ${{ github.event.workflow_run.conclusion }}
+          - Event: ${{ github.event_name }}
+          - Branch: ${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}
+          - Commit SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ${{ github.event.workflow_run.name && format('- Failed Workflow: {0}', github.event.workflow_run.name) || '' }}
+          ${{ github.event.workflow_run.id && format('- Workflow Run ID: {0}', github.event.workflow_run.id) || '' }}
+          ${{ github.event.workflow_run.html_url && format('- Workflow URL: {0}', github.event.workflow_run.html_url) || '' }}
+
+          ${{ inputs.buildkite-api-token != '' && inputs.buildkite-org != '' && '## Buildkite Configuration' || '' }}
+          ${{ inputs.buildkite-org != '' && format('- Organization: `{0}`', inputs.buildkite-org) || '' }}
+          ${{ inputs.buildkite-pipeline != '' && format('- Pipeline: `{0}` (provided)', inputs.buildkite-pipeline) || (inputs.buildkite-api-token != '' && inputs.buildkite-org != '' && '- Pipeline: **Auto-discover from repo name**' || '') }}
+          ${{ inputs.buildkite-build-number != '' && format('- Build Number: `{0}` (provided)', inputs.buildkite-build-number) || (inputs.buildkite-api-token != '' && inputs.buildkite-org != '' && '- Build Number: **Auto-discover from commit SHA**' || '') }}
 
           ## Instructions
-          A CI build has failed. Please analyze the failure and help fix it:
+          A CI build has failed. Please analyze the failure and help fix it.
 
-          1. **Review the failure** - Examine the build logs and error messages
-          2. **Identify the root cause** - Determine what caused the build to fail
-          3. **Analyze the code** - Look at the relevant source files
-          4. **Suggest fixes** - Provide specific, actionable suggestions to resolve the issue
-          5. **Post a comment** - Summarize your findings with:
-             - What failed and why
-             - The root cause
-             - Recommended fix(es)
-             - Any relevant code snippets or examples
+          ${{ inputs.buildkite-api-token != '' && inputs.buildkite-org != '' && format('### Buildkite Analysis Workflow
+          You have access to the Buildkite MCP server. Follow these steps:
+
+          #### Step 1: Find the pipeline
+          {0}
+
+          #### Step 2: Find the failed build
+          {1}
+
+          #### Step 3: Get build details
+          Once you have the build number, use `get_build` with:
+          - Organization: `{2}`
+          - Pipeline: (from step 1)
+          - Build number: (from step 2)
+
+          This will show you all jobs and their statuses. Note which jobs failed.
+
+          #### Step 4: Analyze failed jobs
+          For each failed job:
+          1. Use `get_job_logs` to retrieve the full logs
+          2. Use `search_logs` with patterns like `error|Error|ERROR`, `failed|Failed|FAILED`, `panic|exception`
+          3. Use `tail_logs` to see the last 100 lines
+
+          #### Step 5: Check annotations
+          Use `list_annotations` to see any build annotations with errors/warnings.
+
+          ', inputs.buildkite-pipeline != '' && format('Use the provided pipeline: `{0}`', inputs.buildkite-pipeline) || format('Use `list_pipelines` for organization `{0}` to find pipelines. Look for a pipeline matching the repository name `{1}`. Common patterns: the pipeline slug often matches the repo name or uses the full `org/repo` format.', inputs.buildkite-org, github.event.repository.name), inputs.buildkite-build-number != '' && format('Use the provided build number: `{0}`', inputs.buildkite-build-number) || format('Use `list_builds` to find builds. Look for a build matching commit SHA `{0}` or on branch `{1}`. Use the most recent failed build if multiple matches.', github.event.workflow_run.head_sha || github.sha, github.event.workflow_run.head_branch || github.head_ref || github.ref_name), inputs.buildkite-org) || '### GitHub Actions Analysis
+          Check the GitHub Actions workflow logs for failed steps and error messages.
+          ' }}
+          ### Analysis Steps
+          1. **Identify failed jobs/steps** - Determine exactly what failed
+          2. **Extract error messages** - Find the specific error messages and stack traces
+          3. **Identify root cause** - Determine what caused the failure (code bug, test failure, dependency issue, infrastructure problem, etc.)
+          4. **Analyze the code** - Look at the relevant source files in this repository
+          5. **Suggest fixes** - Provide specific, actionable suggestions to resolve the issue
+
+          ### Response Format
+          Post a comment summarizing:
+          - **Build**: Link to the Buildkite build (if applicable)
+          - **What failed**: Which job(s)/step(s) failed
+          - **Error message**: The key error message(s)
+          - **Root cause**: What caused the failure
+          - **Recommended fix**: Specific steps to resolve the issue
+          - **Code changes**: If applicable, show the exact code changes needed
 
           Focus on being helpful and specific. If the fix is straightforward, explain exactly what needs to change.
 
@@ -90,11 +203,11 @@ runs:
           Always end your comment with this footer (using markdown):
           ```
           ---
-          *Comment by Claude Code* | 👍 if helpful, 👎 if not | Type `@claude` to interact further
+          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further
           ```
 
           ${{ inputs.additional-instructions }}
         claude_args: |
           ${{ inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || '' }}
-          --mcp-config '${{ inputs.mcp-servers }}'
+          --mcp-config /tmp/mcp-config/mcp-servers.json
           --model ${{ inputs.model }}
