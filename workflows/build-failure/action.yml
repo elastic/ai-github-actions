@@ -1,0 +1,72 @@
+# Composite Action for analyzing build failures with Claude
+#
+# Usage:
+#   - uses: your-org/ai-github-actions/workflows/build-failure@v1
+#     with:
+#       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+#
+name: "Claude Build Failure Analysis"
+description: "Analyze CI build failures and suggest fixes using Claude"
+
+branding:
+  icon: "alert-triangle"
+  color: "red"
+
+inputs:
+  claude-oauth-token:
+    description: "Claude OAuth token for authentication"
+    required: true
+
+  model:
+    description: "Model to use for Claude"
+    required: false
+    default: "claude-sonnet-4-20250514"
+
+  allowed-tools:
+    description: "Comma-separated list of allowed tools for Claude"
+    required: false
+    default: ""
+
+  additional-instructions:
+    description: "Additional instructions to include in the prompt"
+    required: false
+    default: ""
+
+  mcp-servers:
+    description: "MCP server configuration JSON"
+    required: false
+    default: '{"mcpServers":{"agents-md-generator":{"type":"http","url":"https://agents-md-generator.fastmcp.app/mcp"},"public-code-search":{"type":"http","url":"https://public-code-search.fastmcp.app/mcp"}}}'
+
+outputs:
+  conclusion:
+    description: "The conclusion of the Claude Code run"
+    value: ${{ steps.claude.outputs.conclusion }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Claude for Build Failure Analysis
+      id: claude
+      uses: anthropics/claude-code-action@v1
+      with:
+        claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
+        prompt: |
+          A CI build has failed. Please analyze the failure and help fix it:
+
+          1. **Review the failure** - Examine the build logs and error messages
+          2. **Identify the root cause** - Determine what caused the build to fail
+          3. **Analyze the code** - Look at the relevant source files
+          4. **Suggest fixes** - Provide specific, actionable suggestions to resolve the issue
+          5. **Post a comment** - Summarize your findings with:
+             - What failed and why
+             - The root cause
+             - Recommended fix(es)
+             - Any relevant code snippets or examples
+
+          Focus on being helpful and specific. If the fix is straightforward, explain exactly what needs to change.
+
+          ${{ inputs.additional-instructions }}
+        claude_args: |
+          ${{ inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || '' }}
+          --mcp-config '${{ inputs.mcp-servers }}'
+          --model ${{ inputs.model }}

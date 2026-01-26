@@ -1,0 +1,73 @@
+# Composite Action for triaging new issues with Claude
+#
+# Usage:
+#   - uses: your-org/ai-github-actions/workflows/issue-triage@v1
+#     with:
+#       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+#
+name: "Claude Issue Triage"
+description: "Automatically triage and label new issues using Claude"
+
+branding:
+  icon: "tag"
+  color: "blue"
+
+inputs:
+  claude-oauth-token:
+    description: "Claude OAuth token for authentication"
+    required: true
+
+  model:
+    description: "Model to use for Claude"
+    required: false
+    default: "claude-sonnet-4-20250514"
+
+  allowed-tools:
+    description: "Comma-separated list of allowed tools for Claude"
+    required: false
+    default: ""
+
+  additional-instructions:
+    description: "Additional instructions to include in the prompt"
+    required: false
+    default: ""
+
+  mcp-servers:
+    description: "MCP server configuration JSON"
+    required: false
+    default: '{"mcpServers":{"agents-md-generator":{"type":"http","url":"https://agents-md-generator.fastmcp.app/mcp"},"public-code-search":{"type":"http","url":"https://public-code-search.fastmcp.app/mcp"}}}'
+
+outputs:
+  conclusion:
+    description: "The conclusion of the Claude Code run"
+    value: ${{ steps.claude.outputs.conclusion }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Claude for Issue Triage
+      id: claude
+      uses: anthropics/claude-code-action@v1
+      with:
+        claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
+        prompt: |
+          You are triaging a new GitHub issue. Please:
+
+          1. **Analyze the issue** - Read the title and description carefully
+          2. **Categorize** - Determine if this is a bug report, feature request, question, or documentation issue
+          3. **Assess priority** - Based on severity and impact
+          4. **Suggest labels** - Recommend appropriate labels for this issue
+          5. **Check for duplicates** - Search for similar existing issues
+          6. **Respond** - Post a helpful comment that:
+             - Acknowledges the issue
+             - Asks clarifying questions if needed
+             - Provides any immediately relevant information
+             - Sets expectations for next steps
+
+          Be helpful and welcoming to contributors.
+
+          ${{ inputs.additional-instructions }}
+        claude_args: |
+          ${{ inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || '' }}
+          --mcp-config '${{ inputs.mcp-servers }}'
+          --model ${{ inputs.model }}

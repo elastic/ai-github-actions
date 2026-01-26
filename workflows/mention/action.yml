@@ -1,0 +1,68 @@
+# Composite Action for responding to @claude mentions
+#
+# Usage:
+#   - uses: your-org/ai-github-actions/workflows/mention@v1
+#     with:
+#       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+#
+name: "Claude Mention Response"
+description: "Respond when Claude is mentioned in comments"
+
+branding:
+  icon: "at-sign"
+  color: "orange"
+
+inputs:
+  claude-oauth-token:
+    description: "Claude OAuth token for authentication"
+    required: true
+
+  model:
+    description: "Model to use for Claude"
+    required: false
+    default: "claude-sonnet-4-20250514"
+
+  allowed-tools:
+    description: "Comma-separated list of allowed tools for Claude (e.g., Edit,Write,Bash(npm test))"
+    required: false
+    default: ""
+
+  additional-instructions:
+    description: "Additional instructions to include in the prompt"
+    required: false
+    default: ""
+
+  mcp-servers:
+    description: "MCP server configuration JSON"
+    required: false
+    default: '{"mcpServers":{"agents-md-generator":{"type":"http","url":"https://agents-md-generator.fastmcp.app/mcp"},"public-code-search":{"type":"http","url":"https://public-code-search.fastmcp.app/mcp"}}}'
+
+outputs:
+  conclusion:
+    description: "The conclusion of the Claude Code run"
+    value: ${{ steps.claude.outputs.conclusion }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Claude for Mention Response
+      id: claude
+      uses: anthropics/claude-code-action@v1
+      with:
+        claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
+        prompt: |
+          You have been mentioned in a GitHub comment. Please:
+
+          1. **Read the request** - Understand what is being asked
+          2. **Gather context** - Review relevant files, issues, or PRs as needed
+          3. **Complete the task** - Do what is requested to the best of your ability
+          4. **Respond** - Post a comment with your response or results
+
+          If the request is unclear, ask clarifying questions.
+          If the request requires actions you cannot perform, explain what you can and cannot do.
+
+          ${{ inputs.additional-instructions }}
+        claude_args: |
+          ${{ inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || '' }}
+          --mcp-config '${{ inputs.mcp-servers }}'
+          --model ${{ inputs.model }}

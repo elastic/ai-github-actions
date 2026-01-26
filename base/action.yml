@@ -1,0 +1,78 @@
+# Composite Action for running Claude Code Action
+#
+# This action wraps the Anthropic Claude Code Action with MCP server configuration.
+#
+# Usage:
+#   - uses: your-org/ai-github-actions/base@v1
+#     with:
+#       prompt: "Your prompt here"
+#       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+#
+name: "Claude Code Action"
+description: "Run Claude Code with MCP servers"
+author: "Your Organization"
+
+branding:
+  icon: "cpu"
+  color: "orange"
+
+inputs:
+  prompt:
+    description: "Prompt to pass to Claude"
+    required: true
+
+  allowed-tools:
+    description: "Comma-separated list of allowed tools for Claude (e.g., Edit,Write,Bash(npm test))"
+    required: false
+    default: ""
+
+  claude-oauth-token:
+    description: "Claude OAuth token for authentication"
+    required: true
+
+  model:
+    description: "Model to use for Claude"
+    required: false
+    default: "claude-sonnet-4-20250514"
+
+  allowed-bots:
+    description: "Comma-separated list of allowed bot usernames, or '*' to allow all bots"
+    required: false
+    default: ""
+
+  track-progress:
+    description: "Whether Claude should track progress"
+    required: false
+    default: "true"
+
+  claude-args:
+    description: "Additional arguments to pass to Claude"
+    required: false
+    default: ""
+
+  mcp-servers:
+    description: "MCP server configuration JSON"
+    required: false
+    default: '{"mcpServers":{"agents-md-generator":{"type":"http","url":"https://agents-md-generator.fastmcp.app/mcp"},"public-code-search":{"type":"http","url":"https://public-code-search.fastmcp.app/mcp"}}}'
+
+outputs:
+  conclusion:
+    description: "The conclusion of the Claude Code run"
+    value: ${{ steps.claude.outputs.conclusion }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Claude Code
+      id: claude
+      uses: anthropics/claude-code-action@v1
+      with:
+        claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
+        prompt: ${{ inputs.prompt }}
+        track_progress: ${{ inputs.track-progress }}
+        allowed_bots: ${{ inputs.allowed-bots }}
+        claude_args: |
+          ${{ inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || '' }}
+          --mcp-config '${{ inputs.mcp-servers }}'
+          --model ${{ inputs.model }}
+          ${{ inputs.claude-args }}
