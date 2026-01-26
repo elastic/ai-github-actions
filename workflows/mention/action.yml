@@ -57,9 +57,21 @@ runs:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
         github_token: ${{ inputs.github-token }}
         prompt: |
+          ## GitHub Context
+          - Repository: ${{ github.repository }}
+          - Event: ${{ github.event_name }}
+          - Issue/PR Number: ${{ github.event.issue.number || github.event.pull_request.number }}
+          - Issue/PR Title: ${{ github.event.issue.title || github.event.pull_request.title }}
+          - Comment Author: ${{ github.event.comment.user.login }}
+          - Comment Body:
+          ```
+          ${{ github.event.comment.body }}
+          ```
+
+          ## Instructions
           You have been mentioned in a GitHub comment. Please:
 
-          1. **Read the request** - Understand what is being asked
+          1. **Read the request** - Understand what is being asked in the comment above
           2. **Gather context** - Review relevant files, issues, or PRs as needed
           3. **Complete the task** - Do what is requested to the best of your ability
           4. **Respond** - Post a comment with your response or results

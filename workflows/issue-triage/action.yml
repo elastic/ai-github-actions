@@ -57,7 +57,18 @@ runs:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
         github_token: ${{ inputs.github-token }}
         prompt: |
-          You are triaging a new GitHub issue. Please:
+          ## GitHub Context
+          - Repository: ${{ github.repository }}
+          - Issue Number: #${{ github.event.issue.number }}
+          - Issue Title: ${{ github.event.issue.title }}
+          - Issue Author: ${{ github.event.issue.user.login }}
+          - Issue Body:
+          ```
+          ${{ github.event.issue.body }}
+          ```
+
+          ## Instructions
+          You are triaging this new GitHub issue. Please:
 
           1. **Analyze the issue** - Read the title and description carefully
           2. **Categorize** - Determine if this is a bug report, feature request, question, or documentation issue

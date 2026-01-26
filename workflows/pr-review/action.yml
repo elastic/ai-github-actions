@@ -57,6 +57,19 @@ runs:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
         github_token: ${{ inputs.github-token }}
         prompt: |
+          ## GitHub Context
+          - Repository: ${{ github.repository }}
+          - PR Number: #${{ github.event.pull_request.number }}
+          - PR Title: ${{ github.event.pull_request.title }}
+          - PR Author: ${{ github.event.pull_request.user.login }}
+          - Base Branch: ${{ github.event.pull_request.base.ref }}
+          - Head Branch: ${{ github.event.pull_request.head.ref }}
+          - PR Body:
+          ```
+          ${{ github.event.pull_request.body }}
+          ```
+
+          ## Instructions
           Please review this pull request:
 
           1. **Understand the changes** - Review the PR description and all modified files

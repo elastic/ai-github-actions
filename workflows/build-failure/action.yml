@@ -57,6 +57,15 @@ runs:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
         github_token: ${{ inputs.github-token }}
         prompt: |
+          ## GitHub Context
+          - Repository: ${{ github.repository }}
+          - Failed Workflow: ${{ github.event.workflow_run.name }}
+          - Workflow Run ID: ${{ github.event.workflow_run.id }}
+          - Branch: ${{ github.event.workflow_run.head_branch }}
+          - Commit: ${{ github.event.workflow_run.head_sha }}
+          - Conclusion: ${{ github.event.workflow_run.conclusion }}
+
+          ## Instructions
           A CI build has failed. Please analyze the failure and help fix it:
 
           1. **Review the failure** - Examine the build logs and error messages

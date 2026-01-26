@@ -219,6 +219,7 @@ jobs:
       - uses: your-org/ai-github-actions/workflows/mention@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
           # Allow Claude to edit files and run tests
           allowed-tools: "Edit,Write,Bash(npm test),Bash(npm run lint)"
 ```
@@ -228,6 +229,7 @@ jobs:
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
 | `claude-oauth-token` | Claude OAuth token | Yes | - |
+| `github-token` | GitHub token for Claude | Yes | - |
 | `model` | Model to use | No | `claude-sonnet-4-20250514` |
 | `allowed-tools` | Allowed tools (e.g., `Edit,Write,Bash(npm test)`) | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
@@ -258,11 +260,12 @@ Override the default MCP servers by providing your own JSON:
     mcp-servers: '{"mcpServers":{"my-server":{"type":"http","url":"https://my-server.example.com/mcp"}}}'
 ```
 
-## Required Secrets
+## Required Inputs
 
-Configure in **Settings → Secrets → Actions**:
-
-- `CLAUDE_OAUTH_TOKEN` - OAuth token for Claude authentication
+| Input | Source | Description |
+|-------|--------|-------------|
+| `claude-oauth-token` | `${{ secrets.CLAUDE_OAUTH_TOKEN }}` | OAuth token for Claude (configure in Settings → Secrets → Actions) |
+| `github-token` | `${{ github.token }}` | Automatic GitHub token for API access |
 
 ## License
 
