@@ -110,44 +110,60 @@ runs:
              **Submit a complete PR review**:
              
              **If you have inline comments** (recommended for thorough reviews):
-             - Use `gh api` to submit a review that includes both inline comments and a summary in one API call
-             - Create a JSON file with your review data, then submit it:
+             
+             **Posting inline comments** (always prefer this for line-specific feedback):
+             
+             **Step 1: Add inline comments individually** - For each issue you find:
+             
+             1. **Get the file's diff patch** to calculate the correct position:
+                ```bash
+                FILE="path/to/file"
+                PATCH=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files --paginate --jq \
+                  '.[] | select(.filename=="'"$FILE"'") | .patch')
+                ```
+             
+             2. **Calculate the position** of the line you want to comment on:
+                - Identify the exact added/changed line in the PATCH (look for lines starting with `+`)
+                - Find a unique snippet from that line to match it
+                - Calculate position using awk:
+                  ```bash
+                  POS=$(awk 'BEGIN{pos=0} {pos++; if ($0 ~ /^\+/ && index($0, "<unique-snippet-from-the-changed-line>")>0) {print pos; exit}}' <<< "$PATCH")
+                  ```
+                - The position is the line number in the unified diff (1-based, counting from the first `@@` hunk header)
+                - If commenting on a context line (not added), match the nearest `+` line that reflects the fix location
+             
+             3. **Get the HEAD commit SHA**:
+                ```bash
+                HEAD_SHA=$(gh pr view ${{ github.event.pull_request.number }} --json headRefOid --jq .headRefOid)
+                ```
+             
+             4. **Post the inline comment** using the calculated position:
+                ```bash
+                gh api -X POST \
+                  repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/comments \
+                  -f commit_id="$HEAD_SHA" \
+                  -f path="$FILE" \
+                  -f position="$POS" \
+                  --raw-field body=$'### Issue: <short title>\nWhy: <concrete impact/severity>\nFix: <specific steps/code change>\n\n```go\n// minimal example or patch\n```\n'
+                ```
+             
+             **Important rules for inline comments**:
+             - **Always use `position`, never `line`** for the `/comments` endpoint
+             - Calculate position from the PR files API patch (as shown above)
+             - Use structured comment format: Issue title, Why (impact), Fix (specific steps)
+             - Skip if a substantially similar comment already exists for that line
+             - Only comment on lines that were actually changed (lines with `+` in the diff)
+             
+             **Step 2: Submit the review summary** (after adding all inline comments):
+             - All pending inline comments will be included in your review automatically
+             - Submit the review with overall summary:
                ```bash
-               # Create review.json with your review
-               cat > review.json << 'EOF'
-               {
-                 "event": "APPROVE",
-                 "body": "Your review summary here",
-                 "comments": [
-                   {
-                     "path": "path/to/file",
-                     "position": 42,
-                     "body": "Your inline comment about this line"
-                   },
-                   {
-                     "path": "another/file.go",
-                     "position": 15,
-                     "body": "Another inline comment"
-                   }
-                 ]
-               }
-               EOF
-               
-               # Submit the review
-               gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews \
-                 -X POST \
-                 -H "Accept: application/vnd.github+json" \
-                 --input review.json
+               gh pr review ${{ github.event.pull_request.number }} --approve --body "Your review summary"
+               # or
+               gh pr review ${{ github.event.pull_request.number }} --request-changes --body "Your review summary"
+               # or
+               gh pr review ${{ github.event.pull_request.number }} --comment --body "Your review summary"
                ```
-             - Replace `event` in the JSON with:
-               - `"APPROVE"` - To approve the PR
-               - `"REQUEST_CHANGES"` - To request changes  
-               - `"COMMENT"` - For comment-only review
-             - The `comments` array contains all your inline comments - add one object per comment
-             - For comments on new code, use `position` (1-based line number relative to the diff)
-             - For comments on old code (deleted lines), use `line` instead of `position`
-             - For multi-line comments, include both `start_line` and `line` parameters
-             - **Important**: All inline comments and the review summary are submitted together in one review
              
              **If you have no inline comments** (simple review):
              - You can use the simpler `gh pr review` command:
