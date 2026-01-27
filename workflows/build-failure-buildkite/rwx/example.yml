@@ -25,6 +25,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run Claude Build Failure Analysis
