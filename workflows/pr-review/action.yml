@@ -62,6 +62,13 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Fetch base branch for comparison
+      shell: bash
+      run: |
+        BASE_REF="${{ github.event.pull_request.base.ref }}"
+        echo "Fetching base branch: ${BASE_REF}"
+        git fetch origin "${BASE_REF}:${BASE_REF}" || echo "Warning: Could not fetch base branch ${BASE_REF}"
+    
     - name: Run Claude for PR Review
       id: claude
       env:
@@ -69,6 +76,7 @@ runs:
         PR_REVIEW_REPO: ${{ github.repository }}
         PR_REVIEW_PR_NUMBER: ${{ github.event.pull_request.number }}
         PR_REVIEW_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        PR_REVIEW_BASE_REF: ${{ github.event.pull_request.base.ref }}
         PR_SCRIPTS: ${{ github.action_path }}/scripts
       uses: anthropics/claude-code-action@v1
       with:
@@ -106,6 +114,7 @@ runs:
           - **`mcp__public-code-search__search_code`**: Use this to search for code patterns in OTHER repositories (external libraries, modules, or dependencies). The current repository is cloned locally, so use `Grep` or `Read` for searching within this repo. Use `search_code` for finding similar implementations in other projects or understanding how other repositories handle similar issues.
           - **`WebSearch`**: Use for searching the web for documentation, best practices, or solutions.
           - **`WebFetch`**: Use to fetch and read content from URLs (documentation, API references, etc.).
+          - **`git diff`**: The base branch (`${{ github.event.pull_request.base.ref }}`) has been fetched locally. You can use `git diff ${{ github.event.pull_request.base.ref }}` to compare changes, or `git diff ${{ github.event.pull_request.base.ref }} -- <file>` for specific files.
 
           Review this pull request with a focus on **specific, objective insights** based on codebase context:
 
