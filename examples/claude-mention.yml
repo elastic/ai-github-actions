@@ -1,0 +1,58 @@
+# Example workflow for @claude mentions
+# Copy this to your repo's .github/workflows/ directory
+#
+# This workflow triggers when someone mentions @claude in an issue or PR comment
+# and routes to the appropriate action based on context.
+
+name: Claude Mention
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  # Determine if this is an issue or PR comment
+  check-context:
+    if: contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    outputs:
+      is_pr: ${{ steps.check.outputs.is_pr }}
+    steps:
+      - name: Check if PR or Issue
+        id: check
+        run: |
+          if [ -n "${{ github.event.issue.pull_request }}" ]; then
+            echo "is_pr=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_pr=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Handle @claude mention on an Issue
+  mention-issue:
+    needs: check-context
+    if: needs.check-context.outputs.is_pr == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Claude on Issue
+        uses: your-org/ai-github-actions/workflows/mention-issue@v1
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
+
+  # Handle @claude mention on a PR
+  mention-pr:
+    needs: check-context
+    if: needs.check-context.outputs.is_pr == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Claude on PR
+        uses: your-org/ai-github-actions/workflows/mention-pr@v1
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}

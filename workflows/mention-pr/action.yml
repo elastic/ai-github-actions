@@ -1,18 +1,18 @@
 #
-# Composite Action for triaging new issues with Claude
+# Composite Action for responding to @claude mentions on Pull Requests
 #
 # Usage:
-#   - uses: your-org/ai-github-actions/workflows/issue-triage@v1
+#   - uses: your-org/ai-github-actions/workflows/mention-pr@v1
 #     with:
 #       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
 #       github-token: ${{ github.token }}
 #
-name: "Claude Issue Triage"
-description: "Automatically triage and label new issues using Claude"
+name: "Claude Mention Response (PR)"
+description: "Respond when Claude is mentioned in PR comments"
 
 branding:
-  icon: "tag"
-  color: "blue"
+  icon: "git-pull-request"
+  color: "orange"
 
 inputs:
   claude-oauth-token:
@@ -31,7 +31,8 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash,mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code"
+    # Includes PR review thread scripts
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash,mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code,Bash(${{ github.action_path }}/scripts/gh-get-review-threads.sh:*),Bash(${{ github.action_path }}/scripts/gh-resolve-review-thread.sh:*),Bash(${{ github.action_path }}/scripts/gh-minimize-outdated-comments.sh:*)"
 
   extra-allowed-tools:
     description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
@@ -61,10 +62,14 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Run Claude for Issue Triage
+    - name: Run Claude for PR Mention
       id: claude
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
+        # For PR review thread scripts
+        MENTION_REPO: ${{ github.repository }}
+        MENTION_PR_NUMBER: ${{ github.event.issue.number }}
+        MENTION_SCRIPTS: ${{ github.action_path }}/scripts
       uses: anthropics/claude-code-action@v1
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
@@ -73,16 +78,17 @@ runs:
         prompt: |
           ## GitHub Context
           - Repository: ${{ github.repository }}
-          - Issue Number: #${{ github.event.issue.number }}
-          - Issue Title: ${{ github.event.issue.title }}
-          - Issue Author: ${{ github.event.issue.user.login }}
-          - Issue Body:
+          - PR Number: #${{ github.event.issue.number }}
+          - PR Title: ${{ github.event.issue.title }}
+          - PR Author: ${{ github.event.issue.user.login }}
+          - Comment Author: ${{ github.event.comment.user.login }}
+          - Comment Body:
           ```
-          ${{ github.event.issue.body }}
+          ${{ github.event.comment.body }}
           ```
 
           ## Instructions
-
+          
           ### Getting Started
           **First, get repository context**: Use the `mcp__agents-md-generator__generate_agents_md` tool to generate a repository summary. This will give you essential context about the codebase structure, technologies used, and project conventions. Call this tool at the start of your investigation.
 
@@ -100,20 +106,58 @@ runs:
           - **`WebSearch`**: Use for searching the web for documentation, best practices, or solutions.
           - **`WebFetch`**: Use to fetch and read content from URLs (documentation, API references, etc.).
 
-          You are triaging this new GitHub issue. Please:
+          You have been mentioned in a **Pull Request** comment. Please:
 
-          1. **Analyze the issue** - Read the title and description carefully
-          2. **Categorize** - Determine if this is a bug report, feature request, question, or documentation issue
-          3. **Assess priority** - Based on severity and impact
-          4. **Suggest labels** - Recommend appropriate labels for this issue
-          5. **Check for duplicates** - Search for similar existing issues
-          6. **Respond** - Post a helpful comment that:
-             - Acknowledges the issue
-             - Asks clarifying questions if needed
-             - Provides any immediately relevant information
-             - Sets expectations for next steps
+          1. **Read the request** - Understand what is being asked in the comment above
+          2. **Gather context** - Review the PR changes, review threads, and relevant code
+          3. **Complete the task** - Do what is requested to the best of your ability
+          4. **Respond** - Post a comment with your response or results
 
-          Be helpful and welcoming to contributors.
+          ### Common tasks on PRs:
+          - Address review feedback and fix issues
+          - Answer questions about the changes
+          - Make additional code changes
+          - Resolve review threads after fixing
+
+          If the request is unclear, ask clarifying questions.
+          If the request requires actions you cannot perform, explain what you can and cannot do.
+
+          ## PR Review Thread Tools
+
+          You have access to scripts for managing review threads.
+
+          ### View unresolved review threads
+          ```bash
+          $MENTION_SCRIPTS/gh-get-review-threads.sh
+          ```
+          This shows all review threads with their resolution status, file paths, line numbers, and comments.
+          
+          To filter for unresolved threads from a specific reviewer:
+          ```bash
+          $MENTION_SCRIPTS/gh-get-review-threads.sh "reviewer-username"
+          ```
+
+          ### Resolve a review thread
+          After addressing feedback, resolve the thread:
+          ```bash
+          $MENTION_SCRIPTS/gh-resolve-review-thread.sh "THREAD_ID" "Fixed by updating the error handling"
+          ```
+          - `THREAD_ID` is the GraphQL node ID from the review threads output (e.g., `PRRT_kwDOABC123`)
+          - The comment is optional - use it to explain what you did
+          - If all threads from a review are resolved, the review is automatically minimized
+
+          ### Clean up outdated comments
+          Keep only the most recent comment from each author visible:
+          ```bash
+          $MENTION_SCRIPTS/gh-minimize-outdated-comments.sh
+          ```
+          This helps reduce noise on busy PRs.
+
+          ### Typical workflow when asked to address review feedback:
+          1. Run `$MENTION_SCRIPTS/gh-get-review-threads.sh` to see what needs addressing
+          2. Make the requested code changes
+          3. Commit and push the changes
+          4. Resolve each addressed thread with `$MENTION_SCRIPTS/gh-resolve-review-thread.sh`
 
           ## Response Footer
           Always end your comment with this footer (using markdown):

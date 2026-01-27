@@ -1,3 +1,4 @@
+#
 # Composite Action for PR review with Claude
 #
 # Usage:
@@ -30,7 +31,8 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash(gh pr review:*),Bash(gh pr comment:*),Bash(gh api:*),Bash,mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code"
+    # Note: Using ${{ github.action_path }} for the PR review scripts
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash,mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code,Bash(${{ github.action_path }}/scripts/pr-comment.sh:*),Bash(${{ github.action_path }}/scripts/pr-review.sh:*),Bash(${{ github.action_path }}/scripts/pr-diff.sh:*)"
 
   extra-allowed-tools:
     description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
@@ -64,6 +66,10 @@ runs:
       id: claude
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
+        PR_REVIEW_REPO: ${{ github.repository }}
+        PR_REVIEW_PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_REVIEW_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        PR_SCRIPTS: ${{ github.action_path }}/scripts
       uses: anthropics/claude-code-action@v1
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
@@ -86,20 +92,19 @@ runs:
           
           ### Getting Started
           **First, get repository context**: Use the `mcp__agents-md-generator__generate_agents_md` tool to generate a repository summary. This will give you essential context about the codebase structure, technologies used, and project conventions. Call this tool at the start of your investigation.
-          
-          **If you encounter any issues using tools** (e.g., tool not found, permission errors, API failures), mention this in your review summary with a link to the support channel: https://your-slack-channel-link
+
+          **If you encounter any issues using tools** (e.g., tool not found, permission errors, API failures), mention this in your response with a link to the support channel: https://elastic.slack.com/archives/C0AAMNAA89M
 
           ### Investigation Approach
           **Be extremely thorough in your investigations**. Don't rush to conclusions. Take time to:
           - Understand the full context of the repository
-          - Review all modified files and related code
-          - Check for related issues, PRs, and discussions
-          - Consider edge cases, performance, and security implications
-          - Gather all relevant information before providing feedback
-          
+          - Review related code, issues, and PRs
+          - Consider edge cases and implications
+          - Gather all relevant information before responding
+
           **Available tools for investigation**:
-          - **`mcp__public-code-search__search_code`**: Use this to search for code patterns in OTHER repositories (external libraries, modules, or dependencies). The current repository is cloned locally, so use `Grep` or `Read` for searching within this repo. Use `search_code` for finding similar implementations in other projects, checking how other repositories handle similar patterns, or understanding library APIs.
-          - **`WebSearch`**: Use for searching the web for documentation, best practices, or solutions to specific problems.
+          - **`mcp__public-code-search__search_code`**: Use this to search for code patterns in OTHER repositories (external libraries, modules, or dependencies). The current repository is cloned locally, so use `Grep` or `Read` for searching within this repo. Use `search_code` for finding similar implementations in other projects or understanding how other repositories handle similar issues.
+          - **`WebSearch`**: Use for searching the web for documentation, best practices, or solutions.
           - **`WebFetch`**: Use to fetch and read content from URLs (documentation, API references, etc.).
 
           Review this pull request with a focus on **specific, objective insights** based on codebase context:
@@ -165,125 +170,75 @@ runs:
 
           ## Submitting Your Review
 
-          Use GitHub's PR review system to provide feedback:
-             
-             **How PR reviews work**: When you submit a PR review, it can include:
-             - **Inline comments** - Comments on specific lines of code (shown in the "Files changed" tab)
-             - **Review summary** - An overall comment with your review state (approve/request changes/comment)
-             
-             **Submit a complete PR review**:
-             
-             **If you have inline comments** (recommended for thorough reviews):
-             
-             **Create a pending review and add comments to it** (all grouped in one review):
-             
-             **Step 1: Create a pending review**:
-             ```bash
-             # Get HEAD commit SHA
-             HEAD_SHA=$(gh pr view ${{ github.event.pull_request.number }} --json headRefOid --jq .headRefOid)
-             
-             # Create a pending review and save the review ID
-             REVIEW_ID=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews \
-               -X POST \
-               -f commit_id="$HEAD_SHA" \
-               -f event="PENDING" \
-               --jq .id)
-             
-             echo "Created pending review: $REVIEW_ID"
-             ```
-             
-             **Step 2: Add inline comments to the pending review** (repeat for each issue):
-             
-             For each issue you find:
-             ```bash
-             # Get the file's diff patch
-             FILE="path/to/file"
-             PATCH=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files --paginate --jq \
-               '.[] | select(.filename=="'"$FILE"'") | .patch')
-             
-             # Calculate the position (find the line with a unique snippet from the changed line)
-             # Position is 1-based, counting from the first line after the @@ hunk header
-             POS=$(echo "$PATCH" | awk 'BEGIN{pos=0} {pos++; if ($0 ~ /^\+/ && index($0, "<unique-snippet-from-the-changed-line>")>0) {print pos; exit}}')
-             
-             # Verify position was found
-             if [ -z "$POS" ]; then
-               echo "Error: Could not find position for $FILE"
-               exit 1
-             fi
-             
-             # Add the comment (it will automatically be associated with the pending review)
-             gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/comments \
-               -X POST \
-               -f commit_id="$HEAD_SHA" \
-               -f path="$FILE" \
-               -f position="$POS" \
-               --raw-field body=$'### Issue: Specific problem\n\n**Problem**: Concrete issue with this code\n\n**Expected**: What should happen\n\n**Fix**: Specific code change\n\n```go\n// example of correct pattern\n```'
-             ```
-             
-             **Important**: 
-             - Use a unique snippet from the actual changed line (not the entire line if it's very long)
-             - The snippet should be unique enough to match only the line you want
-             - Position must be calculated from the full patch (including the @@ header)
-             - All comments added while a pending review exists will be grouped with that review
-             
-             Repeat this for each inline comment you want to add.
-             
-             **Step 3: Submit the review** (after adding all comments):
-             ```bash
-             # Submit the review with your summary (this will include all pending comments)
-             gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews/$REVIEW_ID \
-               -X PUT \
-               -f event="REQUEST_CHANGES" \
-               --raw-field body=$'Your review summary here\n\n---\n*Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further'
-             
-             # Or use "APPROVE" or "COMMENT" instead of "REQUEST_CHANGES"
-             ```
-             
-             **Important rules**:
-             - **Always use `position`** (calculated from the diff patch as shown)
-             - Position is the line number in the unified diff (1-based, from first `@@` hunk header)
-             - Only comment on lines that were actually changed (lines with `+` in the diff)
-             - Use structured comment format: specific problem, expected behavior, fix
-             - Reference existing code patterns when suggesting fixes
-             - All comments added to the same REVIEW_ID will be grouped in one review
-             - Focus on objective issues - no general feedback or explanations
-             
-             **If you have no inline comments** (simple review):
-             - You can use the simpler `gh pr review` command, but be careful with special characters:
-               ```bash
-               # Use --body-file for complex text to avoid shell escaping issues
-               echo "Your review summary here" > review_body.txt
-               gh pr review ${{ github.event.pull_request.number }} --request-changes --body-file review_body.txt
-               ```
-               - Or use `gh api` with `--raw-field` for better control:
-                 ```bash
-                 gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews \
-                   -X POST \
-                   -f event="REQUEST_CHANGES" \
-                   --raw-field body="Your review summary here"
-                 ```
-             - However, for thorough reviews, you should add inline comments for specific code issues
-             
-             **Review summary body should include**:
-             - List of specific issues found (reference inline comments)
-             - Code consistency issues compared to existing codebase patterns
-             - Documentation gaps or inaccuracies identified
-             - Call sites or related code that needs updates
-             - Test coverage gaps
-             - End with the footer: `---\n*Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type \`@claude\` to interact further`
-             
-             **Review summary guidelines**:
-             - Only include specific, objective issues - no general summaries or praises
-             - Reference inline comments by file/line when applicable
-             - Focus on actionable items that need to be addressed
-             - If no issues found, simply approve with minimal comment (just the footer)
-             - Don't explain what the PR does - focus on what needs to be fixed or improved
-             - Submit everything in one review: include all inline comments and the summary in a single API call
+          You have access to helper scripts for submitting PR reviews. The scripts are available at `$PR_SCRIPTS/`.
 
-          **Important**: The footer should be included in your PR review summary body (the `--body` parameter), not in inline comments.
+          ### View changed files
+          ```bash
+          $PR_SCRIPTS/pr-diff.sh
+          ```
+          This shows all files changed in the PR with their addition/deletion counts.
+
+          ### View diff for a specific file
+          ```bash
+          $PR_SCRIPTS/pr-diff.sh path/to/file.go
+          ```
+
+          ### Add inline comment on a specific line
+          ```bash
+          $PR_SCRIPTS/pr-comment.sh <file> <line-number> <comment>
+          ```
+          
+          **Examples:**
+          ```bash
+          $PR_SCRIPTS/pr-comment.sh src/main.go 42 "This variable is unused and should be removed"
+          $PR_SCRIPTS/pr-comment.sh pkg/utils/helper.go 15 "Missing error handling - this could panic if input is nil"
+          ```
+          
+          **Important notes:**
+          - Use the **line number from the new file** (not the diff position)
+          - You can only comment on lines that appear in the diff (added, modified, or context lines)
+          - Each comment will appear as a separate review comment on the PR
+
+          ### Submit the final review
+          ```bash
+          $PR_SCRIPTS/pr-review.sh <APPROVE|REQUEST_CHANGES|COMMENT> <review-body>
+          ```
+          
+          **Examples:**
+          ```bash
+          # If issues were found:
+          $PR_SCRIPTS/pr-review.sh REQUEST_CHANGES "Please address the inline comments above.
+
+          ---
+          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type \`@claude\` to interact further"
+
+          # If no issues found:
+          $PR_SCRIPTS/pr-review.sh APPROVE "LGTM - code follows existing patterns and includes appropriate tests.
+
+          ---
+          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type \`@claude\` to interact further"
+
+          # If just providing feedback without approving/blocking:
+          $PR_SCRIPTS/pr-review.sh COMMENT "Some suggestions for consideration (non-blocking).
+
+          ---
+          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type \`@claude\` to interact further"
+          ```
+
+          ### Review workflow
+          1. First, use `$PR_SCRIPTS/pr-diff.sh` to see what files changed
+          2. Review the code changes and identify issues
+          3. Add inline comments for specific issues using `$PR_SCRIPTS/pr-comment.sh`
+          4. Submit the final review using `$PR_SCRIPTS/pr-review.sh` with a summary
+
+          **Always include the footer** in your review summary:
+          ```
+          ---
+          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further
+          ```
 
           ${{ inputs.additional-instructions }}
         claude_args: |
-          ${{ inputs.allowed-tools != '' && inputs.extra-allowed-tools != '' && format('--allowedTools {0},{1}', inputs.allowed-tools, inputs.extra-allowed-tools) || (inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || (inputs.extra-allowed-tools != '' && format('--allowedTools {0}', inputs.extra-allowed-tools) || '')) }}
-          --mcp-config '${{ inputs.mcp-servers }}'
+          ${{ format('--allowedTools {0}{1}', inputs.allowed-tools, inputs.extra-allowed-tools != '' && format(',{0}', inputs.extra-allowed-tools) || '') }}
+          --mcp-config "${{ inputs.mcp-servers }}"
           --model ${{ inputs.model }}

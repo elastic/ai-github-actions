@@ -1,0 +1,23 @@
+# Example workflow for automatic PR review
+# Copy this to your repo's .github/workflows/ directory
+
+name: PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Claude PR Review
+        uses: your-org/ai-github-actions/workflows/pr-review@v1
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
+          # Optional: add custom instructions
+          # additional-instructions: "Pay special attention to security patterns"

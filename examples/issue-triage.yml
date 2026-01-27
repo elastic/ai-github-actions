@@ -1,0 +1,23 @@
+# Example workflow for automatic issue triage
+# Copy this to your repo's .github/workflows/ directory
+
+name: Issue Triage
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Claude Issue Triage
+        uses: your-org/ai-github-actions/workflows/issue-triage@v1
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
+          # Optional: add custom instructions
+          # additional-instructions: "Focus on security-related issues first"
