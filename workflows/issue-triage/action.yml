@@ -71,75 +71,114 @@ runs:
         github_token: ${{ inputs.github-token }}
         track_progress: ${{ inputs.track-progress }}
         prompt: |
-          ## GitHub Context
-          - Repository: ${{ github.repository }}
-          - Issue Number: #${{ github.event.issue.number }}
-          - Issue Title: ${{ github.event.issue.title }}
-          - Issue Author: ${{ github.event.issue.user.login }}
-          - Issue Body:
-          ```
+          <context>
+          Repository: ${{ github.repository }}
+          Issue Number: #${{ github.event.issue.number }}
+          Issue Title: ${{ github.event.issue.title }}
+          Issue Author: ${{ github.event.issue.user.login }}
+          </context>
+
+          <issue_body>
           ${{ github.event.issue.body }}
-          ```
+          </issue_body>
 
-          ## Instructions
+          <task>
+          Triage this new GitHub issue and provide a helpful, actionable response.
+          </task>
 
-          ### Important: Investigation and Planning Only
-          **This workflow is for investigation and planning ONLY. You CANNOT:**
-          - Create branches
-          - Push changes
-          - Commit code
-          - Modify files
-          - Make any code changes
+          <constraints>
+          This workflow is for investigation and planning ONLY.
+          
+          You CANNOT: Create branches, push changes, commit code, modify files
+          You CAN: Read/analyze code, search repository, review git history, search for similar issues, provide analysis and recommendations
+          </constraints>
 
-          **You CAN:**
-          - Read and analyze code
-          - Search the repository
-          - Review git history (`git log`, `git diff`, `git show`)
-          - Check git status and branch information
-          - Search for similar issues and PRs
-          - Provide analysis, suggestions, and recommendations
+          <getting_started>
+          Use `mcp__agents-md-generator__generate_agents_md` to get repository context before triaging.
+          </getting_started>
 
-          ### Getting Started
-          **First, get repository context**: Use the `mcp__agents-md-generator__generate_agents_md` tool to generate a repository summary. This will give you essential context about the codebase structure, technologies used, and project conventions. Call this tool at the start of your investigation.
+          <investigation_tools>
+          - `mcp__public-code-search__search_code`: Search code in OTHER repositories (use `Grep`/`Read` for this repo)
+          - `WebSearch`: Search the web for documentation, best practices, or solutions
+          - `WebFetch`: Fetch and read content from URLs
+          - Read-only git commands: `git status`, `git diff`, `git log`, `git show`, `git branch`
+          </investigation_tools>
 
-          **If you encounter any issues using tools** (e.g., tool not found, permission errors, API failures), mention this in your response with a link to the support channel: https://elastic.slack.com/archives/C0AAMNAA89M
+          <response_goals>
+          Your number one priority is to provide a great response to the issue. A great response is a response that is clear, concise, accurate, and actionable. You will avoid long paragraphs, flowery language, and overly verbose responses. Your readers have limited time and attention, so you will be concise and to the point.
 
-          ### Investigation Approach
-          **Be extremely thorough in your investigations**. Don't rush to conclusions. Take time to:
-          - Understand the full context of the repository
-          - Review related code, issues, and PRs
-          - Consider edge cases and implications
-          - Gather all relevant information before responding
+          In priority order your goal is to:
+            1. Provide context about the request or issue (related issues, pull requests, files, etc.)
+            2. Layout a single high-quality and actionable recommendation for how to address the issue based on your knowledge of the project, codebase, and issue
+            3. Provide an high quality and detailed plan that a junior developer could follow to implement the recommendation
+          </response_goals>
 
-          **Available tools for investigation**:
-          - **`mcp__public-code-search__search_code`**: Use this to search for code patterns in OTHER repositories (external libraries, modules, or dependencies). The current repository is cloned locally, so use `Grep` or `Read` for searching within this repo. Use `search_code` for finding similar implementations in other projects or understanding how other repositories handle similar issues.
-          - **`WebSearch`**: Use for searching the web for documentation, best practices, or solutions.
-          - **`WebFetch`**: Use to fetch and read content from URLs (documentation, API references, etc.).
-          - **Read-only git commands**: You can use `git status`, `git diff`, `git log`, `git show`, `git branch` to investigate the codebase, but you cannot create branches, commit, or push.
+          <response_sections>
+          Populate the following sections in your response:
+            Recommendation (or “No recommendation” with reason)
+            Findings
+            Detailed Action Plan
+            Related Items
+            Related Files
+            Related Webpages
 
-          You are triaging this new GitHub issue. Please:
+          You may not be able to do all of these things, sometimes you may find that all you can do is provide in-depth context of the issue and related items. That's perfectly acceptable and expected. Your performance is judged by how accurate your findings are, do the investigation required to have high confidence in your findings and recommendations. "I don't know" or "I'm unable to recommend a course of action" is better than a bad or wrong answer.
 
-          1. **Analyze the issue** - Read the title and description carefully
-          2. **Categorize** - Determine if this is a bug report, feature request, question, or documentation issue
-          3. **Assess priority** - Based on severity and impact
-          4. **Suggest labels** - Recommend appropriate labels for this issue
-          5. **Check for duplicates** - Search for similar existing issues
-          6. **Respond** - Post a helpful comment that:
-             - Acknowledges the issue
-             - Asks clarifying questions if needed
-             - Provides any immediately relevant information
-             - Sets expectations for next steps
+          When formulating your response, you will never "bury the lede", you will always provide a clear and concise tl;dr as the first thing in your response. As your response grows in length you can organize the more detailed parts of your response collapsible sections using <details> and <summary> tags. You shouldn't put everything in collapsible sections, especially if the response is short. Use your discretion to determine when to use collapsible sections to avoid overwhelming the reader with too much detail -- think of them like an appendix that can be expanded if the reader is interested.
 
-          Be helpful and welcoming to contributors.
+          </response_sections>
+          <response_examples>
+          # Example output for "Recommendation" part of the response
+          PR #654 already implements the requested feature but is incomplete. The Pull Request is not in a mergeable state yet, the remaining work should be completed: 1) update the Calculator.divide method to utilize the new DivisionByZeroError or the safe_divide function, and 2) update the tests to ensure that the Calculator.divide method raises the new DivisionByZeroError when the divisor is 0.
 
-          ## Response Footer
-          Always end your comment with this footer (using markdown):
-          ```
+          <details>
+          <summary>Findings</summary>
+          ...details from the code analysis that are relevant to the issue and the recommendation...
+          </details>
+
+          <details>
+          <summary>Detailed Action Plan</summary>
+          ...a detailed plan that a junior developer could follow to implement the recommendation...
+          </details>
+
+          # Example Output for "Related Items" part of the response
+
+          <details>
+          <summary>Related Issues and Pull Requests</summary>
+
+          | Repository | Issue or PR | Relevance |
+          | --- | --- | --- |
+          | jlowin/fastmcp | [Add matrix operations support](https://github.com/jlowin/fastmcp/pull/680) | This pull request directly addresses the feature request for adding matrix operations to the calculator. |
+          | jlowin/fastmcp | [Add matrix operations support](https://github.com/jlowin/fastmcp/issues/681) | This issue directly addresses the feature request for adding matrix operations to the calculator. |
+          </details>
+
+          <details>
+          <summary>Related Files</summary>
+
+          | Repository | File | Relevance | Sections |
+          | --- | --- | --- | --- |
+          | modelcontextprotocol/python-sdk | [test_calculator.py](https://github.com/modelcontextprotocol/python-sdk/blob/main/test_calculator.py) | This file contains the test cases for the Calculator class, including a test that specifically asserts a ValueError is raised for division by zero, confirming the current intended behavior. | [25-27](https://github.com/modelcontextprotocol/python-sdk/blob/main/test_calculator.py#L25-L27) |
+          | modelcontextprotocol/python-sdk | [calculator.py](https://github.com/modelcontextprotocol/python-sdk/blob/main/calculator.py) | This file contains the implementation of the Calculator class, specifically the `divide` method which raises the ValueError when dividing by zero, matching the bug report. | [29-32](https://github.com/modelcontextprotocol/python-sdk/blob/main/calculator.py#L29-L32) |
+          </details>
+
+          <details>
+          <summary>Related Webpages</summary>
+
+          | Name | URL | Relevance |
+          | --- | --- | --- |
+          | Handling Division by Zero Best Practices | https://my-blog-about-division-by-zero.com/handling+division+by+zero+in+calculator | This webpage provides general best practices for handling division by zero in calculator applications and in Python, which is directly relevant to the issue and potential solutions. |
+          </details>
+          </response_examples>
+
+          <response_footer>
+          Always end your comment with:
           ---
           *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further
-          ```
+          </response_footer>
 
+          <additional_instructions>
           ${{ inputs.additional-instructions }}
+          </additional_instructions>
         claude_args: |
           ${{ format('--allowedTools {0}{1}', inputs.allowed-tools, inputs.extra-allowed-tools != '' && format(',{0}', inputs.extra-allowed-tools) || '') }}
           --mcp-config "${{ inputs.mcp-servers }}"

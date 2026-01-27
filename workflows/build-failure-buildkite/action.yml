@@ -131,96 +131,104 @@ runs:
         github_token: ${{ inputs.github-token }}
         track_progress: ${{ inputs.track-progress }}
         prompt: |
-          ## GitHub Context
-          - Repository: ${{ github.repository }}
-          - Event: ${{ github.event_name }}
-          - Branch: ${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}
-          - Commit SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
-          ${{ github.event.workflow_run.name && format('- Failed Workflow: {0}', github.event.workflow_run.name) || '' }}
-          ${{ github.event.workflow_run.id && format('- Workflow Run ID: {0}', github.event.workflow_run.id) || '' }}
-          ${{ github.event.workflow_run.html_url && format('- Workflow URL: {0}', github.event.workflow_run.html_url) || '' }}
+          <context>
+          Repository: ${{ github.repository }}
+          Event: ${{ github.event_name }}
+          Branch: ${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}
+          Commit SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ${{ github.event.workflow_run.name && format('Failed Workflow: {0}', github.event.workflow_run.name) || '' }}
+          ${{ github.event.workflow_run.id && format('Workflow Run ID: {0}', github.event.workflow_run.id) || '' }}
+          ${{ github.event.workflow_run.html_url && format('Workflow URL: {0}', github.event.workflow_run.html_url) || '' }}
+          </context>
 
-          ## Buildkite Configuration
-          - Organization: `${{ inputs.buildkite-org }}`
-          ${{ inputs.buildkite-pipeline != '' && format('- Pipeline: `{0}` (provided)', inputs.buildkite-pipeline) || format('- Pipeline: **Auto-discover from repo name** (use `list_pipelines` for organization `{0}` to find pipelines matching repository `{1}`)', inputs.buildkite-org, github.repository) }}
-          ${{ inputs.buildkite-build-number != '' && format('- Build Number: `{0}` (provided)', inputs.buildkite-build-number) || format('- Build Number: **Auto-discover from commit SHA** (use `list_builds` to find builds matching commit SHA `{0}` or on branch `{1}`)', github.event.workflow_run.head_sha || github.sha, github.event.workflow_run.head_branch || github.head_ref || github.ref_name) }}
+          <buildkite_config>
+          Organization: ${{ inputs.buildkite-org }}
+          ${{ inputs.buildkite-pipeline != '' && format('Pipeline: {0} (provided)', inputs.buildkite-pipeline) || format('Pipeline: Auto-discover from repo name', inputs.buildkite-org, github.repository) }}
+          ${{ inputs.buildkite-build-number != '' && format('Build Number: {0} (provided)', inputs.buildkite-build-number) || 'Build Number: Auto-discover from commit SHA' }}
+          </buildkite_config>
 
-          ## Instructions
-          
-          ### Getting Started
-          **First, get repository context**: Use the `mcp__agents-md-generator__generate_agents_md` tool to generate a repository summary. This will give you essential context about the codebase structure, technologies used, and project conventions. Call this tool at the start of your investigation.
+          <task>
+          A Buildkite CI build has failed. Analyze the failure, identify the root cause, and provide actionable fix recommendations.
+          </task>
 
-          **If you encounter any issues using tools** (e.g., tool not found, permission errors, API failures), mention this in your response with a link to the support channel: https://elastic.slack.com/archives/C0AAMNAA89M
+          <getting_started>
+          Use `mcp__agents-md-generator__generate_agents_md` to get repository context before investigating.
+          </getting_started>
 
-          ### Investigation Approach
-          **Be extremely thorough in your investigations**. Don't rush to conclusions. Take time to:
-          - Understand the full context of the repository
-          - Review all relevant code, build configurations, and test files
-          - Analyze error messages and stack traces completely
-          - Consider all possible root causes and edge cases
-          - Gather comprehensive information before suggesting fixes
-          
-          **Available tools for investigation**:
-          - **`mcp__buildkite`**: You have access to the Buildkite MCP server. Use it to query build information, job logs, and annotations.
-          - **`mcp__public-code-search__search_code`**: Use this to search for code patterns in OTHER repositories (external libraries, modules, or dependencies). The current repository is cloned locally, so use `Grep` or `Read` for searching within this repo. Use `search_code` for finding similar error patterns in other projects, checking library documentation, or understanding how other repositories handle similar build issues.
-          - **`WebSearch`**: Use for searching the web for error messages, build failures, or solutions to specific CI/CD problems.
-          - **`WebFetch`**: Use to fetch and read content from URLs (documentation, error logs, API references, etc.).
+          <investigation_tools>
+          - `mcp__buildkite`: Query build information, job logs, and annotations
+          - `mcp__public-code-search__search_code`: Search code in OTHER repositories (use `Grep`/`Read` for this repo)
+          - `WebSearch`: Search for error messages, build failures, or solutions
+          - `WebFetch`: Fetch documentation or API references
+          </investigation_tools>
 
-          A Buildkite CI build has failed. Please analyze the failure and help fix it.
+          <failure_categories>
+          Common failure types to identify:
+          - Code bug: Logic error, syntax error, type mismatch
+          - Test failure: Assertion failed, test timeout, flaky test
+          - Dependency issue: Missing package, version conflict, network failure
+          - Infrastructure: Resource exhaustion, service unavailability, timeout
+          - Configuration: Invalid settings, missing secrets, incorrect paths
+          </failure_categories>
 
-          ### Buildkite Analysis Workflow
+          <buildkite_workflow>
+          Step 1 - Find the pipeline:
+          ${{ inputs.buildkite-pipeline != '' && format('Use provided pipeline: {0}', inputs.buildkite-pipeline) || format('Use `list_pipelines` for organization `{0}` to find pipelines matching repository `{1}`', inputs.buildkite-org, github.repository) }}
 
-          You have access to the Buildkite MCP server. Follow these steps:
+          Step 2 - Find the failed build:
+          ${{ inputs.buildkite-build-number != '' && format('Use provided build number: {0}', inputs.buildkite-build-number) || format('Use `list_builds` to find builds matching commit SHA `{0}` or branch `{1}`', github.event.workflow_run.head_sha || github.sha, github.event.workflow_run.head_branch || github.head_ref || github.ref_name) }}
 
-          #### Step 1: Find the pipeline
-          ${{ inputs.buildkite-pipeline != '' && format('Use the provided pipeline: `{0}`', inputs.buildkite-pipeline) || format('Use `list_pipelines` for organization `{0}` to find pipelines. Look for a pipeline matching the repository `{1}`. Common patterns: the pipeline slug often matches the repo name or uses the full `org/repo` format.', inputs.buildkite-org, github.repository) }}
+          Step 3 - Get build details:
+          Use `get_build` with organization `${{ inputs.buildkite-org }}`, pipeline, and build number.
 
-          #### Step 2: Find the failed build
-          ${{ inputs.buildkite-build-number != '' && format('Use the provided build number: `{0}`', inputs.buildkite-build-number) || format('Use `list_builds` to find builds. Look for a build matching commit SHA `{0}` or on branch `{1}`. Use the most recent failed build if multiple matches.', github.event.workflow_run.head_sha || github.sha, github.event.workflow_run.head_branch || github.head_ref || github.ref_name) }}
-
-          #### Step 3: Get build details
-          Once you have the build number, use `get_build` with:
-          - Organization: `${{ inputs.buildkite-org }}`
-          - Pipeline: (from step 1)
-          - Build number: (from step 2)
-
-          This will show you all jobs and their statuses. Note which jobs failed.
-
-          #### Step 4: Analyze failed jobs
+          Step 4 - Analyze failed jobs:
           For each failed job:
-          1. Use `get_job_logs` to retrieve the full logs
-          2. Use `search_logs` with patterns like `error|Error|ERROR`, `failed|Failed|FAILED`, `panic|exception`
-          3. Use `tail_logs` to see the last 100 lines
+          - Use `get_job_logs` to retrieve full logs
+          - Use `search_logs` with patterns: `error|Error|ERROR`, `failed|Failed|FAILED`, `panic|exception`
+          - Use `tail_logs` to see the last 100 lines
 
-          #### Step 5: Check annotations
-          Use `list_annotations` to see any build annotations with errors/warnings.
+          Step 5 - Check annotations:
+          Use `list_annotations` for build annotations with errors/warnings.
+          </buildkite_workflow>
 
-          ### Analysis Steps
-          1. **Identify failed jobs** - Determine exactly which Buildkite jobs failed
-          2. **Extract error messages** - Find the specific error messages and stack traces from the job logs
-          3. **Identify root cause** - Determine what caused the failure (code bug, test failure, dependency issue, infrastructure problem, etc.)
-          4. **Analyze the code** - Look at the relevant source files in this repository
-          5. **Suggest fixes** - Provide specific, actionable suggestions to resolve the issue
+          <analysis_process>
+          1. Identify which Buildkite jobs failed
+          2. Extract specific error messages and stack traces
+          3. Determine root cause (code bug, test failure, dependency, infrastructure, config)
+          4. Analyze relevant source files in the repository
+          5. Provide specific, actionable fix recommendations
+          </analysis_process>
 
-          ### Response Format
-          Post a comment summarizing:
-          - **Build**: Link to the Buildkite build
-          - **What failed**: Which job(s) failed
-          - **Error message**: The key error message(s) from the logs
-          - **Root cause**: What caused the failure
-          - **Recommended fix**: Specific steps to resolve the issue
-          - **Code changes**: If applicable, show the exact code changes needed
+          <response_format>
+          Structure your response as:
 
-          Focus on being helpful and specific. If the fix is straightforward, explain exactly what needs to change.
+          **Build**: [Link to Buildkite build]
 
-          ## Response Footer
-          Always end your comment with this footer (using markdown):
+          **What failed**: Which job(s) failed
+
+          **Error**: Key error message(s)
+
+          **Root cause**: What caused the failure
+
+          **Recommended fix**: Specific steps to resolve
+
+          **Code changes** (if applicable):
+          ```suggestion
+          corrected code here
           ```
+
+          Be concise and actionable. Focus on the specific fix needed.
+          </response_format>
+
+          <response_footer>
+          Always end your comment with:
           ---
           *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further
-          ```
+          </response_footer>
 
+          <additional_instructions>
           ${{ inputs.additional-instructions }}
+          </additional_instructions>
         claude_args: |
           ${{ format('--allowedTools {0}{1}', inputs.allowed-tools, inputs.extra-allowed-tools != '' && format(',{0}', inputs.extra-allowed-tools) || '') }}
           --mcp-config /tmp/mcp-config/mcp-servers.json

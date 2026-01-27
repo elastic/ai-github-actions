@@ -71,90 +71,108 @@ runs:
         github_token: ${{ inputs.github-token }}
         track_progress: ${{ inputs.track-progress }}
         prompt: |
-          ## GitHub Context
-          - Repository: ${{ github.repository }}
-          - Event: ${{ github.event_name }}
-          - Branch: ${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}
-          - Commit SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
-          ${{ github.event.workflow_run.name && format('- Failed Workflow: {0}', github.event.workflow_run.name) || '' }}
-          ${{ github.event.workflow_run.id && format('- Workflow Run ID: {0}', github.event.workflow_run.id) || '' }}
-          ${{ github.event.workflow_run.html_url && format('- Workflow URL: {0}', github.event.workflow_run.html_url) || '' }}
+          <context>
+          Repository: ${{ github.repository }}
+          Event: ${{ github.event_name }}
+          Branch: ${{ github.event.workflow_run.head_branch || github.head_ref || github.ref_name }}
+          Commit SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ${{ github.event.workflow_run.name && format('Failed Workflow: {0}', github.event.workflow_run.name) || '' }}
+          ${{ github.event.workflow_run.id && format('Workflow Run ID: {0}', github.event.workflow_run.id) || '' }}
+          ${{ github.event.workflow_run.html_url && format('Workflow URL: {0}', github.event.workflow_run.html_url) || '' }}
+          </context>
 
-          ## Instructions
-          
-          ### Getting Started
-          **First, get repository context**: Use the `mcp__agents-md-generator__generate_agents_md` tool to generate a repository summary. This will give you essential context about the codebase structure, technologies used, and project conventions. Call this tool at the start of your investigation.
+          <task>
+          A GitHub Actions workflow has failed. Analyze the failure, identify the root cause, and provide actionable fix recommendations.
+          </task>
 
-          **If you encounter any issues using tools** (e.g., tool not found, permission errors, API failures), mention this in your response with a link to the support channel: https://elastic.slack.com/archives/C0AAMNAA89M
+          <getting_started>
+          Use `mcp__agents-md-generator__generate_agents_md` to get repository context before investigating.
+          </getting_started>
 
-          ### Investigation Approach
-          **Be extremely thorough in your investigations**. Don't rush to conclusions. Take time to:
-          - Understand the full context of the repository
-          - Review all relevant code, build configurations, and test files
-          - Analyze error messages and stack traces completely
-          - Consider all possible root causes and edge cases
-          - Gather comprehensive information before suggesting fixes
-          
-          **Available tools for investigation**:
-          - **`mcp__github_ci__get_ci_status`**: Get the status of CI workflows for this repository
-          - **`mcp__github_ci__get_workflow_run_details`**: Get detailed information about a specific workflow run
-          - **`mcp__github_ci__download_job_log`**: Download logs from failed jobs
-          - **`mcp__public-code-search__search_code`**: Use this to search for code patterns in OTHER repositories (external libraries, modules, or dependencies). The current repository is cloned locally, so use `Grep` or `Read` for searching within this repo. Use `search_code` for finding similar error patterns in other projects, checking library documentation, or understanding how other repositories handle similar build issues.
-          - **`WebSearch`**: Use for searching the web for error messages, build failures, or solutions to specific CI/CD problems.
-          - **`WebFetch`**: Use to fetch and read content from URLs (documentation, error logs, API references, etc.).
+          <investigation_tools>
+          - `mcp__github_ci__get_ci_status`: Get CI workflow status for this repository
+          - `mcp__github_ci__get_workflow_run_details`: Get detailed workflow run information
+          - `mcp__github_ci__download_job_log`: Download logs from failed jobs
+          - `mcp__public-code-search__search_code`: Search code in OTHER repositories (use `Grep`/`Read` for this repo)
+          - `WebSearch`: Search for error messages, build failures, or solutions
+          - `WebFetch`: Fetch documentation or API references
+          </investigation_tools>
 
-          A GitHub Actions workflow has failed. Please analyze the failure and help fix it.
+          <failure_categories>
+          Common failure types to identify:
+          - Code bug: Logic error, syntax error, type mismatch
+          - Test failure: Assertion failed, test timeout, flaky test
+          - Dependency issue: Missing package, version conflict, network failure
+          - Infrastructure: Resource exhaustion, service unavailability, timeout
+          - Workflow config: Invalid YAML, missing secrets, incorrect paths, permission issues
+          </failure_categories>
 
-          ### GitHub Actions Analysis Workflow
-
-          #### Step 1: Get workflow run details
-          Use `mcp__github_ci__get_workflow_run_details` with the workflow run ID to see:
+          <github_actions_workflow>
+          Step 1 - Get workflow run details:
+          Use `mcp__github_ci__get_workflow_run_details` with workflow run ID to see:
           - Which jobs failed
-          - The status of each job
+          - Status of each job
           - Links to job logs
 
-          #### Step 2: Download failed job logs
-          For each failed job, use `mcp__github_ci__download_job_log` to retrieve the full logs. Look for:
+          Step 2 - Download failed job logs:
+          Use `mcp__github_ci__download_job_log` for each failed job. Look for:
           - Error messages
           - Stack traces
           - Test failures
           - Build errors
 
-          #### Step 3: Analyze the workflow file
-          Review the workflow YAML file (`.github/workflows/*.yml`) to understand:
+          Step 3 - Analyze workflow file:
+          Review `.github/workflows/*.yml` to understand:
           - What the workflow is trying to do
           - Which steps are failing
           - Dependencies between jobs
           - Environment setup requirements
+          </github_actions_workflow>
 
-          ### Analysis Steps
-          1. **Identify failed jobs/steps** - Determine exactly what failed in the workflow
-          2. **Extract error messages** - Find the specific error messages and stack traces from the logs
-          3. **Identify root cause** - Determine what caused the failure (code bug, test failure, dependency issue, infrastructure problem, workflow configuration issue, etc.)
-          4. **Analyze the code** - Look at the relevant source files in this repository
-          5. **Review workflow configuration** - Check if the workflow YAML has any issues
-          6. **Suggest fixes** - Provide specific, actionable suggestions to resolve the issue
+          <analysis_process>
+          1. Identify which jobs/steps failed
+          2. Extract specific error messages and stack traces
+          3. Determine root cause (code bug, test failure, dependency, infrastructure, workflow config)
+          4. Analyze relevant source files in the repository
+          5. Review workflow YAML for configuration issues
+          6. Provide specific, actionable fix recommendations
+          </analysis_process>
 
-          ### Response Format
-          Post a comment summarizing:
-          - **Workflow**: Link to the failed workflow run
-          - **What failed**: Which job(s)/step(s) failed
-          - **Error message**: The key error message(s) from the logs
-          - **Root cause**: What caused the failure
-          - **Recommended fix**: Specific steps to resolve the issue
-          - **Code changes**: If applicable, show the exact code changes needed
-          - **Workflow changes**: If the issue is in the workflow configuration, suggest workflow YAML changes
+          <response_format>
+          Structure your response as:
 
-          Focus on being helpful and specific. If the fix is straightforward, explain exactly what needs to change.
+          **Workflow**: [Link to failed workflow run]
 
-          ## Response Footer
-          Always end your comment with this footer (using markdown):
+          **What failed**: Which job(s)/step(s) failed
+
+          **Error**: Key error message(s)
+
+          **Root cause**: What caused the failure
+
+          **Recommended fix**: Specific steps to resolve
+
+          **Code changes** (if applicable):
+          ```suggestion
+          corrected code here
           ```
+
+          **Workflow changes** (if applicable):
+          ```yaml
+          corrected workflow YAML here
+          ```
+
+          Be concise and actionable. Focus on the specific fix needed.
+          </response_format>
+
+          <response_footer>
+          Always end your comment with:
           ---
           *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further
-          ```
+          </response_footer>
 
+          <additional_instructions>
           ${{ inputs.additional-instructions }}
+          </additional_instructions>
         claude_args: |
           ${{ format('--allowedTools {0}{1}', inputs.allowed-tools, inputs.extra-allowed-tools != '' && format(',{0}', inputs.extra-allowed-tools) || '') }}
           --mcp-config "${{ inputs.mcp-servers }}"

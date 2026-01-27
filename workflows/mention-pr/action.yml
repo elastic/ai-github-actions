@@ -32,7 +32,7 @@ inputs:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
     # Includes PR review thread scripts
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash,mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code,Bash(${{ github.action_path }}/scripts/gh-get-review-threads.sh:*),Bash(${{ github.action_path }}/scripts/gh-resolve-review-thread.sh:*),Bash(${{ github.action_path }}/scripts/gh-minimize-outdated-comments.sh:*)"
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash,mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code,Bash(${{ github.action_path }}/scripts/gh-get-review-threads.sh:*),Bash(${{ github.action_path }}/scripts/gh-resolve-review-thread.sh:*)"
 
   extra-allowed-tools:
     description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
@@ -76,97 +76,86 @@ runs:
         github_token: ${{ inputs.github-token }}
         track_progress: ${{ inputs.track-progress }}
         prompt: |
-          ## GitHub Context
-          - Repository: ${{ github.repository }}
-          - PR Number: #${{ github.event.issue.number }}
-          - PR Title: ${{ github.event.issue.title }}
-          - PR Author: ${{ github.event.issue.user.login }}
-          - Comment Author: ${{ github.event.comment.user.login }}
-          - Comment Body:
-          ```
+          <context>
+          Repository: ${{ github.repository }}
+          PR Number: #${{ github.event.issue.number }}
+          PR Title: ${{ github.event.issue.title }}
+          PR Author: ${{ github.event.issue.user.login }}
+          Comment Author: ${{ github.event.comment.user.login }}
+          </context>
+
+          <user_request>
           ${{ github.event.comment.body }}
-          ```
+          </user_request>
 
-          ## Instructions
-          
-          ### Getting Started
-          **First, get repository context**: Use the `mcp__agents-md-generator__generate_agents_md` tool to generate a repository summary. This will give you essential context about the codebase structure, technologies used, and project conventions. Call this tool at the start of your investigation.
+          <task>
+          You have been mentioned in a Pull Request comment. Understand the request, gather context, complete the task, and respond with results.
+          </task>
 
-          **If you encounter any issues using tools** (e.g., tool not found, permission errors, API failures), mention this in your response with a link to the support channel: https://elastic.slack.com/archives/C0AAMNAA89M
+          <getting_started>
+          Use `mcp__agents-md-generator__generate_agents_md` to get repository context before responding.
+          </getting_started>
 
-          ### Investigation Approach
-          **Be extremely thorough in your investigations**. Don't rush to conclusions. Take time to:
+          <investigation_approach>
+          Be thorough in your investigations:
           - Understand the full context of the repository
           - Review related code, issues, and PRs
           - Consider edge cases and implications
           - Gather all relevant information before responding
 
-          **Available tools for investigation**:
-          - **`mcp__public-code-search__search_code`**: Use this to search for code patterns in OTHER repositories (external libraries, modules, or dependencies). The current repository is cloned locally, so use `Grep` or `Read` for searching within this repo. Use `search_code` for finding similar implementations in other projects or understanding how other repositories handle similar issues.
-          - **`WebSearch`**: Use for searching the web for documentation, best practices, or solutions.
-          - **`WebFetch`**: Use to fetch and read content from URLs (documentation, API references, etc.).
+          Available tools:
+          - `mcp__public-code-search__search_code`: Search code in OTHER repositories (use `Grep`/`Read` for this repo)
+          - `WebSearch`: Search the web for documentation, best practices, or solutions
+          - `WebFetch`: Fetch and read content from URLs
+          </investigation_approach>
 
-          You have been mentioned in a **Pull Request** comment. Please:
-
-          1. **Read the request** - Understand what is being asked in the comment above
-          2. **Gather context** - Review the PR changes, review threads, and relevant code
-          3. **Complete the task** - Do what is requested to the best of your ability
-          4. **Respond** - Post a comment with your response or results
-
-          ### Common tasks on PRs:
+          <common_tasks>
           - Address review feedback and fix issues
           - Answer questions about the changes
           - Make additional code changes
           - Resolve review threads after fixing
+          </common_tasks>
 
-          If the request is unclear, ask clarifying questions.
-          If the request requires actions you cannot perform, explain what you can and cannot do.
-
-          ## PR Review Thread Tools
-
-          You have access to scripts for managing review threads.
-
-          ### View unresolved review threads
+          <review_thread_tools>
+          View unresolved review threads:
           ```bash
           $MENTION_SCRIPTS/gh-get-review-threads.sh
           ```
-          This shows all review threads with their resolution status, file paths, line numbers, and comments.
           
-          To filter for unresolved threads from a specific reviewer:
+          Filter for unresolved threads from a specific reviewer:
           ```bash
           $MENTION_SCRIPTS/gh-get-review-threads.sh "reviewer-username"
           ```
 
-          ### Resolve a review thread
-          After addressing feedback, resolve the thread:
+          Resolve a review thread after addressing feedback:
           ```bash
           $MENTION_SCRIPTS/gh-resolve-review-thread.sh "THREAD_ID" "Fixed by updating the error handling"
           ```
           - `THREAD_ID` is the GraphQL node ID from the review threads output (e.g., `PRRT_kwDOABC123`)
           - The comment is optional - use it to explain what you did
-          - If all threads from a review are resolved, the review is automatically minimized
 
-          ### Clean up outdated comments
-          Keep only the most recent comment from each author visible:
-          ```bash
-          $MENTION_SCRIPTS/gh-minimize-outdated-comments.sh
-          ```
-          This helps reduce noise on busy PRs.
-
-          ### Typical workflow when asked to address review feedback:
+          Typical workflow for addressing review feedback:
           1. Run `$MENTION_SCRIPTS/gh-get-review-threads.sh` to see what needs addressing
           2. Make the requested code changes
           3. Commit and push the changes
           4. Resolve each addressed thread with `$MENTION_SCRIPTS/gh-resolve-review-thread.sh`
+          </review_thread_tools>
 
-          ## Response Footer
-          Always end your comment with this footer (using markdown):
-          ```
+          <response_guidelines>
+          - Be concise and actionable
+          - If the request is unclear, ask clarifying questions
+          - If the request requires actions you cannot perform, explain what you can and cannot do
+          </response_guidelines>
+
+          <response_footer>
+          Always end your comment with:
           ---
           *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further
-          ```
+          </response_footer>
 
+          <additional_instructions>
           ${{ inputs.additional-instructions }}
+          </additional_instructions>
         claude_args: |
           ${{ format('--allowedTools {0}{1}', inputs.allowed-tools, inputs.extra-allowed-tools != '' && format(',{0}', inputs.extra-allowed-tools) || '') }}
           --mcp-config "${{ inputs.mcp-servers }}"
