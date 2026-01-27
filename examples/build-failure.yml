@@ -1,5 +1,9 @@
 # Example workflow for build failure analysis
 # Copy this to your repo's .github/workflows/ directory
+#
+# Choose the appropriate workflow based on your CI system:
+# - build-failure-github-actions: For GitHub Actions workflows
+# - build-failure-buildkite: For Buildkite CI
 
 name: Build Failure Analysis
 
@@ -8,20 +12,41 @@ on:
     workflows: ["CI", "Build", "Test"]  # Names of workflows to monitor
     types: [completed]
 
+permissions:
+  contents: read
+  actions: read
+  issues: write
+  pull-requests: write
+
 jobs:
-  analyze-failure:
+  # For GitHub Actions CI failures
+  analyze-github-actions:
     if: github.event.workflow_run.conclusion == 'failure'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run Claude Build Failure Analysis
-        uses: your-org/ai-github-actions/workflows/build-failure@v1
+      - name: Run Claude Build Failure Analysis (GitHub Actions)
+        uses: your-org/ai-github-actions/workflows/build-failure-github-actions@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
-          # Optional: For Buildkite CI integration
-          # buildkite-api-token: ${{ secrets.BUILDKITE_API_TOKEN }}
+
+  # For Buildkite CI failures
+  analyze-buildkite:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Claude Build Failure Analysis (Buildkite)
+        uses: your-org/ai-github-actions/workflows/build-failure-buildkite@v1
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
+          buildkite-api-token: ${{ secrets.BUILDKITE_API_TOKEN }}
           # buildkite-org: "your-org"  # defaults to "elastic"
           # buildkite-pipeline: "your-pipeline"  # auto-discovered if not set
+          # buildkite-build-number: "123"  # auto-discovered from commit SHA if not set

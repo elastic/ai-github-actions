@@ -10,10 +10,12 @@ ai-github-actions/
 ├── base/
 │   └── action.yml           # Base action with full configurability
 └── workflows/
-    ├── issue-triage/        # Triage and label new issues
-    ├── build-failure/       # Analyze CI failures
-    ├── pr-review/           # Review pull requests
-    └── mention/             # Respond to @claude mentions
+    ├── issue-triage/              # Triage and label new issues
+    ├── build-failure-buildkite/  # Analyze Buildkite CI failures
+    ├── build-failure-github-actions/  # Analyze GitHub Actions failures
+    ├── pr-review/                 # Review pull requests
+    ├── mention-issue/            # Respond to @claude mentions on issues
+    └── mention-pr/               # Respond to @claude mentions on PRs
 ```
 
 ## Available Actions
@@ -22,9 +24,11 @@ ai-github-actions/
 |--------|------|-------------|
 | [Base](#base-action) | `base` | Core wrapper with full configurability |
 | [Issue Triage](#issue-triage) | `workflows/issue-triage` | Triage and label new issues |
-| [Build Failure](#build-failure) | `workflows/build-failure` | Analyze CI failures |
+| [Build Failure (Buildkite)](#build-failure-buildkite) | `workflows/build-failure-buildkite` | Analyze Buildkite CI failures |
+| [Build Failure (GitHub Actions)](#build-failure-github-actions) | `workflows/build-failure-github-actions` | Analyze GitHub Actions failures |
 | [PR Review](#pr-review) | `workflows/pr-review` | Review pull requests |
-| [Mention](#mention) | `workflows/mention` | Respond to @claude mentions |
+| [Mention (Issue)](#mention-issue) | `workflows/mention-issue` | Respond to @claude mentions on issues |
+| [Mention (PR)](#mention-pr) | `workflows/mention-pr` | Respond to @claude mentions on PRs |
 
 ## Available Tools
 
@@ -110,19 +114,19 @@ jobs:
 | `github-token` | GitHub token for Claude | Yes | - |
 | `model` | Model to use | No | `claude-sonnet-4-20250514` |
 | `allowed-tools` | Allowed tools | No | `""` |
+| `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
+| `track-progress` | Track progress with visual indicators | No | `true` |
 | `mcp-servers` | MCP server configuration JSON | No | See [MCP Servers](#mcp-servers) |
 
 ---
 
-## Build Failure
+## Build Failure (Buildkite)
 
-Analyze CI build failures and suggest fixes. Supports both GitHub Actions and Buildkite CI.
-
-### GitHub Actions Example
+Analyze Buildkite CI build failures and suggest fixes. Claude will automatically discover the pipeline and build number from the commit SHA.
 
 ```yaml
-name: Build Failure Analysis
+name: Build Failure Analysis (Buildkite)
 on:
   workflow_run:
     workflows: ["CI"]
@@ -140,36 +144,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: your-org/ai-github-actions/workflows/build-failure@v1
-        with:
-          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
-          github-token: ${{ github.token }}
-```
-
-### Buildkite Example
-
-For Buildkite CI, Claude will automatically discover the pipeline and build number from the commit SHA:
-
-```yaml
-name: Build Failure Analysis
-on:
-  workflow_run:
-    workflows: ["CI"]
-    types: [completed]
-
-permissions:
-  contents: read
-  actions: read
-  issues: write
-  pull-requests: write
-
-jobs:
-  analyze:
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: your-org/ai-github-actions/workflows/build-failure@v1
+      - uses: your-org/ai-github-actions/workflows/build-failure-buildkite@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
@@ -185,20 +160,65 @@ jobs:
 |-------|-------------|----------|---------|
 | `claude-oauth-token` | Claude OAuth token | Yes | - |
 | `github-token` | GitHub token for Claude | Yes | - |
-| `buildkite-api-token` | Buildkite API token (for Buildkite CI) | No | `""` |
+| `buildkite-api-token` | Buildkite API token | Yes | - |
 | `buildkite-org` | Buildkite organization slug | No | `"elastic"` |
 | `buildkite-pipeline` | Buildkite pipeline slug (auto-discovered if not provided) | No | `""` |
 | `buildkite-build-number` | Buildkite build number (auto-discovered if not provided) | No | `""` |
 | `model` | Model to use | No | `claude-sonnet-4-20250514` |
 | `allowed-tools` | Allowed tools | No | `""` |
+| `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
 | `track-progress` | Track progress with visual indicators | No | `true` |
-| `mcp-servers` | MCP server configuration JSON | No | See [MCP Servers](#mcp-servers) |
+| `mcp-servers` | Additional MCP server configuration JSON (merged with defaults) | No | `""` |
 
 **Buildkite Auto-Discovery:**
 - **Pipeline**: Automatically discovered by matching the repository name against available pipelines in the organization
 - **Build Number**: Automatically discovered by searching for builds matching the commit SHA
 - **Organization**: Defaults to `"elastic"` but can be overridden
+
+---
+
+## Build Failure (GitHub Actions)
+
+Analyze GitHub Actions workflow failures and suggest fixes.
+
+```yaml
+name: Build Failure Analysis (GitHub Actions)
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  analyze:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: your-org/ai-github-actions/workflows/build-failure-github-actions@v1
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
+```
+
+### Inputs
+
+| Input | Description | Required | Default |
+|-------|-------------|----------|---------|
+| `claude-oauth-token` | Claude OAuth token | Yes | - |
+| `github-token` | GitHub token for Claude | Yes | - |
+| `model` | Model to use | No | `claude-sonnet-4-20250514` |
+| `allowed-tools` | Allowed tools | No | `""` |
+| `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
+| `additional-instructions` | Extra instructions for the prompt | No | `""` |
+| `track-progress` | Track progress with visual indicators | No | `true` |
+| `mcp-servers` | MCP server configuration JSON | No | See [MCP Servers](#mcp-servers) |
 
 ---
 
@@ -235,17 +255,19 @@ jobs:
 | `github-token` | GitHub token for Claude | Yes | - |
 | `model` | Model to use | No | `claude-sonnet-4-20250514` |
 | `allowed-tools` | Allowed tools | No | `""` |
+| `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
+| `track-progress` | Track progress with visual indicators | No | `true` |
 | `mcp-servers` | MCP server configuration JSON | No | See [MCP Servers](#mcp-servers) |
 
 ---
 
-## Mention
+## Mention (Issue)
 
-Respond when Claude is mentioned in comments.
+Respond when Claude is mentioned in issue comments.
 
 ```yaml
-name: Claude Mention
+name: Claude Mention (Issue)
 on:
   issue_comment:
     types: [created]
@@ -253,20 +275,17 @@ on:
 permissions:
   contents: write
   issues: write
-  pull-requests: write
 
 jobs:
   respond:
-    if: contains(github.event.comment.body, '@claude')
+    if: contains(github.event.comment.body, '@claude') && github.event.issue.pull_request == null
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: your-org/ai-github-actions/workflows/mention@v1
+      - uses: your-org/ai-github-actions/workflows/mention-issue@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
-          # Allow Claude to edit files and run tests
-          allowed-tools: "Edit,Write,Bash(npm test),Bash(npm run lint)"
 ```
 
 ### Inputs
@@ -276,9 +295,57 @@ jobs:
 | `claude-oauth-token` | Claude OAuth token | Yes | - |
 | `github-token` | GitHub token for Claude | Yes | - |
 | `model` | Model to use | No | `claude-sonnet-4-20250514` |
-| `allowed-tools` | Allowed tools (e.g., `Edit,Write,Bash(npm test)`) | No | `""` |
+| `allowed-tools` | Allowed tools | No | `""` |
+| `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
+| `track-progress` | Track progress with visual indicators | No | `true` |
 | `mcp-servers` | MCP server configuration JSON | No | See [MCP Servers](#mcp-servers) |
+
+---
+
+## Mention (PR)
+
+Respond when Claude is mentioned in PR comments. Includes tools for managing PR review threads.
+
+```yaml
+name: Claude Mention (PR)
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  respond:
+    if: contains(github.event.comment.body, '@claude') && github.event.issue.pull_request != null
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: your-org/ai-github-actions/workflows/mention-pr@v1
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
+```
+
+### Inputs
+
+| Input | Description | Required | Default |
+|-------|-------------|----------|---------|
+| `claude-oauth-token` | Claude OAuth token | Yes | - |
+| `github-token` | GitHub token for Claude | Yes | - |
+| `model` | Model to use | No | `claude-sonnet-4-20250514` |
+| `allowed-tools` | Allowed tools (includes PR review thread scripts) | No | `""` |
+| `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
+| `additional-instructions` | Extra instructions for the prompt | No | `""` |
+| `track-progress` | Track progress with visual indicators | No | `true` |
+| `mcp-servers` | MCP server configuration JSON | No | See [MCP Servers](#mcp-servers) |
+
+**Note:** The `mention-pr` workflow includes helper scripts for managing PR review threads:
+- `gh-get-review-threads.sh` - List review threads
+- `gh-resolve-review-thread.sh` - Resolve a review thread
+- `gh-minimize-outdated-comments.sh` - Minimize outdated comments
 
 ---
 
