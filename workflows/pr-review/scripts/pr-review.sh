@@ -5,7 +5,7 @@
 # Example: pr-review.sh REQUEST_CHANGES "Please fix the issues noted above"
 #
 # This script creates and submits a review with any queued inline comments.
-# Comments are read from PR_REVIEW_COMMENTS_FILE (created by pr-comment.sh).
+# Comments are read from individual files in PR_REVIEW_COMMENTS_DIR (created by pr-comment.sh).
 #
 # The review body can contain special characters (backticks, dollar signs, etc.)
 # and will be safely passed to the GitHub API without shell interpretation.
@@ -14,7 +14,7 @@
 #   PR_REVIEW_REPO          - Repository (owner/repo)
 #   PR_REVIEW_PR_NUMBER     - Pull request number
 #   PR_REVIEW_HEAD_SHA      - HEAD commit SHA
-#   PR_REVIEW_COMMENTS_FILE - File containing queued comments (default: /tmp/pr-review-comments.json)
+#   PR_REVIEW_COMMENTS_DIR  - Directory containing queued comment files (default: /tmp/pr-review-comments)
 
 set -e
 
@@ -22,7 +22,7 @@ set -e
 REPO="${PR_REVIEW_REPO:?PR_REVIEW_REPO environment variable is required}"
 PR_NUMBER="${PR_REVIEW_PR_NUMBER:?PR_REVIEW_PR_NUMBER environment variable is required}"
 HEAD_SHA="${PR_REVIEW_HEAD_SHA:?PR_REVIEW_HEAD_SHA environment variable is required}"
-COMMENTS_FILE="${PR_REVIEW_COMMENTS_FILE:-/tmp/pr-review-comments.json}"
+COMMENTS_DIR="${PR_REVIEW_COMMENTS_DIR:-/tmp/pr-review-comments}"
 
 # Arguments
 EVENT="$1"
@@ -49,16 +49,23 @@ case "$EVENT" in
     ;;
 esac
 
-# Read queued comments if any exist
+# Read queued comments from individual files
 COMMENTS="[]"
-if [ -f "${COMMENTS_FILE}" ]; then
-  COMMENTS=$(cat "${COMMENTS_FILE}")
-  COMMENT_COUNT=$(echo "$COMMENTS" | jq 'length')
-  if [ "$COMMENT_COUNT" -gt 0 ]; then
-    echo "Found ${COMMENT_COUNT} queued inline comment(s)"
+COMMENT_COUNT=0
+
+if [ -d "${COMMENTS_DIR}" ]; then
+  # Collect all comment files and merge into a single JSON array
+  # Remove _meta fields before submitting (they're only for internal use)
+  COMMENT_FILES=("${COMMENTS_DIR}"/comment-*.json)
+  
+  if [ -f "${COMMENT_FILES[0]}" ]; then
+    # Use jq to read all comment files, extract the comment data (without _meta), and combine
+    COMMENTS=$(jq -s '[.[] | del(._meta)]' "${COMMENTS_DIR}"/comment-*.json)
+    COMMENT_COUNT=$(echo "$COMMENTS" | jq 'length')
+    if [ "$COMMENT_COUNT" -gt 0 ]; then
+      echo "Found ${COMMENT_COUNT} queued inline comment(s)"
+    fi
   fi
-else
-  COMMENT_COUNT=0
 fi
 
 # Append standard footer to the review body (if body is provided)
@@ -113,9 +120,11 @@ RESPONSE=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/reviews" \
   exit 1
 }
 
-# Clean up the comments file
-if [ -f "${COMMENTS_FILE}" ]; then
-  rm -f "${COMMENTS_FILE}"
+# Clean up the comments directory after successful submission
+if [ -d "${COMMENTS_DIR}" ] && [ "$COMMENT_COUNT" -gt 0 ]; then
+  rm -f "${COMMENTS_DIR}"/comment-*.json
+  # Remove directory if empty
+  rmdir "${COMMENTS_DIR}" 2>/dev/null || true
 fi
 
 REVIEW_URL=$(echo "$RESPONSE" | jq -r '.html_url // empty')

@@ -1,21 +1,26 @@
-# Example workflow for automatic issue triage
+# Example workflow for automatic issue triage (read-only)
 # Copy this to your repo's .github/workflows/ directory
 
-name: Issue Triage
+name: Issue Triage (Read-Only)
 
 on:
   issues:
     types: [opened]
+
+permissions:
+  contents: read
+  issues: write
 
 jobs:
   triage:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      # Place environment setup commands here (e.g., install dependencies, configure tools)
 
-      - name: Run Claude Issue Triage
-        uses: your-org/ai-github-actions/workflows/issue-triage@v1
+      - name: Run Claude Issue Triage (Read-Only)
+        uses: your-org/ai-github-actions/workflows/issue-triage/ro@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}

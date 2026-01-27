@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-yaml:
+    name: Lint YAML files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+      
+      - name: Install dependencies
+        run: uv sync
+      
+      - name: Lint YAML files
+        run: make lint-yaml
+
+  lint-workflows:
+    name: Validate GitHub Actions workflows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up actionlint
+        run: make setup-actionlint
+      
+      - name: Validate workflows
+        run: make lint-workflows
+
+  lint-actions:
+    name: Validate GitHub Actions composite actions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up action-validator
+        run: make setup-action-validator
+      
+      - name: Validate composite actions
+        run: make lint-actions

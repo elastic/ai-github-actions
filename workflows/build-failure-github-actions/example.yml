@@ -1,4 +1,4 @@
-# Example workflow for Buildkite build failure analysis
+# Example workflow for GitHub Actions build failure analysis
 # Copy this to your repo's .github/workflows/ directory
 
 name: Build Failure Analysis
@@ -20,13 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run Claude Build Failure Analysis
-        uses: your-org/ai-github-actions/workflows/build-failure-buildkite@v1
+        uses: your-org/ai-github-actions/workflows/build-failure-github-actions@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
-          buildkite-api-token: ${{ secrets.BUILDKITE_API_TOKEN }}
-          # buildkite-org: "your-org"  # defaults to "elastic"
-          # buildkite-pipeline: "your-pipeline"  # auto-discovered if not set

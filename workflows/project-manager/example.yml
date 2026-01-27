@@ -10,7 +10,7 @@ name: PM Claude
 on:
   schedule:
     - cron: '0 9 * * *'  # Daily at 9 AM UTC
-  workflow_dispatch: null
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -27,9 +27,10 @@ jobs:
       last_pm_issue: ${{ steps.check.outputs.last_pm_issue }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Check for recent activity
         id: check
@@ -37,10 +38,15 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
+          set -e
           LAST_PM_ISSUE=$(gh issue list --label "project-manager" --state open --limit 1 --json number --jq '.[0].number // ""')
           echo "last_pm_issue=$LAST_PM_ISSUE" >> $GITHUB_OUTPUT
           if [ -n "$LAST_PM_ISSUE" ]; then
             ISSUE_CREATED=$(gh issue view "$LAST_PM_ISSUE" --json createdAt --jq '.createdAt')
+            if [ -z "$ISSUE_CREATED" ]; then
+              echo "has_activity=true" >> $GITHUB_OUTPUT
+              exit 0
+            fi
             COMMIT_COUNT=$(git log --since="$ISSUE_CREATED" --oneline | wc -l)
             NEW_ISSUES=$(gh issue list --search "created:>=$ISSUE_CREATED -label:project-manager" --json number --jq 'length')
             NEW_PRS=$(gh pr list --search "created:>=$ISSUE_CREATED" --json number --jq 'length')
@@ -82,15 +88,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run Claude Project Manager Review
         uses: your-org/ai-github-actions/workflows/project-manager@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ github.token }}
           # Optional: customize the model
           # model: claude-sonnet-4-5
           # Optional: add custom instructions

@@ -1,0 +1,32 @@
+# Example workflow for automatic issue triage (read-write-execute)
+# Copy this to your repo's .github/workflows/ directory
+#
+# This version allows Claude to write files and execute all Bash commands by default.
+
+name: Issue Triage (Read-Write-Execute)
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      # Place environment setup commands here (e.g., install dependencies, configure tools)
+
+      - name: Run Claude Issue Triage (Read-Write-Execute)
+        uses: your-org/ai-github-actions/workflows/issue-triage/rwx@v1
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
+          # Optional: add custom instructions
+          # additional-instructions: "Focus on security-related issues first"
+          # Note: All Bash commands (Bash(*)) are allowed by default
+          # Use extra-allowed-tools to add additional tools if needed

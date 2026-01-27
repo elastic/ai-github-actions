@@ -1,18 +1,18 @@
 #
-# Composite Action for PR review with Claude
+# Composite Action for PR review with Claude (Read-Only)
 #
 # Usage:
-#   - uses: your-org/ai-github-actions/workflows/pr-review@v1
+#   - uses: your-org/ai-github-actions/workflows/pr-review/ro@v1
 #     with:
 #       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
 #       github-token: ${{ github.token }}
 #
-name: "Claude PR Review"
-description: "Review pull requests using Claude"
+name: "Claude PR Review (Read-Only)"
+description: "Review pull requests using Claude (read-only, comments only)"
 
 branding:
   icon: "git-pull-request"
-  color: "purple"
+  color: "blue"
 
 inputs:
   claude-oauth-token:
@@ -31,8 +31,8 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    # Note: Using ${{ github.action_path }} for the PR review scripts
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash,mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code,Bash(${{ github.action_path }}/scripts/pr-comment.sh:*),Bash(${{ github.action_path }}/scripts/pr-review.sh:*),Bash(${{ github.action_path }}/scripts/pr-diff.sh:*)"
+    # Note: Using ${{ github.action_path }}/../scripts for the shared PR review scripts
+    default: "Glob,Grep,LS,Read,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git tag:*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code,Bash(${{ github.action_path }}/../scripts/pr-comment.sh:*),Bash(${{ github.action_path }}/../scripts/pr-remove-comment.sh:*),Bash(${{ github.action_path }}/../scripts/pr-review.sh:*),Bash(${{ github.action_path }}/../scripts/pr-diff.sh:*)"
 
   extra-allowed-tools:
     description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
@@ -62,15 +62,15 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Run Claude for PR Review
+    - name: Run Claude for PR Review (Read-Only)
       id: claude
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         PR_REVIEW_REPO: ${{ github.repository }}
         PR_REVIEW_PR_NUMBER: ${{ github.event.pull_request.number }}
         PR_REVIEW_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        PR_REVIEW_COMMENTS_FILE: /tmp/pr-review-comments.json
-        PR_SCRIPTS: ${{ github.action_path }}/scripts
+        PR_REVIEW_COMMENTS_DIR: /tmp/pr-review-comments
+        PR_SCRIPTS: ${{ github.action_path }}/../scripts
       uses: anthropics/claude-code-action@v1
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
@@ -83,6 +83,8 @@ runs:
           PR Title: ${{ github.event.pull_request.title }}
           PR Author: ${{ github.event.pull_request.user.login }}
           Branch: ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
+          
+          **Note**: The PR head branch has already been checked out. The workspace is ready for review - you can immediately start reviewing files and diffs.
           </context>
 
           <pr_description>
@@ -90,9 +92,29 @@ runs:
           </pr_description>
 
           <task>
-          Review this pull request. Focus on identifying concrete issues that require action.
+          Review this pull request and provide feedback via GitHub PR review comments.
+          Focus on identifying concrete issues that require action.
           Be concise, specific, and actionable. Avoid verbose explanations or praise.
           </task>
+
+          <constraints>
+          This workflow is for review and comments ONLY - feedback is provided via GitHub PR review comments.
+          
+          You CANNOT: Modify files, write code, run tests, execute commands, create branches, checkout branches, commit code, push changes to the repository
+          You CAN: Read/analyze code, review diffs, provide feedback via inline PR review comments
+          
+          **Important**: Your feedback is provided via GitHub PR review comments, not by making code changes.
+          You cannot push changes to the repository - you can only provide feedback and recommendations.
+          </constraints>
+
+          <allowed_tools>
+          You have access to the following tools (comma-separated list):
+          
+          ${{ inputs.allowed-tools }}
+          ${{ inputs.extra-allowed-tools }}
+          
+          You can only use tools that are explicitly listed above. For Bash commands, the pattern `Bash(command:*)` means you can run that command with any arguments. If a command is not listed, it is not available.
+          </allowed_tools>
 
           <getting_started>
           1. Use `mcp__agents-md-generator__generate_agents_md` to get repository context
@@ -151,7 +173,7 @@ runs:
              - Determine severity using severity_classification
              - Verify it's not filtered by filtering_rules
              - Use the `[LINE]` number from the diff output for pr-comment.sh
-             - Use `-f` flag for comments with code suggestions or special characters
+             - Use heredoc for complex comments (see `<tools>` section)
           5. Submit review with `$PR_SCRIPTS/pr-review.sh`
           </review_process>
 
@@ -162,19 +184,14 @@ runs:
 
           Why: One sentence explaining the risk or impact.
 
-          Suggested fix: (if applicable)
-          ```suggestion
-          corrected code here
-          ```
+          Recommended approach: Describe what should be changed (but do not provide code suggestions).
 
           Example:
           **🔴 CRITICAL** SQL injection vulnerability in user input
 
           Why: User-provided `id` is concatenated directly into SQL query without sanitization.
 
-          ```suggestion
-          cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
-          ```
+          Recommended approach: Use parameterized queries or prepared statements to safely handle user input.
           </comment_format>
 
           <review_decision>
@@ -198,22 +215,26 @@ runs:
           $PR_SCRIPTS/pr-diff.sh path/to/file.go
           ```
 
-          Add inline comment (use line number from new file):
+          Add inline comment (simple):
           ```bash
-          $PR_SCRIPTS/pr-comment.sh <file> <line> "<comment>"
+          $PR_SCRIPTS/pr-comment.sh <file> <line> "simple comment here"
           ```
 
-          For complex comments (code suggestions, special characters, multi-line):
+          Add inline comment (complex - use heredoc to avoid escaping):
           ```bash
-          # Write comment to file first, then reference it
-          cat > /tmp/comment.md << 'EOF'
+          $PR_SCRIPTS/pr-comment.sh <file> <line> <<'EOF'
           **🟠 HIGH** Description here
 
-          ```suggestion
-          corrected code here
-          ```
+          Why: Explanation of the issue.
+
+          Recommended approach: Describe what should be changed.
           EOF
-          $PR_SCRIPTS/pr-comment.sh <file> <line> -f /tmp/comment.md
+          ```
+          Note: Using `<<'EOF'` (with quotes) prevents shell interpretation - no escaping needed.
+
+          Remove a queued comment (if you made a mistake):
+          ```bash
+          $PR_SCRIPTS/pr-remove-comment.sh <file> <line>
           ```
 
           Submit review:
@@ -227,8 +248,8 @@ runs:
           <tracking_comment>
           After submitting the review, your progress tracking comment will be updated automatically.
           Keep the final message brief - do NOT repeat the review findings or inline comments.
-          Simply indicate the review was submitted, note any issues that you encountered running, testing,
-          or reviewing the PR, any issues using tools, and include the standard footer:
+          Simply indicate the review was submitted, note any issues that you encountered reviewing the PR,
+          any issues using tools, and include the standard footer:
 
           ---
           *Review by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)"

@@ -31,7 +31,7 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash,mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code"
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code"
 
   extra-allowed-tools:
     description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
@@ -82,8 +82,28 @@ runs:
           </context>
 
           <task>
-          A GitHub Actions workflow has failed. Analyze the failure, identify the root cause, and provide actionable fix recommendations.
+          A GitHub Actions workflow has failed. Analyze the failure, identify the root cause, and provide actionable fix recommendations via a GitHub comment.
+          You can suggest code fixes. Check the `<allowed_tools>` section to see if you can run tests to verify your recommendations.
           </task>
+
+          <constraints>
+          This workflow allows code suggestions, but feedback is provided via GitHub comments.
+          
+          You CAN: Read/analyze code, suggest code fixes, write/modify files locally to verify your recommendations work, run tests if Bash commands are available (check `<allowed_tools>` section)
+          You CANNOT: Create branches, commit code, push changes
+          
+          **Important**: You can make local code changes to verify your recommendations work, but you cannot commit or push those changes.
+          Your analysis and recommendations are provided via a GitHub comment. Local changes are for verification/testing only.
+          </constraints>
+
+          <allowed_tools>
+          You have access to the following tools (comma-separated list):
+          
+          ${{ inputs.allowed-tools }}
+          ${{ inputs.extra-allowed-tools }}
+          
+          You can only use tools that are explicitly listed above. For Bash commands, the pattern `Bash(command:*)` means you can run that command with any arguments. If a command is not listed, it is not available.
+          </allowed_tools>
 
           <getting_started>
           Use `mcp__agents-md-generator__generate_agents_md` to get repository context before investigating.

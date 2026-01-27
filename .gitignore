@@ -1,0 +1,24 @@
+# Local tools
+bin/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

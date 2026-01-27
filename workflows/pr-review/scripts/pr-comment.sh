@@ -4,30 +4,35 @@
 # Usage:
 #   pr-comment.sh <file> <line-number> <comment-body>
 #   pr-comment.sh <file> <line-number> -f <body-file>
+#   pr-comment.sh <file> <line-number> <<'EOF'
+#   ... comment body ...
+#   EOF
 #
 # Examples:
 #   pr-comment.sh src/main.go 42 "This variable is unused"
 #   pr-comment.sh src/main.go 42 -f /tmp/comment.md
+#   pr-comment.sh src/main.go 42 <<'EOF'
+#   **🔴 CRITICAL** SQL injection vulnerability
+#   EOF
 #
-# The -f option reads the comment body from a file, which is useful for:
-#   - Multi-line comments
-#   - Comments with special characters (quotes, backticks, etc.)
-#   - Code suggestions with complex formatting
+# For complex comments (multi-line, special characters, code blocks):
+#   - Use heredoc (<<'EOF') - quotes around EOF prevent shell interpretation
+#   - Or use -f flag to read from a file
 #
 # This script validates the comment location and caches it for later submission.
-# Comments are stored in PR_REVIEW_COMMENTS_FILE and submitted when pr-review.sh runs.
+# Comments are stored as individual files in PR_REVIEW_COMMENTS_DIR and submitted when pr-review.sh runs.
 #
 # Environment variables (set by the composite action):
 #   PR_REVIEW_REPO          - Repository (owner/repo)
 #   PR_REVIEW_PR_NUMBER     - Pull request number
-#   PR_REVIEW_COMMENTS_FILE - File to cache comments (default: /tmp/pr-review-comments.json)
+#   PR_REVIEW_COMMENTS_DIR  - Directory to cache comments (default: /tmp/pr-review-comments)
 
 set -e
 
 # Configuration from environment
 REPO="${PR_REVIEW_REPO:?PR_REVIEW_REPO environment variable is required}"
 PR_NUMBER="${PR_REVIEW_PR_NUMBER:?PR_REVIEW_PR_NUMBER environment variable is required}"
-COMMENTS_FILE="${PR_REVIEW_COMMENTS_FILE:-/tmp/pr-review-comments.json}"
+COMMENTS_DIR="${PR_REVIEW_COMMENTS_DIR:-/tmp/pr-review-comments}"
 
 # Parse arguments
 FILE="$1"
@@ -51,25 +56,37 @@ else
   BODY="$*"
 fi
 
+# If no body provided via argument, try reading from stdin (for heredoc usage)
+if [ -z "$BODY" ] && [ ! -t 0 ]; then
+  BODY=$(cat)
+fi
+
 if [ -z "$FILE" ] || [ -z "$LINE" ] || [ -z "$BODY" ]; then
   echo "Usage:"
   echo "  pr-comment.sh <file> <line-number> <comment-body>"
   echo "  pr-comment.sh <file> <line-number> -f <body-file>"
+  echo "  pr-comment.sh <file> <line-number> <<'EOF'"
+  echo "  ... comment body (no escaping needed) ..."
+  echo "  EOF"
   echo ""
   echo "Examples:"
   echo "  pr-comment.sh src/main.go 42 'This variable is unused'"
   echo "  pr-comment.sh src/main.go 42 -f /tmp/comment.md"
+  echo "  pr-comment.sh src/main.go 42 <<'EOF'"
+  echo "  **🔴 CRITICAL** Issue description"
+  echo "  EOF"
   exit 1
 fi
 
-# Validate line is a number
-if ! [[ "$LINE" =~ ^[0-9]+$ ]]; then
-  echo "Error: Line number must be a positive integer, got: $LINE"
+# Validate line is a positive integer (>= 1)
+if ! [[ "$LINE" =~ ^[1-9][0-9]*$ ]]; then
+  echo "Error: Line number must be a positive integer (>= 1), got: $LINE"
   exit 1
 fi
 
 # Get the diff for this file to validate the comment location
-DIFF_DATA=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate --jq ".[] | select(.filename==\"${FILE}\")")
+# Use jq --arg to safely pass the filename (prevents injection)
+DIFF_DATA=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate | jq --arg f "$FILE" '.[] | select(.filename==$f)')
 
 if [ -z "$DIFF_DATA" ]; then
   echo "Error: File '${FILE}' not found in PR diff"
@@ -122,10 +139,8 @@ if [ "$LINE_IN_DIFF" != "1" ]; then
   exit 1
 fi
 
-# Initialize comments file if it doesn't exist
-if [ ! -f "${COMMENTS_FILE}" ]; then
-  echo "[]" > "${COMMENTS_FILE}"
-fi
+# Create comments directory if it doesn't exist
+mkdir -p "${COMMENTS_DIR}"
 
 # Append standard footer to the comment
 FOOTER='
@@ -134,19 +149,32 @@ FOOTER='
 
 BODY_WITH_FOOTER="${BODY}${FOOTER}"
 
+# Generate unique comment ID (using timestamp + random for uniqueness)
+COMMENT_ID="comment-$(date +%s)-$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')"
+COMMENT_FILE="${COMMENTS_DIR}/${COMMENT_ID}.json"
+
 # Create the comment JSON object
 # Use jq to safely handle special characters in the body
-COMMENT_JSON=$(jq -n \
+# Include metadata for easy removal later
+jq -n \
   --arg path "$FILE" \
   --argjson line "$LINE" \
   --arg side "RIGHT" \
   --arg body "$BODY_WITH_FOOTER" \
-  '{path: $path, line: $line, side: $side, body: $body}')
-
-# Append the comment to the comments file
-# Read existing comments, add new one, write back
-jq --argjson new_comment "$COMMENT_JSON" '. += [$new_comment]' "${COMMENTS_FILE}" > "${COMMENTS_FILE}.tmp" \
-  && mv "${COMMENTS_FILE}.tmp" "${COMMENTS_FILE}"
+  --arg id "$COMMENT_ID" \
+  '{
+    path: $path,
+    line: $line,
+    side: $side,
+    body: $body,
+    _meta: {
+      id: $id,
+      file: $path,
+      line: $line
+    }
+  }' > "${COMMENT_FILE}"
 
 echo "✓ Queued review comment for ${FILE}:${LINE}"
+echo "  Comment ID: ${COMMENT_ID}"
 echo "  Comment will be submitted with pr-review.sh"
+echo "  Remove with: pr-remove-comment.sh ${FILE} ${LINE}"

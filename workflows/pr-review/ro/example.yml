@@ -1,7 +1,9 @@
-# Example workflow for automatic PR review
+# Example workflow for automatic PR review (read-only)
 # Copy this to your repo's .github/workflows/ directory
+#
+# This version provides review comments only, no code suggestions.
 
-name: PR Review
+name: PR Review (Read-Only)
 
 on:
   pull_request:
@@ -16,13 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout PR head branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
+      # Place environment setup commands here (e.g., install dependencies, configure tools)
 
-      - name: Run Claude PR Review
-        uses: your-org/ai-github-actions/workflows/pr-review@v1
+      - name: Run Claude PR Review (Read-Only)
+        uses: your-org/ai-github-actions/workflows/pr-review/ro@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}

@@ -19,18 +19,16 @@ set -euo pipefail
 #   1. If COMMENT is provided, posts it as a reply to the thread
 #   2. Resolves the thread
 
-# Parse OWNER and REPO from MENTION_REPO
-REPO_FULL="${MENTION_REPO:?MENTION_REPO environment variable is required}"
-OWNER="${REPO_FULL%/*}"
-REPO="${REPO_FULL#*/}"
-PR_NUMBER="${MENTION_PR_NUMBER:?MENTION_PR_NUMBER environment variable is required}"
+# Validate required environment variables
+: "${MENTION_REPO:?MENTION_REPO environment variable is required}"
+: "${MENTION_PR_NUMBER:?MENTION_PR_NUMBER environment variable is required}"
 THREAD_ID="${1:?Thread ID required}"
 COMMENT="${2:-}"
 
 # Step 1: Post comment if provided
 if [ -n "$COMMENT" ]; then
   echo "Posting comment to thread..." >&2
-  gh api graphql -f query='
+  COMMENT_RESULT=$(gh api graphql -f query='
     mutation($threadId: ID!, $body: String!) {
       addPullRequestReviewThreadReply(input: {
         pullRequestReviewThreadId: $threadId,
@@ -40,7 +38,11 @@ if [ -n "$COMMENT" ]; then
           id
         }
       }
-    }' -f threadId="$THREAD_ID" -f body="$COMMENT" --silent
+    }' -f threadId="$THREAD_ID" -f body="$COMMENT")
+  if echo "$COMMENT_RESULT" | jq -e '.errors' > /dev/null 2>&1; then
+    echo "Error posting comment: $COMMENT_RESULT" >&2
+    exit 1
+  fi
 fi
 
 # Step 2: Resolve the thread

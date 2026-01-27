@@ -35,7 +35,7 @@ gh api graphql -f query='
             isOutdated
             path
             line
-            comments(first: 10) {
+            comments(first: 50) {
               nodes {
                 id
                 body

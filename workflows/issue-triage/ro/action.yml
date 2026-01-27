@@ -1,14 +1,14 @@
 #
-# Composite Action for triaging new issues with Claude
+# Composite Action for triaging new issues with Claude (Read-Only)
 #
 # Usage:
-#   - uses: your-org/ai-github-actions/workflows/issue-triage@v1
+#   - uses: your-org/ai-github-actions/workflows/issue-triage/ro@v1
 #     with:
 #       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
 #       github-token: ${{ github.token }}
 #
-name: "Claude Issue Triage"
-description: "Automatically triage and label new issues using Claude"
+name: "Claude Issue Triage (Read-Only)"
+description: "Automatically triage and label new issues using Claude (read-only investigation)"
 
 branding:
   icon: "tag"
@@ -31,7 +31,7 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    default: "Glob,Grep,LS,Read,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git branch:*),Bash(git tag:*),mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code"
+    default: "Glob,Grep,LS,Read,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git tag:*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code"
 
   extra-allowed-tools:
     description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
@@ -89,9 +89,18 @@ runs:
           <constraints>
           This workflow is for investigation and planning ONLY.
           
-          You CANNOT: Create branches, push changes, commit code, modify files
+          You CANNOT: Create branches, checkout branches, push changes, commit code, modify files, execute commands, run tests
           You CAN: Read/analyze code, search repository, review git history, search for similar issues, provide analysis and recommendations
           </constraints>
+
+          <allowed_tools>
+          You have access to the following tools (comma-separated list):
+          
+          ${{ inputs.allowed-tools }}
+          ${{ inputs.extra-allowed-tools }}
+          
+          You can only use tools that are explicitly listed above. For Bash commands, the pattern `Bash(command:*)` means you can run that command with any arguments. If a command is not listed, it is not available.
+          </allowed_tools>
 
           <getting_started>
           Use `mcp__agents-md-generator__generate_agents_md` to get repository context before triaging.
@@ -101,7 +110,9 @@ runs:
           - `mcp__public-code-search__search_code`: Search code in OTHER repositories (use `Grep`/`Read` for this repo)
           - `WebSearch`: Search the web for documentation, best practices, or solutions
           - `WebFetch`: Fetch and read content from URLs
-          - Read-only git commands: `git status`, `git diff`, `git log`, `git show`, `git branch`
+          - Read-only git commands: `git status`, `git diff`, `git log`, `git show`, `git tag`
+          
+          Note: This is a read-only workflow. You cannot execute commands or modify files.
           </investigation_tools>
 
           <response_goals>
@@ -115,7 +126,7 @@ runs:
 
           <response_sections>
           Populate the following sections in your response:
-            Recommendation (or “No recommendation” with reason)
+            Recommendation (or "No recommendation" with reason)
             Findings
             Detailed Action Plan
             Related Items

@@ -32,7 +32,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run AI Agent Feedback Summary
         uses: your-org/ai-github-actions/workflows/feedback-summary@v1

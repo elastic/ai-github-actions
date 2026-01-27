@@ -11,7 +11,7 @@
 #
 name: "Claude Code Action"
 description: "Run Claude Code with MCP servers"
-author: "Your Organization"
+author: "Elastic"
 
 branding:
   icon: "cpu"
@@ -58,7 +58,7 @@ inputs:
   mcp-servers:
     description: "MCP server configuration JSON"
     required: false
-    default: '{"mcpServers":{"agents-md-generator":{"type":"http","url":"https://agents-md-generator.fastmcp.app/mcp"},"public-code-search":{"type":"http","url":"https://public-code-search.fastmcp.app/mcp"}}}'
+    default: ''
 
 outputs:
   conclusion:
@@ -79,6 +79,6 @@ runs:
         allowed_bots: ${{ inputs.allowed-bots }}
         claude_args: |
           ${{ inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || '' }}
-          --mcp-config '${{ inputs.mcp-servers }}'
+          ${{ inputs.mcp-servers != '' && format('--mcp-config "{0}"', inputs.mcp-servers) || '' }}
           --model ${{ inputs.model }}
           ${{ inputs.claude-args }}

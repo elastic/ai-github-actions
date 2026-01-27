@@ -1,0 +1,28 @@
+# Example workflow for @claude mentions on PRs
+# Copy this to your repo's .github/workflows/ directory
+
+name: Claude Mention (PR)
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  respond:
+    if: contains(github.event.comment.body, '@claude') && github.event.issue.pull_request != null
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.issue.pull_request.head.sha }}
+          fetch-depth: 0
+      # Place environment setup commands here (e.g., install dependencies, configure tools)
+      - uses: your-org/ai-github-actions/workflows/mention-in-pr@v1
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
