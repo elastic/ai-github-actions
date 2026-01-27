@@ -1,0 +1,151 @@
+#
+# Composite Action for running Project Manager reviews with Claude
+#
+# Usage:
+#   - uses: your-org/ai-github-actions/workflows/project-manager@v1
+#     with:
+#       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+#       github-token: ${{ github.token }}
+#
+name: "Claude Project Manager"
+description: "Run Project Manager review using Claude to analyze project state and create reports"
+
+branding:
+  icon: "clipboard"
+  color: "purple"
+
+inputs:
+  claude-oauth-token:
+    description: "Claude OAuth token for authentication"
+    required: true
+
+  github-token:
+    description: "GitHub token for Claude to operate with"
+    required: true
+
+  model:
+    description: "Model to use for Claude"
+    required: false
+    default: "claude-sonnet-4-20250514"
+
+  allowed-tools:
+    description: "Comma-separated list of allowed tools for Claude"
+    required: false
+    default: "Glob,Grep,LS,Read,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git branch:*),Bash(git tag:*),Bash(gh issue:*),Bash(gh pr:*),mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code"
+
+  extra-allowed-tools:
+    description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
+    required: false
+    default: ""
+
+  additional-instructions:
+    description: "Additional instructions to include in the prompt"
+    required: false
+    default: ""
+
+  track-progress:
+    description: "Whether Claude should track progress with visual indicators"
+    required: false
+    default: "true"
+
+  mcp-servers:
+    description: "MCP server configuration JSON"
+    required: false
+    default: '{"mcpServers":{"agents-md-generator":{"type":"http","url":"https://agents-md-generator.fastmcp.app/mcp"},"public-code-search":{"type":"http","url":"https://public-code-search.fastmcp.app/mcp"}}}'
+
+  repository-owner:
+    description: "Repository owner (defaults to github.repository_owner)"
+    required: false
+    default: ""
+
+  repository-name:
+    description: "Repository name (defaults to github.event.repository.name)"
+    required: false
+    default: ""
+
+outputs:
+  conclusion:
+    description: "The conclusion of the Claude Code run"
+    value: ${{ steps.claude.outputs.conclusion }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Claude for Project Manager Review
+      id: claude
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      uses: anthropics/claude-code-action@v1
+      with:
+        claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
+        github_token: ${{ inputs.github-token }}
+        track_progress: ${{ inputs.track-progress }}
+        prompt: |
+          <context>
+          Repository: ${{ inputs.repository-owner != '' && format('{0}/{1}', inputs.repository-owner, inputs.repository-name) || github.repository }}
+          </context>
+
+          <task>
+          You're a Project Manager for this repository. Review project state. DO NOT make code changes or PRs.
+          </task>
+
+          <constraints>
+          This workflow is for investigation and reporting ONLY.
+          
+          You CANNOT: Create branches, push changes, commit code, modify files
+          You CAN: Read/analyze code, search repository, review git history, analyze issues/PRs, create GitHub issues
+          </constraints>
+
+          <getting_started>
+          Use `mcp__agents-md-generator__generate_agents_md` to get repository context before analyzing.
+          </getting_started>
+
+          <investigation_tools>
+          - `Bash(gh issue:*)`: List and view GitHub issues
+          - `Bash(gh pr:*)`: List and view GitHub pull requests
+          - `Bash(git log:*)`: Review commit history
+          - `mcp__public-code-search__search_code`: Search code in OTHER repositories
+          - `WebSearch`: Search the web for documentation, best practices, or solutions
+          - `WebFetch`: Fetch and read content from URLs
+          - Read-only git commands: `git status`, `git diff`, `git log`, `git show`, `git branch`
+          </investigation_tools>
+
+          <analysis_goals>
+          Analyze open issues, PRs, and recent activity. Create a comprehensive report with the following sections:
+
+          ## 🎯 Easy Pickings
+          PRs ready to merge, issues to close, quick wins
+
+          ## 🚨 Urgent Items
+          Blockers needing immediate attention
+
+          ## 📋 Decisions Needed
+          Items requiring maintainer input
+
+          ## 🔄 Stale Items
+          Inactive issues/PRs needing status update
+
+          ## ✅ Recent Progress
+          Merged PRs, closed issues
+
+          ## 🔧 Alignment Recommendations
+          Patterns where Claude/CodeRabbit misunderstood conventions. Suggest doc updates if 2+ similar issues found.
+
+          ## 💡 Next Steps
+          Prioritized recommendations
+          </analysis_goals>
+
+          <output_instructions>
+          After completing your analysis, create a GitHub issue with the report using:
+          `gh issue create --repo "${{ inputs.repository-owner != '' && format('{0}/{1}', inputs.repository-owner, inputs.repository-name) || github.repository }}" --title "📊 PM Report - $(date +%Y-%m-%d)" --body "YOUR_REPORT_HERE" --label "project-manager"`
+
+          Format your report clearly with proper markdown sections. Be concise and actionable.
+          </output_instructions>
+
+          <additional_instructions>
+          ${{ inputs.additional-instructions }}
+          </additional_instructions>
+        claude_args: |
+          ${{ format('--allowedTools {0}{1}', inputs.allowed-tools, inputs.extra-allowed-tools != '' && format(',{0}', inputs.extra-allowed-tools) || '') }}
+          --mcp-config "${{ inputs.mcp-servers }}"
+          --model ${{ inputs.model }}

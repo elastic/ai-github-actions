@@ -1,0 +1,46 @@
+# AI Agent Feedback Summary
+#
+# Runs weekly (or on-demand) to collect reactions on AI agent comments
+# and create a summary issue with analysis.
+#
+# Setup:
+# 1. Add CLAUDE_OAUTH_TOKEN secret (optional - for AI analysis)
+# 2. Adjust the schedule as needed
+# 3. Customize bot-name if your bot has a different name pattern
+
+name: AI Agent Feedback Summary
+
+on:
+  # Run weekly on Monday morning
+  schedule:
+    - cron: "0 9 * * 1"
+  
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Number of days to look back"
+        required: false
+        default: "7"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  feedback-summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run AI Agent Feedback Summary
+        uses: your-org/ai-github-actions/workflows/feedback-summary@v1
+        with:
+          github-token: ${{ github.token }}
+          # Optional: Add Claude token for AI-powered analysis
+          # claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          days: ${{ github.event.inputs.days || '7' }}
+          # Regex pattern to match bot usernames (default includes common AI bots)
+          # bot-pattern: "claude|github-actions\\[bot\\]|copilot\\[bot\\]"
+          issue-labels: "ai-feedback,weekly-report"

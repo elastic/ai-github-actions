@@ -1,0 +1,97 @@
+# Example workflow for Project Manager reviews
+# Copy this to your repo's .github/workflows/ directory
+#
+# This workflow runs on a schedule (daily at 9 AM UTC) and can be manually triggered.
+# It checks for recent activity, closes previous PM issues if there's new activity,
+# and generates a new Project Manager report.
+
+name: PM Claude
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Daily at 9 AM UTC
+  workflow_dispatch: null
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+  id-token: write
+  actions: read
+
+jobs:
+  check-activity:
+    runs-on: ubuntu-latest
+    outputs:
+      has_activity: ${{ steps.check.outputs.has_activity }}
+      last_pm_issue: ${{ steps.check.outputs.last_pm_issue }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for recent activity
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          LAST_PM_ISSUE=$(gh issue list --label "project-manager" --state open --limit 1 --json number --jq '.[0].number // ""')
+          echo "last_pm_issue=$LAST_PM_ISSUE" >> $GITHUB_OUTPUT
+          if [ -n "$LAST_PM_ISSUE" ]; then
+            ISSUE_CREATED=$(gh issue view "$LAST_PM_ISSUE" --json createdAt --jq '.createdAt')
+            COMMIT_COUNT=$(git log --since="$ISSUE_CREATED" --oneline | wc -l)
+            NEW_ISSUES=$(gh issue list --search "created:>=$ISSUE_CREATED -label:project-manager" --json number --jq 'length')
+            NEW_PRS=$(gh pr list --search "created:>=$ISSUE_CREATED" --json number --jq 'length')
+            MERGED_PRS=$(gh pr list --search "merged:>=$ISSUE_CREATED" --state merged --json number --jq 'length')
+            TOTAL_ACTIVITY=$((COMMIT_COUNT + NEW_ISSUES + NEW_PRS + MERGED_PRS))
+            if [ $TOTAL_ACTIVITY -lt 3 ]; then
+              echo "has_activity=false" >> $GITHUB_OUTPUT
+            else
+              echo "has_activity=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "has_activity=true" >> $GITHUB_OUTPUT
+          fi
+
+  close-previous-pm-issue:
+    needs: check-activity
+    if: needs.check-activity.outputs.has_activity == 'true' && needs.check-activity.outputs.last_pm_issue != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close previous PM issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          LAST_ISSUE="${{ needs.check-activity.outputs.last_pm_issue }}"
+          gh issue comment "$LAST_ISSUE" --repo "$OWNER/$REPO" --body "Closing. New report generated."
+          gh issue close "$LAST_ISSUE" --repo "$OWNER/$REPO"
+
+  project-manager-review:
+    needs:
+      - check-activity
+      - close-previous-pm-issue
+    if: |
+      always() &&
+      needs.check-activity.outputs.has_activity == 'true' &&
+      (needs.close-previous-pm-issue.result == 'success' || needs.close-previous-pm-issue.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Project Manager Review
+        uses: your-org/ai-github-actions/workflows/project-manager@v1
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: customize the model
+          # model: claude-sonnet-4-5
+          # Optional: add custom instructions
+          # additional-instructions: "Focus on security-related issues first"

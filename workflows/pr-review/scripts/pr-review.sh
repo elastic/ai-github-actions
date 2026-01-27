@@ -61,12 +61,23 @@ else
   COMMENT_COUNT=0
 fi
 
+# Append standard footer to the review body (if body is provided)
+FOOTER='
+---
+*Review by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)'
+
+if [ -n "$BODY" ]; then
+  BODY_WITH_FOOTER="${BODY}${FOOTER}"
+else
+  BODY_WITH_FOOTER=""
+fi
+
 # Build the review request JSON
 # Use jq to safely construct the JSON with all special characters handled
 REVIEW_JSON=$(jq -n \
   --arg commit_id "$HEAD_SHA" \
   --arg event "$EVENT" \
-  --arg body "$BODY" \
+  --arg body "$BODY_WITH_FOOTER" \
   --argjson comments "$COMMENTS" \
   '{
     commit_id: $commit_id,
@@ -74,7 +85,19 @@ REVIEW_JSON=$(jq -n \
     comments: $comments
   } + (if $body != "" then {body: $body} else {} end)')
 
-echo "Submitting ${EVENT} review..."
+# Check if HEAD has changed since review started (race condition detection)
+CURRENT_HEAD=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq '.head.sha')
+if [ "$CURRENT_HEAD" != "$HEAD_SHA" ]; then
+  echo "⚠️  WARNING: PR head has changed since review started!"
+  echo "   Review started at: ${HEAD_SHA:0:7}"
+  echo "   Current head:      ${CURRENT_HEAD:0:7}"
+  echo ""
+  echo "   New commits may have shifted line numbers. Review will be submitted"
+  echo "   against the original commit (${HEAD_SHA:0:7}) but comments may be outdated."
+  echo ""
+fi
+
+echo "Submitting ${EVENT} review for commit ${HEAD_SHA:0:7}..."
 
 # Create and submit the review in one API call
 # Use a temp file to safely pass the JSON body

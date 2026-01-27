@@ -62,13 +62,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Fetch base branch for comparison
-      shell: bash
-      run: |
-        BASE_REF="${{ github.event.pull_request.base.ref }}"
-        echo "Fetching base branch: ${BASE_REF}"
-        git fetch origin "${BASE_REF}:${BASE_REF}" || echo "Warning: Could not fetch base branch ${BASE_REF}"
-    
     - name: Run Claude for PR Review
       id: claude
       env:
@@ -76,7 +69,6 @@ runs:
         PR_REVIEW_REPO: ${{ github.repository }}
         PR_REVIEW_PR_NUMBER: ${{ github.event.pull_request.number }}
         PR_REVIEW_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        PR_REVIEW_BASE_REF: ${{ github.event.pull_request.base.ref }}
         PR_REVIEW_COMMENTS_FILE: /tmp/pr-review-comments.json
         PR_SCRIPTS: ${{ github.action_path }}/scripts
       uses: anthropics/claude-code-action@v1
@@ -90,8 +82,7 @@ runs:
           PR Number: #${{ github.event.pull_request.number }}
           PR Title: ${{ github.event.pull_request.title }}
           PR Author: ${{ github.event.pull_request.user.login }}
-          Base Branch: ${{ github.event.pull_request.base.ref }}
-          Head Branch: ${{ github.event.pull_request.head.ref }}
+          Branch: ${{ github.event.pull_request.head.ref }} → ${{ github.event.pull_request.base.ref }}
           </context>
 
           <pr_description>
@@ -104,9 +95,11 @@ runs:
           </task>
 
           <getting_started>
-          Use `mcp__agents-md-generator__generate_agents_md` to get repository context before reviewing.
-          Use `$PR_SCRIPTS/pr-diff.sh` to see changed files, then review each file's diff.
-          The base branch (`${{ github.event.pull_request.base.ref }}`) is available locally for `git diff` comparisons.
+          1. Use `mcp__agents-md-generator__generate_agents_md` to get repository context
+          2. Run `$PR_SCRIPTS/pr-diff.sh` to see all changed files with diffs
+             - Output shows line numbers: `[LINE]` = commentable, `[----]` = deleted (can't comment)
+             - For large PRs, it will list files only - review each with `pr-diff.sh <filename>`
+          3. Use `Read` to see full file contents when you need more context
           </getting_started>
 
           <severity_classification>
@@ -152,12 +145,13 @@ runs:
 
           <review_process>
           1. Get repository context with `mcp__agents-md-generator__generate_agents_md`
-          2. List changed files with `$PR_SCRIPTS/pr-diff.sh`
+          2. Run `$PR_SCRIPTS/pr-diff.sh` to see changed files with line-numbered diffs
           3. For each file, review the diff and identify issues matching review_criteria
           4. For each issue found:
              - Determine severity using severity_classification
              - Verify it's not filtered by filtering_rules
-             - Add inline comment with `$PR_SCRIPTS/pr-comment.sh`
+             - Use the `[LINE]` number from the diff output for pr-comment.sh
+             - Use `-f` flag for comments with code suggestions or special characters
           5. Submit review with `$PR_SCRIPTS/pr-review.sh`
           </review_process>
 
@@ -209,14 +203,36 @@ runs:
           $PR_SCRIPTS/pr-comment.sh <file> <line> "<comment>"
           ```
 
+          For complex comments (code suggestions, special characters, multi-line):
+          ```bash
+          # Write comment to file first, then reference it
+          cat > /tmp/comment.md << 'EOF'
+          **🟠 HIGH** Description here
+
+          ```suggestion
+          corrected code here
+          ```
+          EOF
+          $PR_SCRIPTS/pr-comment.sh <file> <line> -f /tmp/comment.md
+          ```
+
           Submit review:
           ```bash
-          $PR_SCRIPTS/pr-review.sh <APPROVE|REQUEST_CHANGES|COMMENT> "<summary>
+          $PR_SCRIPTS/pr-review.sh <APPROVE|REQUEST_CHANGES|COMMENT> "<summary>"
+          ```
+          
+          Note: A standard footer with reaction buttons is automatically appended to all comments and reviews.
+          </tools>
+
+          <tracking_comment>
+          After submitting the review, your progress tracking comment will be updated automatically.
+          Keep the final message brief - do NOT repeat the review findings or inline comments.
+          Simply indicate the review was submitted, note any issues that you encountered running, testing,
+          or reviewing the PR, any issues using tools, and include the standard footer:
 
           ---
-          *Review by Claude Code*"
-          ```
-          </tools>
+          *Review by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)"
+          </tracking_comment>
 
           <additional_instructions>
           ${{ inputs.additional-instructions }}

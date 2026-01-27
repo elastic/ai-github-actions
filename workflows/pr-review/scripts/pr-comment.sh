@@ -1,8 +1,18 @@
 #!/bin/bash
 # pr-comment.sh - Queue an inline review comment for the PR review
 #
-# Usage: pr-comment.sh <file> <line-number> <comment-body>
-# Example: pr-comment.sh src/main.go 42 "This variable is unused"
+# Usage:
+#   pr-comment.sh <file> <line-number> <comment-body>
+#   pr-comment.sh <file> <line-number> -f <body-file>
+#
+# Examples:
+#   pr-comment.sh src/main.go 42 "This variable is unused"
+#   pr-comment.sh src/main.go 42 -f /tmp/comment.md
+#
+# The -f option reads the comment body from a file, which is useful for:
+#   - Multi-line comments
+#   - Comments with special characters (quotes, backticks, etc.)
+#   - Code suggestions with complex formatting
 #
 # This script validates the comment location and caches it for later submission.
 # Comments are stored in PR_REVIEW_COMMENTS_FILE and submitted when pr-review.sh runs.
@@ -19,15 +29,36 @@ REPO="${PR_REVIEW_REPO:?PR_REVIEW_REPO environment variable is required}"
 PR_NUMBER="${PR_REVIEW_PR_NUMBER:?PR_REVIEW_PR_NUMBER environment variable is required}"
 COMMENTS_FILE="${PR_REVIEW_COMMENTS_FILE:-/tmp/pr-review-comments.json}"
 
-# Arguments
+# Parse arguments
 FILE="$1"
 LINE="$2"
 shift 2 2>/dev/null || true
-BODY="$*"
+
+# Check if using -f flag to read body from file
+if [ "$1" = "-f" ]; then
+  BODY_FILE="$2"
+  if [ -z "$BODY_FILE" ]; then
+    echo "Error: -f flag requires a file path"
+    echo "Usage: pr-comment.sh <file> <line-number> -f <body-file>"
+    exit 1
+  fi
+  if [ ! -f "$BODY_FILE" ]; then
+    echo "Error: Body file not found: $BODY_FILE"
+    exit 1
+  fi
+  BODY=$(cat "$BODY_FILE")
+else
+  BODY="$*"
+fi
 
 if [ -z "$FILE" ] || [ -z "$LINE" ] || [ -z "$BODY" ]; then
-  echo "Usage: pr-comment.sh <file> <line-number> <comment-body>"
-  echo "Example: pr-comment.sh src/main.go 42 'This variable is unused'"
+  echo "Usage:"
+  echo "  pr-comment.sh <file> <line-number> <comment-body>"
+  echo "  pr-comment.sh <file> <line-number> -f <body-file>"
+  echo ""
+  echo "Examples:"
+  echo "  pr-comment.sh src/main.go 42 'This variable is unused'"
+  echo "  pr-comment.sh src/main.go 42 -f /tmp/comment.md"
   exit 1
 fi
 
@@ -96,13 +127,20 @@ if [ ! -f "${COMMENTS_FILE}" ]; then
   echo "[]" > "${COMMENTS_FILE}"
 fi
 
+# Append standard footer to the comment
+FOOTER='
+---
+*Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)'
+
+BODY_WITH_FOOTER="${BODY}${FOOTER}"
+
 # Create the comment JSON object
 # Use jq to safely handle special characters in the body
 COMMENT_JSON=$(jq -n \
   --arg path "$FILE" \
   --argjson line "$LINE" \
   --arg side "RIGHT" \
-  --arg body "$BODY" \
+  --arg body "$BODY_WITH_FOOTER" \
   '{path: $path, line: $line, side: $side, body: $body}')
 
 # Append the comment to the comments file

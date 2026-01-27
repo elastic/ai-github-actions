@@ -15,7 +15,9 @@ ai-github-actions/
     ├── build-failure-github-actions/  # Analyze GitHub Actions failures
     ├── pr-review/                 # Review pull requests
     ├── mention-issue/            # Respond to @claude mentions on issues
-    └── mention-pr/               # Respond to @claude mentions on PRs
+    ├── mention-pr/               # Respond to @claude mentions on PRs
+    ├── project-manager/          # Project Manager reviews and reports
+    └── feedback-summary/         # Collect and analyze AI agent feedback
 ```
 
 ## Available Actions
@@ -29,6 +31,8 @@ ai-github-actions/
 | [PR Review](#pr-review) | `workflows/pr-review` | Review pull requests |
 | [Mention (Issue)](#mention-issue) | `workflows/mention-issue` | Respond to @claude mentions on issues |
 | [Mention (PR)](#mention-pr) | `workflows/mention-pr` | Respond to @claude mentions on PRs |
+| [Project Manager](#project-manager) | `workflows/project-manager` | Project Manager reviews and reports |
+| [Feedback Summary](#feedback-summary) | `workflows/feedback-summary` | Collect and analyze AI agent feedback |
 
 ## Available Tools
 
@@ -351,7 +355,187 @@ jobs:
 **Note:** The `mention-pr` workflow includes helper scripts for managing PR review threads:
 - `gh-get-review-threads.sh` - List review threads
 - `gh-resolve-review-thread.sh` - Resolve a review thread
-- `gh-minimize-outdated-comments.sh` - Minimize outdated comments
+
+---
+
+## Project Manager
+
+Run periodic Project Manager reviews to analyze project state, identify priorities, and generate reports.
+
+```yaml
+name: PM Claude
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Daily at 9 AM UTC
+  workflow_dispatch: null
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+  id-token: write
+  actions: read
+
+jobs:
+  check-activity:
+    runs-on: ubuntu-latest
+    outputs:
+      has_activity: ${{ steps.check.outputs.has_activity }}
+      last_pm_issue: ${{ steps.check.outputs.last_pm_issue }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for recent activity
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          LAST_PM_ISSUE=$(gh issue list --label "project-manager" --state open --limit 1 --json number --jq '.[0].number // ""')
+          echo "last_pm_issue=$LAST_PM_ISSUE" >> $GITHUB_OUTPUT
+          if [ -n "$LAST_PM_ISSUE" ]; then
+            ISSUE_CREATED=$(gh issue view "$LAST_PM_ISSUE" --json createdAt --jq '.createdAt')
+            COMMIT_COUNT=$(git log --since="$ISSUE_CREATED" --oneline | wc -l)
+            NEW_ISSUES=$(gh issue list --search "created:>=$ISSUE_CREATED -label:project-manager" --json number --jq 'length')
+            NEW_PRS=$(gh pr list --search "created:>=$ISSUE_CREATED" --json number --jq 'length')
+            MERGED_PRS=$(gh pr list --search "merged:>=$ISSUE_CREATED" --state merged --json number --jq 'length')
+            TOTAL_ACTIVITY=$((COMMIT_COUNT + NEW_ISSUES + NEW_PRS + MERGED_PRS))
+            if [ $TOTAL_ACTIVITY -lt 3 ]; then
+              echo "has_activity=false" >> $GITHUB_OUTPUT
+            else
+              echo "has_activity=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "has_activity=true" >> $GITHUB_OUTPUT
+          fi
+
+  close-previous-pm-issue:
+    needs: check-activity
+    if: needs.check-activity.outputs.has_activity == 'true' && needs.check-activity.outputs.last_pm_issue != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close previous PM issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name }}"
+          LAST_ISSUE="${{ needs.check-activity.outputs.last_pm_issue }}"
+          gh issue comment "$LAST_ISSUE" --repo "$OWNER/$REPO" --body "Closing. New report generated."
+          gh issue close "$LAST_ISSUE" --repo "$OWNER/$REPO"
+
+  project-manager-review:
+    needs:
+      - check-activity
+      - close-previous-pm-issue
+    if: |
+      always() &&
+      needs.check-activity.outputs.has_activity == 'true' &&
+      (needs.close-previous-pm-issue.result == 'success' || needs.close-previous-pm-issue.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Claude Project Manager Review
+        uses: your-org/ai-github-actions/workflows/project-manager@v1
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### Inputs
+
+| Input | Description | Required | Default |
+|-------|-------------|----------|---------|
+| `claude-oauth-token` | Claude OAuth token | Yes | - |
+| `github-token` | GitHub token for Claude | Yes | - |
+| `model` | Model to use | No | `claude-sonnet-4-20250514` |
+| `allowed-tools` | Allowed tools (includes `gh issue:*` and `gh pr:*`) | No | `""` |
+| `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
+| `additional-instructions` | Extra instructions for the prompt | No | `""` |
+| `track-progress` | Track progress with visual indicators | No | `true` |
+| `mcp-servers` | MCP server configuration JSON | No | See [MCP Servers](#mcp-servers) |
+| `repository-owner` | Repository owner (defaults to github.repository_owner) | No | `""` |
+| `repository-name` | Repository name (defaults to github.event.repository.name) | No | `""` |
+
+**Note:** The Project Manager workflow analyzes open issues, PRs, and recent activity, then creates a GitHub issue with a comprehensive report including:
+- 🎯 Easy Pickings (PRs ready to merge, quick wins)
+- 🚨 Urgent Items (blockers needing attention)
+- 📋 Decisions Needed (items requiring maintainer input)
+- 🔄 Stale Items (inactive issues/PRs)
+- ✅ Recent Progress (merged PRs, closed issues)
+- 🔧 Alignment Recommendations (patterns where AI misunderstood conventions)
+- 💡 Next Steps (prioritized recommendations)
+
+The workflow only runs if there's been sufficient activity (3+ commits, issues, or PRs) since the last PM report.
+
+---
+
+## Feedback Summary
+
+Collect reactions on AI agent comments and create a summary issue with analysis.
+
+```yaml
+name: AI Agent Feedback Summary
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"  # Weekly on Monday morning
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Number of days to look back"
+        required: false
+        default: "7"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  feedback-summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run AI Agent Feedback Summary
+        uses: your-org/ai-github-actions/workflows/feedback-summary@v1
+        with:
+          github-token: ${{ github.token }}
+          # Optional: Add Claude token for AI-powered analysis
+          # claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          days: ${{ github.event.inputs.days || '7' }}
+          # Regex pattern to match bot usernames (default includes common AI bots)
+          # bot-pattern: "claude|github-actions\\[bot\\]|copilot\\[bot\\]"
+          issue-labels: "ai-feedback,weekly-report"
+```
+
+### Inputs
+
+| Input | Description | Required | Default |
+|-------|-------------|----------|---------|
+| `github-token` | GitHub token for API access | Yes | - |
+| `claude-oauth-token` | Claude OAuth token for AI analysis (optional) | No | `""` |
+| `days` | Number of days to look back for feedback | No | `"7"` |
+| `bot-pattern` | Regex pattern to match bot usernames | No | `"claude\|github-actions\\[bot\\]\|copilot\\[bot\\]"` |
+| `model` | Model to use for Claude analysis | No | `claude-sonnet-4-20250514` |
+| `issue-labels` | Comma-separated labels for summary issue | No | `"ai-feedback,automated"` |
+| `create-issue` | Whether to create a GitHub issue with the summary | No | `"true"` |
+
+**Note:** The feedback summary workflow:
+- Collects reactions (🚀, 👍, 👎, ❤️, 😕) on AI agent comments from issues, PRs, and reviews
+- Generates a markdown report with statistics and analysis
+- Optionally uses Claude to analyze feedback patterns and suggest improvements
+- Creates a GitHub issue with the summary (if `create-issue` is true and interactions are found)
 
 ---
 
