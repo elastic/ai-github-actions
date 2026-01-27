@@ -5,7 +5,7 @@ Automatically triage and label new issues with read-only investigation capabilit
 ## Usage
 
 ```yaml
-- uses: your-org/ai-github-actions/workflows/issue-triage/ro@v1
+- uses: elastic/ai-github-actions/workflows/issue-triage/ro@v1
   with:
     claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
     github-token: ${{ github.token }}
@@ -34,3 +34,9 @@ See [example.yml](example.yml) for a complete workflow example.
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
 | `track-progress` | Track progress with visual indicators | No | `true` |
 | `mcp-servers` | MCP server configuration JSON | No | See main README for MCP Servers |
+
+## Outputs
+
+| Output | Description |
+|--------|-------------|
+| `conclusion` | The conclusion of the Claude Code run |

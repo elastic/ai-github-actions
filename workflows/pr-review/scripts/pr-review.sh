@@ -70,6 +70,7 @@ fi
 
 # Append standard footer to the review body (if body is provided)
 FOOTER='
+
 ---
 *Review by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)'
 

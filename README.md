@@ -4,47 +4,40 @@ Composite GitHub Actions that wrap the [Anthropic Claude Code Action](https://gi
 
 ## Available Actions
 
-| Action | Path | Description | Documentation |
-|--------|------|-------------|---------------|
-| Base | `base` | Core wrapper with full configurability | See [base/action.yml](base/action.yml) |
-| Issue Triage (Read-Only) | `workflows/issue-triage/ro` | Triage and label new issues (read-only investigation) | [README](workflows/issue-triage/ro/README.md) |
-| Issue Triage (Read-Write-Execute) | `workflows/issue-triage/rwx` | Triage and label new issues (can execute tests, write temporary files) | [README](workflows/issue-triage/rwx/README.md) |
-| PR Review (Read-Only) | `workflows/pr-review/ro` | Review pull requests (comments only, no code suggestions) | [README](workflows/pr-review/ro/README.md) |
-| PR Review (Read-Write-Execute) | `workflows/pr-review/rwx` | Review pull requests (with code suggestions and test execution) | [README](workflows/pr-review/rwx/README.md) |
-| Build Failure (Buildkite) | `workflows/build-failure-buildkite` | Analyze Buildkite CI failures | [README](workflows/build-failure-buildkite/README.md) |
-| Build Failure (GitHub Actions) | `workflows/build-failure-github-actions` | Analyze GitHub Actions failures | [README](workflows/build-failure-github-actions/README.md) |
-| Mention in Issue | `workflows/mention-in-issue` | Respond to @claude mentions on issues | [README](workflows/mention-in-issue/README.md) |
-| Mention in PR | `workflows/mention-in-pr` | Respond to @claude mentions on PRs | [README](workflows/mention-in-pr/README.md) |
-| Project Manager | `workflows/project-manager` | Project Manager reviews and reports | [README](workflows/project-manager/README.md) |
-| Feedback Summary | `workflows/feedback-summary` | Collect and analyze AI agent feedback | [README](workflows/feedback-summary/README.md) |
+> **Important:** Read-write-execute (RWX) and Read-write-execute-push (RWXP) agents have access to run arbitrary commands, including git commit and git push. To prevent pushes, set `contents: read` (or `contents: none`) in the calling workflow's `permissions:` section. Without these permissions, RWX and RWXP agents may be able to push changes despite prompt constraints.
 
-## Capabilities Matrix
+### Base/Custom
+
+| Action | Description | Read Files (R) | Write/Edit Files (W) | Execute Commands (X) | Read-Only Git | Push Changes (P) |
+|--------|-------------|----------------|---------------------|----------------------|---------------|-----------------|
+| [Base](base/action.yml) | Core wrapper with full configurability | ⚙️ | ⚙️ | ⚙️ | ⚙️ | ⚙️ |
 
 ### Review Agents
 
-| Action | Read Files | Write/Edit Files | Execute Commands | Read-Only Git | Push Changes |
-|--------|------------|------------------|------------------|---------------|--------------|
-| Issue Triage (RO) | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Issue Triage (RWX) | ✅ | ✅ | ✅ | ✅ | ❌** |
-| PR Review (RO) | ✅ | ❌ | ❌ | ✅ | ❌ |
-| PR Review (RWX) | ✅ | ✅ | ✅ | ✅ | ❌** |
+| Action | Description | Read Files (R) | Write/Edit Files (W) | Execute Commands (X) | Read-Only Git | Push Changes (P) |
+|--------|-------------|----------------|---------------------|----------------------|---------------|-----------------|
+| [Issue Triage (RO)](workflows/issue-triage/ro/README.md) | Triage and label new issues (read-only investigation) | ✅ | ❌ | ❌ | ✅ | ❌ |
+| [Issue Triage (RWX)](workflows/issue-triage/rwx/README.md) | Triage and label new issues (can execute tests, write temporary files) | ✅ | ✅ | ✅ | ✅ | ❌** |
+| [PR Review (RO)](workflows/pr-review/ro/README.md) | Review pull requests (with suggestion blocks, no local file changes) | ✅ | ❌ | ❌ | ✅ | ❌ |
+| [PR Review (RWX)](workflows/pr-review/rwx/README.md) | Review pull requests (with code suggestions and test execution) | ✅ | ✅ | ✅ | ✅ | ❌** |
 
-### Change Agents
+### Assistant Agents
 
-| Action | Read Files | Write/Edit Files | Execute Commands | Read-Only Git | Push Changes |
-|--------|------------|------------------|------------------|---------------|--------------|
-| Mention in Issue | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Mention in PR | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Build Failure (Buildkite) | ✅ | ✅ | ⚙️ | ✅ | ❌ |
-| Build Failure (GitHub Actions) | ✅ | ✅ | ⚙️ | ✅ | ❌ |
+| Action | Description | Read Files (R) | Write/Edit Files (W) | Execute Commands (X) | Read-Only Git | Push Changes (P) |
+|--------|-------------|----------------|---------------------|----------------------|---------------|-----------------|
+| [Mention in Issue (RWX)](workflows/mention-in-issue/rwx/README.md) | Respond to @claude mentions on issues (can write/execute, cannot push) | ✅ | ✅ | ✅ | ✅ | ❌** |
+| [Mention in Issue (RWXP)](workflows/mention-in-issue/rwxp/README.md) | Respond to @claude mentions on issues | ✅ | ✅ | ✅ | ✅ | ✅ |
+| [Mention in PR (RWX)](workflows/mention-in-pr/rwx/README.md) | Respond to @claude mentions on PRs (can write/execute, cannot push) | ✅ | ✅ | ✅ | ✅ | ❌** |
+| [Mention in PR (RWXP)](workflows/mention-in-pr/rwxp/README.md) | Respond to @claude mentions on PRs | ✅ | ✅ | ✅ | ✅ | ✅ |
+| [Build Failure (Buildkite) (RWX)](workflows/build-failure-buildkite/rwx/README.md) | Analyze Buildkite CI failures and suggest fixes | ✅ | ✅ | ⚙️ | ✅ | ❌ |
+| [Build Failure (GitHub Actions) (RWX)](workflows/build-failure-github-actions/rwx/README.md) | Analyze GitHub Actions workflow failures and suggest fixes | ✅ | ✅ | ⚙️ | ✅ | ❌ |
 
 ### Overview Agents
 
-| Action | Read Files | Write/Edit Files | Execute Commands | Read-Only Git | Push Changes |
-|--------|------------|------------------|------------------|---------------|--------------|
-| Project Manager | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Feedback Summary | ✅* | ❌ | ❌ | ❌ | ❌ |
-| Base | ⚙️ | ⚙️ | ⚙️ | ⚙️ | ⚙️ |
+| Action | Description | Read Files (R) | Write/Edit Files (W) | Execute Commands (X) | Read-Only Git | Push Changes (P) |
+|--------|-------------|----------------|---------------------|----------------------|---------------|-----------------|
+| [Project Manager (RO)](workflows/project-manager/ro/README.md) | Run periodic Project Manager reviews to analyze project state | ✅ | ❌ | ❌ | ✅ | ❌ |
+| [Feedback Summary (RO)](workflows/feedback-summary/ro/README.md) | Collect reactions on AI agent comments and create summary | ✅* | ❌ | ❌ | ❌ | ❌ |
 
 ### Legend
 
@@ -54,7 +47,7 @@ Composite GitHub Actions that wrap the [Anthropic Claude Code Action](https://gi
 | ⚙️ | Available via configuration (requires `extra-allowed-tools` or custom setup) |
 | ❌ | Not available |
 | ✅* | Reads via GitHub API, not file system |
-| ❌** | Tool is allowed, prompt discourages pushing changes. To truly restrict, set `contents: none` (or `contents: read`) in workflow permissions |
+| ❌** | Tool is allowed, prompt discourages pushing changes. To truly restrict, set `contents: read` (or `contents: none` if you don't need repository access) in workflow permissions |
 
 ## Available Tools
 
@@ -74,9 +67,8 @@ Claude Code has access to these tools (from the [official documentation](https:/
 | NotebookEdit | Modifies Jupyter cells | Yes |
 
 **Important:** Bash command permissions vary by workflow:
-- **Issue Triage RWX, PR Review RWX, Mention in Issue/PR workflows**: All Bash commands (`Bash(*)`) are allowed by default
-- **Build Failure workflows**: Bash commands must be explicitly allowed via `extra-allowed-tools` (e.g., `Bash(npm test),Bash(npm install)`)
-- **Read-Only workflows**: Bash commands are not available
+- **Issue Triage RWX, PR Review RWX, Mention in Issue/PR, Build Failure workflows**: All Bash commands (`Bash(*)`) are allowed by default
+- **Read-Only workflows**: Bash commands are not available (except read-only git commands like `git status`, `git diff`, etc.)
 
 ---
 
@@ -120,7 +112,7 @@ All workflow actions (under `workflows/`) include an `mcp-servers` input with th
 Override the default MCP servers by providing your own JSON:
 
 ```yaml
-- uses: your-org/ai-github-actions/base@v1
+- uses: elastic/ai-github-actions/base@v1
   with:
     prompt: "Your prompt"
     claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}

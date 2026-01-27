@@ -19,6 +19,10 @@ permissions:
   id-token: write
   actions: read
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   check-activity:
     runs-on: ubuntu-latest
@@ -35,7 +39,7 @@ jobs:
       - name: Check for recent activity
         id: check
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -e
@@ -68,7 +72,7 @@ jobs:
     steps:
       - name: Close previous PM issue
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           OWNER="${{ github.repository_owner }}"
@@ -94,7 +98,7 @@ jobs:
       # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run Claude Project Manager Review
-        uses: your-org/ai-github-actions/workflows/project-manager@v1
+        uses: elastic/ai-github-actions/workflows/project-manager/ro@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
@@ -102,3 +106,4 @@ jobs:
           # model: claude-sonnet-4-5
           # Optional: add custom instructions
           # additional-instructions: "Focus on security-related issues first"
+

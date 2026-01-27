@@ -2,7 +2,7 @@
 # Composite Action for triaging new issues with Claude (Read-Only)
 #
 # Usage:
-#   - uses: your-org/ai-github-actions/workflows/issue-triage/ro@v1
+#   - uses: elastic/ai-github-actions/workflows/issue-triage/ro@v1
 #     with:
 #       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
 #       github-token: ${{ github.token }}
@@ -121,7 +121,7 @@ runs:
           In priority order your goal is to:
             1. Provide context about the request or issue (related issues, pull requests, files, etc.)
             2. Layout a single high-quality and actionable recommendation for how to address the issue based on your knowledge of the project, codebase, and issue
-            3. Provide an high quality and detailed plan that a junior developer could follow to implement the recommendation
+            3. Provide a high quality and detailed plan that a junior developer could follow to implement the recommendation
           </response_goals>
 
           <response_sections>
@@ -182,9 +182,12 @@ runs:
           </response_examples>
 
           <response_footer>
-          Always end your comment with:
+          Always end your comment with a new line, three dashes, and the footer message:
+          <exact_content>
+
           ---
-          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further
+          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)
+          </exact_content>
           </response_footer>
 
           <additional_instructions>

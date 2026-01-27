@@ -33,3 +33,9 @@ The workflow only runs if there's been sufficient activity (3+ commits, issues, 
 | `mcp-servers` | MCP server configuration JSON | No | See main README for MCP Servers |
 | `repository-owner` | Repository owner (defaults to github.repository_owner) | No | `""` |
 | `repository-name` | Repository name (defaults to github.event.repository.name) | No | `""` |
+
+## Outputs
+
+| Output | Description |
+|--------|-------------|
+| `conclusion` | The conclusion of the Claude Code run |

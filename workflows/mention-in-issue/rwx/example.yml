@@ -1,15 +1,19 @@
-# Example workflow for @claude mentions on issues
+# Example workflow for @claude mentions on issues (Read-Write-Execute)
 # Copy this to your repo's .github/workflows/ directory
 
-name: Claude Mention (Issue)
+name: Claude Mention (Issue) - Read-Write-Execute
 
 on:
   issue_comment:
     types: [created]
 
 permissions:
-  contents: write
+  contents: read
   issues: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: false
 
 jobs:
   respond:
@@ -18,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       # Place environment setup commands here (e.g., install dependencies, configure tools)
-      - uses: your-org/ai-github-actions/workflows/mention-in-issue@v1
+      - uses: elastic/ai-github-actions/workflows/mention-in-issue/rwx@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}

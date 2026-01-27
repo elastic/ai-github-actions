@@ -13,6 +13,10 @@ permissions:
   contents: read
   issues: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
 jobs:
   triage:
     runs-on: ubuntu-latest
@@ -22,7 +26,7 @@ jobs:
       # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run Claude Issue Triage (Read-Write-Execute)
-        uses: your-org/ai-github-actions/workflows/issue-triage/rwx@v1
+        uses: elastic/ai-github-actions/workflows/issue-triage/rwx@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}

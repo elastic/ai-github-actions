@@ -1,17 +1,17 @@
 #
-# Composite Action for responding to @claude mentions on Issues
+# Composite Action for responding to @claude mentions on Pull Requests
 #
 # Usage:
-#   - uses: your-org/ai-github-actions/workflows/mention-in-issue@v1
+#   - uses: elastic/ai-github-actions/workflows/mention-in-pr/rwxp@v1
 #     with:
 #       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
 #       github-token: ${{ github.token }}
 #
-name: "Claude Mention Response (Issue)"
-description: "Respond when Claude is mentioned in issue comments"
+name: "Claude Mention Response (PR) - Read-Write-Execute-Push"
+description: "Respond when Claude is mentioned in PR comments (can write/execute/push)"
 
 branding:
-  icon: "message-circle"
+  icon: "git-pull-request"
   color: "orange"
 
 inputs:
@@ -31,7 +31,8 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code"
+    # Includes PR review thread scripts and allows all Bash commands by default
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code,Bash(${{ github.action_path }}/../scripts/gh-get-review-threads.sh:*),Bash(${{ github.action_path }}/../scripts/gh-resolve-review-thread.sh:*)"
 
   extra-allowed-tools:
     description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
@@ -61,10 +62,14 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Run Claude for Issue Mention
+    - name: Run Claude for PR Mention
       id: claude
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
+        # For PR review thread scripts
+        MENTION_REPO: ${{ github.repository }}
+        MENTION_PR_NUMBER: ${{ github.event.issue.number }}
+        MENTION_SCRIPTS: ${{ github.action_path }}/../scripts
       uses: anthropics/claude-code-action@v1
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
@@ -73,10 +78,12 @@ runs:
         prompt: |
           <context>
           Repository: ${{ github.repository }}
-          Issue Number: #${{ github.event.issue.number }}
-          Issue Title: ${{ github.event.issue.title }}
-          Issue Author: ${{ github.event.issue.user.login }}
+          PR Number: #${{ github.event.issue.number }}
+          PR Title: ${{ github.event.issue.title }}
+          PR Author: ${{ github.event.issue.user.login }}
           Comment Author: ${{ github.event.comment.user.login }}
+          
+          **Note**: The PR head branch has already been checked out. The workspace is ready - you can immediately start working on the PR code.
           </context>
 
           <user_request>
@@ -84,13 +91,13 @@ runs:
           </user_request>
 
           <task>
-          You have been mentioned in a GitHub issue comment. Understand the request, gather context, complete the task, and respond with results.
+          You have been mentioned in a Pull Request comment. Understand the request, gather context, complete the task, and respond with results.
           </task>
 
           <constraints>
           This workflow allows full capabilities to complete tasks.
           
-          You CAN: Read/analyze code, modify files, write code, run tests, execute commands, commit code, push changes, create pull requests
+          You CAN: Read/analyze code, modify files, write code, run tests, execute commands, commit code, push changes, create pull requests, resolve review threads
           Note: When creating pull requests, branches are automatically created by the GitHub Action - you don't need to create branches manually.
           </constraints>
 
@@ -121,13 +128,36 @@ runs:
           </investigation_approach>
 
           <common_tasks>
-          - Answer questions about the codebase
-          - Help debug reported problems
-          - Suggest solutions or workarounds
-          - Provide code examples
-          - Help clarify requirements
-          - Link to relevant documentation or code
+          - Address review feedback and fix issues
+          - Answer questions about the changes
+          - Make additional code changes
+          - Resolve review threads after fixing
           </common_tasks>
+
+          <review_thread_tools>
+          View unresolved review threads:
+          ```bash
+          $MENTION_SCRIPTS/gh-get-review-threads.sh
+          ```
+          
+          Filter for unresolved threads from a specific reviewer:
+          ```bash
+          $MENTION_SCRIPTS/gh-get-review-threads.sh "reviewer-username"
+          ```
+
+          Resolve a review thread after addressing feedback:
+          ```bash
+          $MENTION_SCRIPTS/gh-resolve-review-thread.sh "THREAD_ID" "Fixed by updating the error handling"
+          ```
+          - `THREAD_ID` is the GraphQL node ID from the review threads output (e.g., `PRRT_kwDOABC123`)
+          - The comment is optional - use it to explain what you did
+
+          Typical workflow for addressing review feedback:
+          1. Run `$MENTION_SCRIPTS/gh-get-review-threads.sh` to see what needs addressing
+          2. Make the requested code changes
+          3. Commit and push the changes
+          4. Resolve each addressed thread with `$MENTION_SCRIPTS/gh-resolve-review-thread.sh`
+          </review_thread_tools>
 
           <response_guidelines>
           - Be concise and actionable
@@ -136,9 +166,12 @@ runs:
           </response_guidelines>
 
           <response_footer>
-          Always end your comment with:
+          Always end your comment with a new line, three dashes, and the footer message:
+          <exact_content>
+
           ---
-          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further
+          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)
+          </exact_content>
           </response_footer>
 
           <additional_instructions>

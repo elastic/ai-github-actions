@@ -5,7 +5,7 @@
 # with a summary table and analysis of recent interactions.
 #
 # Usage:
-#   - uses: your-org/ai-github-actions/workflows/feedback-summary@v1
+#   - uses: elastic/ai-github-actions/workflows/feedback-summary/ro@v1
 #     with:
 #       github-token: ${{ github.token }}
 #
@@ -75,7 +75,7 @@ runs:
         FEEDBACK=$("${{ github.action_path }}/scripts/collect-feedback.sh")
         
         # Save to file for later steps
-        echo "$FEEDBACK" > /tmp/feedback-data.json
+        echo "$FEEDBACK" > "${{ runner.temp }}/feedback-data.json"
         
         # Output summary
         TOTAL=$(echo "$FEEDBACK" | jq '.summary.total_interactions')
@@ -94,7 +94,7 @@ runs:
       shell: bash
       run: |
         chmod +x "${{ github.action_path }}/scripts/generate-report.sh"
-        "${{ github.action_path }}/scripts/generate-report.sh" /tmp/feedback-data.json /tmp/feedback-report.md
+        "${{ github.action_path }}/scripts/generate-report.sh" "${{ runner.temp }}/feedback-data.json" "${{ runner.temp }}/feedback-report.md"
 
     - name: Run Claude analysis (if token provided)
       id: analysis
@@ -107,8 +107,8 @@ runs:
           Analyze the AI agent feedback data and provide insights.
           
           <task>
-          1. Read the feedback data from /tmp/feedback-data.json
-          2. Read the current report from /tmp/feedback-report.md
+          1. Read the feedback data from the feedback JSON file
+          2. Read the current report from the feedback report markdown file
           
           3. Analyze the feedback patterns:
              - What types of interactions get the best reactions?
@@ -120,14 +120,14 @@ runs:
              - Are there common misunderstandings or errors?
              - What prompting or configuration changes might help?
           
-          5. Append your analysis to /tmp/feedback-report.md under a new section:
+          5. Append your analysis to the feedback report markdown file under a new section:
              ### AI Analysis
              
              Keep the analysis concise (3-5 key insights) and actionable.
              If there's not enough data or no clear patterns, say so briefly.
           </task>
         claude_args: |
-          --allowedTools Read,Write,Grep
+          --allowedTools Read,Grep
           --model ${{ inputs.model }}
 
     - name: Create GitHub issue
@@ -137,7 +137,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
-        FEEDBACK=$(cat /tmp/feedback-data.json)
+        FEEDBACK=$(cat "${{ runner.temp }}/feedback-data.json")
         TOTAL=$(echo "$FEEDBACK" | jq '.summary.total_interactions')
         
         # Skip creating issue if no interactions found
@@ -151,7 +151,7 @@ runs:
         LABELS="${{ inputs.issue-labels }}"
         
         # Read the report
-        BODY=$(cat /tmp/feedback-report.md)
+        BODY=$(cat "${{ runner.temp }}/feedback-report.md")
         
         # Create the issue
         ISSUE_URL=$(gh issue create \

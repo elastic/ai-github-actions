@@ -2,7 +2,7 @@
 # Composite Action for analyzing Buildkite CI build failures with Claude
 #
 # Usage:
-#   - uses: your-org/ai-github-actions/workflows/build-failure-buildkite@v1
+#   - uses: elastic/ai-github-actions/workflows/build-failure-buildkite/rwx@v1
 #     with:
 #       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
 #       github-token: ${{ github.token }}
@@ -51,7 +51,7 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code,mcp__buildkite"
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code,mcp__buildkite"
 
   extra-allowed-tools:
     description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
@@ -143,7 +143,7 @@ runs:
 
           <buildkite_config>
           Organization: ${{ inputs.buildkite-org }}
-          ${{ inputs.buildkite-pipeline != '' && format('Pipeline: {0} (provided)', inputs.buildkite-pipeline) || format('Pipeline: Auto-discover from repo name', inputs.buildkite-org, github.repository) }}
+          ${{ inputs.buildkite-pipeline != '' && format('Pipeline: {0} (provided)', inputs.buildkite-pipeline) || 'Pipeline: Auto-discover from repo name' }}
           ${{ inputs.buildkite-build-number != '' && format('Build Number: {0} (provided)', inputs.buildkite-build-number) || 'Build Number: Auto-discover from commit SHA' }}
           </buildkite_config>
 
@@ -241,9 +241,12 @@ runs:
           </response_format>
 
           <response_footer>
-          Always end your comment with:
+          Always end your comment with a new line, three dashes, and the footer message:
+          <exact_content>
+
           ---
-          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further
+          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)
+          </exact_content>
           </response_footer>
 
           <additional_instructions>

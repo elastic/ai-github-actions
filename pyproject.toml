@@ -3,6 +3,4 @@ name = "ai-github-actions"
 version = "0.1.0"
 description = "GitHub Actions workflows for AI-powered development"
 requires-python = ">=3.10"
-dependencies = [
-    "yamlfix>=1.0.0",
-]
+dependencies = []

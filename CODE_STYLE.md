@@ -1,90 +1,38 @@
 # Code Style Guide
 
-This document describes coding standards, patterns, and best practices for scripts and logic in this codebase.
+This document describes unique patterns and conventions used in this codebase that may not be immediately obvious.
 
-## Bash Scripts
+## Shared Scripts Path Resolution
 
-### Error Handling
+When workflows share scripts (like `pr-review/ro` and `pr-review/rwx`), scripts are placed in a parent `scripts/` directory and referenced using:
 
-**Always use `set -e`** at the start of bash scripts to fail fast on errors.
-
-**Check for empty values** before using them in arithmetic or string operations:
-
-```bash
-set -e
-VALUE=$(command-that-might-fail)
-if [ -z "$VALUE" ]; then
-  echo "output=default" >> $GITHUB_OUTPUT
-  exit 0
-fi
-# Safe to use VALUE here
+```yaml
+Bash(${{ github.action_path }}/../scripts/script-name.sh:*)
 ```
 
-**Why?**
-- Prevents silent failures
-- Avoids undefined behavior with empty variables
-- Makes errors explicit and debuggable
+This allows both `ro` and `rwx` variants to reference the same scripts from their respective `action.yml` files.
 
-### Example Pattern
+**When scripts are workflow-specific** (not shared), place them in `workflows/<workflow>/scripts/` and reference as:
 
-When working with GitHub CLI commands that might fail (e.g., rate limiting, network issues):
-
-```bash
-set -e
-LAST_PM_ISSUE=$(gh issue list --label "project-manager" --state open --limit 1 --json number --jq '.[0].number // ""')
-echo "last_pm_issue=$LAST_PM_ISSUE" >> $GITHUB_OUTPUT
-if [ -n "$LAST_PM_ISSUE" ]; then
-  ISSUE_CREATED=$(gh issue view "$LAST_PM_ISSUE" --json createdAt --jq '.createdAt')
-  if [ -z "$ISSUE_CREATED" ]; then
-    echo "has_activity=true" >> $GITHUB_OUTPUT
-    exit 0
-  fi
-  # Safe to use ISSUE_CREATED here
-fi
+```yaml
+Bash(${{ github.action_path }}/scripts/script-name.sh:*)
 ```
 
-## Script Organization
+## Tool Concatenation Pattern
 
-### Shared Scripts
-
-PR review workflows share scripts located at `workflows/pr-review/scripts/`:
-- `pr-comment.sh` - Add inline comments
-- `pr-diff.sh` - View PR diffs with line numbers
-- `pr-review.sh` - Submit review
-
-**Path resolution**: Scripts are referenced using `${{ github.action_path }}/../scripts` to work from both `ro` and `rwx` variants.
-
-**Decision**: Keep shared scripts in a common location rather than duplicating them.
-
-**Pattern**: When multiple workflow variants need the same scripts, place them in a shared `scripts/` directory and reference them using relative paths from `github.action_path`.
-
-## Tool Concatenation
-
-### allowed-tools and extra-allowed-tools
-
-**Pattern**: `extra-allowed-tools` is concatenated with `allowed-tools` using GitHub Actions expressions:
+The `extra-allowed-tools` input is concatenated with `allowed-tools` using GitHub Actions expressions:
 
 ```yaml
 claude_args: |
   ${{ format('--allowedTools {0}{1}', inputs.allowed-tools, inputs.extra-allowed-tools != '' && format(',{0}', inputs.extra-allowed-tools) || '') }}
 ```
 
-**Why this pattern?**
+This pattern:
 - Allows users to extend tool lists without replacing defaults
+- Handles empty strings gracefully (no trailing comma)
 - Maintains backward compatibility
-- Handles empty strings gracefully
 
-**Usage**: Users can add specific tools via `extra-allowed-tools` without losing default tools.
-
-**Implementation details**:
-- The format expression checks if `extra-allowed-tools` is non-empty
-- If empty, it appends nothing (empty string)
-- If non-empty, it prepends a comma and the value
-- This ensures proper comma-separated list formatting
-
-## GitHub Actions YAML Patterns
-
-### Conditional Arguments
+## Conditional Arguments in Base Action
 
 The base action uses conditional formatting for optional arguments:
 
@@ -96,82 +44,60 @@ claude_args: |
   ${{ inputs.claude-args }}
 ```
 
-**Why?**
-- Only includes arguments when values are provided
-- Avoids passing empty strings that might cause errors
-- Keeps command line clean
+Only include arguments when values are provided. Arguments with defaults (like `--model`) are always included.
 
-**Pattern**: 
-- Use `!= ''` to check if a value is provided
-- Use `format()` to construct the argument string
-- Use `|| ''` to provide empty string fallback
-- Always include arguments with defaults (like `--model`)
+## Environment Variables for Scripts
 
-**Note**: The `--model` argument is always included (has a default), but optional arguments are conditionally formatted.
+Scripts expect specific environment variables set by the composite action:
 
-### workflow_dispatch Syntax
+**PR Review scripts** (`workflows/pr-review/scripts/`):
+- `PR_REVIEW_REPO` - Repository (owner/repo)
+- `PR_REVIEW_PR_NUMBER` - Pull request number
+- `PR_REVIEW_HEAD_SHA` - Expected head SHA (for race condition detection)
+- `PR_REVIEW_COMMENTS_DIR` - Directory for storing comment data
+- `PR_SCRIPTS` - Path to scripts directory
 
-**Decision**: Use `workflow_dispatch:` (empty) not `workflow_dispatch: null`
+**Mention in PR scripts** (`workflows/mention-in-pr/scripts/`):
+- `MENTION_REPO` - Repository (owner/repo)
+- `MENTION_PR_NUMBER` - Pull request number
+- `MENTION_SCRIPTS` - Path to scripts directory
 
-**Why?**
-- `null` is not valid YAML syntax for workflow triggers
-- Empty `workflow_dispatch:` enables manual triggering without parameters
-- If you need inputs, add them under `workflow_dispatch.inputs`
+**Feedback Summary scripts** (`workflows/feedback-summary/scripts/`):
+- Scripts are executed directly by the action, not via Bash tool
 
-**Correct:**
-```yaml
-on:
-  workflow_dispatch:
+Set these in the `env:` section of the composite action step.
+
+## Prompt Structure Convention
+
+All workflow prompts follow a consistent structure with XML-like sections:
+
+1. `<context>` - Repository, issue/PR metadata
+2. `<task>` - What Claude should do
+3. `<constraints>` - What Claude CANNOT do (explicitly listed)
+4. `<allowed_tools>` - Available tools (dynamically inserted)
+5. `<getting_started>` - Initial steps (usually calls agents-md-generator)
+6. `<additional_instructions>` - User-provided custom instructions
+
+This structure ensures consistency and makes it obvious what's configurable vs fixed.
+
+## Tracking Comment Footer
+
+All workflows include a standard footer in tracking comments:
+
 ```
 
-**Incorrect:**
-```yaml
-on:
-  workflow_dispatch: null  # ❌ Invalid syntax
+---
+*Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)
 ```
 
-## Variable Naming
+This footer is documented in the prompt's `<tracking_comment>` or `<response_footer>` section.
 
-### GitHub Actions Inputs
 
-Use kebab-case for input names:
-- `claude-oauth-token` ✅
-- `github-token` ✅
-- `allowed-tools` ✅
-- `extra-allowed-tools` ✅
+## File Naming Convention
 
-### Environment Variables
+Every workflow action should have three files:
+- **`action.yml`** - The composite action definition (required by GitHub Actions)
+- **`example.yml`** - Example workflow showing how to use the action
+- **`README.md`** - Documentation for the action
 
-Use UPPER_SNAKE_CASE for environment variables:
-- `GITHUB_TOKEN` ✅
-- `GH_TOKEN` ✅
-- `PR_REVIEW_REPO` ✅
-
-## Output Handling
-
-### GitHub Actions Outputs
-
-Always use `$GITHUB_OUTPUT` for setting step outputs:
-
-```bash
-echo "key=value" >> $GITHUB_OUTPUT
-```
-
-**Why?**
-- Standard GitHub Actions pattern
-- Works consistently across all runners
-- Properly handles multi-line values
-
-### Multi-line Outputs
-
-For multi-line values, use heredoc or proper escaping:
-
-```bash
-cat >> $GITHUB_OUTPUT <<EOF
-key<<EOF2
-multi
-line
-value
-EOF2
-EOF
-```
+This ensures consistency and discoverability across all workflows.

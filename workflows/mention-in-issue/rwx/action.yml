@@ -1,0 +1,156 @@
+#
+# Composite Action for responding to @claude mentions on Issues (Read-Write-Execute)
+#
+# Usage:
+#   - uses: elastic/ai-github-actions/workflows/mention-in-issue/rwx@v1
+#     with:
+#       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+#       github-token: ${{ github.token }}
+#
+name: "Claude Mention Response (Issue) - Read-Write-Execute"
+description: "Respond when Claude is mentioned in issue comments (can write/execute, cannot push)"
+
+branding:
+  icon: "message-circle"
+  color: "orange"
+
+inputs:
+  claude-oauth-token:
+    description: "Claude OAuth token for authentication"
+    required: true
+
+  github-token:
+    description: "GitHub token for Claude to operate with"
+    required: true
+
+  model:
+    description: "Model to use for Claude"
+    required: false
+    default: "claude-sonnet-4-20250514"
+
+  allowed-tools:
+    description: "Comma-separated list of allowed tools for Claude"
+    required: false
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code"
+
+  extra-allowed-tools:
+    description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
+    required: false
+    default: ""
+
+  additional-instructions:
+    description: "Additional instructions to include in the prompt"
+    required: false
+    default: ""
+
+  track-progress:
+    description: "Whether Claude should track progress with visual indicators"
+    required: false
+    default: "true"
+
+  mcp-servers:
+    description: "MCP server configuration JSON"
+    required: false
+    default: '{"mcpServers":{"agents-md-generator":{"type":"http","url":"https://agents-md-generator.fastmcp.app/mcp"},"public-code-search":{"type":"http","url":"https://public-code-search.fastmcp.app/mcp"}}}'
+
+outputs:
+  conclusion:
+    description: "The conclusion of the Claude Code run"
+    value: ${{ steps.claude.outputs.conclusion }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Claude for Issue Mention
+      id: claude
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      uses: anthropics/claude-code-action@v1
+      with:
+        claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
+        github_token: ${{ inputs.github-token }}
+        track_progress: ${{ inputs.track-progress }}
+        prompt: |
+          <context>
+          Repository: ${{ github.repository }}
+          Issue Number: #${{ github.event.issue.number }}
+          Issue Title: ${{ github.event.issue.title }}
+          Issue Author: ${{ github.event.issue.user.login }}
+          Comment Author: ${{ github.event.comment.user.login }}
+          </context>
+
+          <user_request>
+          ${{ github.event.comment.body }}
+          </user_request>
+
+          <task>
+          You have been mentioned in a GitHub issue comment. Understand the request, gather context, complete the task, and respond with results.
+          </task>
+
+          <constraints>
+          This workflow allows read, write, and execute capabilities but cannot push changes.
+          
+          You CAN: Read/analyze code, modify files, write code, run tests, execute commands
+          You CANNOT: Commit code, push changes, create branches, checkout branches, create pull requests
+          
+          **Important**: You cannot push changes to the repository - you can only make changes locally and provide feedback or recommendations.
+          </constraints>
+
+          <allowed_tools>
+          You have access to the following tools (comma-separated list):
+          
+          ${{ inputs.allowed-tools }}
+          ${{ inputs.extra-allowed-tools }}
+          
+          You can only use tools that are explicitly listed above. For Bash commands, the pattern `Bash(command:*)` means you can run that command with any arguments. If a command is not listed, it is not available.
+          </allowed_tools>
+
+          <getting_started>
+          Use `mcp__agents-md-generator__generate_agents_md` to get repository context before responding.
+          </getting_started>
+
+          <investigation_approach>
+          Be thorough in your investigations:
+          - Understand the full context of the repository
+          - Review related code, issues, and PRs
+          - Consider edge cases and implications
+          - Gather all relevant information before responding
+
+          Available tools:
+          - `mcp__public-code-search__search_code`: Search code in OTHER repositories (use `Grep`/`Read` for this repo)
+          - `WebSearch`: Search the web for documentation, best practices, or solutions
+          - `WebFetch`: Fetch and read content from URLs
+          </investigation_approach>
+
+          <common_tasks>
+          - Answer questions about the codebase
+          - Help debug reported problems (make changes locally to test, cannot push)
+          - Suggest solutions or workarounds
+          - Provide code examples
+          - Help clarify requirements
+          - Link to relevant documentation or code
+          </common_tasks>
+
+          <response_guidelines>
+          - Be concise and actionable
+          - If the request is unclear, ask clarifying questions
+          - If the request requires actions you cannot perform (like pushing changes), explain what you can and cannot do
+          - When making code changes, explain that they are local only and cannot be pushed
+          </response_guidelines>
+
+          <response_footer>
+          Always end your comment with a new line, three dashes, and the footer message:
+          <exact_content>
+
+          ---
+          *Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)
+          </exact_content>
+          </response_footer>
+
+          <additional_instructions>
+          ${{ inputs.additional-instructions }}
+          </additional_instructions>
+        claude_args: |
+          ${{ format('--allowedTools {0}{1}', inputs.allowed-tools, inputs.extra-allowed-tools != '' && format(',{0}', inputs.extra-allowed-tools) || '') }}
+          --mcp-config "${{ inputs.mcp-servers }}"
+          --model ${{ inputs.model }}

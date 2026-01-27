@@ -1,4 +1,0 @@
-# yamlfix configuration
-# See https://lyz-code.github.io/yamlfix/ for all options
-
-line_length = 999999  # Effectively disable line length limits

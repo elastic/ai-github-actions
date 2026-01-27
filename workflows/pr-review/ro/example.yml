@@ -1,7 +1,7 @@
 # Example workflow for automatic PR review (read-only)
 # Copy this to your repo's .github/workflows/ directory
 #
-# This version provides review comments only, no code suggestions.
+# This version provides review comments with suggestion blocks, but cannot modify files locally or run tests.
 
 name: PR Review (Read-Only)
 
@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
   pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
 
 jobs:
   review:
@@ -25,7 +29,7 @@ jobs:
       # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run Claude PR Review (Read-Only)
-        uses: your-org/ai-github-actions/workflows/pr-review/ro@v1
+        uses: elastic/ai-github-actions/workflows/pr-review/ro@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}

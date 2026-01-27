@@ -1,11 +1,11 @@
-# Issue Triage (Read-Write-Execute)
+# Mention in PR (Read-Write-Execute-Push)
 
-Automatically triage and label new issues with read, write, and execution capabilities. Can run tests, write temporary files for testing, but cannot commit/push code.
+Respond when Claude is mentioned in PR comments. Can make code changes, run tests, commit code, push changes, create pull requests, and resolve review threads to complete tasks. When creating pull requests, branches are automatically created by the GitHub Action. Includes tools for managing PR review threads.
 
 ## Usage
 
 ```yaml
-- uses: elastic/ai-github-actions/workflows/issue-triage/rwx@v1
+- uses: elastic/ai-github-actions/workflows/mention-in-pr/rwxp@v1
   with:
     claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
     github-token: ${{ github.token }}
@@ -16,20 +16,18 @@ See [example.yml](example.yml) for a complete workflow example.
 ## Capabilities
 
 - ✅ Read and analyze code
-- ✅ Search repository and git history
-- ✅ Search for similar issues/PRs
-- ✅ **Write files** (test files, temporary files for verification)
-- ✅ **Execute commands** (all Bash commands allowed by default)
-- ❌ Cannot create/checkout branches
-- ❌ Cannot commit changes
-- ⚠️ Do not push changes (tool is available but discouraged)
+- ✅ Modify files and write code
+- ✅ Run tests and execute commands
+- ✅ Resolve review threads
+- ✅ Commit code
+- ✅ Push changes
+- ✅ Create branches and pull requests
 
-## Use Cases
+## PR Review Thread Tools
 
-- Write test files to confirm behavior
-- Verify reported bugs by running tests
-- Execute scripts to understand behavior
-- Run linters or static analysis tools
+The `mention-in-pr` workflow includes helper scripts for managing PR review threads:
+- `gh-get-review-threads.sh` - List review threads
+- `gh-resolve-review-thread.sh` - Resolve a review thread
 
 ## Inputs
 
@@ -38,7 +36,7 @@ See [example.yml](example.yml) for a complete workflow example.
 | `claude-oauth-token` | Claude OAuth token | Yes | - |
 | `github-token` | GitHub token for Claude | Yes | - |
 | `model` | Model to use | No | `claude-sonnet-4-20250514` |
-| `allowed-tools` | Allowed tools (defaults include: Write, read-only git commands, Bash(*) for all commands, MCP tools) | No | See action.yml for full default list |
+| `allowed-tools` | Allowed tools (defaults include: Edit, Write, git commands, PR review scripts, MCP tools) | No | See action.yml for full default list |
 | `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
 | `track-progress` | Track progress with visual indicators | No | `true` |

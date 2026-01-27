@@ -2,7 +2,7 @@
 # Composite Action for PR review with Claude (Read-Only)
 #
 # Usage:
-#   - uses: your-org/ai-github-actions/workflows/pr-review/ro@v1
+#   - uses: elastic/ai-github-actions/workflows/pr-review/ro@v1
 #     with:
 #       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
 #       github-token: ${{ github.token }}
@@ -95,16 +95,19 @@ runs:
           Review this pull request and provide feedback via GitHub PR review comments.
           Focus on identifying concrete issues that require action.
           Be concise, specific, and actionable. Avoid verbose explanations or praise.
+          
+          Use inline comments (pr-comment.sh) for line-specific issues with concrete fixes.
+          Put broader architectural concerns in the review body when submitting.
           </task>
 
           <constraints>
           This workflow is for review and comments ONLY - feedback is provided via GitHub PR review comments.
           
-          You CANNOT: Modify files, write code, run tests, execute commands, create branches, checkout branches, commit code, push changes to the repository
-          You CAN: Read/analyze code, review diffs, provide feedback via inline PR review comments
+          You CANNOT: Modify files locally, run tests, execute commands, create branches, commit code, push changes
+          You CAN: Read/analyze code, review diffs, provide code suggestions (via ```suggestion blocks in comments)
           
-          **Important**: Your feedback is provided via GitHub PR review comments, not by making code changes.
-          You cannot push changes to the repository - you can only provide feedback and recommendations.
+          **Important**: Your feedback is provided via GitHub PR review comments, not by making local code changes.
+          Suggestion blocks let PR authors apply your fixes with one click.
           </constraints>
 
           <allowed_tools>
@@ -173,25 +176,22 @@ runs:
              - Determine severity using severity_classification
              - Verify it's not filtered by filtering_rules
              - Use the `[LINE]` number from the diff output for pr-comment.sh
-             - Use heredoc for complex comments (see `<tools>` section)
-          5. Submit review with `$PR_SCRIPTS/pr-review.sh`
+             - Provide --severity, --title, --why, and suggestion code via heredoc
+             - Use --no-suggestion only for issues requiring multi-location fixes
+          5. Submit review with `$PR_SCRIPTS/pr-review.sh`, including broader architectural
+             concerns in the review body (not as inline comments)
           </review_process>
 
           <comment_format>
-          Structure each inline comment as:
+          The pr-comment.sh script assembles comments in a consistent format. You provide:
+          - --severity: critical, high, medium, low
+          - --title: Brief description for the comment heading
+          - --why: One sentence explaining the risk/impact
+          - Suggestion code via stdin (heredoc) - or --no-suggestion for architectural issues
 
-          **[SEVERITY]** Brief issue description
-
-          Why: One sentence explaining the risk or impact.
-
-          Recommended approach: Describe what should be changed (but do not provide code suggestions).
-
-          Example:
-          **🔴 CRITICAL** SQL injection vulnerability in user input
-
-          Why: User-provided `id` is concatenated directly into SQL query without sanitization.
-
-          Recommended approach: Use parameterized queries or prepared statements to safely handle user input.
+          **Always provide suggestions** for line-specific issues. Use --no-suggestion only when
+          the fix requires changes across multiple locations. Larger architectural concerns
+          belong in the review body, not inline comments.
           </comment_format>
 
           <review_decision>
@@ -215,34 +215,36 @@ runs:
           $PR_SCRIPTS/pr-diff.sh path/to/file.go
           ```
 
-          Add inline comment (simple):
+          Add inline comment with suggestion (preferred):
           ```bash
-          $PR_SCRIPTS/pr-comment.sh <file> <line> "simple comment here"
-          ```
-
-          Add inline comment (complex - use heredoc to avoid escaping):
-          ```bash
-          $PR_SCRIPTS/pr-comment.sh <file> <line> <<'EOF'
-          **🟠 HIGH** Description here
-
-          Why: Explanation of the issue.
-
-          Recommended approach: Describe what should be changed.
+          $PR_SCRIPTS/pr-comment.sh <file> <line> \
+            --severity <critical|high|medium|low> \
+            --title "Brief description" \
+            --why "Risk or impact" <<'EOF'
+          corrected code here
           EOF
           ```
-          Note: Using `<<'EOF'` (with quotes) prevents shell interpretation - no escaping needed.
+
+          Add inline comment without suggestion (for architectural issues only):
+          ```bash
+          $PR_SCRIPTS/pr-comment.sh <file> <line> \
+            --severity <critical|high|medium|low> \
+            --title "Brief description" \
+            --why "Risk or impact" \
+            --no-suggestion
+          ```
 
           Remove a queued comment (if you made a mistake):
           ```bash
           $PR_SCRIPTS/pr-remove-comment.sh <file> <line>
           ```
 
-          Submit review:
+          Submit review (include broader concerns in the summary):
           ```bash
           $PR_SCRIPTS/pr-review.sh <APPROVE|REQUEST_CHANGES|COMMENT> "<summary>"
           ```
           
-          Note: A standard footer with reaction buttons is automatically appended to all comments and reviews.
+          Note: A standard footer is automatically appended to all comments and reviews.
           </tools>
 
           <tracking_comment>

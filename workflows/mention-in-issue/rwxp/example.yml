@@ -1,14 +1,14 @@
-# Example workflow for automatic issue triage (read-only)
+# Example workflow for @claude mentions on issues
 # Copy this to your repo's .github/workflows/ directory
 
-name: Issue Triage (Read-Only)
+name: Claude Mention (Issue)
 
 on:
-  issues:
-    types: [opened]
+  issue_comment:
+    types: [created]
 
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 concurrency:
@@ -16,17 +16,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  triage:
+  respond:
+    if: contains(github.event.comment.body, '@claude') && github.event.issue.pull_request == null
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
       # Place environment setup commands here (e.g., install dependencies, configure tools)
-
-      - name: Run Claude Issue Triage (Read-Only)
-        uses: elastic/ai-github-actions/workflows/issue-triage/ro@v1
+      - uses: elastic/ai-github-actions/workflows/mention-in-issue/rwxp@v1
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
-          # Optional: add custom instructions
-          # additional-instructions: "Focus on security-related issues first"

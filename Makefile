@@ -36,24 +36,22 @@ define download-file
 	fi
 endef
 
-.PHONY: help setup setup-uv setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian lint-yaml fix-yaml lint-workflows lint-actions
+.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian lint-workflows lint-actions
 
 help:
 	@echo "This repository contains GitHub Actions workflows."
 	@echo "Edit workflows/*/action.yml files directly."
 	@echo ""
 	@echo "Available targets:"
-	@echo "  setup                - Set up development environment (install dependencies and tools)"
-	@echo "  setup-uv             - Install Python dependencies with uv sync"
+	@echo "  setup                - Set up development environment (install tools)"
 	@echo "  setup-actionlint     - Install actionlint tool"
 	@echo "  setup-action-validator - Install action-validator tool"
 	@echo "  setup-gh             - Check GitHub CLI installation"
-	@echo "  lint-yaml            - Check YAML files for formatting issues (CI mode)"
-	@echo "  fix-yaml             - Automatically fix YAML formatting issues"
 	@echo "  lint-workflows       - Validate GitHub Actions workflow files"
 	@echo "  lint-actions         - Validate GitHub Actions composite action files"
+	@echo "  lint                 - Run all linters"
 
-setup: setup-uv setup-actionlint setup-action-validator setup-gh
+setup: setup-actionlint setup-action-validator setup-gh
 	@echo ""
 	@echo "✓ Setup complete!"
 
@@ -107,14 +105,6 @@ setup-gh-debian:
 	sudo apt-get install -y gh && \
 	echo "✓ GitHub CLI installed"
 
-setup-uv:
-	@echo "Setting up Python dependencies..."
-	@command -v uv >/dev/null 2>&1 || (echo "Error: uv not installed. Install with: curl -LsSf https://astral.sh/uv/install.sh | sh" && exit 1)
-	@echo "✓ uv found"
-	@echo "Installing Python dependencies with uv sync..."
-	@uv sync
-	@echo "✓ Python dependencies installed"
-
 setup-actionlint:
 	@echo "Setting up actionlint..."
 	@mkdir -p bin
@@ -130,14 +120,6 @@ setup-actionlint:
 		$(call download-file,$$URL) | tar -xz -C bin actionlint && chmod +x "$$ACTIONLINT_BIN" && \
 		echo "✓ actionlint installed to $$ACTIONLINT_BIN"; \
 	fi
-
-lint-yaml: setup-uv
-	@echo "Checking YAML files..."
-	@find workflows base .github/workflows \( -name "*.yml" -o -name "*.yaml" \) 2>/dev/null | xargs uv run yamlfix --check
-
-fix-yaml: setup-uv
-	@echo "Fixing YAML files..."
-	@find workflows base .github/workflows \( -name "*.yml" -o -name "*.yaml" \) 2>/dev/null | xargs uv run yamlfix
 
 lint-workflows: setup-actionlint
 	@echo "Validating GitHub Actions workflow files..."
@@ -171,4 +153,4 @@ lint-actions: setup-action-validator
 		$$ACTION_VALIDATOR "$$file" || exit 1; \
 	done
 
-lint: lint-yaml lint-workflows lint-actions
+lint: lint-workflows lint-actions

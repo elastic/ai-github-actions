@@ -111,7 +111,7 @@ if [ -z "$FILE" ]; then
   fi
 else
   # Show specific file diff
-  PATCH=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate --jq ".[] | select(.filename==\"${FILE}\") | .patch")
+  PATCH=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate --jq --arg file "$FILE" '.[] | select(.filename==$file) | .patch')
   
   if [ -z "$PATCH" ]; then
     echo "Error: File '${FILE}' not found in PR diff"

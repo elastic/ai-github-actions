@@ -2,7 +2,7 @@
 # Composite Action for running Project Manager reviews with Claude
 #
 # Usage:
-#   - uses: your-org/ai-github-actions/workflows/project-manager@v1
+#   - uses: elastic/ai-github-actions/workflows/project-manager/ro@v1
 #     with:
 #       claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
 #       github-token: ${{ github.token }}
