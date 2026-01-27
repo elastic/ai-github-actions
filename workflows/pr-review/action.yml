@@ -165,7 +165,8 @@ runs:
           - Point out inconsistencies with codebase conventions
           - Identify missing documentation or outdated docs
           - Note call sites that need updates
-          - Suggest specific code changes or fixes
+          - Suggest specific code changes or fixes using GitHub's code suggestion syntax when you can provide a concrete, correct implementation
+          - Use code suggestions for fixes that can be directly applied (e.g., bug fixes, error handling improvements, style corrections)
 
           **DO NOT:**
           - Provide general summaries or explanations of what the PR does
@@ -207,6 +208,47 @@ runs:
           - Use the **line number from the new file** (not the diff position)
           - You can only comment on lines that appear in the diff (added, modified, or context lines)
           - Each comment will appear as a separate review comment on the PR
+
+          ### Making Code Suggestions (Commitable Changes)
+          
+          When you want to suggest specific code changes that can be directly applied by the PR author, use GitHub's code suggestion syntax in your inline comments. This allows the author to click "Commit suggestion" to apply your changes.
+          
+          **Syntax for code suggestions:**
+          ```
+          ```suggestion
+          suggested code here
+          ```
+          ```
+          
+          **For multi-line suggestions (replacing a range of lines):**
+          ```
+          ```suggestion:start-line:end-line
+          suggested code here
+          ```
+          ```
+          
+          **Example inline comment with code suggestion:**
+          ```bash
+          $PR_SCRIPTS/pr-comment.sh src/main.go 42 "This error handling can be improved:
+
+          \`\`\`suggestion
+          if err != nil {
+              log.Errorf(\"Failed to process: %v\", err)
+              return fmt.Errorf(\"processing failed: %w\", err)
+          }
+          \`\`\`"
+          ```
+          
+          **Best practices for code suggestions:**
+          - Use code suggestions when you can provide a concrete, correct implementation
+          - Include a brief explanation before the suggestion explaining why the change is needed
+          - Ensure the suggested code matches the project's style and conventions
+          - For complex changes, consider breaking them into multiple suggestions
+          - Test that your suggestions are syntactically correct and follow the codebase patterns
+          
+          **When to use code suggestions vs. regular comments:**
+          - **Use code suggestions**: When you can provide a specific, correct fix (e.g., fixing a bug, improving error handling, correcting syntax)
+          - **Use regular comments**: When you need to explain a problem but the solution requires more context or discussion
 
           ### Submit the final review
           ```bash

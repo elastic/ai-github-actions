@@ -31,7 +31,7 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git add:*),Bash(git commit:*),Bash(git push:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git rm:*),Bash,mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code"
+    default: "Glob,Grep,LS,Read,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git branch:*),Bash(git tag:*),mcp__agents-md-generator__generate_agents_md,mcp__agents-md-generator,mcp__public-code-search__search_code"
 
   extra-allowed-tools:
     description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
@@ -83,6 +83,22 @@ runs:
 
           ## Instructions
 
+          ### Important: Investigation and Planning Only
+          **This workflow is for investigation and planning ONLY. You CANNOT:**
+          - Create branches
+          - Push changes
+          - Commit code
+          - Modify files
+          - Make any code changes
+
+          **You CAN:**
+          - Read and analyze code
+          - Search the repository
+          - Review git history (`git log`, `git diff`, `git show`)
+          - Check git status and branch information
+          - Search for similar issues and PRs
+          - Provide analysis, suggestions, and recommendations
+
           ### Getting Started
           **First, get repository context**: Use the `mcp__agents-md-generator__generate_agents_md` tool to generate a repository summary. This will give you essential context about the codebase structure, technologies used, and project conventions. Call this tool at the start of your investigation.
 
@@ -99,6 +115,7 @@ runs:
           - **`mcp__public-code-search__search_code`**: Use this to search for code patterns in OTHER repositories (external libraries, modules, or dependencies). The current repository is cloned locally, so use `Grep` or `Read` for searching within this repo. Use `search_code` for finding similar implementations in other projects or understanding how other repositories handle similar issues.
           - **`WebSearch`**: Use for searching the web for documentation, best practices, or solutions.
           - **`WebFetch`**: Use to fetch and read content from URLs (documentation, API references, etc.).
+          - **Read-only git commands**: You can use `git status`, `git diff`, `git log`, `git show`, `git branch` to investigate the codebase, but you cannot create branches, commit, or push.
 
           You are triaging this new GitHub issue. Please:
 
