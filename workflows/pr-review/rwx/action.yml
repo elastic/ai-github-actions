@@ -26,7 +26,7 @@ inputs:
   model:
     description: "Model to use for Claude"
     required: false
-    default: "claude-sonnet-4-20250514"
+    default: "claude-opus-4-5-20251101"
 
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
@@ -47,7 +47,7 @@ inputs:
   track-progress:
     description: "Whether Claude should track progress with visual indicators"
     required: false
-    default: "true"
+    default: "false"
 
   mcp-servers:
     description: "MCP server configuration JSON"
@@ -62,6 +62,14 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: React to PR with eyes
+      shell: bash
+      run: |
+        gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/reactions" \
+          -f content=eyes 2>/dev/null || true
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+
     - name: Run Claude for PR Review (Read-Write-Execute)
       id: claude
       env:
@@ -146,6 +154,10 @@ runs:
           ⚪ LOW - Author discretion (non-blocking)
              Minor improvements, documentation suggestions, style preferences not covered by linters
              Confidence: Below 70%
+
+          💬 NITPICK - Truly optional (non-blocking)
+             Stylistic preferences, alternative approaches, "consider this" suggestions
+             Safe to ignore entirely
           </severity_classification>
 
           <review_criteria>
@@ -185,7 +197,7 @@ runs:
 
           <comment_format>
           The pr-comment.sh script assembles comments in a consistent format. You provide:
-          - --severity: critical, high, medium, low
+          - --severity: critical, high, medium, low, nitpick
           - --title: Brief description for the comment heading
           - --why: One sentence explaining the risk/impact
           - Suggestion code via stdin (heredoc) - or --no-suggestion for architectural issues
@@ -199,10 +211,17 @@ runs:
           Based on findings, choose the appropriate review action:
 
           - REQUEST_CHANGES: If any 🔴 CRITICAL or 🟠 HIGH issues found
-          - COMMENT: If only 🟡 MEDIUM or ⚪ LOW issues found
-          - APPROVE: If no issues found or only trivial improvements suggested
+          - COMMENT: If 🟡 MEDIUM issues found (but no critical/high)
+          - APPROVE: If no issues, or only ⚪ LOW / 💬 NITPICK suggestions
 
-          Keep the review summary concise - the inline comments contain the details.
+          **Important**: The review body is your main output. Include:
+          - Any broader architectural concerns not suited for inline comments
+          - Critical issues identified that are outside the scope of the PR diff but are impacted by the PR
+          - Your recommendation (approve/request changes/comment) with rationale
+          - Avoid summarizing the PR, providing general feedback or explanations of changes
+          - Avoid offering praise for the author, PR, or team.
+
+          The inline comments provide line-specific details; the review body ties it together.
           </review_decision>
 
           <tools>
@@ -219,7 +238,7 @@ runs:
           Add inline comment with suggestion (preferred):
           ```bash
           $PR_SCRIPTS/pr-comment.sh <file> <line> \
-            --severity <critical|high|medium|low> \
+            --severity <critical|high|medium|low|nitpick> \
             --title "Brief description" \
             --why "Risk or impact" <<'EOF'
           corrected code here
@@ -229,7 +248,7 @@ runs:
           Add inline comment without suggestion (for architectural issues only):
           ```bash
           $PR_SCRIPTS/pr-comment.sh <file> <line> \
-            --severity <critical|high|medium|low> \
+            --severity <critical|high|medium|low|nitpick> \
             --title "Brief description" \
             --why "Risk or impact" \
             --no-suggestion
@@ -247,16 +266,6 @@ runs:
           
           Note: A standard footer is automatically appended to all comments and reviews.
           </tools>
-
-          <tracking_comment>
-          After submitting the review, your progress tracking comment will be updated automatically.
-          Keep the final message brief - do NOT repeat the review findings or inline comments.
-          Simply indicate the review was submitted, note any issues that you encountered reviewing the PR
-          or using tools, and include the standard footer:
-
-          ---
-          *Review by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)"
-          </tracking_comment>
 
           <additional_instructions>
           ${{ inputs.additional-instructions }}

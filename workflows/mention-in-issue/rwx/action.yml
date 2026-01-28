@@ -61,6 +61,14 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: React to comment with eyes
+      shell: bash
+      run: |
+        gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+          -f content=eyes 2>/dev/null || true
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+
     - name: Run Claude for Issue Mention
       id: claude
       env:

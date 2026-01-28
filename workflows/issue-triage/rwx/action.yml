@@ -61,6 +61,14 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: React to issue with eyes
+      shell: bash
+      run: |
+        gh api "repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/reactions" \
+          -f content=eyes 2>/dev/null || true
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+
     - name: Run Claude for Issue Triage (Read-Write-Execute)
       id: claude
       env:

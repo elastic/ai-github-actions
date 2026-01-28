@@ -8,7 +8,7 @@
 # Arguments:
 #   file              File path (required)
 #   line              Line number (required)
-#   --severity        Severity level: critical, high, medium, low (required)
+#   --severity        Severity level: critical, high, medium, low, nitpick (required)
 #   --title           Brief description for comment heading (required)
 #   --why             One sentence explaining the risk/impact (required)
 #   --no-suggestion   Explicitly skip suggestion (use for architectural issues)
@@ -45,6 +45,7 @@ declare -A SEVERITY_EMOJI=(
   [high]="🟠 HIGH"
   [medium]="🟡 MEDIUM"
   [low]="⚪ LOW"
+  [nitpick]="💬 NITPICK"
 )
 
 # Parse arguments
@@ -100,7 +101,7 @@ fi
 
 # Validate required arguments
 if [ -z "$SEVERITY" ]; then
-  echo "Error: --severity is required (critical, high, medium, low)"
+  echo "Error: --severity is required (critical, high, medium, low, nitpick)"
   exit 1
 fi
 
@@ -116,7 +117,7 @@ fi
 
 # Validate severity level
 if [ -z "${SEVERITY_EMOJI[$SEVERITY]}" ]; then
-  echo "Error: Invalid severity '$SEVERITY'. Must be one of: critical, high, medium, low"
+  echo "Error: Invalid severity '$SEVERITY'. Must be one of: critical, high, medium, low, nitpick"
   exit 1
 fi
 
