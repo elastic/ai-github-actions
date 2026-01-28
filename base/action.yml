@@ -38,7 +38,7 @@ inputs:
   model:
     description: "Model to use for Claude"
     required: false
-    default: "claude-sonnet-4-20250514"
+    default: "claude-opus-4-5-20251101"
 
   allowed-bots:
     description: "Comma-separated list of allowed bot usernames, or '*' to allow all bots"

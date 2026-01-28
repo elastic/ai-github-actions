@@ -21,7 +21,7 @@ See [example.yml](example.yml) for a complete workflow example.
 |-------|-------------|----------|---------|
 | `claude-oauth-token` | Claude OAuth token | Yes | - |
 | `github-token` | GitHub token for Claude | Yes | - |
-| `model` | Model to use | No | `claude-sonnet-4-20250514` |
+| `model` | Model to use | No | `claude-opus-4-5-20251101` |
 | `allowed-tools` | Allowed tools (defaults include: Edit, Write, Bash(*), MCP tools) | No | See action.yml for full default list |
 | `extra-allowed-tools` | Additional tools to add to the defaults | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |

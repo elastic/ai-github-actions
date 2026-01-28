@@ -86,7 +86,7 @@ The core action with full configurability.
 | `claude-oauth-token` | Claude OAuth token | Yes | - |
 | `github-token` | GitHub token for Claude | Yes | - |
 | `allowed-tools` | Comma-separated list of allowed tools | No | `""` |
-| `model` | Model to use | No | `claude-sonnet-4-20250514` |
+| `model` | Model to use | No | `claude-opus-4-5-20251101` |
 | `allowed-bots` | Allowed bot usernames, or `*` for all | No | `""` |
 | `track-progress` | Track progress | No | `true` |
 | `claude-args` | Additional Claude arguments | No | `""` |

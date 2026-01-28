@@ -46,7 +46,7 @@ inputs:
   model:
     description: "Model to use for Claude"
     required: false
-    default: "claude-sonnet-4-20250514"
+    default: "claude-opus-4-5-20251101"
 
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"

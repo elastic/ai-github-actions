@@ -38,7 +38,7 @@ inputs:
   model:
     description: "Model to use for Claude analysis"
     required: false
-    default: "claude-sonnet-4-20250514"
+    default: "claude-opus-4-5-20251101"
 
   issue-labels:
     description: "Comma-separated labels to add to the summary issue"

@@ -26,7 +26,7 @@ inputs:
   model:
     description: "Model to use for Claude"
     required: false
-    default: "claude-sonnet-4-20250514"
+    default: "claude-opus-4-5-20251101"
 
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
@@ -322,6 +322,15 @@ runs:
           - Be concise and actionable
           - If the request is unclear, ask clarifying questions
           - If the request requires actions you cannot perform, explain what you can and cannot do
+          
+          **When performing a PR review**: Your substantive feedback belongs in the PR review submission
+          (via pr-review.sh), not in the comment response. The comment should only report:
+          - That you've submitted the review (with the outcome: approved, requested changes, etc.)
+          - Any issues encountered during the review process
+          - Brief status updates
+          
+          Do NOT duplicate the review content in your comment - the review itself contains all the details.
+          Keep the comment short, e.g., "I've submitted my review requesting changes. See the review for details."
           </response_guidelines>
 
           <response_footer>

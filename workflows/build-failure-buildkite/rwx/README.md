@@ -31,7 +31,7 @@ See [example.yml](example.yml) for a complete workflow example.
 | `buildkite-org` | Buildkite organization slug | No | `"elastic"` |
 | `buildkite-pipeline` | Buildkite pipeline slug (auto-discovered if not provided) | No | `""` |
 | `buildkite-build-number` | Buildkite build number (auto-discovered if not provided) | No | `""` |
-| `model` | Model to use | No | `claude-sonnet-4-20250514` |
+| `model` | Model to use | No | `claude-opus-4-5-20251101` |
 | `allowed-tools` | Allowed tools (defaults include: Edit, Write, Bash(*), MCP tools, Buildkite MCP) | No | See action.yml for full default list |
 | `extra-allowed-tools` | Additional tools to add to the defaults | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |

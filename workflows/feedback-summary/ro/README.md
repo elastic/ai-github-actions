@@ -31,7 +31,7 @@ The feedback summary workflow:
 | `claude-oauth-token` | Claude OAuth token for AI analysis (optional) | No | `""` |
 | `days` | Number of days to look back for feedback | No | `"7"` |
 | `bot-pattern` | Regex pattern to match bot usernames | No | `"claude\|github-actions\[bot\]\|copilot\[bot\]"` |
-| `model` | Model to use for Claude analysis | No | `claude-sonnet-4-20250514` |
+| `model` | Model to use for Claude analysis | No | `claude-opus-4-5-20251101` |
 | `issue-labels` | Comma-separated labels for summary issue | No | `"ai-feedback,automated"` |
 | `create-issue` | Whether to create a GitHub issue with the summary | No | `"true"` |
 
