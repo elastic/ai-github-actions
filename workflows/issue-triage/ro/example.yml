@@ -17,6 +17,8 @@ concurrency:
 
 jobs:
   triage:
+    # Only run for trusted contributors (adjust list as needed)
+    if: contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.issue.author_association)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

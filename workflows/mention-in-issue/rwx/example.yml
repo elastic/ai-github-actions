@@ -17,7 +17,11 @@ concurrency:
 
 jobs:
   respond:
-    if: contains(github.event.comment.body, '@claude') && github.event.issue.pull_request == null
+    # Only respond to trusted contributors (adjust list as needed)
+    if: >-
+      contains(github.event.comment.body, '@claude') &&
+      github.event.issue.pull_request == null &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
