@@ -87,7 +87,9 @@ All workflows include a standard footer in tracking comments:
 ```
 
 ---
-*Comment by Claude Code* | React with 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)
+[Why is Claude responding?](https://ela.st/github-ai-tools) | Type `@claude` to interact further
+
+Give us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.
 ```
 
 This footer is documented in the prompt's `<tracking_comment>` or `<response_footer>` section.
