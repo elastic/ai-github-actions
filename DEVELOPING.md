@@ -115,6 +115,47 @@ All workflow prompts follow a consistent structure with XML-like sections:
 
 **Pattern**: Include this in the `<getting_started>` section of every workflow prompt.
 
+## Releasing
+
+### Version Tags
+
+This repository uses semver tags with floating major version tags:
+
+- **Semver tags** (`v1.0.0`, `v1.0.1`, `v1.2.0`) - Immutable, point to specific commits
+- **Major version tags** (`v1`, `v2`) - Floating, always point to the latest semver in that major
+
+**Why both?**
+- Semver tags provide reproducibility and audit trails
+- Major version tags provide convenience and automatic minor/patch updates
+- Users can choose their preferred trade-off between stability and freshness
+
+### Creating a Release
+
+1. Ensure all changes are merged to `main`
+2. Create and push a semver tag:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+3. The release workflow automatically:
+   - Creates a GitHub release with auto-generated notes
+   - Updates the `v1` tag to point to this release
+
+### Version Bump Guidelines
+
+- **Major** (`v1` → `v2`): Breaking changes to action inputs/outputs or behavior
+- **Minor** (`v1.0` → `v1.1`): New features, new actions, non-breaking changes
+- **Patch** (`v1.0.0` → `v1.0.1`): Bug fixes, documentation, prompt improvements
+
+### User References
+
+Users can reference actions using:
+- `@v1` - Floating major version (recommended for most users)
+- `@v1.0.0` - Exact semver (for reproducibility)
+- `@<commit-sha>` - Full commit SHA (maximum security)
+
+See [SECURITY.md](SECURITY.md#action-pinning) for security considerations around tag vs SHA pinning.
+
 ## Testing Considerations
 
 When testing workflows:

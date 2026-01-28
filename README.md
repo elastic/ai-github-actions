@@ -6,7 +6,7 @@ Composite GitHub Actions that wrap the [Anthropic Claude Code Action](https://gi
 
 > **Important:** Read-write-execute (RWX) and Read-write-execute-push (RWXP) agents have access to run arbitrary commands, including git commit and git push. To prevent pushes, set `contents: read` (or `contents: none`) in the calling workflow's `permissions:` section. Without these permissions, RWX and RWXP agents may be able to push changes despite prompt constraints.
 
-> **Security:** Workflows triggered by user actions (issue comments, new issues) should restrict who can trigger Claude. The example workflows include an `author_association` check that only allows `OWNER`, `MEMBER`, and `COLLABORATOR` to trigger Claude. This prevents anonymous users and external contributors from invoking Claude. PR review workflows rely on GitHub's built-in approval gate for external contributors instead.
+> **Security:** Workflows triggered by user actions (issue comments, new issues) should restrict who can trigger Claude. The example workflows include an `author_association` check that only allows `OWNER`, `MEMBER`, and `COLLABORATOR` to trigger Claude. This prevents anonymous users and external contributors from invoking Claude. PR review workflows rely on GitHub's built-in approval gate for external contributors instead. See [SECURITY.md](SECURITY.md) for detailed guidance.
 
 ### Base/Custom
 

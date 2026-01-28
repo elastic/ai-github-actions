@@ -36,7 +36,7 @@ define download-file
 	fi
 endef
 
-.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian lint-workflows lint-actions
+.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian lint-workflows lint-actions release
 
 help:
 	@echo "This repository contains GitHub Actions workflows."
@@ -50,6 +50,7 @@ help:
 	@echo "  lint-workflows       - Validate GitHub Actions workflow files"
 	@echo "  lint-actions         - Validate GitHub Actions composite action files"
 	@echo "  lint                 - Run all linters"
+	@echo "  release VERSION=x.y.z - Create and push a new release tag"
 
 setup: setup-actionlint setup-action-validator setup-gh
 	@echo ""
@@ -154,3 +155,37 @@ lint-actions: setup-action-validator
 	done
 
 lint: lint-workflows lint-actions
+
+# Release a new version
+# Usage: make release VERSION=1.0.0
+release:
+ifndef VERSION
+	@echo "Error: VERSION is required"
+	@echo "Usage: make release VERSION=1.0.0"
+	@echo ""
+	@echo "Recent tags:"
+	@git tag --sort=-version:refname | head -10
+	@exit 1
+endif
+	@echo "Creating release v$(VERSION)..."
+	@if ! echo "$(VERSION)" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$$'; then \
+		echo "Error: VERSION must be in semver format (e.g., 1.0.0)"; \
+		exit 1; \
+	fi
+	@if git rev-parse "v$(VERSION)" >/dev/null 2>&1; then \
+		echo "Error: Tag v$(VERSION) already exists"; \
+		exit 1; \
+	fi
+	@echo ""
+	@echo "This will:"
+	@echo "  1. Create tag v$(VERSION)"
+	@echo "  2. Push to origin (triggers release workflow)"
+	@echo "  3. Create GitHub release with notes"
+	@echo "  4. Update floating v$$(echo $(VERSION) | cut -d. -f1) tag"
+	@echo ""
+	@read -p "Continue? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 1
+	@git tag "v$(VERSION)"
+	@git push origin "v$(VERSION)"
+	@echo ""
+	@echo "✓ Tag v$(VERSION) pushed. Release workflow will create the GitHub release."
+	@echo "  Watch progress: gh run watch"

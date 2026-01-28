@@ -1,0 +1,96 @@
+# Release workflow
+#
+# When a semver tag (v1.2.3) is pushed:
+# 1. Creates a GitHub release with auto-generated notes
+# 2. Updates the major version tag (v1) to point to this release
+#
+# Usage:
+#   git tag v1.0.0
+#   git push origin v1.0.0
+#
+# This allows users to reference either:
+#   - elastic/ai-github-actions/...@v1       (latest v1.x.x)
+#   - elastic/ai-github-actions/...@v1.0.0   (exact version)
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'  # Matches v1.0.0, v2.1.3, etc.
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version info
+        id: version
+        run: |
+          # Get the tag name (e.g., v1.2.3)
+          TAG="${GITHUB_REF#refs/tags/}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          
+          # Extract major version (e.g., v1)
+          MAJOR=$(echo "$TAG" | grep -oE '^v[0-9]+')
+          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+          
+          # Get the full commit SHA
+          SHA="${GITHUB_SHA}"
+          echo "sha=$SHA" >> $GITHUB_OUTPUT
+          
+          echo "Creating release for $TAG (major: $MAJOR, sha: $SHA)"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          MAJOR="${{ steps.version.outputs.major }}"
+          SHA="${{ steps.version.outputs.sha }}"
+          
+          # Create release notes header with SHA for pinning
+          NOTES_HEADER="## Installation
+
+          \`\`\`yaml
+          # Use floating major version (recommended)
+          - uses: elastic/ai-github-actions/...@${MAJOR}
+
+          # Pin to this exact release
+          - uses: elastic/ai-github-actions/...@${TAG}
+
+          # Pin to commit SHA (maximum security)
+          - uses: elastic/ai-github-actions/...@${SHA}
+          \`\`\`
+
+          ---
+
+          "
+          
+          gh release create "$TAG" \
+            --generate-notes \
+            --notes-start-tag "" \
+            --title "$TAG" \
+            --notes "${NOTES_HEADER}$(gh api repos/${{ github.repository }}/releases/generate-notes -f tag_name="$TAG" --jq '.body')"
+
+      - name: Update major version tag
+        run: |
+          MAJOR="${{ steps.version.outputs.major }}"
+          TAG="${{ steps.version.outputs.tag }}"
+          
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Force-update the major version tag to point to the same commit as the semver tag
+          # The -f flag allows overwriting an existing tag
+          # The -a flag creates an annotated tag with a message
+          git tag -fa "$MAJOR" "$TAG" -m "Release $TAG"
+          git push origin "$MAJOR" --force
+          
+          echo "Updated $MAJOR to point to $TAG"

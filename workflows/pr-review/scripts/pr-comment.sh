@@ -214,7 +214,7 @@ fi
 FOOTER='
 
 ---
-*Comment by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)'
+*Comment by Claude Code* | React with 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)'
 
 BODY_WITH_FOOTER="${BODY}${FOOTER}"
 

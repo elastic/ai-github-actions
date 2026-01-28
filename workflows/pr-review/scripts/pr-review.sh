@@ -72,7 +72,7 @@ fi
 FOOTER='
 
 ---
-*Review by Claude Code* | 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)'
+*Review by Claude Code* | React with 🚀 if perfect, 👍 if helpful, 👎 if not | Type `@claude` to interact further | [What is this?](https://ela.st/github-ai-tools)'
 
 if [ -n "$BODY" ]; then
   BODY_WITH_FOOTER="${BODY}${FOOTER}"
