@@ -31,8 +31,8 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    # Includes PR review thread scripts and allows all Bash commands by default
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code,Bash(${{ github.action_path }}/../scripts/gh-get-review-threads.sh:*),Bash(${{ github.action_path }}/../scripts/gh-resolve-review-thread.sh:*)"
+    # Includes PR review thread scripts, PR review scripts, and allows all Bash commands by default
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code,Bash(${{ github.action_path }}/../scripts/gh-get-review-threads.sh:*),Bash(${{ github.action_path }}/../scripts/gh-resolve-review-thread.sh:*),Bash(${{ github.action_path }}/../../pr-review/scripts/pr-comment.sh:*),Bash(${{ github.action_path }}/../../pr-review/scripts/pr-remove-comment.sh:*),Bash(${{ github.action_path }}/../../pr-review/scripts/pr-review.sh:*),Bash(${{ github.action_path }}/../../pr-review/scripts/pr-diff.sh:*)"
 
   extra-allowed-tools:
     description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
@@ -70,6 +70,15 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.github-token }}
 
+    - name: Get PR HEAD SHA
+      id: pr-info
+      shell: bash
+      run: |
+        HEAD_SHA=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.issue.number }}" --jq '.head.sha')
+        echo "head_sha=${HEAD_SHA}" >> "$GITHUB_OUTPUT"
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+
     - name: Run Claude for PR Mention
       id: claude
       env:
@@ -78,6 +87,12 @@ runs:
         MENTION_REPO: ${{ github.repository }}
         MENTION_PR_NUMBER: ${{ github.event.issue.number }}
         MENTION_SCRIPTS: ${{ github.action_path }}/../scripts
+        # For PR review scripts (pr-diff.sh, pr-comment.sh, pr-review.sh)
+        PR_REVIEW_REPO: ${{ github.repository }}
+        PR_REVIEW_PR_NUMBER: ${{ github.event.issue.number }}
+        PR_REVIEW_HEAD_SHA: ${{ steps.pr-info.outputs.head_sha }}
+        PR_REVIEW_COMMENTS_DIR: /tmp/pr-review-comments
+        PR_SCRIPTS: ${{ github.action_path }}/../../pr-review/scripts
       uses: anthropics/claude-code-action@v1
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
@@ -142,7 +157,143 @@ runs:
           - Answer questions about the changes
           - Make additional code changes (local only)
           - Resolve review threads after addressing feedback (if changes are made separately)
+          - Perform PR reviews when asked (use the PR review process below)
           </common_tasks>
+
+          <pr_review_guidance>
+          When asked to review this PR, follow this structured review process:
+
+          <severity_classification>
+          Classify each finding by severity:
+
+          🔴 CRITICAL - Must fix before merge
+             Security vulnerabilities, data corruption risk, production-breaking bugs
+             Confidence: 95-100%
+
+          🟠 HIGH - Should fix before merge  
+             Logic errors, missing validation on critical paths, significant performance issues
+             Confidence: 85-94%
+
+          🟡 MEDIUM - Address soon (non-blocking)
+             Error handling gaps, suboptimal patterns, missing edge cases
+             Confidence: 70-84%
+
+          ⚪ LOW - Author discretion (non-blocking)
+             Minor improvements, documentation suggestions, style preferences not covered by linters
+             Confidence: Below 70%
+
+          💬 NITPICK - Truly optional (non-blocking)
+             Stylistic preferences, alternative approaches, "consider this" suggestions
+             Safe to ignore entirely
+          </severity_classification>
+
+          <review_criteria>
+          Focus your review on these categories, in priority order:
+
+          1. Security vulnerabilities (injection, XSS, auth bypass, secrets exposure)
+          2. Logic bugs that could cause runtime failures or incorrect behavior
+          3. Data integrity issues (race conditions, missing transactions, corruption risk)
+          4. Performance bottlenecks (N+1 queries, memory leaks, blocking operations)
+          5. Error handling gaps (unhandled exceptions, missing validation)
+          6. Breaking changes to public APIs without migration path
+          7. Missing or incorrect test coverage for critical paths
+          </review_criteria>
+
+          <filtering_rules>
+          Do NOT flag:
+          - Issues in unchanged code (only review the diff)
+          - Style preferences handled by linters (formatting, semicolons, indentation)
+          - Subjective nitpicks without security/correctness implications
+          - Code patterns that are intentional based on surrounding context
+          - Pre-existing issues not introduced by this PR
+          </filtering_rules>
+
+          <review_process>
+          1. Get repository context with `mcp__agents-md-generator__generate_agents_md`
+          2. Run `$PR_SCRIPTS/pr-diff.sh` to see changed files with line-numbered diffs
+          3. For each file, review the diff and identify issues matching review_criteria
+          4. For each issue found:
+             - Determine severity using severity_classification
+             - Verify it's not filtered by filtering_rules
+             - Use the `[LINE]` number from the diff output for pr-comment.sh
+             - Provide --severity, --title, --why, and suggestion code via heredoc
+             - Use --no-suggestion only for issues requiring multi-location fixes
+          5. Submit review with `$PR_SCRIPTS/pr-review.sh`, including broader architectural
+             concerns in the review body (not as inline comments)
+          </review_process>
+
+          <comment_format>
+          The pr-comment.sh script assembles comments in a consistent format. You provide:
+          - --severity: critical, high, medium, low, nitpick
+          - --title: Brief description for the comment heading
+          - --why: One sentence explaining the risk/impact
+          - Suggestion code via stdin (heredoc) - or --no-suggestion for architectural issues
+
+          **Always provide suggestions** for line-specific issues. Use --no-suggestion only when
+          the fix requires changes across multiple locations. Larger architectural concerns
+          belong in the review body, not inline comments.
+          </comment_format>
+
+          <review_decision>
+          Based on findings, choose the appropriate review action:
+
+          - REQUEST_CHANGES: If any 🔴 CRITICAL or 🟠 HIGH issues found
+          - COMMENT: If 🟡 MEDIUM issues found (but no critical/high)
+          - APPROVE: If no issues, or only ⚪ LOW / 💬 NITPICK suggestions
+
+          **Important**: The review body is your main output. Include:
+          - Any broader architectural concerns not suited for inline comments
+          - Critical issues identified that are outside the scope of the PR diff but are impacted by the PR
+          - Your recommendation (approve/request changes/comment) with rationale
+          - Avoid summarizing the PR, providing general feedback or explanations of changes
+          - Avoid offering praise for the author, PR, or team.
+
+          The inline comments provide line-specific details; the review body ties it together.
+          </review_decision>
+
+          <pr_review_tools>
+          View changed files:
+          ```bash
+          $PR_SCRIPTS/pr-diff.sh
+          ```
+
+          View specific file diff:
+          ```bash
+          $PR_SCRIPTS/pr-diff.sh path/to/file.go
+          ```
+
+          Add inline comment with suggestion (preferred):
+          ```bash
+          $PR_SCRIPTS/pr-comment.sh <file> <line> \
+            --severity <critical|high|medium|low|nitpick> \
+            --title "Brief description" \
+            --why "Risk or impact" <<'EOF'
+          corrected code here
+          EOF
+          ```
+
+          Add inline comment without suggestion (for architectural issues only):
+          ```bash
+          $PR_SCRIPTS/pr-comment.sh <file> <line> \
+            --severity <critical|high|medium|low|nitpick> \
+            --title "Brief description" \
+            --why "Risk or impact" \
+            --no-suggestion
+          ```
+
+          Remove a queued comment (if you made a mistake):
+          ```bash
+          $PR_SCRIPTS/pr-remove-comment.sh <file> <line>
+          ```
+
+          Submit review (include broader concerns in the summary):
+          ```bash
+          $PR_SCRIPTS/pr-review.sh <APPROVE|REQUEST_CHANGES|COMMENT> "<summary>"
+          ```
+          
+          Note: A standard footer is automatically appended to all comments and reviews.
+          </pr_review_tools>
+          </pr_review_guidance>
 
           <review_thread_tools>
           View unresolved review threads:
