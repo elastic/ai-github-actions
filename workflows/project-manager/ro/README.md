@@ -2,6 +2,16 @@
 
 Run periodic Project Manager reviews to analyze project state, identify priorities, and generate reports.
 
+## Capabilities
+
+- ✅ Read and analyze code
+- ✅ Read-only git commands
+- ✅ Query issues and PRs via `gh` CLI
+- ✅ Create summary issues
+- ❌ Cannot write files
+- ❌ Cannot execute arbitrary commands
+- ❌ Cannot commit or push changes
+
 ## Usage
 
 See [example.yml](example.yml) for a complete workflow example.

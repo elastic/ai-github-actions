@@ -2,6 +2,15 @@
 
 Analyze GitHub Actions workflow failures and suggest fixes. Can provide code suggestions and run tests to verify recommendations.
 
+## Capabilities
+
+- ✅ Read and analyze code
+- ✅ Access workflow run logs via GitHub API
+- ✅ **Write files** (test files, temporary files)
+- ✅ **Execute commands** (configurable via `extra-allowed-tools`)
+- ✅ Read-only git commands
+- ❌ Cannot commit or push changes
+
 ## Usage
 
 See [example.yml](example.yml) for a complete workflow example.

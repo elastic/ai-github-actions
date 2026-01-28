@@ -2,6 +2,15 @@
 
 Collect reactions on AI agent comments and create a summary issue with analysis.
 
+## Capabilities
+
+- ✅ Read feedback data via GitHub API
+- ✅ Analyze patterns with Claude (optional)
+- ✅ Create summary issues
+- ❌ Cannot read repository files (uses API only)
+- ❌ Cannot write files
+- ❌ Cannot execute commands
+
 ## Usage
 
 See [example.yml](example.yml) for a complete workflow example.

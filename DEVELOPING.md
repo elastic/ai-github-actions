@@ -132,7 +132,7 @@ This repository uses semver tags with floating major version tags:
 ### Creating a Release
 
 1. Ensure all changes are merged to `main`
-2. Create and push a semver tag:
+2. Use `make release VERSION=1.0.0` or manually create and push a semver tag:
    ```bash
    git tag v1.0.0
    git push origin v1.0.0

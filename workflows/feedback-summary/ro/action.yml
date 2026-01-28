@@ -126,6 +126,9 @@ runs:
              Keep the analysis concise (3-5 key insights) and actionable.
              If there's not enough data or no clear patterns, say so briefly.
           </task>
+        # Note: This workflow intentionally hardcodes allowed tools (Read,Grep only)
+        # rather than using dynamic inputs. It's a specialized analysis workflow that
+        # only needs to read files - no customization is expected or needed.
         claude_args: |
           --allowedTools Read,Grep
           --model ${{ inputs.model }}

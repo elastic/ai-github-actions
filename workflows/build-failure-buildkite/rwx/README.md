@@ -2,6 +2,15 @@
 
 Analyze Buildkite CI build failures and suggest fixes. Can provide code suggestions and run tests to verify recommendations. Claude will automatically discover the pipeline and build number from the commit SHA.
 
+## Capabilities
+
+- ✅ Read and analyze code
+- ✅ Fetch Buildkite build logs via MCP
+- ✅ **Write files** (test files, temporary files)
+- ✅ **Execute commands** (configurable via `extra-allowed-tools`)
+- ✅ Read-only git commands
+- ❌ Cannot commit or push changes
+
 ## Usage
 
 See [example.yml](example.yml) for a complete workflow example.
