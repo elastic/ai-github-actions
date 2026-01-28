@@ -81,45 +81,46 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup MCP Server Configuration
+    - name: Build MCP Server Configuration
       id: mcp-config
       shell: bash
       env:
         BUILDKITE_API_TOKEN: ${{ inputs.buildkite-api-token }}
         ADDITIONAL_MCP: ${{ inputs.mcp-servers }}
       run: |
-        mkdir -p /tmp/mcp-config
-        
-        # Start with default servers and always include Buildkite
-        cat > /tmp/mcp-config/mcp-servers.json << EOF
-        {
-          "mcpServers": {
-            "agents-md-generator": {
-              "type": "http",
-              "url": "https://agents-md-generator.fastmcp.app/mcp"
-            },
-            "public-code-search": {
-              "type": "http",
-              "url": "https://public-code-search.fastmcp.app/mcp"
-            },
-            "buildkite": {
-              "type": "http",
-              "url": "https://mcp.buildkite.com/mcp/readonly",
-              "headers": {
-                "Authorization": "Bearer $BUILDKITE_API_TOKEN"
+        # Build MCP config as inline JSON (don't write secrets to disk)
+        # See: https://github.com/anthropics/claude-code-action/issues/754
+        BASE_CONFIG=$(jq -n \
+          --arg token "$BUILDKITE_API_TOKEN" \
+          '{
+            "mcpServers": {
+              "agents-md-generator": {
+                "type": "http",
+                "url": "https://agents-md-generator.fastmcp.app/mcp"
+              },
+              "public-code-search": {
+                "type": "http",
+                "url": "https://public-code-search.fastmcp.app/mcp"
+              },
+              "buildkite": {
+                "type": "http",
+                "url": "https://mcp.buildkite.com/mcp/readonly",
+                "headers": {
+                  "Authorization": ("Bearer " + $token)
+                }
               }
             }
-          }
-        }
-        EOF
+          }')
         
         # Merge additional MCP servers if provided
         if [ -n "$ADDITIONAL_MCP" ]; then
-          echo "$ADDITIONAL_MCP" > /tmp/mcp-config/additional.json
-          jq -s '.[0] * .[1]' /tmp/mcp-config/mcp-servers.json /tmp/mcp-config/additional.json > /tmp/mcp-config/mcp-servers-merged.json
-          mv /tmp/mcp-config/mcp-servers-merged.json /tmp/mcp-config/mcp-servers.json
-          rm /tmp/mcp-config/additional.json
+          FINAL_CONFIG=$(echo "$BASE_CONFIG" | jq --argjson additional "$ADDITIONAL_MCP" '. * $additional')
+        else
+          FINAL_CONFIG="$BASE_CONFIG"
         fi
+        
+        # Output as compact JSON for claude_args
+        echo "mcp_json=$(echo "$FINAL_CONFIG" | jq -c .)" >> "$GITHUB_OUTPUT"
 
     - name: Run Claude for Buildkite Build Failure Analysis
       id: claude
@@ -254,5 +255,5 @@ runs:
           </additional_instructions>
         claude_args: |
           ${{ format('--allowedTools {0}{1}', inputs.allowed-tools, inputs.extra-allowed-tools != '' && format(',{0}', inputs.extra-allowed-tools) || '') }}
-          --mcp-config /tmp/mcp-config/mcp-servers.json
+          --mcp-config '${{ steps.mcp-config.outputs.mcp_json }}'
           --model ${{ inputs.model }}

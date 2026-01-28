@@ -232,5 +232,5 @@ runs:
           </additional_instructions>
         claude_args: |
           ${{ format('--allowedTools {0}{1}', inputs.allowed-tools, inputs.extra-allowed-tools != '' && format(',{0}', inputs.extra-allowed-tools) || '') }}
-          --mcp-config "${{ inputs.mcp-servers }}"
+          --mcp-config '${{ inputs.mcp-servers }}'
           --model ${{ inputs.model }}

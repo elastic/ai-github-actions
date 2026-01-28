@@ -39,7 +39,7 @@ The base action uses conditional formatting for optional arguments:
 ```yaml
 claude_args: |
   ${{ inputs.allowed-tools != '' && format('--allowedTools {0}', inputs.allowed-tools) || '' }}
-  ${{ inputs.mcp-servers != '' && format('--mcp-config "{0}"', inputs.mcp-servers) || '' }}
+  ${{ inputs.mcp-servers != '' && format('--mcp-config ''{0}''', inputs.mcp-servers) || '' }}
   --model ${{ inputs.model }}
   ${{ inputs.claude-args }}
 ```
