@@ -93,7 +93,7 @@ runs:
         PR_REVIEW_HEAD_SHA: ${{ steps.pr-info.outputs.head_sha }}
         PR_REVIEW_COMMENTS_DIR: /tmp/pr-review-comments
         PR_SCRIPTS: ${{ github.action_path }}/../../pr-review/scripts
-      uses: anthropics/claude-code-action@v1.0.34
+      uses: elastic/ai-github-claude-code-action@working-forks
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
         github_token: ${{ inputs.github-token }}
