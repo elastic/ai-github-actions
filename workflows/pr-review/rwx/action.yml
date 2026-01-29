@@ -78,7 +78,7 @@ runs:
         PR_REVIEW_PR_NUMBER: ${{ github.event.pull_request.number }}
         PR_REVIEW_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         PR_REVIEW_COMMENTS_DIR: /tmp/pr-review-comments
-        PR_SCRIPTS: ${{ github.action_path }}/../scripts
+        PR_REVIEW_HELPERS_DIR: ${{ github.action_path }}/../scripts
       uses: elastic/ai-github-claude-code-action@working-forks
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
@@ -130,7 +130,7 @@ runs:
 
           <getting_started>
           1. Use `mcp__agents-md-generator__generate_agents_md` to get repository context
-          2. Run `$PR_SCRIPTS/pr-diff.sh` to see all changed files with diffs
+          2. Run `$PR_REVIEW_HELPERS_DIR/pr-diff.sh` to see all changed files with diffs
              - Output shows line numbers: `[LINE]` = commentable, `[----]` = deleted (can't comment)
              - For large PRs, it will list files only - review each with `pr-diff.sh <filename>`
           3. Use `Read` to see full file contents when you need more context
@@ -183,7 +183,7 @@ runs:
 
           <review_process>
           1. Get repository context with `mcp__agents-md-generator__generate_agents_md`
-          2. Run `$PR_SCRIPTS/pr-diff.sh` to see changed files with line-numbered diffs
+          2. Run `$PR_REVIEW_HELPERS_DIR/pr-diff.sh` to see changed files with line-numbered diffs
           3. For each file, review the diff and identify issues matching review_criteria
           4. For each issue found:
              - Determine severity using severity_classification
@@ -191,7 +191,7 @@ runs:
              - Use the `[LINE]` number from the diff output for pr-comment.sh
              - Provide --severity, --title, --why, and suggestion code via heredoc
              - Use --no-suggestion only for issues requiring multi-location fixes
-          5. Submit review with `$PR_SCRIPTS/pr-review.sh`, including broader architectural
+          5. Submit review with `$PR_REVIEW_HELPERS_DIR/pr-review.sh`, including broader architectural
              concerns in the review body (not as inline comments)
           </review_process>
 
@@ -227,17 +227,17 @@ runs:
           <tools>
           View changed files:
           ```bash
-          $PR_SCRIPTS/pr-diff.sh
+          $PR_REVIEW_HELPERS_DIR/pr-diff.sh
           ```
 
           View specific file diff:
           ```bash
-          $PR_SCRIPTS/pr-diff.sh path/to/file.go
+          $PR_REVIEW_HELPERS_DIR/pr-diff.sh path/to/file.go
           ```
 
           Add inline comment with suggestion (preferred):
           ```bash
-          $PR_SCRIPTS/pr-comment.sh <file> <line> \
+          $PR_REVIEW_HELPERS_DIR/pr-comment.sh <file> <line> \
             --severity <critical|high|medium|low|nitpick> \
             --title "Brief description" \
             --why "Risk or impact" <<'EOF'
@@ -247,7 +247,7 @@ runs:
 
           Add inline comment without suggestion (for architectural issues only):
           ```bash
-          $PR_SCRIPTS/pr-comment.sh <file> <line> \
+          $PR_REVIEW_HELPERS_DIR/pr-comment.sh <file> <line> \
             --severity <critical|high|medium|low|nitpick> \
             --title "Brief description" \
             --why "Risk or impact" \
@@ -256,12 +256,12 @@ runs:
 
           Remove a queued comment (if you made a mistake):
           ```bash
-          $PR_SCRIPTS/pr-remove-comment.sh <file> <line>
+          $PR_REVIEW_HELPERS_DIR/pr-remove-comment.sh <file> <line>
           ```
 
           Submit review (include broader concerns in the summary):
           ```bash
-          $PR_SCRIPTS/pr-review.sh <APPROVE|REQUEST_CHANGES|COMMENT> "<summary>"
+          $PR_REVIEW_HELPERS_DIR/pr-review.sh <APPROVE|REQUEST_CHANGES|COMMENT> "<summary>"
           ```
           
           Note: A standard footer is automatically appended to all comments and reviews.
