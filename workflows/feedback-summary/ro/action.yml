@@ -99,7 +99,7 @@ runs:
     - name: Run Claude analysis (if token provided)
       id: analysis
       if: ${{ inputs.claude-oauth-token != '' }}
-      uses: anthropics/claude-code-action@v1
+      uses: anthropics/claude-code-action@v1.0.34
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
         github_token: ${{ inputs.github-token }}
