@@ -220,6 +220,8 @@ runs:
           - Your recommendation (approve/request changes/comment) with rationale
           - Avoid summarizing the PR, providing general feedback or explanations of changes
           - Avoid offering praise for the author, PR, or team.
+          - If your recommendation is APPROVE and there are no issues, do not provide a review-body to just 
+            leave an approval.
 
           The inline comments provide line-specific details; the review body ties it together.
           </review_decision>
