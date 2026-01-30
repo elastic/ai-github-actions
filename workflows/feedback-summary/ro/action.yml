@@ -107,8 +107,8 @@ runs:
           Analyze the AI agent feedback data and provide insights.
           
           <task>
-          1. Read the feedback data from the feedback JSON file
-          2. Read the current report from the feedback report markdown file
+          1. Read the feedback data from: ${{ runner.temp }}/feedback-data.json
+          2. Read the current report from: ${{ runner.temp }}/feedback-report.md
           
           3. Analyze the feedback patterns:
              - What types of interactions get the best reactions?

@@ -31,8 +31,8 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    # Includes PR review thread scripts, PR review scripts, and allows all Bash commands by default
-    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code,Bash(${{ github.action_path }}/../scripts/gh-get-review-threads.sh:*),Bash(${{ github.action_path }}/../scripts/gh-resolve-review-thread.sh:*),Bash(${{ github.action_path }}/../../pr-review/scripts/pr-comment.sh:*),Bash(${{ github.action_path }}/../../pr-review/scripts/pr-remove-comment.sh:*),Bash(${{ github.action_path }}/../../pr-review/scripts/pr-review.sh:*),Bash(${{ github.action_path }}/../../pr-review/scripts/pr-diff.sh:*)"
+    # Note: Allows all Bash commands by default.
+    default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code"
 
   extra-allowed-tools:
     description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
