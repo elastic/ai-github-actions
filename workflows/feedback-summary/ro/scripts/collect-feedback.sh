@@ -8,19 +8,17 @@
 #
 # Environment variables:
 #   FEEDBACK_REPO       - Repository (owner/repo)
-#   FEEDBACK_BOT_PATTERN - Regex pattern to match bot usernames (default matches common AI bots)
+#   FEEDBACK_SIGNATURE  - String to search for in comment body (default: "ela.st/github-ai-tools")
 #   FEEDBACK_DAYS       - Number of days to look back (default: 7)
 #
-# The bot pattern is a regex. Examples:
-#   "claude"                           - matches "claude", "Claude", etc.
-#   "github-actions\\[bot\\]"          - matches github-actions[bot]
-#   "claude|github-actions\\[bot\\]"   - matches either
+# The script identifies Claude comments by looking for a signature in the comment body.
+# This is more reliable than matching usernames since Claude posts as github-actions[bot].
 
 set -e
 
 REPO="${FEEDBACK_REPO:?FEEDBACK_REPO environment variable is required}"
-# Default pattern matches common AI agent bot accounts
-BOT_PATTERN="${FEEDBACK_BOT_PATTERN:-claude|github-actions\\[bot\\]|copilot\\[bot\\]}"
+# Default signature is the Claude footer link
+SIGNATURE="${FEEDBACK_SIGNATURE:-ela.st/github-ai-tools}"
 DAYS="${1:-${FEEDBACK_DAYS:-7}}"
 
 # Calculate date threshold
@@ -30,7 +28,7 @@ else
   SINCE_DATE=$(date -d "${DAYS} days ago" +%Y-%m-%dT%H:%M:%SZ)
 fi
 
-echo "Collecting feedback for bot pattern '${BOT_PATTERN}' in ${REPO} since ${SINCE_DATE}" >&2
+echo "Collecting feedback for comments containing '${SIGNATURE}' in ${REPO} since ${SINCE_DATE}" >&2
 
 # Initialize results
 RESULTS="[]"
@@ -53,11 +51,11 @@ categorize_reactions() {
   echo "{\"rocket\": $rocket, \"thumbsup\": $thumbsup, \"thumbsdown\": $thumbsdown, \"heart\": $heart, \"confused\": $confused}"
 }
 
-# Search for issue comments by the bot
+# Search for issue comments containing the signature
 echo "Searching issue comments..." >&2
-ISSUE_COMMENTS=$(gh api "repos/${REPO}/issues/comments" \
+ISSUE_COMMENTS=$(gh api "repos/${REPO}/issues/comments?sort=created&direction=desc&since=${SINCE_DATE}&per_page=100" \
   --paginate \
-  --jq ".[] | select(.user.login | test(\"${BOT_PATTERN}\"; \"i\")) | select(.created_at >= \"${SINCE_DATE}\") | {id: .id, url: .url, html_url: .html_url, issue_url: .issue_url, body: .body[0:500], created_at: .created_at, user: .user.login}" 2>/dev/null || echo "")
+  --jq ".[] | select(.body | test(\"${SIGNATURE}\")) | {id: .id, url: .url, html_url: .html_url, issue_url: .issue_url, body: .body[0:500], created_at: .created_at, user: .user.login}" 2>/dev/null || echo "")
 
 # Process issue comments
 if [ -n "$ISSUE_COMMENTS" ]; then
@@ -105,11 +103,11 @@ if [ -n "$ISSUE_COMMENTS" ]; then
   done <<< "$ISSUE_COMMENTS"
 fi
 
-# Search for PR review comments by the bot
+# Search for PR review comments containing the signature
 echo "Searching PR review comments..." >&2
-PR_COMMENTS=$(gh api "repos/${REPO}/pulls/comments" \
+PR_COMMENTS=$(gh api "repos/${REPO}/pulls/comments?sort=created&direction=desc&since=${SINCE_DATE}&per_page=100" \
   --paginate \
-  --jq ".[] | select(.user.login | test(\"${BOT_PATTERN}\"; \"i\")) | select(.created_at >= \"${SINCE_DATE}\") | {id: .id, url: .url, html_url: .html_url, pull_request_url: .pull_request_url, body: .body[0:500], created_at: .created_at, user: .user.login}" 2>/dev/null || echo "")
+  --jq ".[] | select(.body | test(\"${SIGNATURE}\")) | {id: .id, url: .url, html_url: .html_url, pull_request_url: .pull_request_url, body: .body[0:500], created_at: .created_at, user: .user.login}" 2>/dev/null || echo "")
 
 # Process PR review comments
 if [ -n "$PR_COMMENTS" ]; then
@@ -149,14 +147,14 @@ if [ -n "$PR_COMMENTS" ]; then
   done <<< "$PR_COMMENTS"
 fi
 
-# Search for PR reviews by the bot
+# Search for PR reviews containing the signature
 echo "Searching PR reviews..." >&2
 # Get list of recent PRs first
 RECENT_PRS=$(gh api "repos/${REPO}/pulls?state=all&sort=updated&direction=desc&per_page=50" --jq '.[].number' 2>/dev/null || echo "")
 
 for PR_NUM in $RECENT_PRS; do
   REVIEWS=$(gh api "repos/${REPO}/pulls/${PR_NUM}/reviews" \
-    --jq ".[] | select(.user.login | test(\"${BOT_PATTERN}\"; \"i\")) | select(.submitted_at >= \"${SINCE_DATE}\") | {id: .id, html_url: .html_url, body: .body[0:500], submitted_at: .submitted_at, state: .state}" 2>/dev/null || echo "")
+    --jq ".[] | select(.body | test(\"${SIGNATURE}\")) | select(.submitted_at >= \"${SINCE_DATE}\") | {id: .id, html_url: .html_url, body: .body[0:500], submitted_at: .submitted_at, state: .state}" 2>/dev/null || echo "")
   
   if [ -n "$REVIEWS" ]; then
     while IFS= read -r review; do
@@ -214,7 +212,7 @@ NO_REACTION_ITEMS=$(echo "$RESULTS" | jq '[.[] | select(.reactions.rocket == 0 a
 # Build final output
 OUTPUT=$(jq -n \
   --arg repo "$REPO" \
-  --arg bot_pattern "$BOT_PATTERN" \
+  --arg signature "$SIGNATURE" \
   --arg since "$SINCE_DATE" \
   --arg days "$DAYS" \
   --argjson total "$TOTAL" \
@@ -230,7 +228,7 @@ OUTPUT=$(jq -n \
   '{
     metadata: {
       repo: $repo,
-      bot_pattern: $bot_pattern,
+      signature: $signature,
       since: $since,
       days: ($days | tonumber),
       generated_at: (now | todate)

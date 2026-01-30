@@ -117,7 +117,7 @@ Override the default MCP servers by providing your own JSON:
 - uses: elastic/ai-github-actions/base@v1
   with:
     prompt: "Your prompt"
-    claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+    claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     mcp-servers: '{"mcpServers":{"my-server":{"type":"http","url":"https://my-server.example.com/mcp"}}}'
 ```
 
@@ -125,7 +125,7 @@ Override the default MCP servers by providing your own JSON:
 
 | Input | Source | Description |
 |-------|--------|-------------|
-| `claude-oauth-token` | `${{ secrets.CLAUDE_OAUTH_TOKEN }}` | OAuth token for Claude (configure in Settings → Secrets → Actions) |
+| `claude-oauth-token` | `${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}` | OAuth token for Claude (configure in Settings → Secrets → Actions) |
 | `github-token` | `${{ github.token }}` | Automatic GitHub token for API access |
 
 ## License

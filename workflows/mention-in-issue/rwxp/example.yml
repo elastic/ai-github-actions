@@ -31,5 +31,5 @@ jobs:
       # Place environment setup commands here (e.g., install dependencies, configure tools)
       - uses: elastic/ai-github-actions/workflows/mention-in-issue/rwxp@v1
         with:
-          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}

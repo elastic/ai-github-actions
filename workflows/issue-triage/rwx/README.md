@@ -7,7 +7,7 @@ Automatically triage and label new issues with read, write, and execution capabi
 ```yaml
 - uses: elastic/ai-github-actions/workflows/issue-triage/rwx@v1
   with:
-    claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+    claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     github-token: ${{ github.token }}
 ```
 

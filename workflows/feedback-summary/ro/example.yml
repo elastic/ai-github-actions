@@ -46,7 +46,7 @@ jobs:
         with:
           github-token: ${{ github.token }}
           # Optional: Add Claude token for AI-powered analysis
-          # claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          # claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           days: ${{ github.event.inputs.days || '7' }}
           # Regex pattern to match bot usernames (default includes common AI bots)
           # bot-pattern: "claude|github-actions\\[bot\\]|copilot\\[bot\\]"

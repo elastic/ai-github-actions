@@ -55,7 +55,7 @@ Scripts expect specific environment variables set by the composite action:
 - `PR_REVIEW_PR_NUMBER` - Pull request number
 - `PR_REVIEW_HEAD_SHA` - Expected head SHA (for race condition detection)
 - `PR_REVIEW_COMMENTS_DIR` - Directory for storing comment data
-- `PR_SCRIPTS` - Path to scripts directory
+- `PR_REVIEW_HELPERS_DIR` - Path to PR review helper scripts directory
 
 **Mention in PR scripts** (`workflows/mention-in-pr/scripts/`):
 - `MENTION_REPO` - Repository (owner/repo)

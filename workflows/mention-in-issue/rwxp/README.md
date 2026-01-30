@@ -7,7 +7,7 @@ Respond when Claude is mentioned in issue comments. Can make code changes, run t
 ```yaml
 - uses: elastic/ai-github-actions/workflows/mention-in-issue/rwxp@v1
   with:
-    claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+    claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     github-token: ${{ github.token }}
 ```
 

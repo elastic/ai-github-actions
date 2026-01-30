@@ -7,7 +7,7 @@ Review pull requests with code suggestions and test execution capabilities. Can 
 ```yaml
 - uses: elastic/ai-github-actions/workflows/pr-review/rwx@v1
   with:
-    claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+    claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     github-token: ${{ github.token }}
 ```
 

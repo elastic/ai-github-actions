@@ -31,7 +31,7 @@ jobs:
       - name: Run Claude PR Review (Read-Only)
         uses: elastic/ai-github-actions/workflows/pr-review/ro@v1
         with:
-          claude-oauth-token: ${{ secrets.CLAUDE_OAUTH_TOKEN }}
+          claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
           # Optional: add custom instructions
           # additional-instructions: "Pay special attention to security patterns"
