@@ -5,7 +5,7 @@ Automatically triage and label new issues with read-only investigation capabilit
 ## Usage
 
 ```yaml
-- uses: elastic/ai-github-actions/workflows/issue-triage/ro@v1
+- uses: elastic/ai-github-actions/workflows/issue-triage/ro@v0
   with:
     claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     github-token: ${{ github.token }}

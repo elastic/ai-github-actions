@@ -1,16 +1,16 @@
 # Release workflow
 #
-# When a semver tag (v1.2.3) is pushed:
+# When a semver tag (v0.1.0) is pushed:
 # 1. Creates a GitHub release with auto-generated notes
-# 2. Updates the major version tag (v1) to point to this release
+# 2. Updates the major version tag (v0) to point to this release
 #
 # Usage:
-#   git tag v1.0.0
-#   git push origin v1.0.0
+#   git tag v0.1.0
+#   git push origin v0.1.0
 #
 # This allows users to reference either:
-#   - elastic/ai-github-actions/...@v1       (latest v1.x.x)
-#   - elastic/ai-github-actions/...@v1.0.0   (exact version)
+#   - elastic/ai-github-actions/...@v0       (latest v0.x.x)
+#   - elastic/ai-github-actions/...@v0.1.0   (exact version)
 
 name: Release
 

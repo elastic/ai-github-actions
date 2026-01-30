@@ -114,7 +114,7 @@ All workflow actions (under `workflows/`) include an `mcp-servers` input with th
 Override the default MCP servers by providing your own JSON:
 
 ```yaml
-- uses: elastic/ai-github-actions/base@v1
+- uses: elastic/ai-github-actions/base@v0
   with:
     prompt: "Your prompt"
     claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

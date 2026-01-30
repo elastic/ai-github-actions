@@ -5,7 +5,7 @@ Review pull requests with read-only access. Provides feedback via comments with 
 ## Usage
 
 ```yaml
-- uses: elastic/ai-github-actions/workflows/pr-review/ro@v1
+- uses: elastic/ai-github-actions/workflows/pr-review/ro@v0
   with:
     claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     github-token: ${{ github.token }}

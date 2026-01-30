@@ -2,7 +2,7 @@
 # Composite Action for responding to @claude mentions on Issues (Read-Write-Execute)
 #
 # Usage:
-#   - uses: elastic/ai-github-actions/workflows/mention-in-issue/rwx@v1
+#   - uses: elastic/ai-github-actions/workflows/mention-in-issue/rwx@v0
 #     with:
 #       claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 #       github-token: ${{ github.token }}

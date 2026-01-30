@@ -42,7 +42,7 @@ jobs:
       # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run AI Agent Feedback Summary
-        uses: elastic/ai-github-actions/workflows/feedback-summary/ro@v1
+        uses: elastic/ai-github-actions/workflows/feedback-summary/ro@v0
         with:
           github-token: ${{ github.token }}
           # Optional: Add Claude token for AI-powered analysis

@@ -40,7 +40,7 @@ All workflow actions support two inputs for tool configuration:
 
 **Example usage**:
 ```yaml
-- uses: elastic/ai-github-actions/workflows/pr-review/rwx@v1
+- uses: elastic/ai-github-actions/workflows/pr-review/rwx@v0
   with:
     extra-allowed-tools: "Bash(npm run lint:*),mcp__my-custom-server"
 ```

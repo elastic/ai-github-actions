@@ -2,7 +2,7 @@
 # Composite Action for PR review with Claude (Read-Only)
 #
 # Usage:
-#   - uses: elastic/ai-github-actions/workflows/pr-review/ro@v1
+#   - uses: elastic/ai-github-actions/workflows/pr-review/ro@v0
 #     with:
 #       claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 #       github-token: ${{ github.token }}
