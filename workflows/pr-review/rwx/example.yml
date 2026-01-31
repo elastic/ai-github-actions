@@ -22,11 +22,8 @@ jobs:
   review:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout PR head branch
+      - name: Checkout repository
         uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
       # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run Claude PR Review (Read-Write-Execute)

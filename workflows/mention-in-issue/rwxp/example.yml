@@ -26,8 +26,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
       # Place environment setup commands here (e.g., install dependencies, configure tools)
       - uses: elastic/ai-github-actions/workflows/mention-in-issue/rwxp@v0
         with:
