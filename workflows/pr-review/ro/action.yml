@@ -268,6 +268,10 @@ runs:
           Note: A standard footer is automatically appended to all comments and reviews.
           </tools>
 
+          <github_formatting>
+          When writing GitHub comments, wrap branch names, tags, or other @-references in backticks (e.g., `@main`, `@v1.0`) to avoid accidentally pinging users.
+          </github_formatting>
+
           <additional_instructions>
           ${{ inputs.additional-instructions }}
           </additional_instructions>
