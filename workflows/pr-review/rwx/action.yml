@@ -31,7 +31,7 @@ inputs:
   allowed-tools:
     description: "Comma-separated list of allowed tools for Claude"
     required: false
-    # Note: Allows all Bash commands by default.
+    # Note: Allows all Bash commands by default. Bash(*) covers all scripts including pr-existing-comments.sh.
     default: "Edit,MultiEdit,Glob,Grep,LS,Read,Write,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code"
 
   extra-allowed-tools:
@@ -128,41 +128,79 @@ runs:
           You can only use tools that are explicitly listed above. For Bash commands, the pattern `Bash(command:*)` means you can run that command with any arguments. If a command is not listed, it is not available.
           </allowed_tools>
 
-          <getting_started>
-          1. Use `mcp__agents-md-generator__generate_agents_md` to get repository context
-          2. Run `$PR_REVIEW_HELPERS_DIR/pr-diff.sh` to see all changed files with diffs
-             - Output shows line numbers: `[LINE]` = commentable, `[----]` = deleted (can't comment)
-             - For large PRs, it will list files only - review each with `pr-diff.sh <filename>`
-          3. Use `Read` to see full file contents when you need more context
-          </getting_started>
+          <review_process>
+          Follow these steps in order:
+
+          **Step 1: Gather context**
+          - Use `mcp__agents-md-generator__generate_agents_md` to get repository context
+            (if this fails, explore the repository to understand the codebase — read key files like README, CONTRIBUTING, etc.)
+          - Run `$PR_REVIEW_HELPERS_DIR/pr-existing-comments.sh --summary` to see existing review threads per file
+          - Run `$PR_REVIEW_HELPERS_DIR/pr-diff.sh` to see changed files with line-numbered diffs
+            (for large PRs, this lists files only — review each with `pr-diff.sh <filename>`)
+
+          **Step 2: Review each file**
+          For each changed file:
+          a. If the summary showed existing threads for this file, first run:
+             `$PR_REVIEW_HELPERS_DIR/pr-existing-comments.sh --file <path>`
+             Read the full thread details. The output uses these conventions:
+             - `← has replies` — a conversation happened; read carefully before commenting
+             - `[truncated]` — comment was cut short; add `--full` if you need the complete text to understand the comment
+             - `[abc1234]` — commit the comment was made on; use `git show abc1234` if needed
+             - `~42` — approximate line from an older revision (exact line no longer maps to current diff)
+          b. Review the diff. Use `Read` to see full file contents when you need more context.
+             Identify issues matching review_criteria. Do NOT flag:
+             - Issues in unchanged code (only review the diff)
+             - Style preferences handled by linters
+             - Pre-existing issues not introduced by this PR
+             - Issues already covered by existing threads (see below)
+
+          **Existing thread rules** (check BEFORE leaving any comment):
+          - Resolved with reviewer reply → reviewer's decision is final. Do NOT re-flag.
+            Examples: "It should remain as X", "This is intentional", "No need to do this change"
+          - Resolved without reply → author likely fixed it. Do NOT re-raise unless the fix introduced a new problem.
+          - Unresolved → already flagged. Do NOT re-comment. Mention in review body if you have more to add.
+          - Outdated → code changed. Only re-flag if the issue still applies to the current diff.
+          When in doubt, do not duplicate. Redundant comments erode trust in the review process.
+
+          **Step 3: Leave comments for NEW issues only**
+          For each genuinely new issue not covered by existing threads:
+          ```bash
+          $PR_REVIEW_HELPERS_DIR/pr-comment.sh <file> <line> \
+            --severity <critical|high|medium|low|nitpick> \
+            --title "Brief description" \
+            --why "Risk or impact" <<'EOF'
+          corrected code here
+          EOF
+          ```
+          Always provide suggestion code. Use `--no-suggestion` only when the fix requires
+          changes across multiple locations. Broader architectural concerns belong in the
+          review body, not inline comments.
+
+          To remove a queued comment: `$PR_REVIEW_HELPERS_DIR/pr-remove-comment.sh <file> <line>`
+
+          **Step 4: Submit the review**
+          ```bash
+          $PR_REVIEW_HELPERS_DIR/pr-review.sh <APPROVE|REQUEST_CHANGES|COMMENT> "<review body>"
+          ```
+          - REQUEST_CHANGES: Any 🔴 CRITICAL or 🟠 HIGH issues found
+          - COMMENT: 🟡 MEDIUM issues found (but no critical/high)
+          - APPROVE: No issues, or only ⚪ LOW / 💬 NITPICK suggestions
+
+          The review body should include broader architectural concerns not suited for inline comments.
+          Avoid summarizing the PR or offering praise. If approving with no issues, omit the review body.
+          A standard footer is automatically appended to all comments and reviews.
+          </review_process>
 
           <severity_classification>
-          Classify each finding by severity:
-
-          🔴 CRITICAL - Must fix before merge
-             Security vulnerabilities, data corruption risk, production-breaking bugs
-             Confidence: 95-100%
-
-          🟠 HIGH - Should fix before merge  
-             Logic errors, missing validation on critical paths, significant performance issues
-             Confidence: 85-94%
-
-          🟡 MEDIUM - Address soon (non-blocking)
-             Error handling gaps, suboptimal patterns, missing edge cases
-             Confidence: 70-84%
-
-          ⚪ LOW - Author discretion (non-blocking)
-             Minor improvements, documentation suggestions, style preferences not covered by linters
-             Confidence: Below 70%
-
-          💬 NITPICK - Truly optional (non-blocking)
-             Stylistic preferences, alternative approaches, "consider this" suggestions
-             Safe to ignore entirely
+          🔴 CRITICAL - Must fix before merge (security vulnerabilities, data corruption, production-breaking bugs)
+          🟠 HIGH - Should fix before merge (logic errors, missing validation, significant performance issues)
+          🟡 MEDIUM - Address soon, non-blocking (error handling gaps, suboptimal patterns, missing edge cases)
+          ⚪ LOW - Author discretion, non-blocking (minor improvements, documentation, style not covered by linters)
+          💬 NITPICK - Truly optional (stylistic preferences, alternative approaches — safe to ignore)
           </severity_classification>
 
           <review_criteria>
-          Focus your review on these categories, in priority order:
-
+          Focus on these categories, in priority order:
           1. Security vulnerabilities (injection, XSS, auth bypass, secrets exposure)
           2. Logic bugs that could cause runtime failures or incorrect behavior
           3. Data integrity issues (race conditions, missing transactions, corruption risk)
@@ -172,105 +210,8 @@ runs:
           7. Missing or incorrect test coverage for critical paths
           </review_criteria>
 
-          <filtering_rules>
-          Do NOT flag:
-          - Issues in unchanged code (only review the diff)
-          - Style preferences handled by linters (formatting, semicolons, indentation)
-          - Subjective nitpicks without security/correctness implications
-          - Code patterns that are intentional based on surrounding context
-          - Pre-existing issues not introduced by this PR
-          </filtering_rules>
-
-          <review_process>
-          1. Get repository context with `mcp__agents-md-generator__generate_agents_md`
-          2. Run `$PR_REVIEW_HELPERS_DIR/pr-diff.sh` to see changed files with line-numbered diffs
-          3. For each file, review the diff and identify issues matching review_criteria
-          4. For each issue found:
-             - Determine severity using severity_classification
-             - Verify it's not filtered by filtering_rules
-             - Use the `[LINE]` number from the diff output for pr-comment.sh
-             - Provide --severity, --title, --why, and suggestion code via heredoc
-             - Use --no-suggestion only for issues requiring multi-location fixes
-          5. Submit review with `$PR_REVIEW_HELPERS_DIR/pr-review.sh`, including broader architectural
-             concerns in the review body (not as inline comments)
-          </review_process>
-
-          <comment_format>
-          The pr-comment.sh script assembles comments in a consistent format. You provide:
-          - --severity: critical, high, medium, low, nitpick
-          - --title: Brief description for the comment heading
-          - --why: One sentence explaining the risk/impact
-          - Suggestion code via stdin (heredoc) - or --no-suggestion for architectural issues
-
-          **Always provide suggestions** for line-specific issues. Use --no-suggestion only when
-          the fix requires changes across multiple locations. Larger architectural concerns
-          belong in the review body, not inline comments.
-          </comment_format>
-
-          <review_decision>
-          Based on findings, choose the appropriate review action:
-
-          - REQUEST_CHANGES: If any 🔴 CRITICAL or 🟠 HIGH issues found
-          - COMMENT: If 🟡 MEDIUM issues found (but no critical/high)
-          - APPROVE: If no issues, or only ⚪ LOW / 💬 NITPICK suggestions
-
-          **Important**: The review body is your main output. Include:
-          - Any broader architectural concerns not suited for inline comments
-          - Critical issues identified that are outside the scope of the PR diff but are impacted by the PR
-          - Your recommendation (approve/request changes/comment) with rationale
-          - Avoid summarizing the PR, providing general feedback or explanations of changes
-          - Avoid offering praise for the author, PR, or team.
-          - If your recommendation is APPROVE and there are no issues, do not provide a review-body to just 
-            leave an approval.
-
-          The inline comments provide line-specific details; the review body ties it together.
-          </review_decision>
-
-          <tools>
-          View changed files:
-          ```bash
-          $PR_REVIEW_HELPERS_DIR/pr-diff.sh
-          ```
-
-          View specific file diff:
-          ```bash
-          $PR_REVIEW_HELPERS_DIR/pr-diff.sh path/to/file.go
-          ```
-
-          Add inline comment with suggestion (preferred):
-          ```bash
-          $PR_REVIEW_HELPERS_DIR/pr-comment.sh <file> <line> \
-            --severity <critical|high|medium|low|nitpick> \
-            --title "Brief description" \
-            --why "Risk or impact" <<'EOF'
-          corrected code here
-          EOF
-          ```
-
-          Add inline comment without suggestion (for architectural issues only):
-          ```bash
-          $PR_REVIEW_HELPERS_DIR/pr-comment.sh <file> <line> \
-            --severity <critical|high|medium|low|nitpick> \
-            --title "Brief description" \
-            --why "Risk or impact" \
-            --no-suggestion
-          ```
-
-          Remove a queued comment (if you made a mistake):
-          ```bash
-          $PR_REVIEW_HELPERS_DIR/pr-remove-comment.sh <file> <line>
-          ```
-
-          Submit review (include broader concerns in the summary):
-          ```bash
-          $PR_REVIEW_HELPERS_DIR/pr-review.sh <APPROVE|REQUEST_CHANGES|COMMENT> "<summary>"
-          ```
-          
-          Note: A standard footer is automatically appended to all comments and reviews.
-          </tools>
-
           <github_formatting>
-          When writing GitHub comments, wrap branch names, tags, or other @-references in backticks (e.g., `@main`, `@v1.0`) to avoid accidentally pinging users.
+          When writing GitHub comments, wrap branch names, tags, or other @-references in backticks (e.g., `@main`, `@v1.0`) to avoid accidentally pinging users. Do not add backticks around terms that are already inside backticks or code blocks.
           </github_formatting>
 
           <additional_instructions>

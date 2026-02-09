@@ -10,7 +10,7 @@ jobs:
     name: Validate GitHub Actions workflows
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up actionlint
         run: make setup-actionlint
       - name: Validate workflows
@@ -19,7 +19,7 @@ jobs:
     name: Validate GitHub Actions composite actions
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Set up action-validator
         run: make setup-action-validator
       - name: Validate composite actions

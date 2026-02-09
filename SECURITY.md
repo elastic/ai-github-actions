@@ -162,7 +162,7 @@ GitHub's [secure use documentation](https://docs.github.com/en/actions/reference
 - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29  # v4.1.6
 
 # Less secure - tag can be moved
-- uses: actions/checkout@v4
+- uses: actions/checkout@v6
 ```
 
 **Why this matters**: A malicious actor with access to an action's repository could move a tag to point to compromised code. Commit SHAs are immutable.

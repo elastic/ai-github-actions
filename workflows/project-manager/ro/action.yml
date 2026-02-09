@@ -152,7 +152,7 @@ runs:
           </output_instructions>
 
           <github_formatting>
-          When writing GitHub comments, wrap branch names, tags, or other @-references in backticks (e.g., `@main`, `@v1.0`) to avoid accidentally pinging users.
+          When writing GitHub comments, wrap branch names, tags, or other @-references in backticks (e.g., `@main`, `@v1.0`) to avoid accidentally pinging users. Do not add backticks around terms that are already inside backticks or code blocks.
           </github_formatting>
 
           <additional_instructions>

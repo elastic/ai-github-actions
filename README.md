@@ -38,8 +38,8 @@ Composite GitHub Actions that wrap the [Anthropic Claude Code Action](https://gi
 
 | Action | Description | Read Files (R) | Write/Edit Files (W) | Execute Commands (X) | Read-Only Git | Push Changes (P) |
 |--------|-------------|----------------|---------------------|----------------------|---------------|-----------------|
+| [Generate Report (RO)](workflows/generate-report/ro/README.md) | Generate reports on a schedule with user-provided instructions | ✅ | ❌ | ⚙️ | ✅ | ❌ |
 | [Project Manager (RO)](workflows/project-manager/ro/README.md) | Run periodic Project Manager reviews to analyze project state | ✅ | ❌ | ❌ | ✅ | ❌ |
-| [Feedback Summary (RO)](workflows/feedback-summary/ro/README.md) | Collect reactions on AI agent comments and create summary | ✅* | ❌ | ❌ | ❌ | ❌ |
 
 ### Legend
 
@@ -127,6 +127,51 @@ Override the default MCP servers by providing your own JSON:
 |-------|--------|-------------|
 | `claude-oauth-token` | `${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}` | OAuth token for Claude (configure in Settings → Secrets → Actions) |
 | `github-token` | `${{ github.token }}` | Automatic GitHub token for API access |
+
+## Customizing Agent Behavior
+
+**Prefer documentation over new workflows**: Instead of creating new specialized workflows, document your processes in markdown files and reference them from `AGENTS.md` in your repository.
+
+### Why Documentation?
+
+- **One agent, many capabilities**: Existing workflows (like `issue-triage`, `mention-in-issue`, `mention-in-pr`) are general-purpose and can handle many tasks
+- **Easier maintenance**: Documentation files are easier to update than workflow code
+- **Automatic discovery**: Claude automatically reads `AGENTS.md` and any files referenced from it
+- **Flexibility**: Process documentation can evolve without requiring workflow changes
+
+### When to Create a New Workflow
+
+Only create a new workflow if you need:
+- Fundamentally different permissions (e.g., a workflow that can push vs one that cannot)
+- A different trigger mechanism (e.g., scheduled vs on-demand)
+- Specialized tooling or MCP servers not available in existing workflows
+
+### When to Use Documentation Instead
+
+Use documentation when you want to:
+- Customize how Claude handles a specific type of task (e.g., CVE triage, security reviews)
+- Add domain-specific guidance or checklists
+- Improve performance or add context for existing workflows
+- Document runbooks or processes
+
+### Example: CVE Triage Process
+
+Instead of creating a new `cve-triage` workflow:
+
+1. Create `triage-cve.md` in your repository with your CVE triage guidelines
+2. Reference it from `AGENTS.md`:
+
+```markdown
+# AGENTS.md
+
+## Available Processes
+
+- [CVE Triage Process](triage-cve.md) - Guidelines for triaging CVEs, including ownership checks, severity assessment, and impact statements
+```
+
+3. Use existing workflows (like `issue-triage` or `mention-in-issue`) - Claude will automatically discover and follow the guidance in `triage-cve.md`
+
+See [DEVELOPING.md](DEVELOPING.md#prefer-documentation-over-new-workflows) for more details.
 
 ## License
 

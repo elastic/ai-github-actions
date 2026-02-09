@@ -1,0 +1,201 @@
+#
+# Composite Action for generating reports with Claude
+#
+# A general-purpose report generation action that runs Claude with user-provided
+# instructions. Designed for scheduled workflows (daily, weekly) that need to
+# research, analyze, and produce reports as GitHub issues.
+#
+# Usage:
+#   - uses: elastic/ai-github-actions/workflows/generate-report/ro@v0
+#     with:
+#       claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+#       github-token: ${{ github.token }}
+#       instructions: |
+#         Analyze open CVEs and produce a triage report.
+#         For each CVE, determine ownership, severity, and recommended action.
+#
+name: "Claude Report Generator"
+description: "Generate reports on a schedule using Claude with user-provided instructions"
+
+branding:
+  icon: "file-text"
+  color: "green"
+
+inputs:
+  claude-oauth-token:
+    description: "Claude OAuth token for authentication"
+    required: true
+
+  github-token:
+    description: "GitHub token for Claude to operate with"
+    required: true
+
+  instructions:
+    description: "Instructions for generating the report. Describes what to analyze, what data to collect, and how to format the output."
+    required: true
+
+  model:
+    description: "Model to use for Claude"
+    required: false
+    default: "claude-opus-4-5-20251101"
+
+  allowed-tools:
+    description: "Comma-separated list of allowed tools for Claude"
+    required: false
+    default: "Glob,Grep,LS,Read,WebSearch,WebFetch,mcp__github_comment__update_claude_comment,mcp__github_ci__get_ci_status,mcp__github_ci__get_workflow_run_details,mcp__github_ci__download_job_log,Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git branch:*),Bash(git tag:*),Bash(gh:*),mcp__agents-md-generator__generate_agents_md,mcp__public-code-search__search_code"
+
+  extra-allowed-tools:
+    description: "Additional comma-separated list of allowed tools (concatenated with allowed-tools)"
+    required: false
+    default: ""
+
+  additional-instructions:
+    description: "Additional instructions to include in the prompt (appended after the main instructions)"
+    required: false
+    default: ""
+
+  issue-title:
+    description: "Title for the created issue (supports date substitution with $(date +%Y-%m-%d))"
+    required: false
+    default: ""
+
+  issue-labels:
+    description: "Comma-separated labels to add to the created issue"
+    required: false
+    default: "report,automated"
+
+  mcp-servers:
+    description: "MCP server configuration JSON"
+    required: false
+    default: '{"mcpServers":{"agents-md-generator":{"type":"http","url":"https://agents-md-generator.fastmcp.app/mcp"},"public-code-search":{"type":"http","url":"https://public-code-search.fastmcp.app/mcp"}}}'
+
+  repository-owner:
+    description: "Repository owner (defaults to github.repository_owner)"
+    required: false
+    default: ""
+
+  repository-name:
+    description: "Repository name (defaults to github.event.repository.name)"
+    required: false
+    default: ""
+
+outputs:
+  conclusion:
+    description: "The conclusion of the Claude Code run"
+    value: ${{ steps.claude.outputs.conclusion }}
+
+  issue-url:
+    description: "URL of the created issue"
+    value: ${{ steps.create-issue.outputs.issue_url }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Claude for Report Generation
+      id: claude
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      uses: elastic/ai-github-claude-code-action@working-forks
+      with:
+        claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
+        github_token: ${{ inputs.github-token }}
+        track_progress: false
+        prompt: |
+          <context>
+          Repository: ${{ inputs.repository-owner != '' && format('{0}/{1}', inputs.repository-owner, inputs.repository-name) || github.repository }}
+          </context>
+
+          <task>
+          You are a report generator. Your job is to research, analyze, and produce a report based on the instructions below.
+
+          DO NOT make code changes, create branches, or push commits. Your only output is a well-structured report.
+          </task>
+
+          <constraints>
+          This workflow is for research and reporting ONLY.
+
+          You CANNOT: Create branches, push changes, commit code, modify repository files
+          You CAN: Read/analyze code, search the repository, review git history, query GitHub issues/PRs/discussions, search the web, fetch URLs, create GitHub issues
+          </constraints>
+
+          <allowed_tools>
+          You have access to the following tools (comma-separated list):
+
+          ${{ inputs.allowed-tools }}
+          ${{ inputs.extra-allowed-tools }}
+
+          You also have `Write` and `Edit` access for saving the report file (see output_format).
+
+          You can only use tools that are explicitly listed above. For Bash commands, the pattern `Bash(command:*)` means you can run that command with any arguments. If a command is not listed, it is not available.
+          </allowed_tools>
+
+          <getting_started>
+          1. Use `mcp__agents-md-generator__generate_agents_md` to get repository context
+             (if this fails, explore the repository to understand the codebase — read key files like README, CONTRIBUTING, etc.)
+          2. Read the AGENTS.md file if it exists to understand repository conventions
+          3. Read any files referenced in the instructions below
+          4. Begin your research and analysis
+          </getting_started>
+
+          <instructions>
+          ${{ inputs.instructions }}
+          </instructions>
+
+          <output_format>
+          After completing your research and analysis, write the report to: ${{ runner.temp }}/report.md
+
+          The report should be well-structured markdown suitable for a GitHub issue. Use tables, lists, and sections to organize the information clearly. Be concise and actionable.
+
+          If the instructions reference a specific report format or template, follow that. Otherwise, use your judgment to structure the report clearly.
+          </output_format>
+
+          <github_formatting>
+          When writing GitHub comments or issues, wrap branch names, tags, or other @-references in backticks (e.g., `@main`, `@v1.0`) to avoid accidentally pinging users. Do not add backticks around terms that are already inside backticks or code blocks.
+          </github_formatting>
+
+          <additional_instructions>
+          ${{ inputs.additional-instructions }}
+          </additional_instructions>
+        claude_args: |
+          ${{ format('--allowedTools {0},{1}{2}', inputs.allowed-tools, 'Write,Edit', inputs.extra-allowed-tools != '' && format(',{0}', inputs.extra-allowed-tools) || '') }}
+          --mcp-config '${{ inputs.mcp-servers }}'
+          --model ${{ inputs.model }}
+
+    - name: Create GitHub issue
+      id: create-issue
+      if: ${{ success() }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        REPORT_FILE="${{ runner.temp }}/report.md"
+        REPO="${{ inputs.repository-owner != '' && format('{0}/{1}', inputs.repository-owner, inputs.repository-name) || github.repository }}"
+
+        if [ ! -f "$REPORT_FILE" ]; then
+          echo "Warning: Report file not found at $REPORT_FILE"
+          echo "issue_url=" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        # Determine issue title
+        if [ -n "${{ inputs.issue-title }}" ]; then
+          TITLE="${{ inputs.issue-title }}"
+        else
+          TITLE="Report - $(date +%Y-%m-%d)"
+        fi
+
+        LABELS="${{ inputs.issue-labels }}"
+
+        # Create the issue
+        ISSUE_URL=$(gh issue create \
+          --repo "$REPO" \
+          --title "$TITLE" \
+          --body-file "$REPORT_FILE" \
+          --label "$LABELS" \
+          2>&1) || {
+          echo "Failed to create issue: $ISSUE_URL"
+          exit 1
+        }
+
+        echo "Created issue: $ISSUE_URL"
+        echo "issue_url=$ISSUE_URL" >> $GITHUB_OUTPUT

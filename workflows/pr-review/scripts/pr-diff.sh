@@ -100,7 +100,7 @@ if [ -z "$FILE" ]; then
       
       if [ -n "$PATCH" ]; then
         echo "## ${FNAME}"
-        echo "Use: pr-comment.sh ${FNAME} <LINE> \"comment\"  (or -f <file> for complex comments)"
+        echo "Use: pr-comment.sh ${FNAME} <LINE> --severity <level> --title \"desc\" --why \"reason\" <<'EOF' ... EOF"
         echo "Format: [LINE] +added | [LINE] context | [----] -deleted (can't comment)"
         echo "$PATCH" | add_line_numbers
         echo ""
@@ -122,7 +122,7 @@ else
   fi
   
   echo "## ${FILE}"
-  echo "Use: pr-comment.sh ${FILE} <LINE> \"comment\"  (or -f <file> for complex comments)"
+  echo "Use: pr-comment.sh ${FILE} <LINE> --severity <level> --title \"desc\" --why \"reason\" <<'EOF' ... EOF"
   echo "Format: [LINE] +added | [LINE] context | [----] -deleted (can't comment)"
   echo "$PATCH" | add_line_numbers
 fi

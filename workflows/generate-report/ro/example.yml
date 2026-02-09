@@ -1,0 +1,70 @@
+# Example workflow for scheduled report generation
+# Copy this to your repo's .github/workflows/ directory and customize the instructions.
+#
+# This workflow runs on a schedule and can be manually triggered.
+# Claude will research, analyze, and create a GitHub issue with the report.
+
+name: Weekly Report
+
+on:
+  # Run weekly on Monday morning
+  schedule:
+    - cron: "0 9 * * 1"
+
+  # Allow manual trigger with custom instructions
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+  id-token: write
+  actions: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      # Place environment setup commands here (e.g., install dependencies, configure tools)
+
+      - name: Generate Report
+        uses: elastic/ai-github-actions/workflows/generate-report/ro@v0
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
+          issue-title: "Weekly Report - $(date +%Y-%m-%d)"
+          issue-labels: "report,weekly"
+          instructions: |
+            Generate a weekly summary report for this repository.
+
+            ## What to analyze
+
+            1. Review all issues opened in the last 7 days
+            2. Review all PRs merged in the last 7 days
+            3. Review any open PRs that have been waiting for review for more than 3 days
+            4. Check for any CI failures on the main branch
+
+            ## Report format
+
+            ### New Issues This Week
+            Table of new issues with: number, title, labels, assignee, status
+
+            ### PRs Merged This Week
+            Table of merged PRs with: number, title, author, review time
+
+            ### PRs Awaiting Review
+            Table of open PRs waiting for review with: number, title, author, days waiting
+
+            ### CI Health
+            Status of recent CI runs on the main branch
+
+            ### Summary
+            Brief narrative summary of the week's activity and any items needing attention.
