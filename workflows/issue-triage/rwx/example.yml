@@ -12,6 +12,7 @@ on:
 permissions:
   contents: read
   issues: write
+  pull-requests: read
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.issue.number }}
