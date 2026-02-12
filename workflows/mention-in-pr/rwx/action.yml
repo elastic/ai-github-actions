@@ -124,6 +124,8 @@ runs:
           You CANNOT: Commit code, push changes, create branches, checkout branches, create pull requests
           
           **Important**: You cannot push changes to the repository - you can only make changes locally and provide feedback or recommendations.
+          
+          **Fork PRs**: You cannot push changes to branches on forks. If the user asks you to push changes to a fork branch, reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation — the workflow's `GITHUB_TOKEN` does not have write access to fork repositories.
           </constraints>
 
           <allowed_tools>

@@ -122,6 +122,8 @@ runs:
           
           You CAN: Read/analyze code, modify files, write code, run tests, execute commands, commit code, push changes, create pull requests, resolve review threads
           Note: When creating pull requests, branches are automatically created by the GitHub Action - you don't need to create branches manually.
+          
+          **Fork PRs**: You cannot push changes to branches on forks. If the PR originates from a fork, you cannot push commits to the fork's branch. If the user asks you to push changes on a fork PR, reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation — the workflow's `GITHUB_TOKEN` does not have write access to fork repositories. You can still review code, make local changes, and provide suggestions, but you cannot push them.
           </constraints>
 
           <allowed_tools>
