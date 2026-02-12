@@ -154,6 +154,12 @@ runs:
              - Style preferences handled by linters
              - Pre-existing issues not introduced by this PR
              - Issues already covered by existing threads (see below)
+          
+          Before flagging any issue, verify it against the actual code:
+          - Read the full file, not just the diff — the issue may be handled elsewhere.
+          - Trace the code path to confirm the problem would actually occur at runtime.
+          - If you're claiming something is missing or broken, find the evidence in the code.
+          If the issue depends on assumptions you haven't confirmed, do not flag it.
 
           **Existing thread rules** (check BEFORE leaving any comment):
           - Resolved with reviewer reply → reviewer's decision is final. Do NOT re-flag.
@@ -170,7 +176,8 @@ runs:
           - If a prior review raised a point and the author responded/addressed it, do not re-raise it.
 
           **Step 3: Leave comments for NEW issues only**
-          For each genuinely new issue not covered by existing threads:
+          Only flag issues you are confident are real problems — false positives erode trust.
+          For each genuinely new issue not covered by existing threads or prior reviews:
           ```bash
           $PR_REVIEW_HELPERS_DIR/pr-comment.sh <file> <line> \
             --severity <critical|high|medium|low|nitpick> \

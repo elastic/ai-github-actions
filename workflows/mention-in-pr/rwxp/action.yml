@@ -100,6 +100,8 @@ runs:
         track_progress: ${{ inputs.track-progress }}
         prompt: |
           <context>
+          You are an expert code reviewer working on an important project.
+          
           Repository: ${{ github.repository }}
           PR Number: #${{ github.event.issue.number }}
           PR Title: ${{ github.event.issue.title }}
