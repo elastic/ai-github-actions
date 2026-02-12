@@ -134,7 +134,8 @@ runs:
           **Step 1: Gather context**
           - Use `mcp__agents-md-generator__generate_agents_md` to get repository context
             (if this fails, explore the repository to understand the codebase — read key files like README, CONTRIBUTING, etc.)
-          - Run `$PR_REVIEW_HELPERS_DIR/pr-existing-comments.sh --summary` to see existing review threads per file
+          - Run `$PR_REVIEW_HELPERS_DIR/pr-prior-reviews.sh` to see prior review submissions (review body summaries)
+          - Run `$PR_REVIEW_HELPERS_DIR/pr-existing-comments.sh --summary` to see existing inline review threads per file
           - Run `$PR_REVIEW_HELPERS_DIR/pr-diff.sh` to see changed files with line-numbered diffs
             (for large PRs, this lists files only — review each with `pr-diff.sh <filename>`)
 
@@ -161,6 +162,12 @@ runs:
           - Unresolved → already flagged. Do NOT re-comment. Mention in review body if you have more to add.
           - Outdated → code changed. Only re-flag if the issue still applies to the current diff.
           When in doubt, do not duplicate. Redundant comments erode trust in the review process.
+
+          **Prior review rules** (check BEFORE writing your review body):
+          - If prior reviews from this bot exist, read them carefully. Do NOT repeat points already made.
+          - Only include genuinely new observations in your review body.
+          - If all your observations were already covered in prior reviews, omit the review body entirely.
+          - If a prior review raised a point and the author responded/addressed it, do not re-raise it.
 
           **Step 3: Leave comments for NEW issues only**
           For each genuinely new issue not covered by existing threads:
