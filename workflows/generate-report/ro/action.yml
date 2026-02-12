@@ -79,6 +79,11 @@ inputs:
     required: false
     default: ""
 
+  assignee:
+    description: "Comma-separated list of github IDs to assign the issue"
+    required: false
+    default: ""
+
 outputs:
   conclusion:
     description: "The conclusion of the Claude Code run"
@@ -186,12 +191,18 @@ runs:
 
         LABELS="${{ inputs.issue-labels }}"
 
+        ASSIGNEE_ARG=()
+        if [ -n "${{ inputs.assignee }}" ]; then
+          ASSIGNEE_ARG=(--assignee "${{ inputs.assignee }}")
+        fi
+
         # Create the issue
         ISSUE_URL=$(gh issue create \
           --repo "$REPO" \
           --title "$TITLE" \
           --body-file "$REPORT_FILE" \
           --label "$LABELS" \
+          "${ASSIGNEE_ARG[@]}" \
           2>&1) || {
           echo "Failed to create issue: $ISSUE_URL"
           exit 1
