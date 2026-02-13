@@ -57,7 +57,7 @@ jobs:
             actions
           persist-credentials: false
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@submit-single-pr-review
+        uses: ./actions/setup
         with:
           destination: /opt/gh-aw/actions
       - name: Check workflow file timestamps
@@ -101,7 +101,7 @@ jobs:
             actions
           persist-credentials: false
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@submit-single-pr-review
+        uses: ./actions/setup
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -833,7 +833,7 @@ jobs:
             actions
           persist-credentials: false
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@submit-single-pr-review
+        uses: ./actions/setup
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -945,7 +945,7 @@ jobs:
             actions
           persist-credentials: false
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@submit-single-pr-review
+        uses: ./actions/setup
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent artifacts
@@ -1048,7 +1048,7 @@ jobs:
             actions
           persist-credentials: false
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@submit-single-pr-review
+        uses: ./actions/setup
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1092,7 +1092,7 @@ jobs:
             actions
           persist-credentials: false
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@submit-single-pr-review
+        uses: ./actions/setup
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact

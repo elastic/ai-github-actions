@@ -52,10 +52,12 @@ Call `pull_request_read` with method `get_files` using `per_page: 5, page: 1` to
 For each file in the batch:
 
 1. Read the per-file patch to understand what changed.
-2. If the patch is large or truncated, call `get_file_contents` to read the full file.
-3. When you need broader context to verify an issue, call `get_file_contents` on the file (or related files).
-4. Identify issues matching the review criteria below.
-5. **Immediately leave inline comments** for any issues found in this file (see Step 3 below) before moving to the next file.
+2. Read the full file from the workspace. The PR branch is checked out locally, so open the file directly to get the complete contents with line numbers. This lets you:
+   - Understand the broader context around the changes
+   - Verify that issues aren't already handled elsewhere in the file
+   - Determine the **exact line number** for any comment you want to leave
+3. Identify issues matching the review criteria below.
+4. **Immediately leave inline comments** for any issues found in this file (see Step 3 below) before moving to the next file.
 
 After finishing all files in the batch, call `get_files` with `page: 2` for the next batch, and so on until all changed files have been reviewed.
 
@@ -66,7 +68,6 @@ After finishing all files in the batch, call `get_files` with `page: 2` for the 
 - Issues already covered by existing review threads (resolved or unresolved)
 
 **Before flagging any issue, verify it against the actual code:**
-- Read the full file, not just the patch — the issue may be handled elsewhere.
 - Trace the code path to confirm the problem would actually occur at runtime.
 - If you claim something is missing or broken, find the evidence in the code.
 - If the issue depends on assumptions you haven't confirmed, do not flag it.
@@ -74,7 +75,8 @@ After finishing all files in the batch, call `get_files` with `page: 2` for the 
 ### Step 3: Leave Inline Review Comments
 
 For each genuine issue found, call **`create_pull_request_review_comment`** with:
-- The file path and line number
+- The file path and the **exact line number from reading the file** (not estimated from the patch)
+- The line must be within the diff (an added or context line in the patch)
 - A comment body formatted as shown below
 
 **Comment format:**
