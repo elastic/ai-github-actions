@@ -130,9 +130,9 @@ if [ "$NITPICK_COUNT" -gt 0 ]; then
     NITPICK_JSON=$(echo "$NITPICKS" | jq ".[$i]")
     NP_FILE=$(echo "$NITPICK_JSON" | jq -r '._meta.file')
     NP_LINE=$(echo "$NITPICK_JSON" | jq -r '._meta.line')
-    NP_TITLE=$(echo "$NITPICK_JSON" | jq -r '._meta.title')
-    NP_WHY=$(echo "$NITPICK_JSON" | jq -r '._meta.why')
-    NP_SUGGESTION=$(echo "$NITPICK_JSON" | jq -r '._meta.suggestion')
+    NP_TITLE=$(echo "$NITPICK_JSON" | jq -r '._meta.title // "Untitled"')
+    NP_WHY=$(echo "$NITPICK_JSON" | jq -r '._meta.why // "No description provided"')
+    NP_SUGGESTION=$(echo "$NITPICK_JSON" | jq -r 'if ._meta.suggestion == null or ._meta.suggestion == "" then "" else ._meta.suggestion end')
 
     LANG=$(ext_to_lang "$NP_FILE")
 
