@@ -49,23 +49,118 @@ case "$EVENT" in
     ;;
 esac
 
+# File extension to language mapping for fenced code blocks
+ext_to_lang() {
+  local file="$1"
+  local ext="${file##*.}"
+  case "$ext" in
+    go) echo "go" ;;
+    py) echo "python" ;;
+    js) echo "javascript" ;;
+    ts) echo "typescript" ;;
+    tsx) echo "tsx" ;;
+    jsx) echo "jsx" ;;
+    rb) echo "ruby" ;;
+    rs) echo "rust" ;;
+    java) echo "java" ;;
+    kt|kts) echo "kotlin" ;;
+    swift) echo "swift" ;;
+    c|h) echo "c" ;;
+    cpp|cc|cxx|hpp) echo "cpp" ;;
+    cs) echo "csharp" ;;
+    sh|bash|zsh) echo "bash" ;;
+    yml|yaml) echo "yaml" ;;
+    json) echo "json" ;;
+    toml) echo "toml" ;;
+    xml) echo "xml" ;;
+    html|htm) echo "html" ;;
+    css) echo "css" ;;
+    scss) echo "scss" ;;
+    sql) echo "sql" ;;
+    md) echo "markdown" ;;
+    dockerfile|Dockerfile) echo "dockerfile" ;;
+    tf) echo "hcl" ;;
+    ex|exs) echo "elixir" ;;
+    php) echo "php" ;;
+    lua) echo "lua" ;;
+    r|R) echo "r" ;;
+    pl|pm) echo "perl" ;;
+    scala) echo "scala" ;;
+    *) echo "" ;;
+  esac
+}
+
 # Read queued comments from individual files
-COMMENTS="[]"
-COMMENT_COUNT=0
+ALL_COMMENTS="[]"
+TOTAL_COUNT=0
 
 if [ -d "${COMMENTS_DIR}" ]; then
-  # Collect all comment files and merge into a single JSON array
-  # Remove _meta fields before submitting (they're only for internal use)
   COMMENT_FILES=("${COMMENTS_DIR}"/comment-*.json)
-  
+
   if [ -f "${COMMENT_FILES[0]}" ]; then
-    # Use jq to read all comment files, extract the comment data (without _meta), and combine
-    COMMENTS=$(jq -s '[.[] | del(._meta)]' "${COMMENTS_DIR}"/comment-*.json)
-    COMMENT_COUNT=$(echo "$COMMENTS" | jq 'length')
-    if [ "$COMMENT_COUNT" -gt 0 ]; then
-      echo "Found ${COMMENT_COUNT} queued inline comment(s)"
-    fi
+    ALL_COMMENTS=$(jq -s '.' "${COMMENTS_DIR}"/comment-*.json)
+    TOTAL_COUNT=$(echo "$ALL_COMMENTS" | jq 'length')
   fi
+fi
+
+# Separate nitpick comments from actionable inline comments
+# Nitpicks go into the review body; everything else stays as inline comments
+COMMENTS=$(echo "$ALL_COMMENTS" | jq '[.[] | select(._meta.severity != "nitpick") | del(._meta)]')
+COMMENT_COUNT=$(echo "$COMMENTS" | jq 'length')
+
+NITPICKS=$(echo "$ALL_COMMENTS" | jq '[.[] | select(._meta.severity == "nitpick")]')
+NITPICK_COUNT=$(echo "$NITPICKS" | jq 'length')
+
+if [ "$TOTAL_COUNT" -gt 0 ]; then
+  if [ "$NITPICK_COUNT" -gt 0 ]; then
+    echo "Found ${TOTAL_COUNT} queued comment(s) (${NITPICK_COUNT} nitpick(s) moved to review body)"
+  else
+    echo "Found ${TOTAL_COUNT} queued inline comment(s)"
+  fi
+fi
+
+# Build the nitpick section for the review body (collapsed <details> block)
+NITPICK_SECTION=""
+if [ "$NITPICK_COUNT" -gt 0 ]; then
+  NITPICK_SECTION="<details>
+<summary>Nitpick comments (${NITPICK_COUNT})</summary>
+"
+
+  for i in $(seq 0 $((NITPICK_COUNT - 1))); do
+    NITPICK_JSON=$(echo "$NITPICKS" | jq ".[$i]")
+    NP_FILE=$(echo "$NITPICK_JSON" | jq -r '._meta.file')
+    NP_LINE=$(echo "$NITPICK_JSON" | jq -r '._meta.line')
+    NP_TITLE=$(echo "$NITPICK_JSON" | jq -r '._meta.title')
+    NP_WHY=$(echo "$NITPICK_JSON" | jq -r '._meta.why')
+    NP_SUGGESTION=$(echo "$NITPICK_JSON" | jq -r '._meta.suggestion')
+
+    LANG=$(ext_to_lang "$NP_FILE")
+
+    # Add separator between nitpicks
+    if [ "$i" -gt 0 ]; then
+      NITPICK_SECTION="${NITPICK_SECTION}
+---
+"
+    fi
+
+    NITPICK_SECTION="${NITPICK_SECTION}
+**💬 NITPICK** ${NP_TITLE} — \`${NP_FILE}:${NP_LINE}\`
+
+Why: ${NP_WHY}"
+
+    # Add suggestion as a fenced code block if present
+    if [ -n "$NP_SUGGESTION" ]; then
+      NITPICK_SECTION="${NITPICK_SECTION}
+
+\`\`\`${LANG}
+${NP_SUGGESTION}
+\`\`\`"
+    fi
+  done
+
+  NITPICK_SECTION="${NITPICK_SECTION}
+
+</details>"
 fi
 
 # Append standard footer to the review body (if body is provided)
@@ -76,8 +171,24 @@ FOOTER='
 
 Give us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.'
 
+# Assemble the final review body: user body + nitpick section + footer
+FINAL_BODY=""
 if [ -n "$BODY" ]; then
-  BODY_WITH_FOOTER="${BODY}${FOOTER}"
+  FINAL_BODY="${BODY}"
+fi
+
+if [ -n "$NITPICK_SECTION" ]; then
+  if [ -n "$FINAL_BODY" ]; then
+    FINAL_BODY="${FINAL_BODY}
+
+${NITPICK_SECTION}"
+  else
+    FINAL_BODY="${NITPICK_SECTION}"
+  fi
+fi
+
+if [ -n "$FINAL_BODY" ]; then
+  BODY_WITH_FOOTER="${FINAL_BODY}${FOOTER}"
 else
   BODY_WITH_FOOTER=""
 fi
@@ -124,7 +235,7 @@ RESPONSE=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/reviews" \
 }
 
 # Clean up the comments directory after successful submission
-if [ -d "${COMMENTS_DIR}" ] && [ "$COMMENT_COUNT" -gt 0 ]; then
+if [ -d "${COMMENTS_DIR}" ] && [ "$TOTAL_COUNT" -gt 0 ]; then
   rm -f "${COMMENTS_DIR}"/comment-*.json
   # Remove directory if empty
   rmdir "${COMMENTS_DIR}" 2>/dev/null || true
@@ -137,6 +248,9 @@ if [ -n "$REVIEW_URL" ]; then
   echo "✓ Review submitted (${REVIEW_STATE}): ${REVIEW_URL}"
   if [ "$COMMENT_COUNT" -gt 0 ]; then
     echo "  Included ${COMMENT_COUNT} inline comment(s)"
+  fi
+  if [ "$NITPICK_COUNT" -gt 0 ]; then
+    echo "  Included ${NITPICK_COUNT} nitpick(s) in review body"
   fi
 else
   echo "✓ Review submitted successfully"
