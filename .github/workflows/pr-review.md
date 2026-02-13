@@ -97,9 +97,9 @@ Only flag issues you are confident are real problems — false positives erode t
 
 Call **`submit_pull_request_review`** with:
 - The review type (REQUEST_CHANGES, COMMENT, or APPROVE)
-- A **brief** review body (2-3 sentences max) that gives a high-level summary of the PR and the review verdict
+- A review body that is **only the verdict and only if the verdict is not APPROVE**. If you have very important feedback that cannot be covered in inline comments, you must include it here. Otherwise, prefer to leave the review body empty and focus on the inline comments.
 
-**Do NOT** repeat or summarize individual issues in the review body — those details belong in the inline comments. The review body should only convey the overall assessment. You do not need to provide a body at all if you have no issues or nothing important to share outside of the inline comments.
+**Do NOT** describe what the PR does, list the files you reviewed, summarize inline comments, or restate prior review feedback. The PR author already knows what their PR does. Your inline comments already contain all the detail. The review body exists solely to communicate the approve/request-changes decision and important/critical feedback that cannot be covered in inline comments.
 
 If you have no issues, or you have only provided NITPICK and LOW issues, submit an APPROVE review. Otherwise, submit a REQUEST_CHANGES review.
 
