@@ -231,6 +231,10 @@ jq -n \
   --arg side "RIGHT" \
   --arg body "$BODY_WITH_FOOTER" \
   --arg id "$COMMENT_ID" \
+  --arg severity "$SEVERITY" \
+  --arg title "$TITLE" \
+  --arg why "$WHY" \
+  --arg suggestion "$SUGGESTION" \
   '{
     path: $path,
     line: $line,
@@ -239,7 +243,11 @@ jq -n \
     _meta: {
       id: $id,
       file: $path,
-      line: $line
+      line: $line,
+      severity: $severity,
+      title: $title,
+      why: $why,
+      suggestion: $suggestion
     }
   }' > "${COMMENT_FILE}"
 
