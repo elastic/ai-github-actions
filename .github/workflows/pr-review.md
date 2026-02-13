@@ -2,7 +2,7 @@
 timeout-minutes: 15
 engine:
   id: copilot
-  model: claude-opus-4
+  model: claude-opus-4.6
 on:
   pull_request:
     types: [opened, synchronize, reopened]
