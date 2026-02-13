@@ -29,8 +29,8 @@ if [ -n "$EXPECTED_HEAD" ]; then
 fi
 
 # Thresholds for "too big" - show file list only if exceeded
-MAX_FILES=25
-MAX_TOTAL_LINES=1500
+MAX_FILES=250
+MAX_TOTAL_LINES=15000
 
 FILE="$1"
 

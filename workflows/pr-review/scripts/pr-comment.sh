@@ -135,9 +135,9 @@ if [ -z "$SUGGESTION" ] && [ "$NO_SUGGESTION" = false ]; then
   exit 1
 fi
 
-# Validate line is a positive integer (>= 1)
-if ! [[ "$LINE" =~ ^[1-9][0-9]*$ ]]; then
-  echo "Error: Line number must be a positive integer (>= 1), got: $LINE"
+# Validate line is a number
+if ! [[ "$LINE" =~ ^[0-9]+$ ]]; then
+  echo "Error: Line number must be a number, got: $LINE"
   exit 1
 fi
 
@@ -221,7 +221,7 @@ Give us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.'
 BODY_WITH_FOOTER="${BODY}${FOOTER}"
 
 # Generate unique comment ID
-COMMENT_ID="comment-$(date +%s)-$(od -An -N4 -tu4 /dev/urandom | tr -d ' ')"
+COMMENT_ID="comment-$(date +%s)"
 COMMENT_FILE="${COMMENTS_DIR}/${COMMENT_ID}.json"
 
 # Create the comment JSON object

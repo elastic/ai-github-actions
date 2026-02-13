@@ -105,7 +105,7 @@ if [ "$FILTER_UNRESOLVED" = true ]; then
 fi
 
 if [ -n "$FILTER_FILE" ]; then
-  FILTERED=$(echo "$FILTERED" | jq --arg file "$FILTER_FILE" '[.[] | select(.path == $file)]')
+  FILTERED=$(echo "$FILTERED" | jq "[.[] | select(.path == \"$FILTER_FILE\")]")
 fi
 
 THREAD_COUNT=$(echo "$FILTERED" | jq 'length')

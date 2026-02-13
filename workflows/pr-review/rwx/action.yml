@@ -21,7 +21,8 @@ inputs:
 
   github-token:
     description: "GitHub token for Claude to operate with"
-    required: true
+    required: false
+    default: ${{ github.token }}
 
   model:
     description: "Model to use for Claude"
@@ -77,6 +78,7 @@ runs:
         PR_REVIEW_REPO: ${{ github.repository }}
         PR_REVIEW_PR_NUMBER: ${{ github.event.pull_request.number }}
         PR_REVIEW_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        DEBUG_LOG: /tmp/pr-review-debug.log
         PR_REVIEW_COMMENTS_DIR: /tmp/pr-review-comments
         PR_REVIEW_HELPERS_DIR: ${{ github.action_path }}/../scripts
       uses: elastic/ai-github-claude-code-action@working-forks

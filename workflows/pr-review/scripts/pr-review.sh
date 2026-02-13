@@ -40,11 +40,11 @@ fi
 
 # Validate event type
 case "$EVENT" in
-  APPROVE|REQUEST_CHANGES|COMMENT)
+  APPROVE|REQUEST_CHANGES|COMMENT|DISMISS)
     ;;
   *)
     echo "Error: Invalid event type '${EVENT}'"
-    echo "Must be one of: APPROVE, REQUEST_CHANGES, COMMENT"
+    echo "Must be one of: APPROVE, REQUEST_CHANGES, COMMENT, DISMISS"
     exit 1
     ;;
 esac
@@ -206,29 +206,16 @@ REVIEW_JSON=$(jq -n \
     comments: $comments
   } + (if $body != "" then {body: $body} else {} end)')
 
-# Check if HEAD has changed since review started (race condition detection)
-CURRENT_HEAD=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}" --jq '.head.sha')
-if [ "$CURRENT_HEAD" != "$HEAD_SHA" ]; then
-  echo "⚠️  WARNING: PR head has changed since review started!"
-  echo "   Review started at: ${HEAD_SHA:0:7}"
-  echo "   Current head:      ${CURRENT_HEAD:0:7}"
-  echo ""
-  echo "   New commits may have shifted line numbers. Review will be submitted"
-  echo "   against the original commit (${HEAD_SHA:0:7}) but comments may be outdated."
-  echo ""
-fi
+# Submit review regardless of whether HEAD has changed
 
 echo "Submitting ${EVENT} review for commit ${HEAD_SHA:0:7}..."
 
 # Create and submit the review in one API call
-# Use a temp file to safely pass the JSON body
-TEMP_JSON=$(mktemp)
-trap "rm -f ${TEMP_JSON}" EXIT
-echo "$REVIEW_JSON" > "${TEMP_JSON}"
+echo "$REVIEW_JSON" > /tmp/review-payload.json
 
 RESPONSE=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/reviews" \
   -X POST \
-  --input "${TEMP_JSON}" 2>&1) || {
+  --input /tmp/review-payload.json 2>&1) || {
   echo "Error submitting review:"
   echo "$RESPONSE"
   exit 1
