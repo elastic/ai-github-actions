@@ -2,6 +2,12 @@
 
 What's unique about working in this repository.
 
+## Workflow Variants: gh-aw
+
+Workflows are compiled to lock files using `gh-aw compile`. The lock files are stored in the `dist/` directory.
+
+The lock files are used to deploy the workflows to the repository.
+
 ## Workflow Variants: RO / RWX / RWXP
 
 Workflows have permission variants:
