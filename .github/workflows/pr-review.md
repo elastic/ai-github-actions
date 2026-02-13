@@ -22,6 +22,8 @@ network:
 safe-outputs:
   create-pull-request-review-comment:
     max: 30
+  submit-pull-request-review:
+    max: 1
 ---
 
 # PR Review Agent
@@ -89,6 +91,14 @@ Leave comments as you go — after reviewing each file, not all at the end. Trac
 
 Only flag issues you are confident are real problems — false positives erode trust.
 
+### Step 4: Submit the review
+
+Call **`submit_pull_request_review`** with:
+- The review body
+- The review type (REQUEST_CHANGES, COMMENT, or APPROVE)
+
+If you have no issues, or you have only provided NITPICK and LOW issues, submit an APPROVE review. Otherwise, submit a REQUEST_CHANGES review.
+
 ## Severity Classification
 
 - 🔴 **CRITICAL** — Must fix before merge (security vulnerabilities, data corruption, production-breaking bugs)
@@ -108,3 +118,4 @@ Focus on these categories in priority order:
 5. Error handling gaps (unhandled exceptions, missing validation)
 6. Breaking changes to public APIs without migration path
 7. Missing or incorrect test coverage for critical paths
+
