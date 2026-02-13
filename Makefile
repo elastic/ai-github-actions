@@ -1,8 +1,7 @@
-# No build steps needed - workflows are maintained directly
-
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
+GH_AW_VERSION := v0.43.18
 
 # Helper: Detect OS and architecture (sets OS and ARCH variables)
 # Usage: $(DETECT_OS_ARCH)
@@ -36,7 +35,7 @@ define download-file
 	fi
 endef
 
-.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian lint-workflows lint-actions release
+.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile lint-workflows lint-actions release
 
 help:
 	@echo "This repository contains GitHub Actions workflows."
@@ -49,10 +48,11 @@ help:
 	@echo "  setup-gh             - Check GitHub CLI installation"
 	@echo "  lint-workflows       - Validate GitHub Actions workflow files"
 	@echo "  lint-actions         - Validate GitHub Actions composite action files"
+	@echo "  compile              - Compile gh-aw agentic workflows to lock files"
 	@echo "  lint                 - Run all linters"
 	@echo "  release VERSION=x.y.z - Create and push a new release tag"
 
-setup: setup-actionlint setup-action-validator setup-gh
+setup: setup-actionlint setup-action-validator setup-gh setup-gh-aw
 	@echo ""
 	@echo "✓ Setup complete!"
 
@@ -105,6 +105,21 @@ setup-gh-debian:
 	sudo apt-get update && \
 	sudo apt-get install -y gh && \
 	echo "✓ GitHub CLI installed"
+
+setup-gh-aw:
+	@echo "Setting up gh-aw compiler..."
+	@if command -v go >/dev/null 2>&1; then \
+		echo "Installing gh-aw $(GH_AW_VERSION)..."; \
+		GOBIN="$$(pwd)/bin" go install github.com/github/gh-aw/cmd/gh-aw@$(GH_AW_VERSION) && \
+		echo "✓ gh-aw installed to bin/gh-aw"; \
+	else \
+		echo "⚠ Go not found. Install Go first: https://go.dev/dl/"; \
+		exit 1; \
+	fi
+
+compile: setup-gh-aw
+	@echo "Compiling agentic workflows..."
+	@bin/gh-aw compile --action-tag $(GH_AW_VERSION)
 
 setup-actionlint:
 	@echo "Setting up actionlint..."
