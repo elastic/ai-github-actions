@@ -86,8 +86,10 @@ For each genuine issue found, call **`create_pull_request_review_comment`** with
 > Description of the issue and why it matters.
 >
 > ````suggestion
-> corrected code here (when applicable)
+> corrected code here
 > ````
+
+Only include a `suggestion` block when you can provide a concrete code fix that **actually changes** the code. If the fix requires structural changes that don't fit in a suggestion, describe the fix in prose instead — never include a suggestion that is identical to the original line.
 
 Leave comments as you go — after reviewing each file, not all at the end. Track what you've already commented on to avoid duplicates within this run.
 
