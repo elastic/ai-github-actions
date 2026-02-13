@@ -96,8 +96,10 @@ Only flag issues you are confident are real problems — false positives erode t
 ### Step 4: Submit the review
 
 Call **`submit_pull_request_review`** with:
-- The review body
 - The review type (REQUEST_CHANGES, COMMENT, or APPROVE)
+- A **brief** review body (2-3 sentences max) that gives a high-level summary of the PR and the review verdict
+
+**Do NOT** repeat or summarize individual issues in the review body — those details belong in the inline comments. The review body should only convey the overall assessment. You do not need to provide a body at all if you have no issues or nothing important to share outside of the inline comments.
 
 If you have no issues, or you have only provided NITPICK and LOW issues, submit an APPROVE review. Otherwise, submit a REQUEST_CHANGES review.
 
