@@ -15,10 +15,21 @@ permissions:
 tools:
   github:
     toolsets: [repos, pull_requests]
+  bash: true
+  web-fetch:
+mcp-servers:
+  agents-md-generator:
+    url: "https://agents-md-generator.fastmcp.app/mcp"
+    allowed: ["generate_agents_md"]
+  public-code-search:
+    url: "https://public-code-search.fastmcp.app/mcp"
+    allowed: ["search_code"]
 network:
   allowed:
     - defaults
     - github
+    - "agents-md-generator.fastmcp.app"
+    - "public-code-search.fastmcp.app"
 safe-outputs:
   create-pull-request-review-comment:
     max: 30
@@ -39,11 +50,12 @@ Review pull requests in ${{ github.repository }} and provide actionable feedback
 
 Follow these steps in order.
 
-### Step 1: Gather PR Details
+### Step 1: Gather Context
 
-1. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get the full PR details (author, description, branches).
-2. Call `pull_request_read` with method `get_review_comments` to check existing review threads. Note which files already have threads and whether threads are resolved, unresolved, or outdated.
-3. Call `pull_request_read` with method `get_reviews` to see prior review submissions from this bot. Do not repeat points already made in prior reviews.
+1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. Use these as additional review criteria throughout the review. If this fails, continue without it.
+2. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get the full PR details (author, description, branches).
+3. Call `pull_request_read` with method `get_review_comments` to check existing review threads. Note which files already have threads and whether threads are resolved, unresolved, or outdated.
+4. Call `pull_request_read` with method `get_reviews` to see prior review submissions from this bot. Do not repeat points already made in prior reviews.
 
 ### Step 2: Review Files in Small Batches
 
@@ -71,6 +83,9 @@ After finishing all files in the batch, call `get_files` with `page: 2` for the 
 - Trace the code path to confirm the problem would actually occur at runtime.
 - If you claim something is missing or broken, find the evidence in the code.
 - If the issue depends on assumptions you haven't confirmed, do not flag it.
+- Use `grep` in the workspace to find callers, related implementations, or usage patterns across the codebase.
+- Use `search_code` to search public GitHub repositories for upstream library usage, API examples, or reference implementations.
+- Use `web-fetch` to look up library/API documentation when verifying correct usage.
 
 ### Step 3: Leave Inline Review Comments
 
