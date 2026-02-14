@@ -19,7 +19,7 @@ permissions:
   pull-requests: read
 strict: false
 roles: [admin, maintainer, write]
-timeout-minutes: 15
+timeout-minutes: 30
 # Add setup steps to install tools the agent needs, e.g.:
 # steps:
 #   - uses: actions/setup-go@v5
