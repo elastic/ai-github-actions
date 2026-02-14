@@ -5,6 +5,15 @@ imports:
   - shared/formatting.md
   - shared/rigor.md
   - shared/mcp-pagination.md
+tools:
+  github:
+    toolsets: [repos, issues, pull_requests, search]
+  bash: true
+  web-fetch:
+network:
+  allowed:
+    - defaults
+    - github
 safe-outputs:
   add-comment:
     max: 1
@@ -34,7 +43,7 @@ Follow these steps in order.
 
 1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
 2. Read key repository files (README, CONTRIBUTING, etc.) to understand the project.
-3. Search for related issues and PRs (open and closed) that may be relevant.
+3. Search for related issues and PRs (open and closed) that may be relevant. Call `issue_read` with method `get` on the most relevant issues to understand prior discussion, decisions, and whether this is a duplicate.
 
 ### Step 2: Investigate the Codebase
 

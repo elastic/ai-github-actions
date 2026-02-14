@@ -1,6 +1,7 @@
 ---
+description: "AI code review with inline comments on pull requests"
 imports:
-  - pr-review/prompt.md
+  - pr-review/rwx/prompt.md
 engine:
   id: copilot
   model: claude-opus-4.6
@@ -13,6 +14,7 @@ concurrency:
 permissions:
   contents: read
   pull-requests: read
+  issues: read
 strict: false
 roles: [admin, maintainer, write]
 timeout-minutes: 15

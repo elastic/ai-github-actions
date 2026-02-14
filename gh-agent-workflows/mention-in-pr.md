@@ -1,6 +1,7 @@
 ---
+description: "AI assistant for PRs — review, fix code, and push changes via /ai"
 imports:
-  - mention-in-pr/prompt.md
+  - mention-in-pr/rwxp/prompt.md
 engine:
   id: copilot
   model: claude-opus-4.6

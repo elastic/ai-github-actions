@@ -4,28 +4,37 @@
 
 ```
 gh-agent-workflows/
-├── pr-review.md              # Shim: trigger + engine + single import
+├── pr-review.md              # Shim: description + trigger + engine + single import
 ├── pr-review/
-│   └── prompt.md             # Agent prompt + safe-outputs
+│   └── rwx/
+│       └── prompt.md         # Agent prompt + tools + network + safe-outputs
 ├── issue-triage.md
 ├── issue-triage/
-│   └── prompt.md
+│   └── rwx/
+│       └── prompt.md
 ├── mention-in-issue.md
 ├── mention-in-issue/
-│   └── prompt.md
+│   └── rwxp/
+│       └── prompt.md
 ├── mention-in-pr.md
 ├── mention-in-pr/
-│   └── prompt.md
+│   └── rwxp/
+│       └── prompt.md
 └── shared/
-    ├── elastic-tools.md      # Tools, MCP servers, network config
+    ├── elastic-tools.md      # Elastic MCP servers + their network entries
     ├── formatting.md         # Response formatting rules
     ├── rigor.md              # Accuracy & evidence standards
     └── mcp-pagination.md     # MCP token limit guidance
 ```
 
-**Shims** (`*.md` at the top level) are what consumers install via `gh aw add`. They contain only the engine, trigger, permissions, concurrency, roles, and a single `imports:` entry. Everything else comes from imports.
+**Shims** (`*.md` at the top level) are what consumers install via `gh aw add`. They contain the engine, trigger, permissions, concurrency, roles, description, and a single `imports:` entry. Everything else comes from imports.
 
-**Prompts** (`*/prompt.md`) contain the agent instructions and `safe-outputs:`. Each prompt imports the shared fragments.
+**Prompts** (`<workflow>/<tier>/prompt.md`) contain the agent instructions, `tools:`, `network:`, and `safe-outputs:`. Each prompt defines the tools it needs and imports the shared fragments. The tier subdirectory indicates the permission level:
+
+- **`rwx`** — Read, write (workspace), execute (bash). No push, no PR creation.
+- **`rwxp`** — Read, write, execute, push. Can create PRs or push to PR branches via safe-outputs.
+
+Adding a new tier (e.g., `r` for read-only without bash) is a new sibling directory with its own prompt and a new shim that imports it.
 
 **Shared fragments** (`shared/`) provide cross-workflow configuration and guidance. No `on:` field — validated but never compiled standalone.
 
@@ -35,8 +44,8 @@ Each shim imports one prompt, which nests the shared fragments:
 
 ```
 shim (pr-review.md)
- └── pr-review/prompt.md          # agent instructions + safe-outputs
-      ├── shared/elastic-tools.md  # tools, MCP servers, network
+ └── pr-review/rwx/prompt.md      # agent instructions + tools + network + safe-outputs
+      ├── shared/elastic-tools.md  # Elastic MCP servers + network entries
       ├── shared/formatting.md     # response formatting rules
       ├── shared/rigor.md          # accuracy & evidence standards
       └── shared/mcp-pagination.md # pagination best practices
@@ -46,7 +55,7 @@ shim (pr-review.md)
 
 | Fragment | Purpose |
 | --- | --- |
-| [shared/elastic-tools.md](shared/elastic-tools.md) | GitHub MCP toolsets, MCP servers (`agents-md-generator`, `public-code-search`), network allow-list |
+| [shared/elastic-tools.md](shared/elastic-tools.md) | Elastic MCP servers (`agents-md-generator`, `public-code-search`) and their network entries |
 | [shared/formatting.md](shared/formatting.md) | Response formatting rules |
 | [shared/rigor.md](shared/rigor.md) | Accuracy & evidence standards |
 | [shared/mcp-pagination.md](shared/mcp-pagination.md) | MCP token limit guidance and pagination patterns |
@@ -95,7 +104,7 @@ make sync             # sync only
 ### Adding a new workflow
 
 1. Create the shim: `gh-agent-workflows/<name>.md`
-2. Create the prompt: `gh-agent-workflows/<name>/prompt.md`
+2. Create the prompt: `gh-agent-workflows/<name>/<tier>/prompt.md` (e.g., `rwx` or `rwxp`)
 3. Add shared fragment imports in the prompt's frontmatter
 4. Create a symlink: `ln -s ../../gh-agent-workflows/<name> .github/workflows/<name>`
 5. Run `make compile` and verify

@@ -5,6 +5,15 @@ imports:
   - shared/formatting.md
   - shared/rigor.md
   - shared/mcp-pagination.md
+tools:
+  github:
+    toolsets: [repos, issues, pull_requests, search]
+  bash: true
+  web-fetch:
+network:
+  allowed:
+    - defaults
+    - github
 safe-outputs:
   add-comment:
     max: 3
@@ -37,7 +46,8 @@ Understand the request, investigate the codebase, and respond with a helpful, ac
 
 1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
 2. Read the full issue thread to understand the discussion so far.
-3. Use `grep` and file reading to explore the relevant parts of the codebase.
+3. If the issue references other issues or PRs, call `issue_read` or `pull_request_read` with method `get` on each to understand the broader context.
+4. Use `grep` and file reading to explore the relevant parts of the codebase.
 
 ### Step 2: Investigate and Respond
 

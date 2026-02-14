@@ -1,11 +1,7 @@
 ---
-# Shared Elastic AI configuration — no `on:` field (shared component, not a runnable workflow)
-# Note: engine/model must be set in the shim (not importable)
-tools:
-  github:
-    toolsets: [repos, issues, pull_requests, search]
-  bash: true
-  web-fetch:
+# Shared Elastic MCP servers — no `on:` field (shared component, not a runnable workflow)
+# Each workflow defines its own tools (github, bash, web-fetch) and base network allows (defaults, github).
+# This fragment provides only the Elastic-specific MCP servers and their network entries.
 mcp-servers:
   agents-md-generator:
     url: "https://agents-md-generator.fastmcp.app/mcp"
@@ -15,8 +11,6 @@ mcp-servers:
     allowed: ["search_code"]
 network:
   allowed:
-    - defaults
-    - github
     - "agents-md-generator.fastmcp.app"
     - "public-code-search.fastmcp.app"
 ---

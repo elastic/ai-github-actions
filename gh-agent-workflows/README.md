@@ -40,9 +40,7 @@ Prompt improvements propagate automatically when you recompile. Only the shim is
 
 ## Customization
 
-### Override config
-
-Edit the shim's frontmatter to change triggers, permissions, concurrency, or timeouts, then recompile:
+All customization is done in the shim file (`.github/workflows/<name>.md`). Edit the frontmatter and recompile:
 
 ```bash
 gh aw compile
@@ -60,12 +58,27 @@ engine:
 ---
 ```
 
-### Add tools or MCP servers
+### Override triggers, permissions, or timeouts
 
-Tools from imports merge additively — add your own in the shim's frontmatter:
+Edit the shim's frontmatter to change triggers, concurrency, permissions, or timeouts:
 
 ```yaml
 ---
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+timeout-minutes: 30
+---
+```
+
+### Add tools or MCP servers
+
+Tools and network allows from imports merge additively — add your own in the shim's frontmatter:
+
+```yaml
+---
+tools:
+  bash: ["npm", "npx", "node"]
 mcp-servers:
   my-custom-server:
     url: "https://my-server.example.com/mcp"
@@ -76,6 +89,8 @@ network:
 ---
 ```
 
+Each workflow already includes `github` (repos, issues, pull_requests, search), `bash`, and `web-fetch` tools with `defaults` and `github` network access. Anything you add in the shim merges on top.
+
 ### Override safe outputs
 
 Main workflow definitions override imported defaults:
@@ -85,6 +100,19 @@ Main workflow definitions override imported defaults:
 safe-outputs:
   add-comment:
     max: 5
+---
+```
+
+### Add setup steps
+
+Install tools the agent needs (e.g., language runtimes, build tools):
+
+```yaml
+---
+steps:
+  - uses: actions/setup-go@v5
+    with:
+      go-version: '1.23'
 ---
 ```
 

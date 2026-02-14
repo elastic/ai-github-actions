@@ -5,6 +5,15 @@ imports:
   - shared/formatting.md
   - shared/rigor.md
   - shared/mcp-pagination.md
+tools:
+  github:
+    toolsets: [repos, issues, pull_requests, search]
+  bash: true
+  web-fetch:
+network:
+  allowed:
+    - defaults
+    - github
 safe-outputs:
   add-comment:
     max: 3
@@ -40,7 +49,8 @@ Understand the request, investigate the code, and respond appropriately.
 
 1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
 2. Call `pull_request_read` with method `get` to get the full PR details (author, description, branches).
-3. Read the comment thread to understand what's being asked. Use `pull_request_read` with methods like `get_review_comments` and `get_comments` to see the full conversation context.
+3. If the PR description references issues (e.g., "Fixes #123"), call `issue_read` with method `get` on each linked issue to understand the motivation and requirements.
+4. Read the comment thread to understand what's being asked. Use `pull_request_read` with methods like `get_review_comments` and `get_comments` to see the full conversation context.
 
 ### Step 2: Handle the Request
 
