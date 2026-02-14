@@ -24,6 +24,7 @@ mcp-servers:
   public-code-search:
     url: "https://public-code-search.fastmcp.app/mcp"
     allowed: ["search_code"]
+strict: false
 network:
   allowed:
     - defaults
