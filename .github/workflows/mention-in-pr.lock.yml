@@ -22,6 +22,12 @@
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
 #
+# Resolved workflow manifest:
+#   Includes:
+#     - shared/formatting.md
+#     - shared/mcp-pagination.md
+#     - shared/tool-guidance.md
+#
 # frontmatter-hash: 24e0b10fbbf3238779341ccb80e8f3bba2b555456deba7605603206d81ce2ac5
 
 name: "PR Assistant"

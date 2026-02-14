@@ -22,6 +22,11 @@
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
 #
+# Resolved workflow manifest:
+#   Includes:
+#     - shared/mcp-pagination.md
+#     - shared/tool-guidance.md
+#
 # frontmatter-hash: 1df5224e8ab6fa868ed466f324522f75cc4aab501ed1a7af01c5b4086446d6a8
 
 name: "PR Review Agent"

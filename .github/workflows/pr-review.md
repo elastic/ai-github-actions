@@ -47,6 +47,13 @@ Review pull requests in ${{ github.repository }} and provide actionable feedback
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
 
+## Constraints
+
+- **CAN**: Read files, search code, run commands, read PR details, leave inline review comments, submit reviews
+- **CANNOT**: Commit code, push changes, create branches, create pull requests, merge PRs
+
+This workflow is read-only. Your output is exclusively inline review comments and a review submission.
+
 ## Review Process
 
 Follow these steps in order.
@@ -72,21 +79,23 @@ For each file in the batch:
 3. Identify issues matching the review criteria below.
 4. **Immediately leave inline comments** for any issues found in this file (see Step 3 below) before moving to the next file.
 
-After finishing all files in the batch, call `get_files` with `page: 2` for the next batch, and so on until all changed files have been reviewed.
+After finishing all files in the batch, call `pull_request_read` with method `get_files` and `page: 2` for the next batch, and so on until all changed files have been reviewed.
 
 **Do NOT flag:**
 - Issues in unchanged code (only review the diff)
 - Style preferences handled by linters or formatters
 - Pre-existing issues not introduced by this PR
-- Issues already covered by existing review threads (resolved or unresolved)
+- Issues already covered by existing review threads — see rules below
 
-**Before flagging any issue, verify it against the actual code:**
-- Trace the code path to confirm the problem would actually occur at runtime.
-- If you claim something is missing or broken, find the evidence in the code.
-- If the issue depends on assumptions you haven't confirmed, do not flag it.
-- Use `grep` in the workspace to find callers, related implementations, or usage patterns across the codebase.
-- Use `search_code` to search public GitHub repositories for upstream library usage, API examples, or reference implementations.
-- Use `web-fetch` to look up library/API documentation when verifying correct usage.
+**Existing thread rules** (check BEFORE leaving any comment):
+- **Resolved with reviewer reply** (e.g. "This is intentional", "No need to change") — reviewer's decision is final. Do NOT re-flag.
+- **Resolved without reply** — author likely fixed it. Do NOT re-raise unless the fix introduced a new problem.
+- **Unresolved** — already flagged by a prior review. Do NOT duplicate. Mention in the review body only if you have something new to add.
+- **Outdated** — code changed since the comment. Only re-flag if the issue still applies to the current diff.
+
+When in doubt, do not duplicate. Redundant comments erode trust.
+
+**Before flagging any issue, verify it against the actual code** (see Verification section below).
 
 ### Step 3: Leave Inline Review Comments
 
@@ -140,4 +149,8 @@ Focus on these categories in priority order:
 5. Error handling gaps (unhandled exceptions, missing validation)
 6. Breaking changes to public APIs without migration path
 7. Missing or incorrect test coverage for critical paths
+
+{{#import shared/tool-guidance.md}}
+
+{{#import shared/mcp-pagination.md}}
 
