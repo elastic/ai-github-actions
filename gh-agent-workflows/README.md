@@ -123,7 +123,7 @@ Add markdown body to the shim — it's appended after the imported prompt:
 ```yaml
 ---
 imports:
-  - pr-review/prompt.md
+  - pr-review/rwx/prompt.md
 engine:
   id: copilot
   model: claude-opus-4.6

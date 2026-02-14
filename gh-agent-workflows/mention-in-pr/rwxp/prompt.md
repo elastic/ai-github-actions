@@ -19,9 +19,12 @@ safe-outputs:
     max: 3
   create-pull-request-review-comment:
     max: 30
+    footer: "if-body"
   submit-pull-request-review:
     max: 1
   push-to-pull-request-branch:
+  resolve-pull-request-review-thread:
+    max: 10
 ---
 
 # PR Assistant
@@ -36,7 +39,7 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 
 ## Constraints
 
-- **CAN**: Read files, search code, modify files locally, run tests and commands, leave inline review comments, submit reviews, push to the PR branch (same-repo only)
+- **CAN**: Read files, search code, modify files locally, run tests and commands, leave inline review comments, submit reviews, resolve review threads, push to the PR branch (same-repo only)
 - **CANNOT**: Push to fork PR branches, merge PRs, delete branches
 
 When pushing changes, the workspace already has the PR branch checked out. Make your changes, commit them locally, then use `push_to_pull_request_branch`.
@@ -62,9 +65,11 @@ Based on what's asked, do the appropriate thing:
 - **Important**: Substantive feedback belongs in the PR review (inline comments + review submission), NOT in the reply comment. Your reply comment should only report: "Review submitted" with a brief status (e.g. "approved" or "requested changes on X issues"). Do NOT duplicate review content in the comment.
 
 **If asked to fix code or address review feedback:**
+- Call `pull_request_read` with method `get_review_comments` to see open review threads and understand what needs to be addressed.
 - Make the changes in the workspace.
 - Run tests to verify the fix.
 - Commit your changes locally, then use `push_to_pull_request_branch` to push them.
+- After pushing, resolve each addressed review thread by calling `resolve_pull_request_review_thread` with the thread's node ID (the `id` field from `get_review_comments`, e.g., `PRRT_kwDO...`). Only resolve threads you have actually addressed — do not resolve threads you skipped or disagreed with.
 - **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.
 
 **If asked a question about the code:**
@@ -81,3 +86,4 @@ Call `add_comment` with your response. Be concise and actionable.
 
 **Additional tools:**
 - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
+- `resolve_pull_request_review_thread` — resolve a review thread after addressing the feedback (pass the thread's node ID)
