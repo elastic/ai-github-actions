@@ -21,6 +21,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
+# Investigate new issues and provide actionable triage analysis
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -28,9 +29,9 @@
 #     - shared/formatting.md
 #     - shared/mcp-pagination.md
 #     - shared/rigor.md
-#     - issue-triage/prompt.md
+#     - issue-triage/rwx.md
 #
-# frontmatter-hash: 59e04a3991b5e6ec79c6d450dedda03ff4f166d7a199a3ace8218f28b534e123
+# frontmatter-hash: a52f6de000673292444215b537b95729b73d331b47725f25593e3d171864ff0c
 
 name: "Issue Triage"
 "on":
@@ -560,7 +561,7 @@ jobs:
           </system>
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/issue-triage/prompt.md}}
+          {{#runtime-import .github/workflows/issue-triage/rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/shared/elastic-tools.md}}
@@ -928,7 +929,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           WORKFLOW_NAME: "Issue Triage"
-          WORKFLOW_DESCRIPTION: "No description provided"
+          WORKFLOW_DESCRIPTION: "Investigate new issues and provide actionable triage analysis"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |

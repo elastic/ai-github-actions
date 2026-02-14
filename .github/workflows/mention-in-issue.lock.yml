@@ -21,6 +21,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
+# AI assistant for issues — answer questions, debug, and create PRs via /ai
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -28,9 +29,9 @@
 #     - shared/formatting.md
 #     - shared/mcp-pagination.md
 #     - shared/rigor.md
-#     - mention-in-issue/prompt.md
+#     - mention-in-issue/rwxp.md
 #
-# frontmatter-hash: b18cfbe0165b398fcda4bd106426c7020656dccc81261593a0051426f0152853
+# frontmatter-hash: 665b3b81c9bbc5b6b157f2b77eafbc96de0fc14e006ffd60dbc6b5c145757a0a
 
 name: "Mention In Issue"
 "on":
@@ -710,7 +711,7 @@ jobs:
           </system>
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/mention-in-issue/prompt.md}}
+          {{#runtime-import .github/workflows/mention-in-issue/rwxp.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/shared/elastic-tools.md}}
@@ -1096,7 +1097,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           WORKFLOW_NAME: "Mention In Issue"
-          WORKFLOW_DESCRIPTION: "No description provided"
+          WORKFLOW_DESCRIPTION: "AI assistant for issues — answer questions, debug, and create PRs via /ai"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |

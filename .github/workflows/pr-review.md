@@ -1,7 +1,7 @@
 ---
 description: "AI code review with inline comments on pull requests"
 imports:
-  - pr-review/rwx/prompt.md
+  - pr-review/rwx.md
 engine:
   id: copilot
   model: claude-opus-4.6

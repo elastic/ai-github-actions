@@ -1,7 +1,7 @@
 ---
 description: "AI assistant for issues — answer questions, debug, and create PRs via /ai"
 imports:
-  - mention-in-issue/rwxp/prompt.md
+  - mention-in-issue/rwxp.md
 engine:
   id: copilot
   model: claude-opus-4.6

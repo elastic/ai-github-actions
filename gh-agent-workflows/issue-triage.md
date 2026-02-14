@@ -1,7 +1,7 @@
 ---
 description: "Investigate new issues and provide actionable triage analysis"
 imports:
-  - issue-triage/rwx/prompt.md
+  - issue-triage/rwx.md
 engine:
   id: copilot
   model: claude-opus-4.6
