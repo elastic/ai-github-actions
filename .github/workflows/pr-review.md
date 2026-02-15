@@ -17,6 +17,8 @@ permissions:
   issues: read
 strict: false
 roles: [admin, maintainer, write]
+bots:
+  - "github-actions[bot]"
 timeout-minutes: 30
 # Add setup steps to install tools the agent needs, e.g.:
 # steps:
