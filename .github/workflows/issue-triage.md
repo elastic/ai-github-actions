@@ -1,20 +1,21 @@
 ---
-description: "AI code review with inline comments on pull requests"
+description: "Investigate new issues and provide actionable triage analysis"
 imports:
-  - pr-review/rwx.md
+  - issue-triage/rwx.md
 engine:
   id: copilot
   model: claude-opus-4.6
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  issues:
+    types: [opened]
+  reaction: "eyes"
 concurrency:
-  group: pr-review-${{ github.event.pull_request.number }}
+  group: issue-triage-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
   contents: read
-  pull-requests: read
   issues: read
+  pull-requests: read
 strict: false
 roles: [admin, maintainer, write]
 timeout-minutes: 30

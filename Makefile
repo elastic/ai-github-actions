@@ -1,7 +1,7 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.43.18
+GH_AW_VERSION := v0.44.0
 
 # Helper: Detect OS and architecture (sets OS and ARCH variables)
 # Usage: $(DETECT_OS_ARCH)
@@ -35,11 +35,11 @@ define download-file
 	fi
 endef
 
-.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile lint-workflows lint-actions release
+.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile sync lint-workflows lint-actions release
 
 help:
-	@echo "This repository contains GitHub Actions workflows."
-	@echo "Edit workflows/*/action.yml files directly."
+	@echo "This repository contains GitHub Actions workflows and gh-agent-workflows templates."
+	@echo "Edit claude-workflows/*/action.yml (composite actions) or gh-agent-workflows/*.md (agentic workflows)."
 	@echo ""
 	@echo "Available targets:"
 	@echo "  setup                - Set up development environment (install tools)"
@@ -48,7 +48,8 @@ help:
 	@echo "  setup-gh             - Check GitHub CLI installation"
 	@echo "  lint-workflows       - Validate GitHub Actions workflow files"
 	@echo "  lint-actions         - Validate GitHub Actions composite action files"
-	@echo "  compile              - Compile gh-aw agentic workflows to lock files"
+	@echo "  sync                 - Copy gh-agent-workflows templates to .github/workflows (dogfooding)"
+	@echo "  compile              - Sync + compile agentic workflows to lock files"
 	@echo "  lint                 - Run all linters"
 	@echo "  release VERSION=x.y.z - Create and push a new release tag"
 
@@ -117,7 +118,17 @@ setup-gh-aw:
 		exit 1; \
 	fi
 
-compile: setup-gh-aw
+sync:
+	@echo "Syncing gh-agent-workflows templates to .github/workflows..."
+	@for f in gh-agent-workflows/*.md; do \
+		name=$$(basename "$$f"); \
+		case "$$name" in README.md|DEVELOPING.md|AGENTS.md) continue ;; esac; \
+		cp "$$f" ".github/workflows/$$name"; \
+		echo "  ✓ $$name"; \
+	done
+	@echo "✓ Sync complete"
+
+compile: setup-gh-aw sync
 	@echo "Compiling agentic workflows..."
 	@bin/gh-aw compile --action-tag $(GH_AW_VERSION)
 
@@ -140,7 +151,7 @@ setup-actionlint:
 lint-workflows: setup-actionlint
 	@echo "Validating GitHub Actions workflow files..."
 	@ACTIONLINT="bin/actionlint"; \
-	find workflows .github/workflows -name "example.yml" -o -name "example.yaml" 2>/dev/null | while read -r file; do \
+	find claude-workflows .github/workflows -name "example.yml" -o -name "example.yaml" 2>/dev/null | while read -r file; do \
 		echo "Checking $$file..."; \
 		$$ACTIONLINT "$$file" || exit 1; \
 	done
@@ -164,7 +175,7 @@ setup-action-validator:
 lint-actions: setup-action-validator
 	@echo "Validating GitHub Actions composite action files..."
 	@ACTION_VALIDATOR="bin/action-validator"; \
-	find workflows base -name "action.yml" -o -name "action.yaml" 2>/dev/null | while read -r file; do \
+	find claude-workflows base -name "action.yml" -o -name "action.yaml" 2>/dev/null | while read -r file; do \
 		echo "Checking $$file..."; \
 		$$ACTION_VALIDATOR "$$file" || exit 1; \
 	done

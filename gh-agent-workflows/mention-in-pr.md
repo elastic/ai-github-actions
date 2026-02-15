@@ -1,20 +1,22 @@
 ---
-description: "AI code review with inline comments on pull requests"
+description: "AI assistant for PRs — review, fix code, and push changes via /ai"
 imports:
-  - pr-review/rwx.md
+  - mention-in-pr/rwxp.md
 engine:
   id: copilot
   model: claude-opus-4.6
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
+  slash_command:
+    name: ai
+    events: [pull_request, pull_request_comment, pull_request_review_comment]
+  reaction: "eyes"
 concurrency:
-  group: pr-review-${{ github.event.pull_request.number }}
+  group: mention-pr-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
   contents: read
-  pull-requests: read
   issues: read
+  pull-requests: read
 strict: false
 roles: [admin, maintainer, write]
 timeout-minutes: 30
