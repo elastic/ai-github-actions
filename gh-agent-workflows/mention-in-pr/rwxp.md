@@ -5,6 +5,11 @@ imports:
   - shared/formatting.md
   - shared/rigor.md
   - shared/mcp-pagination.md
+  - shared/safe-output-add-comment.md
+  - shared/safe-output-review-comment.md
+  - shared/safe-output-submit-review.md
+  - shared/safe-output-push-to-pr.md
+  - shared/safe-output-resolve-thread.md
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search]
@@ -14,17 +19,6 @@ network:
   allowed:
     - defaults
     - github
-safe-outputs:
-  add-comment:
-    max: 3
-  create-pull-request-review-comment:
-    max: 30
-  submit-pull-request-review:
-    max: 1
-    footer: "if-body"
-  push-to-pull-request-branch:
-  resolve-pull-request-review-thread:
-    max: 10
 ---
 
 # PR Assistant

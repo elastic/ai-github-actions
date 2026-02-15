@@ -29,9 +29,10 @@
 #     - shared/formatting.md
 #     - shared/mcp-pagination.md
 #     - shared/rigor.md
+#     - shared/safe-output-add-comment.md
 #     - issue-triage/rwx.md
 #
-# frontmatter-hash: 1d85fdad9ac5048f99fc743ee3fa828d9c54b94e1e0ebcb7cd8828426b28e358
+# frontmatter-hash: 1d6c15f53a9e4c00067d2685fbd62e319a04b7694cddc50fd3b46b7cb50ceada
 
 name: "Issue Triage"
 "on":
@@ -574,6 +575,9 @@ jobs:
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/shared/mcp-pagination.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/shared/safe-output-add-comment.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/issue-triage.md}}

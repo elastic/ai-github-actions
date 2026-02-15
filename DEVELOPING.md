@@ -12,7 +12,7 @@
 
 ```bash
 make setup            # install all dev tools
-make compile          # sync templates + compile to lock files
+make compile          # ensure symlinks + compile to lock files
 make lint             # run all linters
 ```
 

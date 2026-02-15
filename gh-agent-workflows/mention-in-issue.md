@@ -19,6 +19,9 @@ permissions:
   pull-requests: read
 strict: false
 roles: [admin, maintainer, write]
+safe-outputs:
+  add-comment:
+    max: 3
 timeout-minutes: 30
 # Add setup steps to install tools the agent needs, e.g.:
 # steps:

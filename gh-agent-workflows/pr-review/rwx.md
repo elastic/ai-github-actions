@@ -5,6 +5,8 @@ imports:
   - shared/formatting.md
   - shared/rigor.md
   - shared/mcp-pagination.md
+  - shared/safe-output-review-comment.md
+  - shared/safe-output-submit-review.md
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search]
@@ -14,12 +16,6 @@ network:
   allowed:
     - defaults
     - github
-safe-outputs:
-  create-pull-request-review-comment:
-    max: 30
-  submit-pull-request-review:
-    max: 1
-    footer: "if-body"
 ---
 
 # PR Review Agent

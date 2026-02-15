@@ -5,6 +5,7 @@ imports:
   - shared/formatting.md
   - shared/rigor.md
   - shared/mcp-pagination.md
+  - shared/safe-output-add-comment.md
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search]
@@ -14,9 +15,6 @@ network:
   allowed:
     - defaults
     - github
-safe-outputs:
-  add-comment:
-    max: 1
 ---
 
 # Issue Triage Agent
