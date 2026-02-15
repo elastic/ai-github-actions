@@ -25,14 +25,14 @@
 #
 # Resolved workflow manifest:
 #   Imports:
-#     - shared/elastic-tools.md
-#     - shared/formatting.md
-#     - shared/mcp-pagination.md
-#     - shared/rigor.md
-#     - shared/safe-output-add-comment.md
+#     - gh-aw-fragments/elastic-tools.md
+#     - gh-aw-fragments/formatting.md
+#     - gh-aw-fragments/mcp-pagination.md
+#     - gh-aw-fragments/rigor.md
+#     - gh-aw-fragments/safe-output-add-comment.md
 #     - issue-triage/rwx.md
 #
-# frontmatter-hash: 1d6c15f53a9e4c00067d2685fbd62e319a04b7694cddc50fd3b46b7cb50ceada
+# frontmatter-hash: 0a7adfe45600bb24402f08e568153e9e1707f3d0134feb8822054c86828350ba
 
 name: "Issue Triage"
 "on":
@@ -565,19 +565,19 @@ jobs:
           {{#runtime-import .github/workflows/issue-triage/rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/elastic-tools.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/elastic-tools.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/formatting.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/formatting.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/rigor.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/rigor.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/mcp-pagination.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/mcp-pagination.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/safe-output-add-comment.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/safe-output-add-comment.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/issue-triage.md}}

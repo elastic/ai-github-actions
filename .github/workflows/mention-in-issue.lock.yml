@@ -25,16 +25,16 @@
 #
 # Resolved workflow manifest:
 #   Imports:
-#     - shared/elastic-tools.md
-#     - shared/formatting.md
-#     - shared/mcp-pagination.md
-#     - shared/rigor.md
-#     - shared/safe-output-add-comment.md
-#     - shared/safe-output-create-issue.md
-#     - shared/safe-output-create-pr.md
+#     - gh-aw-fragments/elastic-tools.md
+#     - gh-aw-fragments/formatting.md
+#     - gh-aw-fragments/mcp-pagination.md
+#     - gh-aw-fragments/rigor.md
+#     - gh-aw-fragments/safe-output-add-comment.md
+#     - gh-aw-fragments/safe-output-create-issue.md
+#     - gh-aw-fragments/safe-output-create-pr.md
 #     - mention-in-issue/rwxp.md
 #
-# frontmatter-hash: 996713132bea5df753005d89348786596c0bf862b547934057cf1130496c34ab
+# frontmatter-hash: ba1864cfdbd030ac028435f1603c33c8bdbe69f685e864d203c2c1805a87bcef
 
 name: "Mention In Issue"
 "on":
@@ -717,25 +717,25 @@ jobs:
           {{#runtime-import .github/workflows/mention-in-issue/rwxp.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/elastic-tools.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/elastic-tools.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/formatting.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/formatting.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/rigor.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/rigor.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/mcp-pagination.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/mcp-pagination.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/safe-output-add-comment.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/safe-output-add-comment.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/safe-output-create-pr.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/safe-output-create-pr.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/safe-output-create-issue.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/safe-output-create-issue.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/mention-in-issue.md}}

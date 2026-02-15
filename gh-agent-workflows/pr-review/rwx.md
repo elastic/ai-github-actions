@@ -1,12 +1,12 @@
 ---
 # Shared PR review prompt — no `on:` field (imported by the pr-review shim)
 imports:
-  - shared/elastic-tools.md
-  - shared/formatting.md
-  - shared/rigor.md
-  - shared/mcp-pagination.md
-  - shared/safe-output-review-comment.md
-  - shared/safe-output-submit-review.md
+  - gh-aw-fragments/elastic-tools.md
+  - gh-aw-fragments/formatting.md
+  - gh-aw-fragments/rigor.md
+  - gh-aw-fragments/mcp-pagination.md
+  - gh-aw-fragments/safe-output-review-comment.md
+  - gh-aw-fragments/safe-output-submit-review.md
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search]
