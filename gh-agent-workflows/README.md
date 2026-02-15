@@ -49,7 +49,7 @@ gh aw compile
 
 ### Change the AI engine or model
 
-The default is Copilot with Claude Opus. Override in the shim's frontmatter:
+The default is Copilot with GPT-5.3-Codex. Override in the shim's frontmatter:
 
 ```yaml
 ---
@@ -127,7 +127,7 @@ imports:
   - gh-aw-workflows/pr-review-rwx.md
 engine:
   id: copilot
-  model: claude-opus-4.6
+  model: gpt-5.3-codex
 on:
   pull_request:
     types: [opened, synchronize, reopened]

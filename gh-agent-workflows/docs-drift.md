@@ -4,7 +4,7 @@ imports:
   - gh-aw-workflows/scheduled-report-rwx.md
 engine:
   id: copilot
-  model: claude-opus-4.6
+  model: gpt-5.3-codex
 on:
   schedule:
     - cron: "0 14 * * 1-5"
