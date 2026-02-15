@@ -30,9 +30,9 @@
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-create-issue.md
-#     - scheduled-report/rwx.md
+#     - gh-aw-workflows/scheduled-report-rwx.md
 #
-# frontmatter-hash: 9c72841935fa3ed732a7a01950c6526683ac9e2744ad50d19314b941470997f1
+# frontmatter-hash: c8adab81a89e8a7d695d9e30c068accd31263fe54dcb3058d3505bf239d5a25a
 
 name: "Docs Drift"
 "on":
@@ -585,7 +585,7 @@ jobs:
           </system>
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/scheduled-report/rwx.md}}
+          {{#runtime-import .github/workflows/gh-aw-workflows/scheduled-report-rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-fragments/elastic-tools.md}}

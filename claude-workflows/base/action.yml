@@ -3,7 +3,7 @@
 # This action wraps the Anthropic Claude Code Action with MCP server configuration.
 #
 # Usage:
-#   - uses: elastic/ai-github-actions/base@v0
+#   - uses: elastic/ai-github-actions/claude-workflows/base@v0
 #     with:
 #       prompt: "Your prompt here"
 #       claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

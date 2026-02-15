@@ -34,9 +34,9 @@
 #     - gh-aw-fragments/safe-output-resolve-thread.md
 #     - gh-aw-fragments/safe-output-review-comment.md
 #     - gh-aw-fragments/safe-output-submit-review.md
-#     - mention-in-pr/rwxp.md
+#     - gh-aw-workflows/mention-in-pr-rwxp.md
 #
-# frontmatter-hash: 91a28a25a2908ac8bf3cdb2758047a7dcb9a98a974b78624207469715702341f
+# frontmatter-hash: c394158dd5848cdf366820f2dd9f13766dbf3c6d369e2d265b734f2c057797a9
 
 name: "Mention In Pr"
 "on":
@@ -776,7 +776,7 @@ jobs:
           </system>
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/mention-in-pr/rwxp.md}}
+          {{#runtime-import .github/workflows/gh-aw-workflows/mention-in-pr-rwxp.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-fragments/elastic-tools.md}}
