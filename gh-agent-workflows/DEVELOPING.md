@@ -19,6 +19,10 @@ gh-agent-workflows/
 ├── docs-drift.md             # Shim: imports scheduled-report/rwx.md + docs-specific instructions
 ├── scheduled-report/
 │   └── rwx.md                # Reusable prompt for scheduled report workflows
+│
+│   # Internal-only workflows (live in .github/workflows/, not installable via `gh aw add`)
+│   .github/workflows/
+│   └── gh-aw-upgrade-check.md  # Scheduled check for new gh-aw releases; imports scheduled-report/rwx.md
 └── shared/
     ├── elastic-tools.md      # Elastic MCP servers + their network entries
     ├── formatting.md         # Response formatting rules
@@ -59,7 +63,13 @@ shim (docs-drift.md)                # schedule + "check for docs drift" instruct
       ├── shared/formatting.md
       ├── shared/rigor.md
       └── shared/mcp-pagination.md
+
+shim (gh-aw-upgrade-check.md)       # schedule + "check for gh-aw upgrades" instructions
+ └── scheduled-report/rwx.md        # same generic report framework
+      └── ...
 ```
+
+`gh-aw-upgrade-check` is an **internal-only** workflow — its shim lives directly in `.github/workflows/` (not in `gh-agent-workflows/`) so it is not installable via `gh aw add`. It runs on weekdays to check for new `gh-aw` releases and files issues tagged `[gh-aw-upgrade]`.
 
 To add a new scheduled report, create a shim that imports `scheduled-report/rwx.md` and put the report-specific instructions in the shim body. No new prompt directory needed.
 
