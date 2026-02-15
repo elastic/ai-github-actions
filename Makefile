@@ -48,8 +48,8 @@ help:
 	@echo "  setup-gh             - Check GitHub CLI installation"
 	@echo "  lint-workflows       - Validate GitHub Actions workflow files"
 	@echo "  lint-actions         - Validate GitHub Actions composite action files"
-	@echo "  sync                 - Ensure symlinks are real (core.symlinks=false fix)"
-	@echo "  compile              - Ensure symlinks + compile agentic workflows to lock files"
+	@echo "  sync                 - Run scripts/dogfood.sh to copy shims, prompts, and fragments"
+	@echo "  compile              - Sync files + compile agentic workflows to lock files"
 	@echo "  lint                 - Run all linters"
 	@echo "  release VERSION=x.y.z - Create and push a new release tag"
 
@@ -119,21 +119,7 @@ setup-gh-aw:
 	fi
 
 sync:
-	@echo "Ensuring symlinks are real (core.symlinks=false workaround)..."
-	@for dir in .github/workflows gh-agent-workflows; do \
-		cd "$$dir" && \
-		for f in *; do \
-			case "$$f" in *.yml|*.lock.yml) continue ;; esac; \
-			if [ -f "$$f" ] && [ ! -L "$$f" ] && head -1 "$$f" | grep -q '^\.\./'; then \
-				target=$$(cat "$$f"); \
-				rm "$$f"; \
-				ln -s "$$target" "$$f"; \
-				echo "  ✓ $$dir/$$f -> $$target"; \
-			fi; \
-		done && \
-		cd "$(CURDIR)"; \
-	done
-	@echo "✓ Sync complete"
+	@./scripts/dogfood.sh
 
 compile: setup-gh-aw sync
 	@echo "Compiling agentic workflows..."

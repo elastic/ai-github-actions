@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | `gh-agent-workflows/` | Agentic workflow templates (shims, prompts, shared fragments) | [DEVELOPING.md](gh-agent-workflows/DEVELOPING.md) |
 | `claude-workflows/` | Composite actions wrapping Claude Code | [DEVELOPING.md](claude-workflows/DEVELOPING.md) |
-| `.github/workflows/` | Compiled lock files + symlinks for local dev | — |
+| `.github/workflows/` | Compiled lock files + copied shims for compilation | — |
 
 Internal-only workflows (e.g., `gh-aw-upgrade-check.md`, `ci.yml`, `release.yml`) live directly in `.github/workflows/` and are not installable via `gh aw add`. See [gh-agent-workflows/DEVELOPING.md](gh-agent-workflows/DEVELOPING.md) for details on internal agentic workflows.
 
@@ -14,7 +14,7 @@ Internal-only workflows (e.g., `gh-aw-upgrade-check.md`, `ci.yml`, `release.yml`
 
 ```bash
 make setup            # install all dev tools
-make compile          # ensure symlinks + compile to lock files
+make compile          # sync copies + compile to lock files
 make lint             # run all linters
 ```
 
