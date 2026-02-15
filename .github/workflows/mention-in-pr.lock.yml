@@ -31,7 +31,7 @@
 #     - shared/rigor.md
 #     - mention-in-pr/rwxp.md
 #
-# frontmatter-hash: 9575c901df86bfd863ebba76112c2a21d2798e47f104931c869b8feeda220c9e
+# frontmatter-hash: 346592488f74aa2412f343a8581f12a6b6c93d4e2ac104ba9ec5ec48e60ecbb9
 
 name: "Mention In Pr"
 "on":
@@ -1335,7 +1335,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":3},\"create_pull_request_review_comment\":{\"max\":30,\"side\":\"RIGHT\"},\"missing_data\":{},\"missing_tool\":{},\"push_to_pull_request_branch\":{\"base_branch\":\"${{ github.ref_name }}\",\"if_no_changes\":\"warn\",\"max_patch_size\":1024},\"resolve_pull_request_review_thread\":{\"max\":10},\"submit_pull_request_review\":{\"max\":1}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":3},\"create_pull_request_review_comment\":{\"max\":30,\"side\":\"RIGHT\"},\"missing_data\":{},\"missing_tool\":{},\"push_to_pull_request_branch\":{\"base_branch\":\"${{ github.ref_name }}\",\"if_no_changes\":\"warn\",\"max_patch_size\":1024},\"resolve_pull_request_review_thread\":{\"max\":10},\"submit_pull_request_review\":{\"footer\":\"if-body\",\"max\":1}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

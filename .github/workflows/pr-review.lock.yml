@@ -31,7 +31,7 @@
 #     - shared/rigor.md
 #     - pr-review/rwx.md
 #
-# frontmatter-hash: ff43ea52b62cd215b78bb8878811a135dd8ef003c3972d834c18fb3a192c8bde
+# frontmatter-hash: 03339b32ef30f5d5f03b20b7a1a6cb1f1be754962b562a4829f9e8fec66ec168
 
 name: "Pr Review"
 "on":
@@ -1124,7 +1124,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request_review_comment\":{\"max\":30,\"side\":\"RIGHT\"},\"missing_data\":{},\"missing_tool\":{},\"submit_pull_request_review\":{\"max\":1}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request_review_comment\":{\"max\":30,\"side\":\"RIGHT\"},\"missing_data\":{},\"missing_tool\":{},\"submit_pull_request_review\":{\"footer\":\"if-body\",\"max\":1}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
