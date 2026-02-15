@@ -53,7 +53,7 @@ Composite GitHub Actions wrapping [Claude Code](https://github.com/anthropics/cl
 
 ### Base Action
 
-The [base action](../base/action.yml) provides full configurability:
+The [base action](base/action.yml) provides full configurability:
 
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
@@ -75,7 +75,7 @@ All workflow actions include default MCP servers (the base action does not):
 Override with your own:
 
 ```yaml
-- uses: elastic/ai-github-actions/base@v0
+- uses: elastic/ai-github-actions/claude-workflows/base@v0
   with:
     prompt: "Your prompt"
     claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
