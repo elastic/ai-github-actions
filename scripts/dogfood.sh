@@ -1,15 +1,10 @@
 #!/usr/bin/env bash
-# Sync workflow files between their canonical locations and their copy locations.
+# Copy shim workflows into .github/workflows/ for local compilation.
 #
-# Canonical sources:
-#   - Shims:     gh-agent-workflows/*.md
-#   - Prompts:   .github/workflows/gh-aw-workflows/
-#   - Fragments: .github/workflows/gh-aw-fragments/
-#
-# This script copies:
-#   1. Shims → .github/workflows/       (compiler needs them here)
-#   2. gh-aw-workflows/ → gh-agent-workflows/  (local import resolution + remote consumers)
-#   3. gh-aw-fragments/ → gh-agent-workflows/  (local import resolution + remote consumers)
+# The gh-aw compiler processes .md files in .github/workflows/. Shims are
+# authored in gh-agent-workflows/ and this script copies them into place.
+# Prompts (gh-aw-workflows/) and fragments (gh-aw-fragments/) already live
+# in .github/workflows/ as real files — no copying needed.
 #
 # Usage:
 #   ./scripts/dogfood.sh
@@ -40,21 +35,5 @@ for f in gh-agent-workflows/*.md; do
   copy_with_header "$f" ".github/workflows/$name" "gh-agent-workflows/$name"
   echo "  ✓ gh-agent-workflows/$name → .github/workflows/$name"
 done
-
-# Copy gh-aw-workflows/ and gh-aw-fragments/ → gh-agent-workflows/
-rm -rf gh-agent-workflows/gh-aw-workflows gh-agent-workflows/gh-aw-fragments
-mkdir -p gh-agent-workflows/gh-aw-workflows gh-agent-workflows/gh-aw-fragments
-
-for f in .github/workflows/gh-aw-workflows/*.md; do
-  name=$(basename "$f")
-  copy_with_header "$f" "gh-agent-workflows/gh-aw-workflows/$name" ".github/workflows/gh-aw-workflows/$name"
-done
-echo "  ✓ .github/workflows/gh-aw-workflows/ → gh-agent-workflows/gh-aw-workflows/"
-
-for f in .github/workflows/gh-aw-fragments/*.md; do
-  name=$(basename "$f")
-  copy_with_header "$f" "gh-agent-workflows/gh-aw-fragments/$name" ".github/workflows/gh-aw-fragments/$name"
-done
-echo "  ✓ .github/workflows/gh-aw-fragments/ → gh-agent-workflows/gh-aw-fragments/"
 
 echo "✓ Sync complete"

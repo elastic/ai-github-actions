@@ -9,8 +9,8 @@ gh-agent-workflows/
 ├── mention-in-issue.md
 ├── mention-in-pr.md
 ├── docs-drift.md             # Shim: imports scheduled-report-rwx.md + docs-specific instructions
-├── gh-aw-workflows/          # Copied from .github/workflows/gh-aw-workflows/ by make sync
-└── gh-aw-fragments/          # Copied from .github/workflows/gh-aw-fragments/ by make sync
+│
+│   (gh-aw-workflows/ and gh-aw-fragments/ live only in .github/workflows/)
 
 .github/workflows/
 ├── gh-aw-fragments/          # Shared fragments (canonical source)
@@ -40,7 +40,7 @@ gh-agent-workflows/
 
 The gh-aw compiler only supports 2-level import paths (`dir/file.md`), so prompts are flattened files (e.g., `gh-aw-workflows/pr-review-rwx.md`), not nested subdirectories. Adding a new tier is a new file with its own prompt and a new shim that imports it.
 
-**Shared fragments** (`.github/workflows/gh-aw-fragments/`) provide cross-workflow configuration and guidance. No `on:` field — validated but never compiled standalone. `make sync` copies them into `gh-agent-workflows/gh-aw-fragments/` for local import resolution and remote consumer access.
+**Shared fragments** (`.github/workflows/gh-aw-fragments/`) provide cross-workflow configuration and guidance. No `on:` field — validated but never compiled standalone.
 
 ## Import Structure
 
@@ -95,7 +95,7 @@ Fragments live in `.github/workflows/gh-aw-fragments/` as real files (not symlin
 ### Import rules
 
 - The compiler only supports **2-level** import paths (`dir/file.md`). Paths with 3+ segments are interpreted as remote GitHub references. This is why prompts are flattened (e.g., `gh-aw-workflows/pr-review-rwx.md`, not `gh-aw-workflows/pr-review/rwx.md`).
-- For **local compilation**, the shim copies in `.github/workflows/` resolve imports relative to that directory. `make sync` also copies `gh-aw-workflows/` and `gh-aw-fragments/` into `gh-agent-workflows/` so the compiler can find prompts from either location. For **remote consumers**, `gh aw add` rewrites imports to remote references relative to `.github/workflows/`.
+- For **local compilation**, `make sync` (`scripts/dogfood.sh`) copies shims into `.github/workflows/` where the compiler resolves imports relative to `gh-aw-workflows/` and `gh-aw-fragments/`. For **remote consumers**, `gh aw add` rewrites imports to remote references relative to `.github/workflows/`.
 - `engine:`, `on:`, `concurrency:`, `timeout-minutes:`, `strict:`, `roles:` are **not importable** — they must be in the shim.
 - `safe-outputs:` in the main workflow override imported defaults. `tools:` merge additively.
 
@@ -103,19 +103,19 @@ Fragments live in `.github/workflows/gh-aw-fragments/` as real files (not symlin
 
 ### How compilation works
 
-The `gh-aw` compiler processes `.md` files in `.github/workflows/`. Shims are authored in `gh-agent-workflows/` and copied into `.github/workflows/` by `make sync`. Prompts and fragments are authored in `.github/workflows/gh-aw-workflows/` and `.github/workflows/gh-aw-fragments/`, then copied into `gh-agent-workflows/` by `make sync` for local import resolution and remote consumer access.
+The `gh-aw` compiler processes `.md` files in `.github/workflows/`. Shims are authored in `gh-agent-workflows/` and copied into `.github/workflows/` by `make sync` (which runs `scripts/dogfood.sh`). Prompts and fragments live directly in `.github/workflows/gh-aw-workflows/` and `.github/workflows/gh-aw-fragments/`.
 
 ```
 .github/workflows/
-├── gh-aw-fragments/              # canonical source — shared fragments
+├── gh-aw-fragments/              # shared fragments
 │   ├── elastic-tools.md
 │   ├── formatting.md
 │   └── ...
-├── gh-aw-workflows/              # canonical source — prompts
+├── gh-aw-workflows/              # prompts
 │   ├── pr-review-rwx.md
 │   ├── scheduled-report-rwx.md
 │   └── ...
-├── pr-review.md                  # copied from gh-agent-workflows/ by make sync
+├── pr-review.md                  # copied from gh-agent-workflows/ by scripts/dogfood.sh
 ├── pr-review.lock.yml            # compiled output
 ├── docs-drift.md
 ├── docs-drift.lock.yml
@@ -124,7 +124,7 @@ The `gh-aw` compiler processes `.md` files in `.github/workflows/`. Shims are au
 └── ...
 ```
 
-All copied files are committed to the repo so that remote compilation and `gh aw add` work without symlinks.
+Copied shim files are committed to the repo so that remote compilation and `gh aw add` work. Each copy has a `# DO NOT EDIT` header comment identifying the canonical source.
 
 ### Editing workflows
 
@@ -142,5 +142,5 @@ make compile          # sync + compile
 1. Create the prompt: `.github/workflows/gh-aw-workflows/<name>-<tier>.md` (e.g., `my-workflow-rwx.md`) — or import a reusable prompt like `gh-aw-workflows/scheduled-report-rwx.md`
 2. Add shared fragment imports in the prompt's frontmatter (use `gh-aw-fragments/` prefix)
 3. Create the shim: `gh-agent-workflows/<name>.md` with `imports: - gh-aw-workflows/<name>-<tier>.md`
-4. Run `make compile` — the sync step copies the shim to `.github/workflows/` and the prompt/fragment directories to `gh-agent-workflows/`
-5. Verify and commit all files (sources, copies, and lock files)
+4. Run `make compile` — the sync step copies the shim to `.github/workflows/`, then the compiler generates lock files
+5. Verify and commit all files (sources, shim copies, and lock files)
