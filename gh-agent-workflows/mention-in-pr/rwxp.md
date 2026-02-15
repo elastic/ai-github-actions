@@ -22,6 +22,7 @@ safe-outputs:
     footer: "if-body"
   submit-pull-request-review:
     max: 1
+    footer: "if-body"
   push-to-pull-request-branch:
   resolve-pull-request-review-thread:
     max: 10

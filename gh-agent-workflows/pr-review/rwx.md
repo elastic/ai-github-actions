@@ -17,9 +17,9 @@ network:
 safe-outputs:
   create-pull-request-review-comment:
     max: 30
-    footer: "if-body"
   submit-pull-request-review:
     max: 1
+    footer: "if-body"
 ---
 
 # PR Review Agent
