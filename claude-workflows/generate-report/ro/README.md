@@ -48,11 +48,12 @@ Because Claude reads `AGENTS.md` automatically, you can reference documentation 
 | `allowed-tools` | Allowed tools (defaults include: file reading, `gh` CLI, git, web search, MCP tools) | No | See action.yml |
 | `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
 | `additional-instructions` | Extra instructions appended to the prompt | No | `""` |
-| `issue-title` | Title for the created issue | No | `Report - YYYY-MM-DD` |
+| `issue-title` | Title for the created issue | No | `""` (defaults to `Report - YYYY-MM-DD` at runtime) |
 | `issue-labels` | Comma-separated labels for the issue | No | `report,automated` |
 | `mcp-servers` | MCP server configuration JSON | No | See main README |
 | `repository-owner` | Repository owner | No | Auto-detected |
 | `repository-name` | Repository name | No | Auto-detected |
+| `assignee` | Comma-separated GitHub usernames to assign the issue | No | `""` |
 
 ## Outputs
 

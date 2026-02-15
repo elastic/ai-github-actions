@@ -10,7 +10,7 @@ Shared scripts live in a parent `scripts/` directory. RO and RWX variants refere
 Bash(${{ github.action_path }}/../scripts/script-name.sh:*)
 ```
 
-Workflow-specific scripts go in `workflows/<workflow>/scripts/`.
+Workflow-specific scripts go in `claude-workflows/<workflow>/scripts/`.
 
 ## Tool Concatenation
 
