@@ -30,9 +30,9 @@
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-create-issue.md
-#     - scheduled-report/rwx.md
+#     - gh-aw-workflows/scheduled-report-rwx.md
 #
-# frontmatter-hash: a04950bd0bfd96b89f6d1710d1bfeb78e65e52d6bc9836d67c405fbd9fdaadb9
+# frontmatter-hash: c4cc6efb4b3f6a0a30cb06e9b1a29ed1c8101c7fe5138c750ce99dda6576926b
 
 name: "Gh Aw Upgrade Check"
 "on":
@@ -585,7 +585,7 @@ jobs:
           </system>
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/scheduled-report/rwx.md}}
+          {{#runtime-import .github/workflows/gh-aw-workflows/scheduled-report-rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-fragments/elastic-tools.md}}

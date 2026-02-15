@@ -1,7 +1,7 @@
 ---
 description: "Detect code changes that require documentation updates and file issues"
 imports:
-  - scheduled-report/rwx.md
+  - gh-aw-workflows/scheduled-report-rwx.md
 engine:
   id: copilot
   model: claude-opus-4.6
