@@ -17,6 +17,7 @@ gh aw compile
 | Issue Triage | New issues | Investigate and provide implementation plans |
 | Mention in Issue | `/ai` command | Answer questions, debug, create PRs |
 | Mention in PR | `/ai` command | Review, fix code, push changes |
+| Docs Drift | Weekday schedule | Detect code changes needing doc updates |
 
 See **[gh-agent-workflows/](gh-agent-workflows/)** for install commands, customization, and updating.
 

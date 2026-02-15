@@ -16,6 +16,9 @@ gh-agent-workflows/
 ├── mention-in-pr.md
 ├── mention-in-pr/
 │   └── rwxp.md
+├── docs-drift.md             # Shim: imports scheduled-report/rwx.md + docs-specific instructions
+├── scheduled-report/
+│   └── rwx.md                # Reusable prompt for scheduled report workflows
 └── shared/
     ├── elastic-tools.md      # Elastic MCP servers + their network entries
     ├── formatting.md         # Response formatting rules
@@ -46,6 +49,19 @@ shim (pr-review.md)
       ├── shared/rigor.md          # accuracy & evidence standards
       └── shared/mcp-pagination.md # pagination best practices
 ```
+
+**Reusable prompts** can be shared across multiple shims. The shim body (markdown after the frontmatter `---`) is appended to the imported prompt, providing workflow-specific instructions. For example, `scheduled-report/rwx.md` is a generic report agent that multiple shims can import with different report assignments:
+
+```
+shim (docs-drift.md)                # schedule + "check for docs drift" instructions
+ └── scheduled-report/rwx.md        # generic report framework
+      ├── shared/elastic-tools.md
+      ├── shared/formatting.md
+      ├── shared/rigor.md
+      └── shared/mcp-pagination.md
+```
+
+To add a new scheduled report, create a shim that imports `scheduled-report/rwx.md` and put the report-specific instructions in the shim body. No new prompt directory needed.
 
 ### Shared fragments
 
@@ -116,4 +132,5 @@ ln -s ../../gh-agent-workflows/pr-review pr-review
 ln -s ../../gh-agent-workflows/issue-triage issue-triage
 ln -s ../../gh-agent-workflows/mention-in-issue mention-in-issue
 ln -s ../../gh-agent-workflows/mention-in-pr mention-in-pr
+ln -s ../../gh-agent-workflows/scheduled-report scheduled-report
 ```

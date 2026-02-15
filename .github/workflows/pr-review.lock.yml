@@ -31,7 +31,7 @@
 #     - shared/rigor.md
 #     - pr-review/rwx.md
 #
-# frontmatter-hash: 03339b32ef30f5d5f03b20b7a1a6cb1f1be754962b562a4829f9e8fec66ec168
+# frontmatter-hash: cab0880ba22dea821878c20d71632c8ba3ad0dfa7975c0e7bacd8c47552c7e18
 
 name: "Pr Review"
 "on":
@@ -1075,6 +1075,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
+          GH_AW_ALLOWED_BOTS: github-actions[bot]
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
