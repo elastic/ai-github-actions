@@ -48,8 +48,8 @@ help:
 	@echo "  setup-gh             - Check GitHub CLI installation"
 	@echo "  lint-workflows       - Validate GitHub Actions workflow files"
 	@echo "  lint-actions         - Validate GitHub Actions composite action files"
-	@echo "  sync                 - Copy gh-agent-workflows templates to .github/workflows (dogfooding)"
-	@echo "  compile              - Sync + compile agentic workflows to lock files"
+	@echo "  sync                 - Ensure .github/workflows symlinks are real (core.symlinks=false fix)"
+	@echo "  compile              - Ensure symlinks + compile agentic workflows to lock files"
 	@echo "  lint                 - Run all linters"
 	@echo "  release VERSION=x.y.z - Create and push a new release tag"
 
@@ -119,12 +119,16 @@ setup-gh-aw:
 	fi
 
 sync:
-	@echo "Syncing gh-agent-workflows templates to .github/workflows..."
-	@for f in gh-agent-workflows/*.md; do \
-		name=$$(basename "$$f"); \
-		case "$$name" in README.md|DEVELOPING.md|AGENTS.md) continue ;; esac; \
-		cp "$$f" ".github/workflows/$$name"; \
-		echo "  ✓ $$name"; \
+	@echo "Ensuring .github/workflows symlinks are real (core.symlinks=false workaround)..."
+	@cd .github/workflows && \
+	for f in *; do \
+		case "$$f" in *.yml|*.lock.yml) continue ;; esac; \
+		if [ -f "$$f" ] && [ ! -L "$$f" ] && head -1 "$$f" | grep -q '^\.\./'; then \
+			target=$$(cat "$$f"); \
+			rm "$$f"; \
+			ln -s "$$target" "$$f"; \
+			echo "  ✓ $$f -> $$target"; \
+		fi; \
 	done
 	@echo "✓ Sync complete"
 

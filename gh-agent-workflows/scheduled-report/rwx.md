@@ -5,6 +5,7 @@ imports:
   - shared/formatting.md
   - shared/rigor.md
   - shared/mcp-pagination.md
+  - shared/safe-output-create-issue.md
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search]
@@ -15,10 +16,6 @@ network:
     - defaults
     - github
 safe-outputs:
-  create-issue:
-    max: 1
-    close-older-issues: true
-    expires: 7d
   noop:
 ---
 

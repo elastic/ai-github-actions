@@ -29,9 +29,14 @@
 #     - shared/formatting.md
 #     - shared/mcp-pagination.md
 #     - shared/rigor.md
+#     - shared/safe-output-add-comment.md
+#     - shared/safe-output-push-to-pr.md
+#     - shared/safe-output-resolve-thread.md
+#     - shared/safe-output-review-comment.md
+#     - shared/safe-output-submit-review.md
 #     - mention-in-pr/rwxp.md
 #
-# frontmatter-hash: 346592488f74aa2412f343a8581f12a6b6c93d4e2ac104ba9ec5ec48e60ecbb9
+# frontmatter-hash: e48ce68f94d88e3241f011fe04ae0f8e826db73906cfa0298d4091012866beff
 
 name: "Mention In Pr"
 "on":
@@ -784,6 +789,21 @@ jobs:
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/shared/mcp-pagination.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/shared/safe-output-add-comment.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/shared/safe-output-review-comment.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/shared/safe-output-submit-review.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/shared/safe-output-push-to-pr.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/shared/safe-output-resolve-thread.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/mention-in-pr.md}}

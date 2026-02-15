@@ -14,7 +14,7 @@ Internal-only workflows (e.g., `gh-aw-upgrade-check.md`, `ci.yml`, `release.yml`
 
 ```bash
 make setup            # install all dev tools
-make compile          # sync templates + compile to lock files
+make compile          # ensure symlinks + compile to lock files
 make lint             # run all linters
 ```
 

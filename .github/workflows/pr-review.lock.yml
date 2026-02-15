@@ -29,9 +29,11 @@
 #     - shared/formatting.md
 #     - shared/mcp-pagination.md
 #     - shared/rigor.md
+#     - shared/safe-output-review-comment.md
+#     - shared/safe-output-submit-review.md
 #     - pr-review/rwx.md
 #
-# frontmatter-hash: cab0880ba22dea821878c20d71632c8ba3ad0dfa7975c0e7bacd8c47552c7e18
+# frontmatter-hash: 28ca3622c17a93614b9433606203a520200e6d039a8ebe8b39cb1f66ee776be6
 
 name: "Pr Review"
 "on":
@@ -642,6 +644,12 @@ jobs:
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/shared/mcp-pagination.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/shared/safe-output-review-comment.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/shared/safe-output-submit-review.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/pr-review.md}}

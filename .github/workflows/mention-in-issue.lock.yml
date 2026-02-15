@@ -29,9 +29,12 @@
 #     - shared/formatting.md
 #     - shared/mcp-pagination.md
 #     - shared/rigor.md
+#     - shared/safe-output-add-comment.md
+#     - shared/safe-output-create-issue.md
+#     - shared/safe-output-create-pr.md
 #     - mention-in-issue/rwxp.md
 #
-# frontmatter-hash: c2ebd17a83380923804bdf0358bcf0751d239f8f3d35f0501145c1f392e3eafc
+# frontmatter-hash: 996713132bea5df753005d89348786596c0bf862b547934057cf1130496c34ab
 
 name: "Mention In Issue"
 "on":
@@ -724,6 +727,15 @@ jobs:
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/shared/mcp-pagination.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/shared/safe-output-add-comment.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/shared/safe-output-create-pr.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/shared/safe-output-create-issue.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/mention-in-issue.md}}

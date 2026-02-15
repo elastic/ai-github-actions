@@ -81,6 +81,13 @@ To add a new scheduled report, create a shim that imports `scheduled-report/rwx.
 | [shared/formatting.md](shared/formatting.md) | Response formatting rules |
 | [shared/rigor.md](shared/rigor.md) | Accuracy & evidence standards |
 | [shared/mcp-pagination.md](shared/mcp-pagination.md) | MCP token limit guidance and pagination patterns |
+| [shared/safe-output-add-comment.md](shared/safe-output-add-comment.md) | Limitations for `add-comment` (body length, mentions, links) |
+| [shared/safe-output-review-comment.md](shared/safe-output-review-comment.md) | Limitations for `create-pull-request-review-comment` (required fields, line rules) |
+| [shared/safe-output-submit-review.md](shared/safe-output-submit-review.md) | Limitations for `submit-pull-request-review` (event types, own-PR restriction) |
+| [shared/safe-output-push-to-pr.md](shared/safe-output-push-to-pr.md) | Limitations for `push-to-pull-request-branch` (patch size, fork restriction) |
+| [shared/safe-output-resolve-thread.md](shared/safe-output-resolve-thread.md) | Limitations for `resolve-pull-request-review-thread` (thread ID format) |
+| [shared/safe-output-create-issue.md](shared/safe-output-create-issue.md) | Limitations for `create-issue` (title, labels, assignees) |
+| [shared/safe-output-create-pr.md](shared/safe-output-create-pr.md) | Limitations for `create-pull-request` (patch files/size, title) |
 
 ### Import rules
 
@@ -92,55 +99,59 @@ To add a new scheduled report, create a shim that imports `scheduled-report/rwx.
 
 ### How compilation works
 
-The `gh-aw` compiler processes `.md` files in `.github/workflows/`. Since our source-of-truth files live in `gh-agent-workflows/` (outside `.github/`), we bridge the gap with:
-
-1. **`make sync`** — copies shim files from `gh-agent-workflows/*.md` to `.github/workflows/*.md`
-2. **Symlinks** — point `.github/workflows/` subdirectories back to `gh-agent-workflows/` for import resolution:
+The `gh-aw` compiler processes `.md` files in `.github/workflows/`. Since our source-of-truth files live in `gh-agent-workflows/` (outside `.github/`), we bridge the gap with symlinks — both shim files and import directories in `.github/workflows/` point back to `gh-agent-workflows/`:
 
 ```
 .github/workflows/
 ├── shared -> ../../gh-agent-workflows/shared
 ├── pr-review -> ../../gh-agent-workflows/pr-review
-├── issue-triage -> ../../gh-agent-workflows/issue-triage
-├── mention-in-issue -> ../../gh-agent-workflows/mention-in-issue
-├── mention-in-pr -> ../../gh-agent-workflows/mention-in-pr
-├── pr-review.md          # synced from gh-agent-workflows/
+├── pr-review.md -> ../../gh-agent-workflows/pr-review.md
 ├── pr-review.lock.yml    # compiled output
+├── scheduled-report -> ../../gh-agent-workflows/scheduled-report
+├── docs-drift.md -> ../../gh-agent-workflows/docs-drift.md
+├── docs-drift.lock.yml   # compiled output
+├── gh-aw-upgrade-check.md   # repo-specific (not symlinked)
+├── gh-aw-upgrade-check.lock.yml
 └── ...
 ```
+
+> **Note:** This repo has `core.symlinks=false`, so git checks out symlinks as text files containing the target path. `make sync` (run automatically by `make compile`) detects these and converts them to real filesystem symlinks before compilation.
 
 Consumers never need symlinks — `gh aw add` rewrites imports to remote references.
 
 ### Editing workflows
 
 1. Edit source files in `gh-agent-workflows/` (shims, prompts, or shared fragments)
-2. Run `make compile` (syncs + compiles)
+2. Run `make compile` (compiles, auto-fixes symlinks if needed)
 3. Verify 0 errors, 0 warnings
 4. Commit both the source files and the generated `.lock.yml` files
 
 ```bash
-make compile          # sync + compile
-make sync             # sync only
+make compile          # ensure symlinks + compile
 ```
 
 ### Adding a new workflow
 
 1. Create the shim: `gh-agent-workflows/<name>.md`
-2. Create the prompt: `gh-agent-workflows/<name>/<tier>.md` (e.g., `rwx.md` or `rwxp.md`)
+2. Create the prompt: `gh-agent-workflows/<name>/<tier>.md` (e.g., `rwx.md` or `rwxp.md`) — or import a reusable prompt like `scheduled-report/rwx.md`
 3. Add shared fragment imports in the prompt's frontmatter
-4. Create a symlink: `ln -s ../../gh-agent-workflows/<name> .github/workflows/<name>`
-5. Run `make compile` and verify
-
-### Recreating symlinks
-
-If symlinks are missing (e.g., fresh clone):
+4. Create symlinks in `.github/workflows/`:
 
 ```bash
 cd .github/workflows
-ln -s ../../gh-agent-workflows/shared shared
-ln -s ../../gh-agent-workflows/pr-review pr-review
-ln -s ../../gh-agent-workflows/issue-triage issue-triage
-ln -s ../../gh-agent-workflows/mention-in-issue mention-in-issue
-ln -s ../../gh-agent-workflows/mention-in-pr mention-in-pr
-ln -s ../../gh-agent-workflows/scheduled-report scheduled-report
+ln -s ../../gh-agent-workflows/<name>.md <name>.md     # shim
+ln -s ../../gh-agent-workflows/<name> <name>           # import directory (skip if using a reusable prompt)
 ```
+
+5. Register the symlinks in git as mode `120000`:
+
+```bash
+git update-index --add --cacheinfo 120000,$(echo -n "../../gh-agent-workflows/<name>.md" | git hash-object -w --stdin),.github/workflows/<name>.md
+git update-index --add --cacheinfo 120000,$(echo -n "../../gh-agent-workflows/<name>" | git hash-object -w --stdin),.github/workflows/<name>
+```
+
+6. Run `make compile` and verify
+
+### Recreating symlinks
+
+`make sync` automatically converts text-file symlinks (created by git with `core.symlinks=false`) to real filesystem symlinks. Just run `make compile` after a fresh clone.

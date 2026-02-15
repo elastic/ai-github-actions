@@ -20,6 +20,9 @@ strict: false
 roles: [admin, maintainer, write]
 bots:
   - "github-actions[bot]"
+safe-outputs:
+  add-comment:
+    max: 1
 timeout-minutes: 30
 # Add setup steps to install tools the agent needs, e.g.:
 # steps:
