@@ -31,9 +31,9 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-review-comment.md
 #     - gh-aw-fragments/safe-output-submit-review.md
-#     - pr-review/rwx.md
+#     - gh-aw-workflows/pr-review-rwx.md
 #
-# frontmatter-hash: 1d36925cdd3131447328a3ffc157e317d93512789ebbc34dead020ab015bd0b2
+# frontmatter-hash: 3fdb5c5571331258355cf28d05bb29bdd0dc53325c5f98412f5881244452954b
 
 name: "Pr Review"
 "on":
@@ -631,7 +631,7 @@ jobs:
           </system>
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/pr-review/rwx.md}}
+          {{#runtime-import .github/workflows/gh-aw-workflows/pr-review-rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-fragments/elastic-tools.md}}

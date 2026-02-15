@@ -30,9 +30,9 @@
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-add-comment.md
-#     - issue-triage/rwx.md
+#     - gh-aw-workflows/issue-triage-rwx.md
 #
-# frontmatter-hash: 0a7adfe45600bb24402f08e568153e9e1707f3d0134feb8822054c86828350ba
+# frontmatter-hash: 918165cb86adf81b12959e67d94c4af586926f7ccb72ebe6d462f49ace7f5d5d
 
 name: "Issue Triage"
 "on":
@@ -562,7 +562,7 @@ jobs:
           </system>
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/issue-triage/rwx.md}}
+          {{#runtime-import .github/workflows/gh-aw-workflows/issue-triage-rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-fragments/elastic-tools.md}}

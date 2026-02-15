@@ -1,7 +1,7 @@
 ---
 description: "Check for gh-aw releases and assess whether our workflows need upgrading"
 imports:
-  - scheduled-report/rwx.md
+  - gh-aw-workflows/scheduled-report-rwx.md
 engine:
   id: copilot
   model: claude-opus-4.6

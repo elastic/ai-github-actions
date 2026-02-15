@@ -124,7 +124,7 @@ Add markdown body to the shim — it's appended after the imported prompt:
 ```yaml
 ---
 imports:
-  - pr-review/rwx.md
+  - gh-aw-workflows/pr-review-rwx.md
 engine:
   id: copilot
   model: claude-opus-4.6

@@ -32,9 +32,9 @@
 #     - gh-aw-fragments/safe-output-add-comment.md
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/safe-output-create-pr.md
-#     - mention-in-issue/rwxp.md
+#     - gh-aw-workflows/mention-in-issue-rwxp.md
 #
-# frontmatter-hash: ba1864cfdbd030ac028435f1603c33c8bdbe69f685e864d203c2c1805a87bcef
+# frontmatter-hash: 046acd224fe666962565b81f932716470780e44d83722a6a620a8ef1a6161d38
 
 name: "Mention In Issue"
 "on":
@@ -714,7 +714,7 @@ jobs:
           </system>
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/mention-in-issue/rwxp.md}}
+          {{#runtime-import .github/workflows/gh-aw-workflows/mention-in-issue-rwxp.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-fragments/elastic-tools.md}}
