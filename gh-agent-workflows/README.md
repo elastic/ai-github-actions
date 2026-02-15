@@ -10,6 +10,7 @@
 | Issue Triage | `gh aw add elastic/ai-github-actions/gh-agent-workflows/issue-triage` | New issues |
 | Mention in Issue | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-issue` | `/ai` in issues |
 | Mention in PR | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-pr` | `/ai` in PRs |
+| Docs Drift | `gh aw add elastic/ai-github-actions/gh-agent-workflows/docs-drift` | Weekday schedule |
 
 ## Prerequisites
 

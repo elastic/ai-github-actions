@@ -63,6 +63,7 @@ Based on what's asked, do the appropriate thing:
 - First, call `pull_request_read` with methods `get_review_comments` and `get_reviews` to check existing threads and prior reviews — do not duplicate feedback.
 - Then follow the same review process as the PR Review Agent: get files in batches, read each file from the workspace, leave inline comments via `create_pull_request_review_comment`, submit via `submit_pull_request_review`.
 - **Important**: Substantive feedback belongs in the PR review (inline comments + review submission), NOT in the reply comment. Your reply comment should only report: "Review submitted" with a brief status (e.g. "approved" or "requested changes on X issues"). Do NOT duplicate review content in the comment.
+- **Bot-authored PRs**: If the PR author is `github-actions[bot]`, you can only submit a `COMMENT` review — `APPROVE` and `REQUEST_CHANGES` will fail because GitHub does not allow bot accounts to approve or request changes on their own PRs. Use `COMMENT` and state your verdict in the review body instead.
 
 **If asked to fix code or address review feedback:**
 - Call `pull_request_read` with method `get_review_comments` to see open review threads and understand what needs to be addressed.
