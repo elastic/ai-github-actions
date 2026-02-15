@@ -25,15 +25,15 @@
 #
 # Resolved workflow manifest:
 #   Imports:
-#     - shared/elastic-tools.md
-#     - shared/formatting.md
-#     - shared/mcp-pagination.md
-#     - shared/rigor.md
-#     - shared/safe-output-review-comment.md
-#     - shared/safe-output-submit-review.md
+#     - gh-aw-fragments/elastic-tools.md
+#     - gh-aw-fragments/formatting.md
+#     - gh-aw-fragments/mcp-pagination.md
+#     - gh-aw-fragments/rigor.md
+#     - gh-aw-fragments/safe-output-review-comment.md
+#     - gh-aw-fragments/safe-output-submit-review.md
 #     - pr-review/rwx.md
 #
-# frontmatter-hash: 28ca3622c17a93614b9433606203a520200e6d039a8ebe8b39cb1f66ee776be6
+# frontmatter-hash: 1d36925cdd3131447328a3ffc157e317d93512789ebbc34dead020ab015bd0b2
 
 name: "Pr Review"
 "on":
@@ -634,22 +634,22 @@ jobs:
           {{#runtime-import .github/workflows/pr-review/rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/elastic-tools.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/elastic-tools.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/formatting.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/formatting.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/rigor.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/rigor.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/mcp-pagination.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/mcp-pagination.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/safe-output-review-comment.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/safe-output-review-comment.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/safe-output-submit-review.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/safe-output-submit-review.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/pr-review.md}}

@@ -1,11 +1,11 @@
 ---
 # Shared issue triage prompt — no `on:` field (imported by the issue-triage shim)
 imports:
-  - shared/elastic-tools.md
-  - shared/formatting.md
-  - shared/rigor.md
-  - shared/mcp-pagination.md
-  - shared/safe-output-add-comment.md
+  - gh-aw-fragments/elastic-tools.md
+  - gh-aw-fragments/formatting.md
+  - gh-aw-fragments/rigor.md
+  - gh-aw-fragments/mcp-pagination.md
+  - gh-aw-fragments/safe-output-add-comment.md
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search]

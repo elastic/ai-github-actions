@@ -25,14 +25,14 @@
 #
 # Resolved workflow manifest:
 #   Imports:
-#     - shared/elastic-tools.md
-#     - shared/formatting.md
-#     - shared/mcp-pagination.md
-#     - shared/rigor.md
-#     - shared/safe-output-create-issue.md
+#     - gh-aw-fragments/elastic-tools.md
+#     - gh-aw-fragments/formatting.md
+#     - gh-aw-fragments/mcp-pagination.md
+#     - gh-aw-fragments/rigor.md
+#     - gh-aw-fragments/safe-output-create-issue.md
 #     - scheduled-report/rwx.md
 #
-# frontmatter-hash: ec66050db08f7ff4b057dec5da9ac3e212687fa15c3f6c2aecc71873a447b16c
+# frontmatter-hash: a04950bd0bfd96b89f6d1710d1bfeb78e65e52d6bc9836d67c405fbd9fdaadb9
 
 name: "Gh Aw Upgrade Check"
 "on":
@@ -588,19 +588,19 @@ jobs:
           {{#runtime-import .github/workflows/scheduled-report/rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/elastic-tools.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/elastic-tools.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/formatting.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/formatting.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/rigor.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/rigor.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/mcp-pagination.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/mcp-pagination.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/shared/safe-output-create-issue.md}}
+          {{#runtime-import .github/workflows/gh-aw-fragments/safe-output-create-issue.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-upgrade-check.md}}

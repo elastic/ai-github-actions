@@ -1,11 +1,11 @@
 ---
 # Shared scheduled-report prompt — no `on:` field (imported by report shims)
 imports:
-  - shared/elastic-tools.md
-  - shared/formatting.md
-  - shared/rigor.md
-  - shared/mcp-pagination.md
-  - shared/safe-output-create-issue.md
+  - gh-aw-fragments/elastic-tools.md
+  - gh-aw-fragments/formatting.md
+  - gh-aw-fragments/rigor.md
+  - gh-aw-fragments/mcp-pagination.md
+  - gh-aw-fragments/safe-output-create-issue.md
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search]
