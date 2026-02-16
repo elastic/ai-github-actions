@@ -29,7 +29,9 @@ jobs:
       - name: Create a fresh repo
         run: |
           mkdir /tmp/test-repo && cd /tmp/test-repo
-          git init
+          git init -b main
+          git config user.name "smoke-test"
+          git config user.email "smoke-test@localhost"
           git commit --allow-empty -m "init"
 
       - name: Install every workflow
