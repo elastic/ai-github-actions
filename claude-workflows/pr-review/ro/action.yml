@@ -44,6 +44,16 @@ inputs:
     required: false
     default: ""
 
+  intensity:
+    description: "Review intensity (conservative|balanced|aggressive)"
+    required: false
+    default: "balanced"
+
+  minimum-severity:
+    description: "Minimum severity for inline comments. Issues below this go in the review body. (critical|high|medium|low|nitpick)"
+    required: false
+    default: "low"
+
   track-progress:
     description: "Whether Claude should track progress with visual indicators"
     required: false
@@ -70,6 +80,17 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.github-token }}
 
+    - name: Resolve bot identity
+      id: bot-identity
+      shell: bash
+      run: |
+        LOGIN=$(gh api user --jq '.login' 2>/dev/null) || \
+        LOGIN=$(gh api /app --jq '.slug + "[bot]"' 2>/dev/null) || \
+        LOGIN="github-actions[bot]"
+        echo "login=${LOGIN}" >> "$GITHUB_OUTPUT"
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+
     - name: Run Claude for PR Review (Read-Only)
       id: claude
       env:
@@ -79,6 +100,8 @@ runs:
         PR_REVIEW_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         PR_REVIEW_COMMENTS_DIR: /tmp/pr-review-comments
         PR_REVIEW_HELPERS_DIR: ${{ github.action_path }}/../scripts
+        PR_REVIEW_MIN_INLINE_SEVERITY: ${{ inputs.minimum-severity }}
+        PR_REVIEW_BOT_LOGIN: ${{ steps.bot-identity.outputs.login }}
       uses: elastic/ai-github-claude-code-action@working-forks
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
@@ -120,6 +143,16 @@ runs:
           Suggestion blocks let PR authors apply your fixes with one click.
           </constraints>
 
+          <signal_noise>
+          Signal/noise level: ${{ inputs.intensity }}
+
+          - conservative: High evidence bar. Only comment when you can demonstrate a concrete failure scenario — what specific input or state triggers the bug. After identifying a potential issue, explicitly challenge your own finding: if you can construct a reasonable counterargument, do not comment. Give the author maximum benefit of the doubt. Approval with zero comments is the expected outcome for most PRs.
+          - balanced (default): Standard evidence bar. Comment when you can point to specific code that would fail and have verified the issue through the full verification protocol. Give the author reasonable benefit of the doubt — if the issue is ambiguous, lean toward not commenting.
+          - aggressive: Lower evidence bar. Comment when evidence exists even if the failure scenario is not fully confirmed. Improvement suggestions and alternative approaches are welcome but must still cite specific code. Do not speculate without any evidence, and do not duplicate existing threads.
+
+          If the value is unrecognized, treat it as balanced.
+          </signal_noise>
+
           <allowed_tools>
           You have access to the following tools (comma-separated list):
           
@@ -150,17 +183,12 @@ runs:
              - `[abc1234]` — commit the comment was made on; use `git show abc1234` if needed
              - `~42` — approximate line from an older revision (exact line no longer maps to current diff)
           b. Review the diff. Use `Read` to see full file contents when you need more context.
-             Identify issues matching review_criteria. Do NOT flag:
-             - Issues in unchanged code (only review the diff)
-             - Style preferences handled by linters
-             - Pre-existing issues not introduced by this PR
-             - Issues already covered by existing threads (see below)
-          
-          Before flagging any issue, verify it against the actual code:
-          - Read the full file, not just the diff — the issue may be handled elsewhere.
-          - Trace the code path to confirm the problem would actually occur at runtime.
-          - If you're claiming something is missing or broken, find the evidence in the code.
-          If the issue depends on assumptions you haven't confirmed, do not flag it.
+             Identify issues matching `<review_criteria>`. Check the false positive patterns there before flagging anything.
+          c. **Verify each potential issue** before commenting — work through these steps:
+             1. What specific code pattern or change triggers this concern?
+             2. Read the surrounding context — is this handled elsewhere in the file, caller, or framework?
+             3. Construct a concrete failure scenario — what specific input or state causes the bug? If you cannot describe one, stop — do not flag.
+             4. Challenge your own finding — would a senior engineer familiar with this codebase agree this is a real issue? If "probably not" or "unsure", stop — do not flag.
 
           **Existing thread rules** (check BEFORE leaving any comment):
           - Resolved with reviewer reply → reviewer's decision is final. Do NOT re-flag.
@@ -207,6 +235,8 @@ runs:
           </review_process>
 
           <severity_classification>
+          Determine severity AFTER investigating the issue, not before. First identify the problem and trace through the code, then assign severity based on the evidence. Do not start with a severity and look for issues to match it.
+
           🔴 CRITICAL - Must fix before merge (security vulnerabilities, data corruption, production-breaking bugs)
           🟠 HIGH - Should fix before merge (logic errors, missing validation, significant performance issues)
           🟡 MEDIUM - Address soon, non-blocking (error handling gaps, suboptimal patterns, missing edge cases)
@@ -223,7 +253,67 @@ runs:
           5. Error handling gaps (unhandled exceptions, missing validation)
           6. Breaking changes to public APIs without migration path
           7. Missing or incorrect test coverage for critical paths
+
+          Common false positives — do NOT flag these:
+          - Security: Don't flag injection/XSS when inputs are sanitized upstream, parameterized queries are used, or the framework auto-escapes output.
+          - Null/undefined: Don't flag if the value is guaranteed by a type guard, assertion, schema validation, or upstream null check.
+          - Error handling: Don't flag missing try/catch if the caller, middleware, or framework handles the error.
+          - Performance: Don't flag algorithmic complexity unless N is demonstrably large enough to matter in context.
+          - Validation: Don't flag missing validation if it's handled at another layer (API gateway, middleware, schema).
+          - Tests: Don't flag missing tests for trivial getters/setters, auto-generated code, or simple delegation.
+          - Style: Don't flag naming or style unless it violates the repo's documented coding guidelines.
+
+          Finding no issues is a valid and valuable outcome. An APPROVE with zero inline comments is better than comments that waste the author's time or erode trust. Do not manufacture findings to justify your review.
           </review_criteria>
+
+          <review_calibration_examples>
+          Use these examples to calibrate your judgment. Each pair shows a real issue and a similar-looking pattern that is NOT an issue.
+
+          Example 1 — Null/Undefined Access:
+
+          TRUE POSITIVE (flag this):
+          ```js
+          app.get('/user/:id', async (req, res) => {
+            const user = await db.findUser(req.params.id);
+            res.json({ name: user.name, email: user.email });
+          });
+          ```
+          Why flag: `db.findUser()` can return null when no user matches the ID. Accessing `user.name` throws a TypeError. No upstream guard exists — the route handler is the entry point.
+
+          FALSE POSITIVE (skip this):
+          ```ts
+          const settings = user.getSettings();
+          ```
+          Why skip: The full file shows `user` is typed as `User` (not `User | null`), and the calling function only runs after `authenticateUser()` middleware which guarantees a valid user object.
+
+          Example 2 — SQL Injection:
+
+          TRUE POSITIVE (flag this):
+          ```python
+          cursor.execute(f"SELECT * FROM orders WHERE customer_id = '{customer_id}'")
+          ```
+          Why flag: String interpolation with user-controlled input. No parameterization or sanitization in the call chain.
+
+          FALSE POSITIVE (skip this):
+          ```python
+          cursor.execute(f"SELECT * FROM orders WHERE status = '{OrderStatus.PENDING.value}'")
+          ```
+          Why skip: The interpolated value is a hardcoded enum constant, not user input. No injection vector.
+
+          Example 3 — Performance (borderline, do NOT flag):
+          ```go
+          func processItems(items []Item) []Result {
+              results := make([]Result, 0)
+              for _, item := range items {
+                  for _, tag := range item.Tags {
+                      results = append(results, process(item, tag))
+                  }
+              }
+              return results
+          }
+          ```
+          This looks like an O(n*m) concern, but without evidence that items or Tags are large in practice, this is speculative. Do not flag theoretical performance issues without evidence of real-world impact.
+          </review_calibration_examples>
 
           <github_formatting>
           When writing GitHub comments, wrap branch names, tags, or other @-references in backticks (e.g., `@main`, `@v1.0`) to avoid accidentally pinging users. Do not add backticks around terms that are already inside backticks or code blocks.

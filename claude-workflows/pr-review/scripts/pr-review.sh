@@ -11,10 +11,14 @@
 # and will be safely passed to the GitHub API without shell interpretation.
 #
 # Environment variables (set by the composite action):
-#   PR_REVIEW_REPO          - Repository (owner/repo)
-#   PR_REVIEW_PR_NUMBER     - Pull request number
-#   PR_REVIEW_HEAD_SHA      - HEAD commit SHA
-#   PR_REVIEW_COMMENTS_DIR  - Directory containing queued comment files (default: /tmp/pr-review-comments)
+#   PR_REVIEW_REPO                - Repository (owner/repo)
+#   PR_REVIEW_PR_NUMBER           - Pull request number
+#   PR_REVIEW_HEAD_SHA            - HEAD commit SHA
+#   PR_REVIEW_COMMENTS_DIR        - Directory containing queued comment files (default: /tmp/pr-review-comments)
+#   PR_REVIEW_MIN_INLINE_SEVERITY - Minimum severity for inline comments (default: low)
+#                                   Issues below this go in a collapsible review body section.
+#   PR_REVIEW_BOT_LOGIN           - Login of the bot submitting reviews (e.g. github-actions[bot])
+#                                   Used to skip redundant reviews when verdict is unchanged.
 
 set -e
 
@@ -23,6 +27,22 @@ REPO="${PR_REVIEW_REPO:?PR_REVIEW_REPO environment variable is required}"
 PR_NUMBER="${PR_REVIEW_PR_NUMBER:?PR_REVIEW_PR_NUMBER environment variable is required}"
 HEAD_SHA="${PR_REVIEW_HEAD_SHA:?PR_REVIEW_HEAD_SHA environment variable is required}"
 COMMENTS_DIR="${PR_REVIEW_COMMENTS_DIR:-/tmp/pr-review-comments}"
+MIN_INLINE_SEVERITY="${PR_REVIEW_MIN_INLINE_SEVERITY:-low}"
+
+# Severity levels ordered highest to lowest (index = rank, lower = more severe)
+declare -A SEVERITY_RANK=(
+  [critical]=0
+  [high]=1
+  [medium]=2
+  [low]=3
+  [nitpick]=4
+)
+
+# Validate min_inline_severity
+if [ -z "${SEVERITY_RANK[$MIN_INLINE_SEVERITY]+x}" ]; then
+  echo "Warning: Unrecognized PR_REVIEW_MIN_INLINE_SEVERITY='${MIN_INLINE_SEVERITY}', defaulting to 'low'"
+  MIN_INLINE_SEVERITY="low"
+fi
 
 # Arguments
 EVENT="$1"
@@ -103,19 +123,42 @@ if [ -d "${COMMENTS_DIR}" ]; then
   fi
 fi
 
-# Separate nitpick comments from actionable inline comments
-# Nitpicks go into the review body; everything else stays as inline comments
-COMMENTS=$(echo "$ALL_COMMENTS" | jq '[.[] | select(._meta.severity != "nitpick") | del(._meta)]')
+# Separate inline comments from lower-priority ones based on min_inline_severity threshold.
+# Issues at or above the threshold stay inline; issues below go into the review body.
+MIN_RANK="${SEVERITY_RANK[$MIN_INLINE_SEVERITY]}"
+
+COMMENTS=$(echo "$ALL_COMMENTS" | jq --argjson ranks "$(jq -n \
+  '{critical:0, high:1, medium:2, low:3, nitpick:4}')" \
+  --argjson min_rank "$MIN_RANK" \
+  '[.[] | select($ranks[._meta.severity] <= $min_rank) | del(._meta)]')
 COMMENT_COUNT=$(echo "$COMMENTS" | jq 'length')
 
-NITPICKS=$(echo "$ALL_COMMENTS" | jq '[.[] | select(._meta.severity == "nitpick")]')
+NITPICKS=$(echo "$ALL_COMMENTS" | jq --argjson ranks "$(jq -n \
+  '{critical:0, high:1, medium:2, low:3, nitpick:4}')" \
+  --argjson min_rank "$MIN_RANK" \
+  '[.[] | select($ranks[._meta.severity] > $min_rank)]')
 NITPICK_COUNT=$(echo "$NITPICKS" | jq 'length')
 
 if [ "$TOTAL_COUNT" -gt 0 ]; then
   if [ "$NITPICK_COUNT" -gt 0 ]; then
-    echo "Found ${TOTAL_COUNT} queued comment(s) (${NITPICK_COUNT} nitpick(s) moved to review body)"
+    echo "Found ${TOTAL_COUNT} queued comment(s) (${NITPICK_COUNT} below '${MIN_INLINE_SEVERITY}' threshold, moved to review body)"
   else
     echo "Found ${TOTAL_COUNT} queued inline comment(s)"
+  fi
+fi
+
+# Skip if nothing new: no queued comments and verdict matches our own last review
+if [ "$TOTAL_COUNT" -eq 0 ] && [ -n "${PR_REVIEW_BOT_LOGIN:-}" ]; then
+  declare -A EVENT_TO_STATE=([APPROVE]="APPROVED" [REQUEST_CHANGES]="CHANGES_REQUESTED" [COMMENT]="COMMENTED")
+  EXPECTED_STATE="${EVENT_TO_STATE[$EVENT]}"
+
+  LAST_OWN_STATE=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/reviews" --paginate | \
+    jq -r --arg login "$PR_REVIEW_BOT_LOGIN" \
+    '[.[] | select(.user.login == $login)] | last | .state // empty')
+
+  if [ "$LAST_OWN_STATE" = "$EXPECTED_STATE" ]; then
+    echo "Skipping review — no new comments and verdict unchanged (${EVENT}, last ${PR_REVIEW_BOT_LOGIN} review was ${LAST_OWN_STATE})"
+    exit 0
   fi
 fi
 
@@ -123,20 +166,25 @@ fi
 NITPICK_SECTION=""
 if [ "$NITPICK_COUNT" -gt 0 ]; then
   NITPICK_SECTION="<details>
-<summary>Nitpick comments (${NITPICK_COUNT})</summary>
+<summary>Lower-priority observations (${NITPICK_COUNT})</summary>
 "
 
   for i in $(seq 0 $((NITPICK_COUNT - 1))); do
     NITPICK_JSON=$(echo "$NITPICKS" | jq ".[$i]")
     NP_FILE=$(echo "$NITPICK_JSON" | jq -r '._meta.file')
     NP_LINE=$(echo "$NITPICK_JSON" | jq -r '._meta.line')
+    NP_SEVERITY=$(echo "$NITPICK_JSON" | jq -r '._meta.severity')
     NP_TITLE=$(echo "$NITPICK_JSON" | jq -r '._meta.title // "Untitled"')
     NP_WHY=$(echo "$NITPICK_JSON" | jq -r '._meta.why // "No description provided"')
     NP_SUGGESTION=$(echo "$NITPICK_JSON" | jq -r 'if ._meta.suggestion == null or ._meta.suggestion == "" then "" else ._meta.suggestion end')
 
+    # Look up the emoji label for this severity
+    declare -A NP_EMOJI=([critical]="🔴 CRITICAL" [high]="🟠 HIGH" [medium]="🟡 MEDIUM" [low]="⚪ LOW" [nitpick]="💬 NITPICK")
+    NP_LABEL="${NP_EMOJI[$NP_SEVERITY]:-💬 NITPICK}"
+
     LANG=$(ext_to_lang "$NP_FILE")
 
-    # Add separator between nitpicks
+    # Add separator between items
     if [ "$i" -gt 0 ]; then
       NITPICK_SECTION="${NITPICK_SECTION}
 ---
@@ -144,7 +192,7 @@ if [ "$NITPICK_COUNT" -gt 0 ]; then
     fi
 
     NITPICK_SECTION="${NITPICK_SECTION}
-**💬 NITPICK** ${NP_TITLE} — \`${NP_FILE}:${NP_LINE}\`
+**${NP_LABEL}** ${NP_TITLE} — \`${NP_FILE}:${NP_LINE}\`
 
 Why: ${NP_WHY}"
 
@@ -250,7 +298,7 @@ if [ -n "$REVIEW_URL" ]; then
     echo "  Included ${COMMENT_COUNT} inline comment(s)"
   fi
   if [ "$NITPICK_COUNT" -gt 0 ]; then
-    echo "  Included ${NITPICK_COUNT} nitpick(s) in review body"
+    echo "  Included ${NITPICK_COUNT} lower-priority observation(s) in review body"
   fi
 else
   echo "✓ Review submitted successfully"

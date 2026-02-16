@@ -1,11 +1,21 @@
 ---
 # Shared PR review prompt — no `on:` field (imported by the pr-review shim)
+inputs:
+  intensity:
+    description: "Review intensity: conservative, balanced, or aggressive"
+    type: string
+    default: "balanced"
+  minimum_severity:
+    description: "Minimum severity for inline comments: critical, high, medium, low, or nitpick. Issues below this threshold go in a collapsible section of the review body instead."
+    type: string
+    default: "low"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/review-process.md
+  - gh-aw-fragments/review-examples.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
@@ -51,6 +61,8 @@ Follow the **Code Review Reference** below — review each changed file one at a
 
 ### Step 3: Submit the Review
 
+**Skip if nothing new:** If you left zero inline comments during this review AND your verdict would be the same as the most recent review from this bot (compare against `get_reviews` from Step 1), call `noop` with a message like "No new findings — prior review still applies" and stop. Do not submit a redundant review.
+
 After reviewing ALL files and leaving inline comments, step back and consider the PR as a whole. Call **`submit_pull_request_review`** with:
 - The review type (REQUEST_CHANGES, COMMENT, or APPROVE)
 - A review body that is **only the verdict and only if the verdict is not APPROVE**. If you have cross-cutting feedback that spans multiple files or cannot be expressed as inline comments, include it here. Otherwise, leave the review body empty — your inline comments already contain the detail.
@@ -60,3 +72,10 @@ After reviewing ALL files and leaving inline comments, step back and consider th
 **Do NOT** describe what the PR does, list the files you reviewed, summarize inline comments, or restate prior review feedback. The PR author already knows what their PR does. Your inline comments already contain all the detail. The review body exists solely to communicate the approve/request-changes decision and important/critical feedback that cannot be covered in inline comments.
 
 If you have no issues, or you have only provided NITPICK and LOW issues, submit an APPROVE review. Otherwise, submit a REQUEST_CHANGES review.
+
+## Review Settings
+
+- **Intensity**: `${{ github.aw.inputs.intensity }}`
+- **Minimum inline severity**: `${{ github.aw.inputs.minimum_severity }}`
+
+These override the defaults defined in the Code Review Reference below.

@@ -1,7 +1,10 @@
 ---
 description: "AI code review with inline comments on pull requests"
 imports:
-  - gh-aw-workflows/pr-review-rwx.md
+  - path: gh-aw-workflows/pr-review-rwx.md
+    inputs:
+      intensity: "balanced"  # conservative | balanced | aggressive
+      minimum_severity: "low"  # critical | high | medium | low | nitpick
 engine:
   id: copilot
   model: gpt-5.2-codex
