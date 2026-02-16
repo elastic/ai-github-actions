@@ -41,6 +41,7 @@ See [example.yml](example.yml) for a complete workflow example.
 | `allowed-tools` | Allowed tools (includes Write/Edit, read-only git commands, Bash(*) for all commands) | No | See action.yml for full default list |
 | `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
+| `min-review-comment-severity` | Minimum severity for inline review comments | No | `low` |
 | `track-progress` | Track progress with visual indicators | No | `false` |
 | `mcp-servers` | MCP server configuration JSON | No | See main README for MCP Servers |
 

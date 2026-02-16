@@ -34,6 +34,12 @@ corrected code here
 
 Only include a `suggestion` block when you can provide a concrete code fix that **actually changes** the code. If the fix requires structural changes, describe the fix in prose instead — never include a suggestion identical to the original line.
 
+### Minimum Inline Severity
+
+The default minimum severity for inline comments is **LOW** (so only NITPICK feedback is collapsed).
+If the prompt specifies a different minimum (e.g., "Minimum inline severity: MEDIUM"), only leave inline comments at or above that level.
+Put any below-threshold feedback in the review body inside a collapsed `<details>` block titled `Lower-severity comments (below <level>)`.
+
 ### What NOT to Flag
 
 - Issues in unchanged code (only review the diff)

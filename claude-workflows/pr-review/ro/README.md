@@ -33,6 +33,7 @@ See [example.yml](example.yml) for a complete workflow example.
 | `allowed-tools` | Allowed tools (read-only, includes PR review scripts) | No | See action.yml for full default list |
 | `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
+| `min-review-comment-severity` | Minimum severity for inline review comments | No | `low` |
 | `track-progress` | Track progress with visual indicators | No | `false` |
 | `mcp-servers` | MCP server configuration JSON | No | See main README for MCP Servers |
 

@@ -103,62 +103,105 @@ if [ -d "${COMMENTS_DIR}" ]; then
   fi
 fi
 
-# Separate nitpick comments from actionable inline comments
-# Nitpicks go into the review body; everything else stays as inline comments
-COMMENTS=$(echo "$ALL_COMMENTS" | jq '[.[] | select(._meta.severity != "nitpick") | del(._meta)]')
+# Separate below-threshold comments from actionable inline comments
+# Below-threshold comments go into the review body; everything else stays inline
+severity_rank() {
+  case "$1" in
+    critical) echo 5 ;;
+    high) echo 4 ;;
+    medium) echo 3 ;;
+    low) echo 2 ;;
+    nitpick) echo 1 ;;
+    *) echo 0 ;;
+  esac
+}
+
+MIN_SEVERITY="${PR_REVIEW_MIN_SEVERITY:-low}"
+MIN_SEVERITY_RANK=$(severity_rank "$MIN_SEVERITY")
+if [ "$MIN_SEVERITY_RANK" -eq 0 ]; then
+  echo "Error: Invalid PR_REVIEW_MIN_SEVERITY '${MIN_SEVERITY}'. Must be one of: critical, high, medium, low, nitpick"
+  exit 1
+fi
+
+COMMENTS=$(echo "$ALL_COMMENTS" | jq --argjson min_rank "$MIN_SEVERITY_RANK" '
+def rank(s):
+  if s=="critical" then 5
+  elif s=="high" then 4
+  elif s=="medium" then 3
+  elif s=="low" then 2
+  elif s=="nitpick" then 1
+  else 0 end;
+[.[] | select(rank(._meta.severity) >= $min_rank) | del(._meta)]')
 COMMENT_COUNT=$(echo "$COMMENTS" | jq 'length')
 
-NITPICKS=$(echo "$ALL_COMMENTS" | jq '[.[] | select(._meta.severity == "nitpick")]')
-NITPICK_COUNT=$(echo "$NITPICKS" | jq 'length')
+LOWER_SEVERITY=$(echo "$ALL_COMMENTS" | jq --argjson min_rank "$MIN_SEVERITY_RANK" '
+def rank(s):
+  if s=="critical" then 5
+  elif s=="high" then 4
+  elif s=="medium" then 3
+  elif s=="low" then 2
+  elif s=="nitpick" then 1
+  else 0 end;
+[.[] | select(rank(._meta.severity) < $min_rank)]')
+LOWER_SEVERITY_COUNT=$(echo "$LOWER_SEVERITY" | jq 'length')
 
 if [ "$TOTAL_COUNT" -gt 0 ]; then
-  if [ "$NITPICK_COUNT" -gt 0 ]; then
-    echo "Found ${TOTAL_COUNT} queued comment(s) (${NITPICK_COUNT} nitpick(s) moved to review body)"
+  if [ "$LOWER_SEVERITY_COUNT" -gt 0 ]; then
+    echo "Found ${TOTAL_COUNT} queued comment(s) (${LOWER_SEVERITY_COUNT} below '${MIN_SEVERITY}' moved to review body)"
   else
     echo "Found ${TOTAL_COUNT} queued inline comment(s)"
   fi
 fi
 
-# Build the nitpick section for the review body (collapsed <details> block)
-NITPICK_SECTION=""
-if [ "$NITPICK_COUNT" -gt 0 ]; then
-  NITPICK_SECTION="<details>
-<summary>Nitpick comments (${NITPICK_COUNT})</summary>
+# Build the below-threshold section for the review body (collapsed <details> block)
+LOWER_SEVERITY_SECTION=""
+if [ "$LOWER_SEVERITY_COUNT" -gt 0 ]; then
+  LOWER_SEVERITY_SECTION="<details>
+<summary>Lower-severity comments (below ${MIN_SEVERITY}, ${LOWER_SEVERITY_COUNT})</summary>
 "
 
-  for i in $(seq 0 $((NITPICK_COUNT - 1))); do
-    NITPICK_JSON=$(echo "$NITPICKS" | jq ".[$i]")
-    NP_FILE=$(echo "$NITPICK_JSON" | jq -r '._meta.file')
-    NP_LINE=$(echo "$NITPICK_JSON" | jq -r '._meta.line')
-    NP_TITLE=$(echo "$NITPICK_JSON" | jq -r '._meta.title // "Untitled"')
-    NP_WHY=$(echo "$NITPICK_JSON" | jq -r '._meta.why // "No description provided"')
-    NP_SUGGESTION=$(echo "$NITPICK_JSON" | jq -r 'if ._meta.suggestion == null or ._meta.suggestion == "" then "" else ._meta.suggestion end')
+  for i in $(seq 0 $((LOWER_SEVERITY_COUNT - 1))); do
+    LOWER_JSON=$(echo "$LOWER_SEVERITY" | jq ".[$i]")
+    LS_FILE=$(echo "$LOWER_JSON" | jq -r '._meta.file')
+    LS_LINE=$(echo "$LOWER_JSON" | jq -r '._meta.line')
+    LS_TITLE=$(echo "$LOWER_JSON" | jq -r '._meta.title // "Untitled"')
+    LS_WHY=$(echo "$LOWER_JSON" | jq -r '._meta.why // "No description provided"')
+    LS_SUGGESTION=$(echo "$LOWER_JSON" | jq -r 'if ._meta.suggestion == null or ._meta.suggestion == "" then "" else ._meta.suggestion end')
+    LS_SEVERITY=$(echo "$LOWER_JSON" | jq -r '._meta.severity // "unknown"')
+    LS_SEVERITY_LABEL=$(case "$LS_SEVERITY" in
+      critical) echo "🔴 CRITICAL" ;;
+      high) echo "🟠 HIGH" ;;
+      medium) echo "🟡 MEDIUM" ;;
+      low) echo "⚪ LOW" ;;
+      nitpick) echo "💬 NITPICK" ;;
+      *) echo "$LS_SEVERITY" ;;
+    esac)
 
-    LANG=$(ext_to_lang "$NP_FILE")
+    LANG=$(ext_to_lang "$LS_FILE")
 
-    # Add separator between nitpicks
+    # Add separator between entries
     if [ "$i" -gt 0 ]; then
-      NITPICK_SECTION="${NITPICK_SECTION}
+      LOWER_SEVERITY_SECTION="${LOWER_SEVERITY_SECTION}
 ---
 "
     fi
 
-    NITPICK_SECTION="${NITPICK_SECTION}
-**💬 NITPICK** ${NP_TITLE} — \`${NP_FILE}:${NP_LINE}\`
+    LOWER_SEVERITY_SECTION="${LOWER_SEVERITY_SECTION}
+**${LS_SEVERITY_LABEL}** ${LS_TITLE} — \`${LS_FILE}:${LS_LINE}\`
 
-Why: ${NP_WHY}"
+Why: ${LS_WHY}"
 
     # Add suggestion as a fenced code block if present
-    if [ -n "$NP_SUGGESTION" ]; then
-      NITPICK_SECTION="${NITPICK_SECTION}
+    if [ -n "$LS_SUGGESTION" ]; then
+      LOWER_SEVERITY_SECTION="${LOWER_SEVERITY_SECTION}
 
 \`\`\`${LANG}
-${NP_SUGGESTION}
+${LS_SUGGESTION}
 \`\`\`"
     fi
   done
 
-  NITPICK_SECTION="${NITPICK_SECTION}
+  LOWER_SEVERITY_SECTION="${LOWER_SEVERITY_SECTION}
 
 </details>"
 fi
@@ -177,13 +220,13 @@ if [ -n "$BODY" ]; then
   FINAL_BODY="${BODY}"
 fi
 
-if [ -n "$NITPICK_SECTION" ]; then
+if [ -n "$LOWER_SEVERITY_SECTION" ]; then
   if [ -n "$FINAL_BODY" ]; then
     FINAL_BODY="${FINAL_BODY}
 
-${NITPICK_SECTION}"
+${LOWER_SEVERITY_SECTION}"
   else
-    FINAL_BODY="${NITPICK_SECTION}"
+    FINAL_BODY="${LOWER_SEVERITY_SECTION}"
   fi
 fi
 
@@ -249,8 +292,8 @@ if [ -n "$REVIEW_URL" ]; then
   if [ "$COMMENT_COUNT" -gt 0 ]; then
     echo "  Included ${COMMENT_COUNT} inline comment(s)"
   fi
-  if [ "$NITPICK_COUNT" -gt 0 ]; then
-    echo "  Included ${NITPICK_COUNT} nitpick(s) in review body"
+  if [ "$LOWER_SEVERITY_COUNT" -gt 0 ]; then
+    echo "  Included ${LOWER_SEVERITY_COUNT} below-threshold comment(s) in review body"
   fi
 else
   echo "✓ Review submitted successfully"

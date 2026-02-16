@@ -44,6 +44,11 @@ inputs:
     required: false
     default: ""
 
+  min-review-comment-severity:
+    description: "Minimum severity for inline review comments (lower severities go in the review body)"
+    required: false
+    default: "low"
+
   track-progress:
     description: "Whether Claude should track progress with visual indicators"
     required: false
@@ -79,6 +84,7 @@ runs:
         PR_REVIEW_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         PR_REVIEW_COMMENTS_DIR: /tmp/pr-review-comments
         PR_REVIEW_HELPERS_DIR: ${{ github.action_path }}/../scripts
+        PR_REVIEW_MIN_SEVERITY: ${{ inputs.min-review-comment-severity }}
       uses: elastic/ai-github-claude-code-action@working-forks
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
@@ -191,6 +197,9 @@ runs:
           Always provide suggestion code. Use `--no-suggestion` only when the fix requires
           changes across multiple locations. Broader architectural concerns belong in the
           review body, not inline comments.
+
+          Comments below the minimum severity (`${{ inputs.min-review-comment-severity }}`) are
+          moved into a collapsed section of the review body by `pr-review.sh`.
 
           To remove a queued comment: `$PR_REVIEW_HELPERS_DIR/pr-remove-comment.sh <file> <line>`
 
