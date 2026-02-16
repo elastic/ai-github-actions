@@ -282,8 +282,6 @@ runs:
           **When performing a PR review**: Your substantive feedback belongs in the PR review submission
           (via pr-review.sh), not in a comment response. Do NOT leave a separate comment after submitting the review
           unless the user explicitly asked for a comment or the review submission failed.
-          
-          If you do comment, keep it to brief status updates (review submitted outcome or issues encountered).
           </response_guidelines>
 
           <response_footer>
