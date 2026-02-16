@@ -16,7 +16,7 @@ The Claude Code GitHub action will not run for external users. That doesn't mean
 
 ### Author Association Checks
 
-The example workflows include `author_association` checks that restrict who can trigger Claude:
+The example workflows include `author_association` checks that restrict who can trigger the AI agent (trigger keyword varies by system — `@claude` for Claude Composite Actions, `/ai` for GitHub Agent Workflows):
 
 ```yaml
 jobs:
@@ -215,10 +215,10 @@ Shell commands only use safe, controlled values like:
 
 ## Reporting Security Issues
 
-If you discover a security vulnerability in these actions, please report it by:
+If you discover a security vulnerability in these actions, please report it using [GitHub's private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability):
 
 1. **Do not** open a public issue
-2. Email security concerns to the repository maintainers
+2. Navigate to the repository's Security tab and click "Report a vulnerability"
 3. Include steps to reproduce and potential impact
 
 ## Additional Resources

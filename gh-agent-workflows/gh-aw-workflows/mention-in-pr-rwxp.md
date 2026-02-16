@@ -5,6 +5,8 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
+  - gh-aw-fragments/review-process.md
+  - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment.md
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
@@ -55,8 +57,9 @@ Based on what's asked, do the appropriate thing:
 
 **If asked to review the PR:**
 - First, call `pull_request_read` with methods `get_review_comments` and `get_reviews` to check existing threads and prior reviews — do not duplicate feedback.
-- Then follow the same review process as the PR Review Agent: get files in batches, read each file from the workspace, leave inline comments via `create_pull_request_review_comment`, submit via `submit_pull_request_review`.
-- **Important**: Substantive feedback belongs in the PR review (inline comments + review submission), NOT in the reply comment. Your reply comment should only report: "Review submitted" with a brief status (e.g. "approved" or "requested changes on X issues"). Do NOT duplicate review content in the comment.
+- Follow the **Code Review Reference** below — review each changed file one at a time, leaving inline comments before moving to the next file.
+- After all files are reviewed, call `submit_pull_request_review`.
+- **Important**: Substantive feedback belongs in the PR review (inline comments + review submission), NOT in the reply comment. Your reply comment should only report "Review submitted" with a brief status (e.g. "approved" or "requested changes on X issues"). Do NOT duplicate review content in the comment.
 - **Bot-authored PRs**: If the PR author is `github-actions[bot]`, you can only submit a `COMMENT` review — `APPROVE` and `REQUEST_CHANGES` will fail because GitHub does not allow bot accounts to approve or request changes on their own PRs. Use `COMMENT` and state your verdict in the review body instead.
 
 **If asked to fix code or address review feedback:**
@@ -69,7 +72,7 @@ Based on what's asked, do the appropriate thing:
 
 **If asked a question about the code:**
 - Find the relevant code and explain it.
-- Use `grep`, file reading, and `search_code` to gather context.
+- Use `grep` and file reading to gather context.
 - Use `web-fetch` to look up documentation when needed.
 
 **If the request is unclear:**

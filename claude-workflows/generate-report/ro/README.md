@@ -19,7 +19,7 @@ See [example.yml](example.yml) for a complete workflow example.
 The key input is `instructions` -- this tells Claude what to research, analyze, and how to format the report. Think of it as the "prompt" that defines your report.
 
 ```yaml
-- uses: elastic/ai-github-actions/workflows/generate-report/ro@v0
+- uses: elastic/ai-github-actions/claude-workflows/generate-report/ro@v0
   with:
     claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     github-token: ${{ github.token }}
@@ -67,7 +67,7 @@ Because Claude reads `AGENTS.md` automatically, you can reference documentation 
 ### CVE Triage Report
 
 ```yaml
-- uses: elastic/ai-github-actions/workflows/generate-report/ro@v0
+- uses: elastic/ai-github-actions/claude-workflows/generate-report/ro@v0
   with:
     claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     github-token: ${{ github.token }}
@@ -88,7 +88,7 @@ Because Claude reads `AGENTS.md` automatically, you can reference documentation 
 ### Dependency Audit
 
 ```yaml
-- uses: elastic/ai-github-actions/workflows/generate-report/ro@v0
+- uses: elastic/ai-github-actions/claude-workflows/generate-report/ro@v0
   with:
     claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     github-token: ${{ github.token }}
@@ -106,7 +106,7 @@ Because Claude reads `AGENTS.md` automatically, you can reference documentation 
 ### Weekly Activity Digest
 
 ```yaml
-- uses: elastic/ai-github-actions/workflows/generate-report/ro@v0
+- uses: elastic/ai-github-actions/claude-workflows/generate-report/ro@v0
   with:
     claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     github-token: ${{ github.token }}

@@ -10,7 +10,7 @@ on:
     types: [opened]
 
 permissions:
-  contents: read
+  contents: read  # Prevents git push even with Bash access. See SECURITY.md.
   issues: write
   pull-requests: read
 
@@ -31,7 +31,7 @@ jobs:
       # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run Claude Issue Triage (Read-Write-Execute)
-        uses: elastic/ai-github-actions/workflows/issue-triage/rwx@v0
+        uses: elastic/ai-github-actions/claude-workflows/issue-triage/rwx@v0
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
