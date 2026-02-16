@@ -28,6 +28,7 @@
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
+#     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/review-process.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-add-comment.md
@@ -37,7 +38,7 @@
 #     - gh-aw-fragments/safe-output-submit-review.md
 #     - gh-aw-workflows/mention-in-pr-rwxp.md
 #
-# frontmatter-hash: 2ef424273053a54b76a3d6b159c56a88732825791c37c0ecab8a598586ae0f76
+# frontmatter-hash: edc2e81285d9c44a992d196938b045440bbbc548293560e86ffa4fbb24f29c93
 
 name: "Mention In Pr"
 "on":
@@ -782,6 +783,9 @@ jobs:
           {{#runtime-import .github/workflows/gh-aw-fragments/review-process.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/gh-aw-fragments/messages-footer.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-fragments/safe-output-add-comment.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
@@ -1082,6 +1086,7 @@ jobs:
           GH_AW_WORKFLOW_ID: "mention-in-pr"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.\"}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1278,6 +1283,7 @@ jobs:
     env:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
+      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.\"}"
       GH_AW_WORKFLOW_ID: "mention-in-pr"
       GH_AW_WORKFLOW_NAME: "Mention In Pr"
     outputs:

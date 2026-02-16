@@ -84,6 +84,7 @@ Fragments live in `gh-agent-workflows/gh-aw-fragments/` and are symlinked into `
 | [gh-aw-fragments/rigor.md](gh-aw-fragments/rigor.md) | Accuracy & evidence standards |
 | [gh-aw-fragments/mcp-pagination.md](gh-aw-fragments/mcp-pagination.md) | MCP token limit guidance and pagination patterns |
 | [gh-aw-fragments/review-process.md](gh-aw-fragments/review-process.md) | Shared code review process, comment format, severity classification, and review criteria |
+| [gh-aw-fragments/messages-footer.md](gh-aw-fragments/messages-footer.md) | Global message footer appended to all comments and reviews |
 | [gh-aw-fragments/safe-output-add-comment.md](gh-aw-fragments/safe-output-add-comment.md) | Limitations for `add-comment` (body length, mentions, links) |
 | [gh-aw-fragments/safe-output-review-comment.md](gh-aw-fragments/safe-output-review-comment.md) | Limitations for `create-pull-request-review-comment` (required fields, line rules) |
 | [gh-aw-fragments/safe-output-submit-review.md](gh-aw-fragments/safe-output-submit-review.md) | Limitations for `submit-pull-request-review` (event types, own-PR restriction) |
