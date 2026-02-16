@@ -11,53 +11,26 @@
 | Mention in Issue | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-issue` | `/ai` in issues |
 | Mention in PR | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-pr` | `/ai` in PRs |
 | Docs Drift | `gh aw add elastic/ai-github-actions/gh-agent-workflows/docs-drift` | Weekday schedule |
-
-## Prerequisites
-
-- [GitHub CLI](https://cli.github.com/) installed
-- [gh-aw extension](https://github.com/github/gh-aw) installed: `gh extension install github/gh-aw`
-- Go 1.25+ installed (for compilation)
-
-## Secrets
-
-These workflows require a `COPILOT_GITHUB_TOKEN` secret with `public_repo` scope (or `repo` for private repositories). This token is used by the Copilot engine to:
-
-- Read repository files and metadata
-- Comment on issues and pull requests
-- Create pull requests (if configured)
-
-**Setup:**
-
-1. Generate a [personal access token](https://github.com/settings/tokens/new) with `public_repo` scope
-2. Add it as a repository secret named `COPILOT_GITHUB_TOKEN`
-3. Reference it in your workflow shim's frontmatter (see [gh-aw engine documentation](https://github.github.io/gh-aw/reference/engines/) for details)
-
-The default shims in this repository are already configured to use `COPILOT_GITHUB_TOKEN` from your repository secrets.
+| Downstream Health | `gh aw add elastic/ai-github-actions/gh-agent-workflows/downstream-health` | Daily schedule |
 
 ## Quick Start
 
-1. **Install a workflow**
-   ```bash
-   gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review
-   ```
+**Prerequisites:** [GitHub CLI](https://cli.github.com/) and [gh-aw extension](https://github.com/github/gh-aw) (`gh extension install github/gh-aw`).
 
-2. **Compile to generate the lock file**
-   ```bash
-   gh aw compile
-   ```
+```bash
+# Install a workflow
+gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review
 
-3. **Set up secrets** — Add `COPILOT_GITHUB_TOKEN` to your repository secrets (see [Secrets](#secrets) section)
+# Compile to generate the lock file
+gh aw compile
 
-4. **Commit and push**
-   ```bash
-   git add .github/workflows/pr-review.md .github/workflows/pr-review.lock.yml
-   git commit -m "Add PR review workflow"
-   git push
-   ```
+# Commit both files and push
+git add .github/workflows/pr-review.md .github/workflows/pr-review.lock.yml
+git commit -m "Add PR review workflow"
+git push
+```
 
-5. **Verify** — Open a test PR or trigger the workflow to confirm it works
-
-## What Gets Installed
+## How It Works
 
 `gh aw add` copies a slim **shim** file to `.github/workflows/` containing trigger config, engine, and a single `imports:` entry. `gh aw compile` fetches the imported prompt, tools, and safe-outputs, then generates a `.lock.yml` GitHub Actions workflow. Commit both files.
 
@@ -65,43 +38,32 @@ Prompt improvements propagate automatically when you recompile. Only the shim is
 
 ## Customization
 
-All customization is done in the shim file (`.github/workflows/<name>.md`). Edit the frontmatter and recompile:
-
-```bash
-gh aw compile
-```
+All customization is done in the shim file (`.github/workflows/<name>.md`). Edit the frontmatter and recompile with `gh aw compile`.
 
 ### Change the AI engine or model
 
 The default is Copilot with GPT-5.3-Codex. Override in the shim's frontmatter:
 
 ```yaml
----
 engine:
   id: copilot
   model: claude-sonnet-4-20250514
----
 ```
 
 ### Override triggers, permissions, or timeouts
 
-Edit the shim's frontmatter to change triggers, concurrency, permissions, or timeouts:
-
 ```yaml
----
 on:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
 timeout-minutes: 30
----
 ```
 
 ### Add tools or MCP servers
 
-Tools and network allows from imports merge additively — add your own in the shim's frontmatter:
+Tools and network allows from imports merge additively — add your own in the shim:
 
 ```yaml
----
 tools:
   bash: ["npm", "npx", "node"]
 mcp-servers:
@@ -111,21 +73,18 @@ mcp-servers:
 network:
   allowed:
     - "my-server.example.com"
----
 ```
 
 Each workflow already includes `github` (repos, issues, pull_requests, search), `bash`, and `web-fetch` tools with `defaults` and `github` network access. Anything you add in the shim merges on top.
 
 ### Override safe outputs
 
-Main workflow definitions override imported defaults:
+Shim-level safe-outputs override imported defaults:
 
 ```yaml
----
 safe-outputs:
   add-comment:
     max: 5
----
 ```
 
 ### Add setup steps
@@ -133,29 +92,19 @@ safe-outputs:
 Install tools the agent needs (e.g., language runtimes, build tools):
 
 ```yaml
----
 steps:
   - uses: actions/setup-go@v5
     with:
       go-version: '1.23'
----
 ```
 
 ### Append to the prompt
 
-Add markdown body to the shim — it's appended after the imported prompt:
+Add markdown after the shim's frontmatter — it's appended to the imported prompt:
 
-```yaml
+```markdown
 ---
-imports:
-  - gh-aw-workflows/pr-review-rwx.md
-engine:
-  id: copilot
-  model: gpt-5.3-codex
-on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-# ... rest of frontmatter
+# ... frontmatter ...
 ---
 
 Always check for SQL injection vulnerabilities in database queries.

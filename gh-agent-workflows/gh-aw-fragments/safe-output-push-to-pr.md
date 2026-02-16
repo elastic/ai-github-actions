@@ -10,3 +10,9 @@ safe-outputs:
 - **Committed changes required**: You must have locally committed changes before calling push. Uncommitted or staged-only changes will fail.
 - **Branch**: Pushes to the PR's head branch. The workspace must have the PR branch checked out.
 - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
+
+Trying to resolve merge conflicts? Do NOT use `git merge` or `git rebase`. Instead:
+1. Compare the conflicting files between this PR branch and origin/main
+2. Edit the files directly to incorporate the changes from main
+3. Commit the changes as regular commits
+4. Use push_to_pull_request_branch to push
