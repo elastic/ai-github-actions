@@ -84,3 +84,23 @@ Determine severity AFTER investigating the issue, not before. First identify the
 - 🟡 **MEDIUM** — Address soon, non-blocking (error handling gaps, suboptimal patterns, missing edge cases)
 - ⚪ **LOW** — Author discretion (minor improvements, documentation gaps)
 - 💬 **NITPICK** — Truly optional (stylistic preferences, alternative approaches)
+
+### Review Intensity
+
+The review intensity defaults to `balanced`.
+
+- **`conservative`**: High evidence bar. Only comment when you can demonstrate a concrete failure scenario — what specific input or state triggers the bug. After identifying a potential issue, explicitly challenge your own finding: if you can construct a reasonable counterargument, do not comment. Give the author maximum benefit of the doubt. Approval with zero comments is the expected outcome for most PRs.
+- **`balanced`** (default): Standard evidence bar. Comment when you can point to specific code that would fail and have verified the issue through the full verification protocol. Give the author reasonable benefit of the doubt — if the issue is ambiguous, lean toward not commenting.
+- **`aggressive`**: Lower evidence bar. Comment when evidence exists even if the failure scenario is not fully confirmed. Improvement suggestions and alternative approaches are welcome but must still cite specific code. Do not speculate without any evidence, and do not duplicate existing threads.
+
+If the value is unrecognized, treat it as `balanced`.
+
+### Inline Comment Threshold
+
+The minimum severity for inline comments defaults to `low`.
+
+Issues at or above the threshold get **inline review comments** on the specific code line. Issues below the threshold should be collected into a **collapsible section** of the review body instead — use a `<details>` block titled "Lower-priority observations (N)" with each item listing its severity, title, file:line, and why it matters.
+
+Severity order (highest to lowest): critical > high > medium > low > nitpick.
+
+If the threshold is `low`, only nitpick-severity issues go in the review body. If `medium`, both low and nitpick go in the body. If the value is unrecognized, treat it as `low`.
