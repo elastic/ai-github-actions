@@ -9,7 +9,7 @@ engine:
 on:
   slash_command:
     name: ai
-    events: [pull_request, pull_request_comment, pull_request_review_comment]
+    events: [pull_request_comment, pull_request_review_comment]
   reaction: "eyes"
 concurrency:
   group: mention-pr-${{ github.event.issue.number }}
