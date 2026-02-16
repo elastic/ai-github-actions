@@ -21,6 +21,17 @@ gh aw compile
 
 See **[gh-agent-workflows/](gh-agent-workflows/)** for install commands, customization, and updating.
 
+## Choosing an Approach
+
+| Feature | GitHub Agent Workflows | Claude Composite Actions |
+| --- | --- | --- |
+| **Engine** | Copilot (default) or Claude | Claude only |
+| **Install** | `gh aw add` + `gh aw compile` | Copy `example.yml` to `.github/workflows/` |
+| **Guardrails** | Safe-outputs framework (structured API outputs) | Read-only/RWX/RWXP variants via permissions |
+| **Customization** | Edit shim frontmatter, recompile | Edit YAML directly, adjust composite action inputs |
+
+GitHub Agent Workflows are recommended for new deployments — they're more flexible and have better guardrails. Claude Composite Actions are still supported for legacy deployments.
+
 ## Composite Actions (Claude Code)
 
 Traditional GitHub Actions wrapping [Claude Code](https://github.com/anthropics/claude-code-action). Consumed via `uses:` in standard YAML workflows.

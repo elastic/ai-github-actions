@@ -2,7 +2,7 @@
 
 Composite GitHub Actions wrapping [Claude Code](https://github.com/anthropics/claude-code-action). Consumed via `uses:` in standard GitHub Actions YAML.
 
-> **Note:** This directory was renamed from `workflows/` to `claude-workflows/`. A symlink ensures backwards compatibility — existing `uses: elastic/ai-github-actions/workflows/...@v0` references continue to work.
+> **Note:** This directory was renamed from `workflows/` to `claude-workflows/`. A symlink ensures backwards compatibility — existing `uses: elastic/ai-github-actions/claude-workflows/...@v0` references continue to work.
 
 ## Security
 

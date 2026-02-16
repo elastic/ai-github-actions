@@ -5,7 +5,7 @@ Respond when Claude is mentioned in PR comments. Can make code changes, run test
 ## Usage
 
 ```yaml
-- uses: elastic/ai-github-actions/workflows/mention-in-pr/rwx@v0
+- uses: elastic/ai-github-actions/claude-workflows/mention-in-pr/rwx@v0
   with:
     claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     github-token: ${{ github.token }}

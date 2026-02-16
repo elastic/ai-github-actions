@@ -28,7 +28,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
       # Place environment setup commands here (e.g., install dependencies, configure tools)
-      - uses: elastic/ai-github-actions/workflows/mention-in-issue/rwxp@v0
+      - uses: elastic/ai-github-actions/claude-workflows/mention-in-issue/rwxp@v0
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
