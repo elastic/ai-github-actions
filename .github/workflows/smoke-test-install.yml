@@ -3,14 +3,6 @@ name: Smoke Test — Install & Compile
 on:
   schedule:
     - cron: "0 6 * * *" # Daily at 06:00 UTC
-  push:
-    branches: [main]
-    paths:
-      - "gh-agent-workflows/**"
-  pull_request:
-    branches: [main]
-    paths:
-      - "gh-agent-workflows/**"
   workflow_dispatch:
 
 jobs:
@@ -18,13 +10,6 @@ jobs:
     name: Install and compile all workflows
     runs-on: ubuntu-latest
     steps:
-      - name: Upgrade gh CLI
-        run: |
-          gh --version
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq gh
-          gh --version
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -64,12 +49,11 @@ jobs:
             agent-efficiency
           )
 
-          REF="${GITHUB_SHA}"
           FAILED=0
 
           for wf in "${WORKFLOWS[@]}"; do
             echo "::group::Installing ${wf}"
-            if gh aw add "elastic/ai-github-actions/gh-agent-workflows/${wf}.md@${REF}" --non-interactive; then
+            if gh aw add "elastic/ai-github-actions/gh-agent-workflows/${wf}.md" --non-interactive; then
               echo "::endgroup::"
             else
               echo "::endgroup::"
