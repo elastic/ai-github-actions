@@ -4,7 +4,7 @@ imports:
   - gh-aw-workflows/mention-in-pr-rwxp.md
 engine:
   id: copilot
-  model: gpt-5.3-codex
+  model: gpt-5.2-codex
 on:
   slash_command:
     name: ai
