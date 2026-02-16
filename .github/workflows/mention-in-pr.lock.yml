@@ -38,7 +38,7 @@
 #     - gh-aw-fragments/safe-output-submit-review.md
 #     - gh-aw-workflows/mention-in-pr-rwxp.md
 #
-# frontmatter-hash: 8c5e4c78670964ccb6daf0f31c8cd01716bd9184b2021ed85682432612d8601d
+# frontmatter-hash: ff5edd6f448e760dfd0cbd9c157a95b067a04ef44cbf6e5fec91f88162277a68
 
 name: "Mention In Pr"
 "on":
@@ -46,11 +46,6 @@ name: "Mention In Pr"
     types:
     - created
     - edited
-  pull_request:
-    types:
-    - opened
-    - edited
-    - reopened
   pull_request_review_comment:
     types:
     - created
@@ -70,9 +65,7 @@ jobs:
     if: >
       (needs.pre_activation.outputs.activated == 'true') && ((github.event_name == 'issue_comment') && (((startsWith(github.event.comment.body, '/ai ')) ||
       (github.event.comment.body == '/ai')) && (github.event.issue.pull_request != null)) || (github.event_name == 'pull_request_review_comment') &&
-      ((startsWith(github.event.comment.body, '/ai ')) || (github.event.comment.body == '/ai')) ||
-      (github.event_name == 'pull_request') &&
-      ((startsWith(github.event.pull_request.body, '/ai ')) || (github.event.pull_request.body == '/ai')))
+      ((startsWith(github.event.comment.body, '/ai ')) || (github.event.comment.body == '/ai')))
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -1214,9 +1207,7 @@ jobs:
     if: >
       (github.event_name == 'issue_comment') && (((startsWith(github.event.comment.body, '/ai ')) || (github.event.comment.body == '/ai')) &&
       (github.event.issue.pull_request != null)) || (github.event_name == 'pull_request_review_comment') &&
-      ((startsWith(github.event.comment.body, '/ai ')) || (github.event.comment.body == '/ai')) ||
-      (github.event_name == 'pull_request') &&
-      ((startsWith(github.event.pull_request.body, '/ai ')) || (github.event.pull_request.body == '/ai'))
+      ((startsWith(github.event.comment.body, '/ai ')) || (github.event.comment.body == '/ai'))
     runs-on: ubuntu-slim
     permissions:
       discussions: write
