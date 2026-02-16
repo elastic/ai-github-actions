@@ -9,24 +9,23 @@ gh-agent-workflows/
 ├── mention-in-issue.md
 ├── mention-in-pr.md
 ├── docs-drift.md             # Shim: imports scheduled-report-rwx.md + docs-specific instructions
-│
-│   (gh-aw-workflows/ and gh-aw-fragments/ live only in .github/workflows/)
+└── gh-aw-fragments/          # Shared fragments
+    ├── elastic-tools.md      # Elastic MCP servers + their network entries
+    ├── formatting.md         # Response formatting rules
+    ├── rigor.md              # Accuracy & evidence standards
+    ├── mcp-pagination.md     # MCP token limit guidance
+    └── safe-output-*.md      # Safe-output declarations + agent guidance
 
 .github/workflows/
-├── gh-aw-fragments/          # Shared fragments (canonical source)
-│   ├── elastic-tools.md      # Elastic MCP servers + their network entries
-│   ├── formatting.md         # Response formatting rules
-│   ├── rigor.md              # Accuracy & evidence standards
-│   ├── mcp-pagination.md     # MCP token limit guidance
-│   └── safe-output-*.md      # Safe-output declarations + agent guidance
-├── gh-aw-workflows/          # Prompts (canonical source)
+├── gh-aw-fragments -> ../../gh-agent-workflows/gh-aw-fragments  # symlink
+├── gh-aw-workflows/          # Prompts
 │   ├── pr-review-rwx.md      # PR review agent prompt
 │   ├── issue-triage-rwx.md   # Issue triage agent prompt
 │   ├── mention-in-pr-rwxp.md # Mention-in-PR agent prompt (with push)
 │   ├── mention-in-issue-rwxp.md  # Mention-in-issue agent prompt (with push)
 │   └── scheduled-report-rwx.md   # Reusable scheduled report prompt
-├── pr-review.md              # Copied from gh-agent-workflows/ by make sync
-├── issue-triage.md           # (shim copies needed for local compilation)
+├── pr-review.md              # Copied from gh-agent-workflows/ by scripts/dogfood.sh
+├── issue-triage.md           # (shim copies needed for compilation)
 ├── ...
 └── gh-aw-upgrade-check.md    # Internal-only scheduled check for gh-aw releases
 ```
@@ -40,7 +39,7 @@ gh-agent-workflows/
 
 The gh-aw compiler only supports 2-level import paths (`dir/file.md`), so prompts are flattened files (e.g., `gh-aw-workflows/pr-review-rwx.md`), not nested subdirectories. Adding a new tier is a new file with its own prompt and a new shim that imports it.
 
-**Shared fragments** (`.github/workflows/gh-aw-fragments/`) provide cross-workflow configuration and guidance. No `on:` field — validated but never compiled standalone.
+**Shared fragments** (`gh-agent-workflows/gh-aw-fragments/`) provide cross-workflow configuration and guidance. They are symlinked into `.github/workflows/gh-aw-fragments/` so the compiler can find them. No `on:` field — validated but never compiled standalone.
 
 ## Import Structure
 
@@ -76,21 +75,21 @@ To add a new scheduled report, create a shim that imports `gh-aw-workflows/sched
 
 ### Shared fragments
 
-Fragments live in `.github/workflows/gh-aw-fragments/` as real files (not symlinks). Prompts import them using the `gh-aw-fragments/` prefix.
+Fragments live in `gh-agent-workflows/gh-aw-fragments/` and are symlinked into `.github/workflows/gh-aw-fragments/`. Prompts import them using the `gh-aw-fragments/` prefix.
 
 | Fragment | Purpose |
 | --- | --- |
-| [gh-aw-fragments/elastic-tools.md](../.github/workflows/gh-aw-fragments/elastic-tools.md) | Elastic MCP servers (`agents-md-generator`, `public-code-search`) and their network entries |
-| [gh-aw-fragments/formatting.md](../.github/workflows/gh-aw-fragments/formatting.md) | Response formatting rules |
-| [gh-aw-fragments/rigor.md](../.github/workflows/gh-aw-fragments/rigor.md) | Accuracy & evidence standards |
-| [gh-aw-fragments/mcp-pagination.md](../.github/workflows/gh-aw-fragments/mcp-pagination.md) | MCP token limit guidance and pagination patterns |
-| [gh-aw-fragments/safe-output-add-comment.md](../.github/workflows/gh-aw-fragments/safe-output-add-comment.md) | Limitations for `add-comment` (body length, mentions, links) |
-| [gh-aw-fragments/safe-output-review-comment.md](../.github/workflows/gh-aw-fragments/safe-output-review-comment.md) | Limitations for `create-pull-request-review-comment` (required fields, line rules) |
-| [gh-aw-fragments/safe-output-submit-review.md](../.github/workflows/gh-aw-fragments/safe-output-submit-review.md) | Limitations for `submit-pull-request-review` (event types, own-PR restriction) |
-| [gh-aw-fragments/safe-output-push-to-pr.md](../.github/workflows/gh-aw-fragments/safe-output-push-to-pr.md) | Limitations for `push-to-pull-request-branch` (patch size, fork restriction) |
-| [gh-aw-fragments/safe-output-resolve-thread.md](../.github/workflows/gh-aw-fragments/safe-output-resolve-thread.md) | Limitations for `resolve-pull-request-review-thread` (thread ID format) |
-| [gh-aw-fragments/safe-output-create-issue.md](../.github/workflows/gh-aw-fragments/safe-output-create-issue.md) | Limitations for `create-issue` (title, labels, assignees) |
-| [gh-aw-fragments/safe-output-create-pr.md](../.github/workflows/gh-aw-fragments/safe-output-create-pr.md) | Limitations for `create-pull-request` (patch files/size, title) |
+| [gh-aw-fragments/elastic-tools.md](gh-aw-fragments/elastic-tools.md) | Elastic MCP servers (`agents-md-generator`, `public-code-search`) and their network entries |
+| [gh-aw-fragments/formatting.md](gh-aw-fragments/formatting.md) | Response formatting rules |
+| [gh-aw-fragments/rigor.md](gh-aw-fragments/rigor.md) | Accuracy & evidence standards |
+| [gh-aw-fragments/mcp-pagination.md](gh-aw-fragments/mcp-pagination.md) | MCP token limit guidance and pagination patterns |
+| [gh-aw-fragments/safe-output-add-comment.md](gh-aw-fragments/safe-output-add-comment.md) | Limitations for `add-comment` (body length, mentions, links) |
+| [gh-aw-fragments/safe-output-review-comment.md](gh-aw-fragments/safe-output-review-comment.md) | Limitations for `create-pull-request-review-comment` (required fields, line rules) |
+| [gh-aw-fragments/safe-output-submit-review.md](gh-aw-fragments/safe-output-submit-review.md) | Limitations for `submit-pull-request-review` (event types, own-PR restriction) |
+| [gh-aw-fragments/safe-output-push-to-pr.md](gh-aw-fragments/safe-output-push-to-pr.md) | Limitations for `push-to-pull-request-branch` (patch size, fork restriction) |
+| [gh-aw-fragments/safe-output-resolve-thread.md](gh-aw-fragments/safe-output-resolve-thread.md) | Limitations for `resolve-pull-request-review-thread` (thread ID format) |
+| [gh-aw-fragments/safe-output-create-issue.md](gh-aw-fragments/safe-output-create-issue.md) | Limitations for `create-issue` (title, labels, assignees) |
+| [gh-aw-fragments/safe-output-create-pr.md](gh-aw-fragments/safe-output-create-pr.md) | Limitations for `create-pull-request` (patch files/size, title) |
 
 ### Import rules
 
@@ -103,14 +102,11 @@ Fragments live in `.github/workflows/gh-aw-fragments/` as real files (not symlin
 
 ### How compilation works
 
-The `gh-aw` compiler processes `.md` files in `.github/workflows/`. Shims are authored in `gh-agent-workflows/` and copied into `.github/workflows/` by `make sync` (which runs `scripts/dogfood.sh`). Prompts and fragments live directly in `.github/workflows/gh-aw-workflows/` and `.github/workflows/gh-aw-fragments/`.
+The `gh-aw` compiler processes `.md` files in `.github/workflows/`. `make sync` (which runs `scripts/dogfood.sh`) copies shims from `gh-agent-workflows/` and ensures the `gh-aw-fragments` symlink is real (see `core.symlinks` note below). Prompts live directly in `.github/workflows/gh-aw-workflows/`.
 
 ```
 .github/workflows/
-├── gh-aw-fragments/              # shared fragments
-│   ├── elastic-tools.md
-│   ├── formatting.md
-│   └── ...
+├── gh-aw-fragments -> ../../gh-agent-workflows/gh-aw-fragments  # symlink
 ├── gh-aw-workflows/              # prompts
 │   ├── pr-review-rwx.md
 │   ├── scheduled-report-rwx.md
@@ -126,9 +122,11 @@ The `gh-aw` compiler processes `.md` files in `.github/workflows/`. Shims are au
 
 Copied shim files are committed to the repo so that remote compilation and `gh aw add` work. Each copy has a `# DO NOT EDIT` header comment identifying the canonical source.
 
+> **Note:** This repo has `core.symlinks=false`, so git checks out the `gh-aw-fragments` symlink as a text file. `scripts/dogfood.sh` (run by `make sync` / `make compile`) converts it to a real symlink.
+
 ### Editing workflows
 
-1. Edit shims in `gh-agent-workflows/`, prompts in `.github/workflows/gh-aw-workflows/`, or fragments in `.github/workflows/gh-aw-fragments/`
+1. Edit shims in `gh-agent-workflows/`, prompts in `.github/workflows/gh-aw-workflows/`, or fragments in `gh-agent-workflows/gh-aw-fragments/`
 2. Run `make compile` (syncs copies, then compiles)
 3. Verify 0 errors, 0 warnings
 4. Commit all source files, copied files, and generated `.lock.yml` files

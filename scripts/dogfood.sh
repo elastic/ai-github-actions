@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-# Copy shim workflows into .github/workflows/ for local compilation.
+# Prepare .github/workflows/ for local compilation.
 #
-# The gh-aw compiler processes .md files in .github/workflows/. Shims are
-# authored in gh-agent-workflows/ and this script copies them into place.
-# Prompts (gh-aw-workflows/) and fragments (gh-aw-fragments/) already live
-# in .github/workflows/ as real files — no copying needed.
+# The gh-aw compiler processes .md files in .github/workflows/. This script:
+#   1. Copies shim .md files from gh-agent-workflows/ into .github/workflows/
+#   2. Ensures the gh-aw-fragments symlink is a real symlink (core.symlinks=false workaround)
+#
+# Prompts (gh-aw-workflows/) live in .github/workflows/ as real files.
+# Fragments (gh-aw-fragments/) live in gh-agent-workflows/ and are symlinked
+# into .github/workflows/.
 #
 # Usage:
 #   ./scripts/dogfood.sh
@@ -26,6 +29,18 @@ copy_with_header() {
   } > "$dest"
 }
 
+# Ensure a path is a real symlink (core.symlinks=false checks out symlinks as text files).
+# Usage: ensure_symlink <path> <target>
+ensure_symlink() {
+  local path="$1" target="$2"
+  if [ -L "$path" ]; then
+    return
+  fi
+  rm -rf "$path"
+  ln -s "$target" "$path"
+  echo "  ✓ $path → $target"
+}
+
 echo "Syncing workflow files..."
 
 # Copy shims from gh-agent-workflows/ → .github/workflows/
@@ -35,5 +50,8 @@ for f in gh-agent-workflows/*.md; do
   copy_with_header "$f" ".github/workflows/$name" "gh-agent-workflows/$name"
   echo "  ✓ gh-agent-workflows/$name → .github/workflows/$name"
 done
+
+# Ensure symlinks are real (git with core.symlinks=false checks them out as text files)
+ensure_symlink .github/workflows/gh-aw-fragments ../../gh-agent-workflows/gh-aw-fragments
 
 echo "✓ Sync complete"
