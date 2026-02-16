@@ -18,13 +18,25 @@ jobs:
     name: Install and compile all workflows
     runs-on: ubuntu-latest
     steps:
+      - name: Upgrade gh CLI
+        run: |
+          gh --version
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gh
+          gh --version
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: "1.25"
+          cache: false
 
-      - name: Install gh-aw
-        run: go install github.com/github/gh-aw/cmd/gh-aw@v0.45.0
+      - name: Install gh-aw extension
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh extension install github/gh-aw
+          gh aw version
 
       - name: Create a fresh repo
         run: |
@@ -52,44 +64,41 @@ jobs:
             agent-efficiency
           )
 
-          REF="${{ github.sha }}"
+          REF="${GITHUB_SHA}"
+          FAILED=0
+
           for wf in "${WORKFLOWS[@]}"; do
-            echo "::group::Installing $wf"
-            gh-aw add "elastic/ai-github-actions/gh-agent-workflows/${wf}.md@${REF}"
-            echo "::endgroup::"
+            echo "::group::Installing ${wf}"
+            if gh aw add "elastic/ai-github-actions/gh-agent-workflows/${wf}.md@${REF}" --non-interactive; then
+              echo "::endgroup::"
+            else
+              echo "::endgroup::"
+              echo "::error::Failed to install ${wf}"
+              FAILED=$((FAILED + 1))
+            fi
           done
 
           echo ""
-          echo "Installed shims:"
+          echo "=== Installed shims ==="
           ls -la .github/workflows/*.md
+          echo ""
+          echo "=== Compiled lock files ==="
+          ls -lh .github/workflows/*.lock.yml
 
-      - name: Compile all workflows
-        working-directory: /tmp/test-repo
-        run: |
-          set -euo pipefail
-          echo "::group::gh-aw compile"
-          gh-aw compile 2>&1 | tee /tmp/compile-output.txt
-          echo "::endgroup::"
-
-          # Fail on compiler errors (warnings are ok)
-          if grep -q "error(s)" /tmp/compile-output.txt; then
-            ERRORS=$(grep -oP '\d+ error' /tmp/compile-output.txt | grep -oP '^\d+')
-            if [ "$ERRORS" != "0" ]; then
-              echo "::error::Compilation produced $ERRORS error(s)"
-              exit 1
-            fi
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::error::${FAILED} workflow(s) failed to install"
+            exit 1
           fi
 
-      - name: Verify lock files were generated
+      - name: Verify lock files
         working-directory: /tmp/test-repo
         run: |
           set -euo pipefail
-          SHIMS=$(find .github/workflows -name "*.md" ! -name "*.lock.*" | wc -l | tr -d ' ')
-          LOCKS=$(find .github/workflows -name "*.lock.yml" | wc -l | tr -d ' ')
+          SHIMS=$(find .github/workflows -maxdepth 1 -name "*.md" | wc -l | tr -d ' ')
+          LOCKS=$(find .github/workflows -maxdepth 1 -name "*.lock.yml" | wc -l | tr -d ' ')
 
-          echo "Shims: $SHIMS"
-          echo "Lock files: $LOCKS"
-          echo ""
+          echo "Shims: ${SHIMS}"
+          echo "Lock files: ${LOCKS}"
 
           if [ "$LOCKS" -eq 0 ]; then
             echo "::error::No lock files generated"
@@ -97,15 +106,14 @@ jobs:
           fi
 
           if [ "$LOCKS" -ne "$SHIMS" ]; then
-            echo "::warning::Shim count ($SHIMS) != lock file count ($LOCKS)"
+            echo "::error::Shim count (${SHIMS}) does not match lock file count (${LOCKS})"
             echo ""
             echo "Shims:"
-            find .github/workflows -name "*.md" ! -name "*.lock.*" | sort
+            find .github/workflows -maxdepth 1 -name "*.md" | sort
             echo ""
             echo "Lock files:"
-            find .github/workflows -name "*.lock.yml" | sort
+            find .github/workflows -maxdepth 1 -name "*.lock.yml" | sort
+            exit 1
           fi
 
-          echo ""
-          echo "All lock files:"
-          ls -lh .github/workflows/*.lock.yml
+          echo "All ${SHIMS} workflows installed and compiled successfully."
