@@ -7,7 +7,7 @@ AI-powered GitHub workflows for Elastic repositories.
 [GitHub Agentic Workflows](https://github.com/github/gh-aw) with safe-output guardrails. Engine and model are configurable per workflow.
 
 ```bash
-gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review
+gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review.md
 gh aw compile
 ```
 
