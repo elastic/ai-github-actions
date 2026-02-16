@@ -3,11 +3,10 @@
 #
 # The gh-aw compiler processes .md files in .github/workflows/. This script:
 #   1. Copies shim .md files from gh-agent-workflows/ into .github/workflows/
-#   2. Ensures the gh-aw-fragments symlink is a real symlink (core.symlinks=false workaround)
+#   2. Ensures gh-aw-workflows and gh-aw-fragments symlinks are real (core.symlinks=false workaround)
 #
-# Prompts (gh-aw-workflows/) live in .github/workflows/ as real files.
-# Fragments (gh-aw-fragments/) live in gh-agent-workflows/ and are symlinked
-# into .github/workflows/.
+# Prompts (gh-aw-workflows/) and fragments (gh-aw-fragments/) live in
+# gh-agent-workflows/ and are symlinked into .github/workflows/.
 #
 # Usage:
 #   ./scripts/dogfood.sh
@@ -53,5 +52,6 @@ done
 
 # Ensure symlinks are real (git with core.symlinks=false checks them out as text files)
 ensure_symlink .github/workflows/gh-aw-fragments ../../gh-agent-workflows/gh-aw-fragments
+ensure_symlink .github/workflows/gh-aw-workflows ../../gh-agent-workflows/gh-aw-workflows
 
 echo "✓ Sync complete"
