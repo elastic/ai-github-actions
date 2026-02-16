@@ -4,7 +4,7 @@ imports:
   - gh-aw-workflows/issue-triage-rwx.md
 engine:
   id: copilot
-  model: gpt-5.3-codex
+  model: gpt-5.2-codex
 on:
   issues:
     types: [opened]
