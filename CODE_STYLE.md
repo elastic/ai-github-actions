@@ -1,6 +1,6 @@
 # Code Style
 
-Patterns and conventions unique to this codebase.
+Patterns and conventions for the `claude-workflows/` composite actions in this codebase. GitHub Agent Workflows follow [gh-aw conventions](https://github.github.io/gh-aw/).
 
 ## Shared Scripts
 

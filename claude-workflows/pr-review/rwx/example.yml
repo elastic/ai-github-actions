@@ -11,7 +11,7 @@ on:
     types: [opened, synchronize]
 
 permissions:
-  contents: read
+  contents: read  # Prevents git push even with Bash access. See SECURITY.md.
   issues: read
   pull-requests: write
 
@@ -28,7 +28,7 @@ jobs:
       # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run Claude PR Review (Read-Write-Execute)
-        uses: elastic/ai-github-actions/workflows/pr-review/rwx@v0
+        uses: elastic/ai-github-actions/claude-workflows/pr-review/rwx@v0
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}

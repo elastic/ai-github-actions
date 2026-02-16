@@ -18,20 +18,44 @@
 - [gh-aw extension](https://github.com/github/gh-aw) installed: `gh extension install github/gh-aw`
 - Go 1.25+ installed (for compilation)
 
+## Secrets
+
+These workflows require a `COPILOT_GITHUB_TOKEN` secret with `public_repo` scope (or `repo` for private repositories). This token is used by the Copilot engine to:
+
+- Read repository files and metadata
+- Comment on issues and pull requests
+- Create pull requests (if configured)
+
+**Setup:**
+
+1. Generate a [personal access token](https://github.com/settings/tokens/new) with `public_repo` scope
+2. Add it as a repository secret named `COPILOT_GITHUB_TOKEN`
+3. Reference it in your workflow shim's frontmatter (see [gh-aw engine documentation](https://github.github.io/gh-aw/reference/engines/) for details)
+
+The default shims in this repository are already configured to use `COPILOT_GITHUB_TOKEN` from your repository secrets.
+
 ## Quick Start
 
-```bash
-# Install a workflow
-gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review
+1. **Install a workflow**
+   ```bash
+   gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review
+   ```
 
-# Compile to generate the lock file
-gh aw compile
+2. **Compile to generate the lock file**
+   ```bash
+   gh aw compile
+   ```
 
-# Commit both files
-git add .github/workflows/pr-review.md .github/workflows/pr-review.lock.yml
-git commit -m "Add PR review workflow"
-git push
-```
+3. **Set up secrets** — Add `COPILOT_GITHUB_TOKEN` to your repository secrets (see [Secrets](#secrets) section)
+
+4. **Commit and push**
+   ```bash
+   git add .github/workflows/pr-review.md .github/workflows/pr-review.lock.yml
+   git commit -m "Add PR review workflow"
+   git push
+   ```
+
+5. **Verify** — Open a test PR or trigger the workflow to confirm it works
 
 ## What Gets Installed
 

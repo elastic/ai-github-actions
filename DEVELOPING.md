@@ -13,7 +13,7 @@ Internal-only workflows (e.g., `gh-aw-upgrade-check.md`, `ci.yml`, `release.yml`
 ## Quick Start
 
 ```bash
-make setup            # install all dev tools
+make setup            # install actionlint, action-validator, gh CLI, gh-aw compiler
 make compile          # sync copies + compile to lock files
 make lint             # run all linters
 ```

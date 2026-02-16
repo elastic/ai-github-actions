@@ -98,7 +98,7 @@ jobs:
       # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run Claude Project Manager Review
-        uses: elastic/ai-github-actions/workflows/project-manager/ro@v0
+        uses: elastic/ai-github-actions/claude-workflows/project-manager/ro@v0
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
