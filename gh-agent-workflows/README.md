@@ -10,6 +10,7 @@
 | Issue Triage | `gh aw add elastic/ai-github-actions/gh-agent-workflows/issue-triage.md` | New issues |
 | Mention in Issue | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-issue.md` | `/ai` in issues |
 | Mention in PR | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-pr.md` | `/ai` in PRs |
+| PR Checks Fix | `gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-checks-fix.md` | Failed PR checks |
 | Docs Drift | `gh aw add elastic/ai-github-actions/gh-agent-workflows/docs-drift.md` | Weekday schedule |
 | Downstream Health | `gh aw add elastic/ai-github-actions/gh-agent-workflows/downstream-health.md` | Daily schedule |
 
