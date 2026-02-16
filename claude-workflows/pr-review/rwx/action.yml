@@ -80,6 +80,17 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.github-token }}
 
+    - name: Resolve bot identity
+      id: bot-identity
+      shell: bash
+      run: |
+        LOGIN=$(gh api user --jq '.login' 2>/dev/null) || \
+        LOGIN=$(gh api /app --jq '.slug + "[bot]"' 2>/dev/null) || \
+        LOGIN="github-actions[bot]"
+        echo "login=${LOGIN}" >> "$GITHUB_OUTPUT"
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+
     - name: Run Claude for PR Review (Read-Write-Execute)
       id: claude
       env:
@@ -90,6 +101,7 @@ runs:
         PR_REVIEW_COMMENTS_DIR: /tmp/pr-review-comments
         PR_REVIEW_HELPERS_DIR: ${{ github.action_path }}/../scripts
         PR_REVIEW_MIN_INLINE_SEVERITY: ${{ inputs.minimum-severity }}
+        PR_REVIEW_BOT_LOGIN: ${{ steps.bot-identity.outputs.login }}
       uses: elastic/ai-github-claude-code-action@working-forks
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}

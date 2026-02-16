@@ -17,6 +17,8 @@
 #   PR_REVIEW_COMMENTS_DIR        - Directory containing queued comment files (default: /tmp/pr-review-comments)
 #   PR_REVIEW_MIN_INLINE_SEVERITY - Minimum severity for inline comments (default: low)
 #                                   Issues below this go in a collapsible review body section.
+#   PR_REVIEW_BOT_LOGIN           - Login of the bot submitting reviews (e.g. github-actions[bot])
+#                                   Used to skip redundant reviews when verdict is unchanged.
 
 set -e
 
@@ -142,6 +144,21 @@ if [ "$TOTAL_COUNT" -gt 0 ]; then
     echo "Found ${TOTAL_COUNT} queued comment(s) (${NITPICK_COUNT} below '${MIN_INLINE_SEVERITY}' threshold, moved to review body)"
   else
     echo "Found ${TOTAL_COUNT} queued inline comment(s)"
+  fi
+fi
+
+# Skip if nothing new: no queued comments and verdict matches our own last review
+if [ "$TOTAL_COUNT" -eq 0 ] && [ -n "${PR_REVIEW_BOT_LOGIN:-}" ]; then
+  declare -A EVENT_TO_STATE=([APPROVE]="APPROVED" [REQUEST_CHANGES]="CHANGES_REQUESTED" [COMMENT]="COMMENTED")
+  EXPECTED_STATE="${EVENT_TO_STATE[$EVENT]}"
+
+  LAST_OWN_STATE=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/reviews" \
+    --jq --arg login "$PR_REVIEW_BOT_LOGIN" \
+    '[.[] | select(.user.login == $login)] | last | .state // empty')
+
+  if [ "$LAST_OWN_STATE" = "$EXPECTED_STATE" ]; then
+    echo "Skipping review — no new comments and verdict unchanged (${EVENT}, last ${PR_REVIEW_BOT_LOGIN} review was ${LAST_OWN_STATE})"
+    exit 0
   fi
 fi
 

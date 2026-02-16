@@ -61,6 +61,8 @@ Follow the **Code Review Reference** below — review each changed file one at a
 
 ### Step 3: Submit the Review
 
+**Skip if nothing new:** If you left zero inline comments during this review AND your verdict would be the same as the most recent review from this bot (compare against `get_reviews` from Step 1), call `noop` with a message like "No new findings — prior review still applies" and stop. Do not submit a redundant review.
+
 After reviewing ALL files and leaving inline comments, step back and consider the PR as a whole. Call **`submit_pull_request_review`** with:
 - The review type (REQUEST_CHANGES, COMMENT, or APPROVE)
 - A review body that is **only the verdict and only if the verdict is not APPROVE**. If you have cross-cutting feedback that spans multiple files or cannot be expressed as inline comments, include it here. Otherwise, leave the review body empty — your inline comments already contain the detail.
