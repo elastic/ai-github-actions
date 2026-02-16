@@ -1,0 +1,109 @@
+---
+name: Smoke Test — Install & Compile
+on:
+  schedule:
+    - cron: "0 6 * * *" # Daily at 06:00 UTC
+  push:
+    branches: [main]
+    paths:
+      - "gh-agent-workflows/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "gh-agent-workflows/**"
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    name: Install and compile all workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+
+      - name: Install gh-aw
+        run: go install github.com/github/gh-aw/cmd/gh-aw@v0.45.0
+
+      - name: Create a fresh repo
+        run: |
+          mkdir /tmp/test-repo && cd /tmp/test-repo
+          git init
+          git commit --allow-empty -m "init"
+
+      - name: Install every workflow
+        working-directory: /tmp/test-repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          WORKFLOWS=(
+            pr-review
+            issue-triage
+            mention-in-issue
+            mention-in-pr
+            docs-drift
+            downstream-health
+            stale-issues
+            agent-efficiency
+          )
+
+          REF="${{ github.sha }}"
+          for wf in "${WORKFLOWS[@]}"; do
+            echo "::group::Installing $wf"
+            gh-aw add "elastic/ai-github-actions/gh-agent-workflows/${wf}.md@${REF}"
+            echo "::endgroup::"
+          done
+
+          echo ""
+          echo "Installed shims:"
+          ls -la .github/workflows/*.md
+
+      - name: Compile all workflows
+        working-directory: /tmp/test-repo
+        run: |
+          set -euo pipefail
+          echo "::group::gh-aw compile"
+          gh-aw compile 2>&1 | tee /tmp/compile-output.txt
+          echo "::endgroup::"
+
+          # Fail on compiler errors (warnings are ok)
+          if grep -q "error(s)" /tmp/compile-output.txt; then
+            ERRORS=$(grep -oP '\d+ error' /tmp/compile-output.txt | grep -oP '^\d+')
+            if [ "$ERRORS" != "0" ]; then
+              echo "::error::Compilation produced $ERRORS error(s)"
+              exit 1
+            fi
+          fi
+
+      - name: Verify lock files were generated
+        working-directory: /tmp/test-repo
+        run: |
+          set -euo pipefail
+          SHIMS=$(find .github/workflows -name "*.md" ! -name "*.lock.*" | wc -l | tr -d ' ')
+          LOCKS=$(find .github/workflows -name "*.lock.yml" | wc -l | tr -d ' ')
+
+          echo "Shims: $SHIMS"
+          echo "Lock files: $LOCKS"
+          echo ""
+
+          if [ "$LOCKS" -eq 0 ]; then
+            echo "::error::No lock files generated"
+            exit 1
+          fi
+
+          if [ "$LOCKS" -ne "$SHIMS" ]; then
+            echo "::warning::Shim count ($SHIMS) != lock file count ($LOCKS)"
+            echo ""
+            echo "Shims:"
+            find .github/workflows -name "*.md" ! -name "*.lock.*" | sort
+            echo ""
+            echo "Lock files:"
+            find .github/workflows -name "*.lock.yml" | sort
+          fi
+
+          echo ""
+          echo "All lock files:"
+          ls -lh .github/workflows/*.lock.yml
