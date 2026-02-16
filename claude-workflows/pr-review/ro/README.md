@@ -33,7 +33,8 @@ See [example.yml](example.yml) for a complete workflow example.
 | `allowed-tools` | Allowed tools (read-only, includes PR review scripts) | No | See action.yml for full default list |
 | `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
-| `signal-level` | Signal/noise level for review aggressiveness (`conservative`, `balanced`, `aggressive`) | No | `balanced` |
+| `intensity` | Review intensity (`conservative`, `balanced`, `aggressive`) | No | `balanced` |
+| `minimum-severity` | Minimum severity for inline comments (`critical`, `high`, `medium`, `low`, `nitpick`) | No | `low` |
 | `track-progress` | Track progress with visual indicators | No | `false` |
 | `mcp-servers` | MCP server configuration JSON | No | See main README for MCP Servers |
 
