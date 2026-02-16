@@ -1,4 +1,5 @@
 ---
+# DO NOT EDIT — this is a synced copy. Source: gh-agent-workflows/small-problem-fixer.md
 description: "Find small, related issues and open a focused PR"
 imports:
   - gh-aw-workflows/small-problem-fixer-rwxp.md
