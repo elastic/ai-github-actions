@@ -42,7 +42,7 @@ All customization is done in the shim file (`.github/workflows/<name>.md`). Edit
 
 ### Change the AI engine or model
 
-The default is Copilot with GPT-5.3-Codex. Override in the shim's frontmatter:
+The default is Copilot with gpt-5.2-codex. Override in the shim's frontmatter:
 
 ```yaml
 engine:
