@@ -44,6 +44,11 @@ inputs:
     required: false
     default: ""
 
+  signal-level:
+    description: "Signal/noise level for review aggressiveness (conservative|balanced|aggressive)"
+    required: false
+    default: "balanced"
+
   track-progress:
     description: "Whether Claude should track progress with visual indicators"
     required: false
@@ -120,6 +125,17 @@ runs:
           **Important**: You can make local code changes to verify your recommendations work, but you cannot push those changes.
           Your feedback is provided via GitHub PR review comments. Local changes are for verification/testing only.
           </constraints>
+
+          <signal_noise>
+          Signal/noise level: ${{ inputs.signal-level }}
+
+          Use this setting to bias review intensity:
+          - conservative: Comment only on high-confidence issues (generally critical/high). Skip medium/low unless impact is clear.
+          - balanced (default): Comment on critical/high and well-supported medium issues; avoid speculative low findings.
+          - aggressive: Surface potential medium/low issues when evidence exists; still avoid pure speculation and duplicates.
+
+          If the value is unrecognized, treat it as balanced.
+          </signal_noise>
 
           <allowed_tools>
           You have access to the following tools (comma-separated list):

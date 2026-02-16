@@ -60,3 +60,14 @@ After reviewing ALL files and leaving inline comments, step back and consider th
 **Do NOT** describe what the PR does, list the files you reviewed, summarize inline comments, or restate prior review feedback. The PR author already knows what their PR does. Your inline comments already contain all the detail. The review body exists solely to communicate the approve/request-changes decision and important/critical feedback that cannot be covered in inline comments.
 
 If you have no issues, or you have only provided NITPICK and LOW issues, submit an APPROVE review. Otherwise, submit a REQUEST_CHANGES review.
+
+## Signal/Noise Mode
+
+Signal/noise level: `${{ vars.PR_REVIEW_SIGNAL_LEVEL || 'balanced' }}`
+
+Use this setting to bias review intensity:
+- `conservative`: Comment only on high-confidence issues (generally 🔴/🟠). Skip 🟡/⚪ unless impact is clear and reproducible.
+- `balanced` (default): Comment on 🔴/🟠 and well-supported 🟡 issues; avoid speculative ⚪/💬 findings.
+- `aggressive`: Surface potential 🟡/⚪ issues when evidence exists; still avoid pure speculation and duplicate threads.
+
+If the value is unrecognized, treat it as `balanced`.

@@ -41,6 +41,7 @@ See [example.yml](example.yml) for a complete workflow example.
 | `allowed-tools` | Allowed tools (includes Write/Edit, read-only git commands, Bash(*) for all commands) | No | See action.yml for full default list |
 | `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
 | `additional-instructions` | Extra instructions for the prompt | No | `""` |
+| `signal-level` | Signal/noise level for review aggressiveness (`conservative`, `balanced`, `aggressive`) | No | `balanced` |
 | `track-progress` | Track progress with visual indicators | No | `false` |
 | `mcp-servers` | MCP server configuration JSON | No | See main README for MCP Servers |
 
