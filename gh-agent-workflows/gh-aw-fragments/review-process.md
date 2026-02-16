@@ -9,8 +9,12 @@ Fetch changed files with `pull_request_read` method `get_files` using `per_page:
 1. **Read the patch** to understand what changed.
 2. **Read the full file from the workspace.** The PR branch is checked out locally — open the file directly to get complete contents with line numbers. This lets you understand context, verify issues aren't handled elsewhere, and determine exact line numbers.
 3. **Identify issues** matching the review criteria below.
-4. **Thoroughly investigate** — trace the code path to confirm the problem would actually occur at runtime and that the issue is not a false positive.
-5. **Leave inline comments NOW** — call `create_pull_request_review_comment` for every issue in this file before moving on. Do not batch comments across files.
+4. **Verify each issue** before commenting — work through these steps for every potential finding:
+   1. What specific code pattern or change triggers this concern?
+   2. Read the surrounding context — is this handled elsewhere in the file, caller, or framework?
+   3. Construct a concrete failure scenario — what specific input or state causes the bug? If you cannot describe one, stop — do not flag.
+   4. Challenge your own finding — would a senior engineer familiar with this codebase agree this is a real issue? If "probably not" or "unsure", stop — do not flag.
+5. **Leave inline comments NOW** — call `create_pull_request_review_comment` for every verified issue in this file before moving on. Do not batch comments across files.
 
 **Repeat for the next file.** After all files in the page, fetch `page: 2` and continue until all changed files are reviewed.
 
@@ -34,34 +38,6 @@ corrected code here
 
 Only include a `suggestion` block when you can provide a concrete code fix that **actually changes** the code. If the fix requires structural changes, describe the fix in prose instead — never include a suggestion identical to the original line.
 
-### What NOT to Flag
-
-- Issues in unchanged code (only review the diff)
-- Style preferences handled by linters or formatters
-- Pre-existing issues not introduced by this PR
-- Issues already covered by existing review threads — see rules below
-
-### Existing Thread Rules
-
-Check BEFORE leaving any comment:
-
-- **Resolved with reviewer reply** (e.g. "This is intentional") — reviewer's decision is final. Do NOT re-flag.
-- **Resolved without reply** — author likely fixed it. Do NOT re-raise unless the fix introduced a new problem.
-- **Unresolved** — already flagged. Do NOT duplicate.
-- **Outdated** — only re-flag if the issue still applies to the current diff.
-
-When in doubt, do not duplicate. Redundant comments erode trust.
-
-**Before flagging any issue, verify it against the actual code.**
-
-### Severity Classification
-
-- 🔴 **CRITICAL** — Must fix before merge (security vulnerabilities, data corruption, production-breaking bugs)
-- 🟠 **HIGH** — Should fix before merge (logic errors, missing validation, significant performance issues)
-- 🟡 **MEDIUM** — Address soon, non-blocking (error handling gaps, suboptimal patterns, missing edge cases)
-- ⚪ **LOW** — Author discretion (minor improvements, documentation gaps)
-- 💬 **NITPICK** — Truly optional (stylistic preferences, alternative approaches)
-
 ### Review Criteria
 
 Focus on these categories in priority order:
@@ -73,3 +49,38 @@ Focus on these categories in priority order:
 5. Error handling gaps (unhandled exceptions, missing validation)
 6. Breaking changes to public APIs without migration path
 7. Missing or incorrect test coverage for critical paths
+
+### What NOT to Flag
+
+Only review the diff — do not flag issues in unchanged code, pre-existing problems not introduced by this PR, or style preferences handled by linters or formatters.
+
+**Common false positives** — these patterns look like issues but usually aren't. Before flagging anything in these categories, confirm the problem is real by reading the surrounding code:
+
+- **Security — input already sanitized:** Don't flag injection or XSS risks when inputs are sanitized upstream, parameterized queries are used, or the framework auto-escapes output.
+- **Null/undefined — guarded elsewhere:** Don't flag potential null dereferences if the value is guaranteed by a type guard, assertion, schema validation, or upstream null check.
+- **Error handling — handled at a different layer:** Don't flag missing try/catch if the caller, middleware, or framework catches and handles the error (e.g., Express error middleware, React error boundaries).
+- **Performance — theoretical, not practical:** Don't flag algorithmic complexity (e.g., O(n^2)) unless N is demonstrably large enough to matter in the actual usage context. "This could be slow" without evidence is not actionable.
+- **Validation — exists at another layer:** Don't flag missing input validation if it's handled by an API gateway, middleware, schema validator, or type system.
+- **Test coverage — trivial or generated code:** Don't flag missing tests for trivial getters/setters, auto-generated code, or simple delegation methods.
+- **Style or naming — not in coding guidelines:** Don't flag naming conventions or code style unless they violate the repository's documented coding guidelines (from `generate_agents_md` or CONTRIBUTING docs).
+
+**Existing review threads** — check BEFORE leaving any comment:
+
+- **Resolved with reviewer reply** (e.g. "This is intentional") — reviewer's decision is final. Do NOT re-flag.
+- **Resolved without reply** — author likely fixed it. Do NOT re-raise unless the fix introduced a new problem.
+- **Unresolved** — already flagged. Do NOT duplicate.
+- **Outdated** — only re-flag if the issue still applies to the current diff.
+
+When in doubt, do not duplicate. Redundant comments erode trust.
+
+Finding no issues is a valid and valuable outcome. An APPROVE with zero inline comments is better than comments that waste the author's time or erode trust. Do not manufacture findings to justify your review — if the code is sound, approve without comments.
+
+### Severity Classification
+
+Determine severity AFTER investigating the issue, not before. First identify the problem and trace through the code, then assign a severity based on the evidence you found. Do not start with a severity and look for issues to match it.
+
+- 🔴 **CRITICAL** — Must fix before merge (security vulnerabilities, data corruption, production-breaking bugs)
+- 🟠 **HIGH** — Should fix before merge (logic errors, missing validation, significant performance issues)
+- 🟡 **MEDIUM** — Address soon, non-blocking (error handling gaps, suboptimal patterns, missing edge cases)
+- ⚪ **LOW** — Author discretion (minor improvements, documentation gaps)
+- 💬 **NITPICK** — Truly optional (stylistic preferences, alternative approaches)

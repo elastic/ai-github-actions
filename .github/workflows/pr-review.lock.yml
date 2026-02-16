@@ -29,13 +29,14 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/review-examples.md
 #     - gh-aw-fragments/review-process.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-review-comment.md
 #     - gh-aw-fragments/safe-output-submit-review.md
 #     - gh-aw-workflows/pr-review-rwx.md
 #
-# frontmatter-hash: 8857b277c8311474e779b715e0b42add4a2892f9d7d0cc88dd62b988d09fdcb8
+# frontmatter-hash: b9c4d9651cbe49674cc4f57ea1904e5087b93bba20fb1000c705df23b74e0665
 
 name: "Pr Review"
 "on":
@@ -649,6 +650,9 @@ jobs:
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-fragments/review-process.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/gh-aw-fragments/review-examples.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-fragments/messages-footer.md}}

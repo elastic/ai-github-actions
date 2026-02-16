@@ -6,6 +6,7 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/review-process.md
+  - gh-aw-fragments/review-examples.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
@@ -65,9 +66,8 @@ If you have no issues, or you have only provided NITPICK and LOW issues, submit 
 
 Signal/noise level: `${{ vars.PR_REVIEW_SIGNAL_LEVEL || 'balanced' }}`
 
-Use this setting to bias review intensity:
-- `conservative`: Comment only on high-confidence issues (generally 🔴/🟠). Skip 🟡/⚪ unless impact is clear and reproducible.
-- `balanced` (default): Comment on 🔴/🟠 and well-supported 🟡 issues; avoid speculative ⚪/💬 findings.
-- `aggressive`: Surface potential 🟡/⚪ issues when evidence exists; still avoid pure speculation and duplicate threads.
+- **`conservative`**: High evidence bar. Only comment when you can demonstrate a concrete failure scenario — what specific input or state triggers the bug. After identifying a potential issue, explicitly challenge your own finding: if you can construct a reasonable counterargument, do not comment. Give the author maximum benefit of the doubt. Approval with zero comments is the expected outcome for most PRs.
+- **`balanced`** (default): Standard evidence bar. Comment when you can point to specific code that would fail and have verified the issue through the full verification protocol. Give the author reasonable benefit of the doubt — if the issue is ambiguous, lean toward not commenting.
+- **`aggressive`**: Lower evidence bar. Comment when evidence exists even if the failure scenario is not fully confirmed. Improvement suggestions and alternative approaches are welcome but must still cite specific code. Do not speculate without any evidence, and do not duplicate existing threads.
 
 If the value is unrecognized, treat it as `balanced`.
