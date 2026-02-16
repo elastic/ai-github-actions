@@ -28,11 +28,12 @@
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
+#     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-workflows/scheduled-report-rwx.md
 #
-# frontmatter-hash: 529cfc00e064f6f453aa587f341b2da8ba09e7f8ce4332006014ac23de31d965
+# frontmatter-hash: ac28df54a9aa5ea314869b8e09fed5f4c2e676a331049bc257b68e05b1533e3e
 
 name: "Downstream Health"
 "on":
@@ -600,6 +601,9 @@ jobs:
           {{#runtime-import .github/workflows/gh-aw-fragments/mcp-pagination.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/gh-aw-fragments/messages-footer.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-fragments/safe-output-create-issue.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
@@ -882,6 +886,7 @@ jobs:
           GH_AW_WORKFLOW_ID: "downstream-health"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.\"}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1020,6 +1025,7 @@ jobs:
     env:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
+      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.\"}"
       GH_AW_WORKFLOW_ID: "downstream-health"
       GH_AW_WORKFLOW_NAME: "Downstream Health"
     outputs:

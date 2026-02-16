@@ -28,6 +28,8 @@
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
+#     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/review-process.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-add-comment.md
 #     - gh-aw-fragments/safe-output-push-to-pr.md
@@ -36,7 +38,7 @@
 #     - gh-aw-fragments/safe-output-submit-review.md
 #     - gh-aw-workflows/mention-in-pr-rwxp.md
 #
-# frontmatter-hash: 9623258d4895b78611258e6fd035e4d6d09fe2c97bb62e1f2efc99e6ea857d2a
+# frontmatter-hash: edc2e81285d9c44a992d196938b045440bbbc548293560e86ffa4fbb24f29c93
 
 name: "Mention In Pr"
 "on":
@@ -778,6 +780,12 @@ jobs:
           {{#runtime-import .github/workflows/gh-aw-fragments/mcp-pagination.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/gh-aw-fragments/review-process.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/gh-aw-fragments/messages-footer.md}}
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-fragments/safe-output-add-comment.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
@@ -1078,6 +1086,7 @@ jobs:
           GH_AW_WORKFLOW_ID: "mention-in-pr"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.\"}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1274,6 +1283,7 @@ jobs:
     env:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
+      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.\"}"
       GH_AW_WORKFLOW_ID: "mention-in-pr"
       GH_AW_WORKFLOW_NAME: "Mention In Pr"
     outputs:

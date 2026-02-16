@@ -5,6 +5,7 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
+  - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment.md
 tools:
   github:
@@ -28,10 +29,7 @@ Triage new issues in ${{ github.repository }} and provide actionable analysis wi
 
 ## Constraints
 
-- **CAN**: Read files, search code, run tests and commands, write temporary files locally, comment on the issue
-- **CANNOT**: Commit code, push changes, create branches, create pull requests
-
-This workflow is for investigation and planning. Local file changes are for verification only and will not be persisted.
+This workflow is for investigation and planning only. You can read files, search code, run tests and commands, and write temporary files locally — but your only output is a comment on the issue. Local file changes are for verification only and will not be persisted.
 
 ## Triage Process
 
