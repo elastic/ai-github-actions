@@ -9,7 +9,7 @@ on:
     types: [completed]
 
 permissions:
-  contents: read
+  contents: read  # Prevents git push even with Bash access. See SECURITY.md.
   actions: read
   issues: write
   pull-requests: write
@@ -30,7 +30,7 @@ jobs:
       # Place environment setup commands here (e.g., install dependencies, configure tools)
 
       - name: Run Claude Build Failure Analysis
-        uses: elastic/ai-github-actions/workflows/build-failure-buildkite/rwx@v0
+        uses: elastic/ai-github-actions/claude-workflows/build-failure-buildkite/rwx@v0
         with:
           claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github-token: ${{ github.token }}
