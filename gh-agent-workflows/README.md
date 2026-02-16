@@ -6,12 +6,18 @@
 
 | Workflow | Install command | Trigger |
 | --- | --- | --- |
-| PR Review | `gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review` | PR opened/updated |
-| Issue Triage | `gh aw add elastic/ai-github-actions/gh-agent-workflows/issue-triage` | New issues |
-| Mention in Issue | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-issue` | `/ai` in issues |
-| Mention in PR | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-pr` | `/ai` in PRs |
-| Docs Drift | `gh aw add elastic/ai-github-actions/gh-agent-workflows/docs-drift` | Weekday schedule |
-| Downstream Health | `gh aw add elastic/ai-github-actions/gh-agent-workflows/downstream-health` | Daily schedule |
+| PR Review | `gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review.md` | PR opened/updated |
+| Issue Triage | `gh aw add elastic/ai-github-actions/gh-agent-workflows/issue-triage.md` | New issues |
+| Mention in Issue | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-issue.md` | `/ai` in issues |
+| Mention in PR | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-pr.md` | `/ai` in PRs |
+| Docs Drift | `gh aw add elastic/ai-github-actions/gh-agent-workflows/docs-drift.md` | Weekday schedule |
+| Downstream Health | `gh aw add elastic/ai-github-actions/gh-agent-workflows/downstream-health.md` | Daily schedule |
+
+## Prerequisites
+
+- [GitHub CLI](https://cli.github.com/) installed
+- [gh-aw extension](https://github.com/github/gh-aw) installed: `gh extension install github/gh-aw`
+- Go 1.25+ installed (for compilation)
 
 ## Quick Start
 
@@ -19,7 +25,7 @@
 
 ```bash
 # Install a workflow
-gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review
+gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review.md
 
 # Compile to generate the lock file
 gh aw compile
