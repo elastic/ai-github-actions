@@ -18,6 +18,7 @@ gh aw compile
 | Mention in Issue | `/ai` command | Answer questions, debug, create PRs |
 | Mention in PR | `/ai` command | Review, fix code, push changes |
 | PR Checks Fix | Failed PR checks | Analyze failures and optionally push fixes |
+| Small Problem Fixer | Weekday schedule | Fix a small, related issue set and open a focused PR |
 | Docs Drift | Weekday schedule | Detect code changes needing doc updates |
 
 See **[gh-agent-workflows/](gh-agent-workflows/)** for install commands, customization, and updating.
