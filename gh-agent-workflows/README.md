@@ -13,6 +13,7 @@
 | PR Checks Fix | `gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-checks-fix.md` | Failed PR checks |
 | Docs Drift | `gh aw add elastic/ai-github-actions/gh-agent-workflows/docs-drift.md` | Weekday schedule |
 | Downstream Health | `gh aw add elastic/ai-github-actions/gh-agent-workflows/downstream-health.md` | Daily schedule |
+| Breaking Change Detect | `gh aw add elastic/ai-github-actions/gh-agent-workflows/breaking-change-detect.md` | Weekday schedule |
 
 ## Prerequisites
 
