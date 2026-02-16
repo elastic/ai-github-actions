@@ -1,0 +1,54 @@
+#
+# Composite Action for minimizing resolved review threads
+#
+# Usage:
+#   - uses: elastic/ai-github-actions/claude-workflows/minimize-resolved-threads@v0
+#     with:
+#       github-token: ${{ github.token }}
+#
+name: "Minimize Resolved Review Threads"
+description: "Minimize resolved PR review threads authored by specified users"
+author: "Elastic"
+
+branding:
+  icon: "message-square"
+  color: "purple"
+
+inputs:
+  github-token:
+    description: "GitHub token with permission to minimize review threads"
+    required: true
+
+  repository:
+    description: "Repository in owner/repo format"
+    required: false
+    default: ${{ github.repository }}
+
+  pull-request-number:
+    description: "Pull request number"
+    required: false
+    default: ${{ github.event.pull_request.number }}
+
+  author-logins:
+    description: "Comma-separated list of comment author logins to minimize (e.g. github-actions[bot])"
+    required: false
+    default: "github-actions[bot]"
+
+  dry-run:
+    description: "If true, report matching threads without minimizing"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Minimize resolved review threads
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        MINIMIZE_REVIEW_REPO: ${{ inputs.repository }}
+        MINIMIZE_REVIEW_PR_NUMBER: ${{ inputs.pull-request-number }}
+        MINIMIZE_REVIEW_AUTHOR_LOGINS: ${{ inputs.author-logins }}
+        MINIMIZE_REVIEW_DRY_RUN: ${{ inputs.dry-run }}
+      run: |
+        "${{ github.action_path }}/scripts/minimize-resolved-threads.sh"

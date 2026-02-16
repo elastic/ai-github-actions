@@ -23,6 +23,11 @@ inputs:
     description: "GitHub token for Claude to operate with"
     required: true
 
+  minimize-resolved-threads:
+    description: "Minimize resolved review threads authored by github-actions[bot]"
+    required: false
+    default: "false"
+
   model:
     description: "Model to use for Claude"
     required: false
@@ -237,3 +242,11 @@ runs:
           ${{ format('--allowedTools {0}{1}', inputs.allowed-tools, inputs.extra-allowed-tools != '' && format(',{0}', inputs.extra-allowed-tools) || '') }}
           --mcp-config '${{ inputs.mcp-servers }}'
           --model ${{ inputs.model }}
+
+    - name: Minimize resolved review threads
+      if: ${{ inputs.minimize-resolved-threads == 'true' }}
+      uses: elastic/ai-github-actions/claude-workflows/minimize-resolved-threads@v0
+      with:
+        github-token: ${{ inputs.github-token }}
+        repository: ${{ github.repository }}
+        pull-request-number: ${{ github.event.pull_request.number }}

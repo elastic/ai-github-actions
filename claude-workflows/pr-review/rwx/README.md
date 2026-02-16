@@ -37,6 +37,7 @@ See [example.yml](example.yml) for a complete workflow example.
 |-------|-------------|----------|---------|
 | `claude-oauth-token` | Claude OAuth token | Yes | - |
 | `github-token` | GitHub token for Claude | Yes | - |
+| `minimize-resolved-threads` | Minimize resolved review threads authored by `github-actions[bot]` | No | `false` |
 | `model` | Model to use | No | `claude-opus-4-5-20251101` |
 | `allowed-tools` | Allowed tools (includes Write/Edit, read-only git commands, Bash(*) for all commands) | No | See action.yml for full default list |
 | `extra-allowed-tools` | Additional allowed tools (concatenated with allowed-tools) | No | `""` |
