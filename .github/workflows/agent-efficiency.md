@@ -5,7 +5,7 @@ imports:
   - gh-aw-workflows/scheduled-report-rwx.md
 engine:
   id: copilot
-  model: gpt-5.3-codex
+  model: gpt-5.2-codex
 on:
   schedule:
     - cron: "0 16 * * 1-5"
@@ -32,10 +32,7 @@ Analyze recent agent workflow run logs for inefficiencies, recurring errors, and
 
 ### Data Gathering
 
-Determine the lookback window based on the current day of the week:
-- **Monday**: Use 3 days to capture Friday, Saturday, and Sunday
-- **Tuesday through Friday**: Use 1 day to capture the previous day
-- **Manual trigger** (`workflow_dispatch`): Use 1 day
+Lookback 3 days.
 
 1. **List recent agentic workflow runs**
 
