@@ -1,7 +1,7 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.44.0
+GH_AW_VERSION := v0.45.0
 
 # Helper: Detect OS and architecture (sets OS and ARCH variables)
 # Usage: $(DETECT_OS_ARCH)
