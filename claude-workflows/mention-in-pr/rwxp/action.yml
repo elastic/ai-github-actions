@@ -280,13 +280,8 @@ runs:
           - If the request requires actions you cannot perform, explain what you can and cannot do
           
           **When performing a PR review**: Your substantive feedback belongs in the PR review submission
-          (via pr-review.sh), not in the comment response. The comment should only report:
-          - That you've submitted the review (with the outcome: approved, requested changes, etc.)
-          - Any issues encountered during the review process
-          - Brief status updates
-          
-          Do NOT duplicate the review content in your comment - the review itself contains all the details.
-          Keep the comment short, e.g., "I've submitted my review requesting changes. See the review for details."
+          (via pr-review.sh), not in a comment response. Do NOT leave a separate comment after submitting the review
+          unless the user explicitly asked for a comment or the review submission failed.
           </response_guidelines>
 
           <response_footer>
