@@ -26,7 +26,7 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Workflow Run**: ${{ github.event.workflow_run.name }} (#${{ github.event.workflow_run.id }})
+- **Workflow Run ID**: ${{ github.event.workflow_run.id }}
 - **Conclusion**: ${{ github.event.workflow_run.conclusion }}
 
 ## Constraints

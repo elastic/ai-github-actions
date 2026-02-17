@@ -10,7 +10,11 @@ engine:
   model: gpt-5.2-codex
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+# Skip draft PRs and allow opt-out with the skip-auto-pr-review label.
+if: >-
+  github.event.pull_request.draft == false &&
+  !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')
 concurrency:
   group: pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true

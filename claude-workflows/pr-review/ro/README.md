@@ -13,6 +13,17 @@ Review pull requests with read-only access. Provides feedback via comments with 
 
 See [example.yml](example.yml) for a complete workflow example.
 
+## Optional: Minimize resolved review threads
+
+To keep PR conversations focused, add the [minimize-resolved-pr-reviews](https://github.com/strawgate/minimize-resolved-pr-reviews) action after the PR review step. This requires `pull-requests: write` permissions and can be scoped to bots via `users`.
+
+````yaml
+- uses: strawgate/minimize-resolved-pr-reviews@v0
+  with:
+    github-token: ${{ github.token }}
+    # users: "github-actions"
+````
+
 ## Capabilities
 
 - ✅ Read and analyze code

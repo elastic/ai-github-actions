@@ -8,7 +8,7 @@ name: PR Review (Read-Write-Execute)
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
 
 permissions:
   contents: read  # Prevents git push even with Bash access. See SECURITY.md.
@@ -21,6 +21,10 @@ concurrency:
 
 jobs:
   review:
+    # Skip draft PRs and allow opt-out with the skip-auto-pr-review label.
+    if: >-
+      github.event.pull_request.draft == false &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
