@@ -7,7 +7,7 @@ engine:
   model: gpt-5.2-codex
 on:
   schedule:
-    - cron: "0 14 * * 1-5"
+    - cron: "daily around 14:00 on weekdays"
   workflow_dispatch:
 concurrency:
   group: docs-drift
