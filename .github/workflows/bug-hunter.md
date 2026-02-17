@@ -1,5 +1,5 @@
 ---
-# DO NOT EDIT — proposed copy. Source: gh-agent-workflows/bug-hunter.md
+# DO NOT EDIT — this is a synced copy. Source: gh-agent-workflows/bug-hunter.md
 description: "Find a reproducible, user-impacting bug and file a report issue"
 imports:
   - gh-aw-workflows/bug-hunter-rwx.md
