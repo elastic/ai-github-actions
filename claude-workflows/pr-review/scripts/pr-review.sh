@@ -220,10 +220,7 @@ FOOTER='
 Give us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.'
 
 # Assemble the final review body: user body + nitpick section + footer
-FINAL_BODY=""
-if [ -n "$BODY" ]; then
-  FINAL_BODY="${BODY}"
-fi
+FINAL_BODY="${BODY}"
 
 if [ -n "$NITPICK_SECTION" ]; then
   if [ -n "$FINAL_BODY" ]; then
