@@ -8,7 +8,7 @@ engine:
   model: gpt-5.2-codex
 on:
   schedule:
-    - cron: "0 16 * * 1-5"
+    - cron: "daily around 16:00 on weekdays"
   workflow_dispatch:
 concurrency:
   group: agent-efficiency

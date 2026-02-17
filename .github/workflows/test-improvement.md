@@ -8,7 +8,7 @@ engine:
   model: gpt-5.2-codex
 on:
   schedule:
-    - cron: "0 9 * * 1"  # Weekly on Mondays at 09:00 UTC
+    - cron: "weekly on monday around 09:00"
   workflow_dispatch:
 concurrency:
   group: test-improvement

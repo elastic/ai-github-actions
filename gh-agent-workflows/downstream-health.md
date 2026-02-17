@@ -7,7 +7,7 @@ engine:
   model: gpt-5.2-codex
 on:
   schedule:
-    - cron: "0 10 * * *"  # Daily at 10:00 UTC
+    - cron: "daily around 10:00"
   workflow_dispatch:
 concurrency:
   group: downstream-health
