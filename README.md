@@ -20,6 +20,7 @@ gh aw compile
 | PR Checks Fix | Failed PR checks | Analyze failures and optionally push fixes |
 | Small Problem Fixer | Weekday schedule | Fix a small, related issue set and open a focused PR |
 | Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |
+| Bug Hunter | Weekday schedule | Find a reproducible, user-impacting bug and file an issue |
 | Docs Drift | Weekday schedule | Detect code changes needing doc updates |
 | Breaking Change Detect | Weekday schedule | Detect undocumented public breaking changes |
 
