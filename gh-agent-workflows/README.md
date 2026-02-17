@@ -12,6 +12,9 @@
 | Mention in PR | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-pr.md` | `/ai` in PRs |
 | PR Checks Fix | `gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-checks-fix.md` | Failed PR checks |
 | Small Problem Fixer | `gh aw add elastic/ai-github-actions/gh-agent-workflows/small-problem-fixer.md` | Weekday schedule |
+| Code Simplifier | `gh aw add elastic/ai-github-actions/gh-agent-workflows/code-simplifier.md` | Weekday schedule |
+| Test Improvement | `gh aw add elastic/ai-github-actions/gh-agent-workflows/test-improvement.md` | Weekly schedule |
+| Bug Hunter | `gh aw add elastic/ai-github-actions/gh-agent-workflows/bug-hunter.md` | Weekday schedule |
 | Docs Drift | `gh aw add elastic/ai-github-actions/gh-agent-workflows/docs-drift.md` | Weekday schedule |
 | Downstream Health | `gh aw add elastic/ai-github-actions/gh-agent-workflows/downstream-health.md` | Daily schedule |
 | Breaking Change Detect | `gh aw add elastic/ai-github-actions/gh-agent-workflows/breaking-change-detect.md` | Weekday schedule |
@@ -107,18 +110,27 @@ steps:
       go-version: '1.23'
 ```
 
-### Append to the prompt
+### Customize prompt content
 
-Add markdown after the shim's frontmatter — it's appended to the imported prompt:
+Keep shims minimal and put workflow-specific instructions in prompt files under `gh-agent-workflows/gh-aw-workflows/`, then import those prompts from the shim.
+
+```yaml
+# gh-agent-workflows/docs-drift.md
+imports:
+  - gh-aw-workflows/docs-drift-rwx.md
+```
 
 ```markdown
+# gh-agent-workflows/gh-aw-workflows/docs-drift-rwx.md
 ---
-# ... frontmatter ...
+imports:
+  - gh-aw-workflows/scheduled-report-rwx.md
 ---
 
-Always check for SQL injection vulnerabilities in database queries.
-Focus on Go-specific issues like goroutine leaks and race conditions.
+Detect documentation drift in recent commits.
 ```
+
+The shim body append mechanism still works, but in this repo report assignments should live in prompt files.
 
 ## Updating
 

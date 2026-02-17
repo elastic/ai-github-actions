@@ -19,6 +19,9 @@ gh aw compile
 | Mention in PR | `/ai` command | Review, fix code, push changes |
 | PR Checks Fix | Failed PR checks | Analyze failures and optionally push fixes |
 | Small Problem Fixer | Weekday schedule | Fix a small, related issue set and open a focused PR |
+| Code Simplifier | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
+| Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |
+| Bug Hunter | Weekday schedule | Find a reproducible, user-impacting bug and file an issue |
 | Docs Drift | Weekday schedule | Detect code changes needing doc updates |
 | Breaking Change Detect | Weekday schedule | Detect undocumented public breaking changes |
 

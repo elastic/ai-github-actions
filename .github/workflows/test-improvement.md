@@ -1,16 +1,17 @@
 ---
-description: "Find open issues that appear to already be resolved and recommend closing them"
+# DO NOT EDIT — this is a synced copy. Source: gh-agent-workflows/test-improvement.md
+description: "Add focused tests for under-tested code and clean up redundant tests"
 imports:
-  - gh-aw-workflows/stale-issues-rwx.md
+  - gh-aw-workflows/test-improvement-rwxp.md
 engine:
   id: copilot
   model: gpt-5.2-codex
 on:
   schedule:
-    - cron: "daily around 15:00 on weekdays"
+    - cron: "0 9 * * 1"  # Weekly on Mondays at 09:00 UTC
   workflow_dispatch:
 concurrency:
-  group: stale-issues
+  group: test-improvement
   cancel-in-progress: true
 permissions:
   contents: read
@@ -19,12 +20,8 @@ permissions:
 strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
-  create-issue:
-    max: 1
-    title-prefix: "[stale-issues] "
-    close-older-issues: true
-    expires: 7d
-timeout-minutes: 30
+  noop:
+timeout-minutes: 45
 ---
 
 <!-- Add prompt additions here (appended after the imported prompt) -->

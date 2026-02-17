@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-push-to-pr.md
 #     - gh-aw-workflows/pr-checks-fix-rwxp.md
 #
-# frontmatter-hash: 677e918e48d544ce2a903363f8e94cd76bf7eae0e15491ebdb62787a54bc17d1
+# frontmatter-hash: d09f484092c78e7c2306d9c61b39cb6f057fad9c9266725728171a54cc29e22a
 
 name: "Pr Checks Fix"
 "on":
@@ -60,8 +60,9 @@ jobs:
     needs: pre_activation
     # zizmor: ignore[dangerous-triggers] - workflow_run trigger is secured with role and fork validation
     if: >
-      (needs.pre_activation.outputs.activated == 'true') && ((github.event_name != 'workflow_run') || ((github.event.workflow_run.repository.id == github.repository_id) &&
-      (!(github.event.workflow_run.repository.fork))))
+      ((needs.pre_activation.outputs.activated == 'true') && (github.event.workflow_run.conclusion == 'failure' &&
+      toJSON(github.event.workflow_run.pull_requests) != '[]')) && ((github.event_name != 'workflow_run') ||
+      ((github.event.workflow_run.repository.id == github.repository_id) && (!(github.event.workflow_run.repository.fork))))
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -1040,6 +1041,7 @@ jobs:
           if-no-files-found: ignore
 
   pre_activation:
+    if: github.event.workflow_run.conclusion == 'failure' && toJSON(github.event.workflow_run.pull_requests) != '[]'
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}

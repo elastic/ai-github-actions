@@ -1,16 +1,16 @@
 ---
-description: "Find open issues that appear to already be resolved and recommend closing them"
+description: "Simplify overcomplicated code with high-confidence refactors"
 imports:
-  - gh-aw-workflows/stale-issues-rwx.md
+  - gh-aw-workflows/code-simplifier-rwxp.md
 engine:
   id: copilot
   model: gpt-5.2-codex
 on:
   schedule:
-    - cron: "daily around 15:00 on weekdays"
+    - cron: "0 13 * * 1-5"
   workflow_dispatch:
 concurrency:
-  group: stale-issues
+  group: code-simplifier
   cancel-in-progress: true
 permissions:
   contents: read
@@ -19,12 +19,13 @@ permissions:
 strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
-  create-issue:
-    max: 1
-    title-prefix: "[stale-issues] "
-    close-older-issues: true
-    expires: 7d
+  noop:
 timeout-minutes: 30
+# Add setup steps to install tools the agent needs, e.g.:
+# steps:
+#   - uses: actions/setup-go@v5
+#     with:
+#       go-version: '1.23'
 ---
 
 <!-- Add prompt additions here (appended after the imported prompt) -->

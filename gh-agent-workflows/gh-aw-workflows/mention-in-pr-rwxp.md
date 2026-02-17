@@ -5,6 +5,7 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
+  - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/review-process.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment.md
@@ -59,7 +60,7 @@ Based on what's asked, do the appropriate thing:
 - First, call `pull_request_read` with methods `get_review_comments` and `get_reviews` to check existing threads and prior reviews — do not duplicate feedback.
 - Follow the **Code Review Reference** below — review each changed file one at a time, leaving inline comments before moving to the next file.
 - After all files are reviewed, call `submit_pull_request_review`.
-- **Important**: Substantive feedback belongs in the PR review (inline comments + review submission), NOT in the reply comment. Your reply comment should only report "Review submitted" with a brief status (e.g. "approved" or "requested changes on X issues"). Do NOT duplicate review content in the comment.
+- **Important**: Substantive feedback belongs in the PR review (inline comments + review submission), NOT in a reply comment. Do NOT add a separate comment after submitting the review unless the user explicitly asked for a comment or the review submission failed.
 - **Bot-authored PRs**: If the PR author is `github-actions[bot]`, you can only submit a `COMMENT` review — `APPROVE` and `REQUEST_CHANGES` will fail because GitHub does not allow bot accounts to approve or request changes on their own PRs. Use `COMMENT` and state your verdict in the review body instead.
 
 **If asked to fix code or address review feedback:**
@@ -80,7 +81,7 @@ Based on what's asked, do the appropriate thing:
 
 ### Step 3: Respond
 
-Call `add_comment` with your response. Be concise and actionable.
+If you did not submit a PR review, call `add_comment` with your response. If you submitted a review, do NOT call `add_comment` unless explicitly requested or to report a review submission failure.
 
 **Additional tools:**
 - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)

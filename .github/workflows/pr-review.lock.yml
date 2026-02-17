@@ -36,7 +36,7 @@
 #     - gh-aw-fragments/safe-output-submit-review.md
 #     - gh-aw-workflows/pr-review-rwx.md
 #
-# frontmatter-hash: 52fa73f095e390cfc372afca41be4436f3159b7e94d83f923dd1ed8bb1ca51b5
+# frontmatter-hash: 264c9d3fa4ae0a7692eb667a61ea374af6027f65030bb0673586fdb4fb3b5539
 
 name: "Pr Review"
 "on":
@@ -45,6 +45,9 @@ name: "Pr Review"
     - opened
     - synchronize
     - reopened
+    - ready_for_review
+    - labeled
+    - unlabeled
 
 permissions: {}
 
@@ -58,7 +61,8 @@ jobs:
   activation:
     needs: pre_activation
     if: >
-      (needs.pre_activation.outputs.activated == 'true') && ((github.event_name != 'pull_request') || (github.event.pull_request.head.repo.id == github.repository_id))
+      (needs.pre_activation.outputs.activated == 'true') && ((github.event.pull_request.draft == false && !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')) &&
+      ((github.event_name != 'pull_request') || (github.event.pull_request.head.repo.id == github.repository_id)))
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -1124,7 +1128,9 @@ jobs:
           if-no-files-found: ignore
 
   pre_activation:
-    if: (github.event_name != 'pull_request') || (github.event.pull_request.head.repo.id == github.repository_id)
+    if: >
+      (github.event.pull_request.draft == false && !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')) &&
+      ((github.event_name != 'pull_request') || (github.event.pull_request.head.repo.id == github.repository_id))
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}

@@ -1,16 +1,16 @@
 ---
-description: "Find open issues that appear to already be resolved and recommend closing them"
+description: "Find a reproducible, user-impacting bug and file a report issue"
 imports:
-  - gh-aw-workflows/stale-issues-rwx.md
+  - gh-aw-workflows/bug-hunter-rwx.md
 engine:
   id: copilot
   model: gpt-5.2-codex
 on:
   schedule:
-    - cron: "daily around 15:00 on weekdays"
+    - cron: "0 11 * * 1-5"
   workflow_dispatch:
 concurrency:
-  group: stale-issues
+  group: bug-hunter
   cancel-in-progress: true
 permissions:
   contents: read
@@ -21,7 +21,7 @@ roles: [admin, maintainer, write]
 safe-outputs:
   create-issue:
     max: 1
-    title-prefix: "[stale-issues] "
+    title-prefix: "[bug-hunter] "
     close-older-issues: true
     expires: 7d
 timeout-minutes: 30

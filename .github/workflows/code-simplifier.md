@@ -1,30 +1,26 @@
 ---
-description: "Analyze failed PR checks and optionally push fixes"
+# DO NOT EDIT — this is a synced copy. Source: gh-agent-workflows/code-simplifier.md
+description: "Simplify overcomplicated code with high-confidence refactors"
 imports:
-  - gh-aw-workflows/pr-checks-fix-rwxp.md
+  - gh-aw-workflows/code-simplifier-rwxp.md
 engine:
   id: copilot
   model: gpt-5.2-codex
 on:
-  workflow_run:
-    workflows: ["CI", "Build", "Test"]
-    types: [completed]
-if: >-
-  github.event.workflow_run.conclusion == 'failure' &&
-  toJSON(github.event.workflow_run.pull_requests) != '[]'
+  schedule:
+    - cron: "0 13 * * 1-5"
+  workflow_dispatch:
 concurrency:
-  group: pr-checks-fix-${{ github.event.workflow_run.id }}
-  cancel-in-progress: false
+  group: code-simplifier
+  cancel-in-progress: true
 permissions:
-  actions: read
   contents: read
   issues: read
   pull-requests: read
 strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
-  add-comment:
-    max: 3
+  noop:
 timeout-minutes: 30
 # Add setup steps to install tools the agent needs, e.g.:
 # steps:

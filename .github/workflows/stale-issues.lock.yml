@@ -32,8 +32,9 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-workflows/scheduled-report-rwx.md
+#     - gh-aw-workflows/stale-issues-rwx.md
 #
-# frontmatter-hash: 106f6e289ea525ed2ddd4704d4cacd2a3496ab57170bb4b94a823ba499cda69f
+# frontmatter-hash: 91906cf27b02f6ed63149b941a58e5fa1d1d069a8e4053431bb8347910b08d5d
 
 name: "Stale Issues"
 "on":
@@ -584,6 +585,9 @@ jobs:
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           </system>
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/gh-aw-workflows/stale-issues-rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-workflows/scheduled-report-rwx.md}}
