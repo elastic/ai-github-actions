@@ -32,7 +32,7 @@ REVIEWS=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/reviews" --paginate --jq '
     submitted_at: .submitted_at,
     body: .body
   }]
-')
+' | jq -s 'add')
 
 if [ -z "$REVIEWS" ] || [ "$REVIEWS" = "[]" ] || [ "$REVIEWS" = "null" ]; then
   echo "No prior reviews with body text found."
