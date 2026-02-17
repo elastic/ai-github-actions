@@ -14,6 +14,7 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
+  - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/review-process.md
   - gh-aw-fragments/review-examples.md
   - gh-aw-fragments/messages-footer.md
