@@ -8,7 +8,7 @@ engine:
   model: gpt-5.2-codex
 on:
   schedule:
-    - cron: "0 15 * * 1-5"
+    - cron: "daily around 15:00 on weekdays"
   workflow_dispatch:
 concurrency:
   group: stale-issues
