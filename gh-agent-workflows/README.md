@@ -12,6 +12,7 @@
 | Mention in PR | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-pr.md` | `/ai` in PRs |
 | PR Checks Fix | `gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-checks-fix.md` | Failed PR checks |
 | Small Problem Fixer | `gh aw add elastic/ai-github-actions/gh-agent-workflows/small-problem-fixer.md` | Weekday schedule |
+| Bug Hunter | `gh aw add elastic/ai-github-actions/gh-agent-workflows/bug-hunter.md` | Weekday schedule |
 | Docs Drift | `gh aw add elastic/ai-github-actions/gh-agent-workflows/docs-drift.md` | Weekday schedule |
 | Downstream Health | `gh aw add elastic/ai-github-actions/gh-agent-workflows/downstream-health.md` | Daily schedule |
 | Breaking Change Detect | `gh aw add elastic/ai-github-actions/gh-agent-workflows/breaking-change-detect.md` | Weekday schedule |
