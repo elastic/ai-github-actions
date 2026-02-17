@@ -32,8 +32,9 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-workflows/scheduled-report-rwx.md
+#     - gh-aw-workflows/breaking-change-detect-rwx.md
 #
-# frontmatter-hash: ea51fc0e02fc7cfd7f467b501bb0927d0aad6b88cf89db886eaf362041f743a1
+# frontmatter-hash: 9e013b5b77226b2331a6419843e8215dae3ba31bdb01d9ae91e1bc991b949d23
 
 name: "Breaking Change Detect"
 "on":
@@ -584,6 +585,9 @@ jobs:
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           </system>
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/gh-aw-workflows/breaking-change-detect-rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-workflows/scheduled-report-rwx.md}}

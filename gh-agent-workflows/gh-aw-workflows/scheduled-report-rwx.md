@@ -79,4 +79,4 @@ If there are findings, call `create_issue` with a structured report. Use the iss
 
 ## Report Assignment
 
-<!-- The shim body is appended here — it contains the specific report instructions -->
+<!-- Report-specific instructions are provided by the importing prompt (keep shim bodies empty). -->

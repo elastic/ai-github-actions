@@ -32,8 +32,9 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-workflows/scheduled-report-rwx.md
+#     - gh-aw-workflows/downstream-health-rwx.md
 #
-# frontmatter-hash: 296f89c05fb8df33424ba43588e13635c492baf1ffdf5aa2f476a62321d33f59
+# frontmatter-hash: 6ca1ab8808e7154578a0220aa2d1038cec9ed65b0cb0f36f1be2288eb4cadff6
 
 name: "Downstream Health"
 "on":
@@ -584,6 +585,9 @@ jobs:
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           </system>
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/gh-aw-workflows/downstream-health-rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-workflows/scheduled-report-rwx.md}}

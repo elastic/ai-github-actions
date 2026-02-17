@@ -32,8 +32,9 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-workflows/scheduled-report-rwx.md
+#     - gh-aw-workflows/agent-efficiency-rwx.md
 #
-# frontmatter-hash: 84119d2ee2446ca380ca209021b68c9d4fe6935c82a194df3ea44d3cf150d324
+# frontmatter-hash: 165a636d44c162e4c4d3b35b47dd6cedbc086247a2c8b07507f3f35ed65d3ace
 
 name: "Agent Efficiency"
 "on":
@@ -584,6 +585,9 @@ jobs:
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           </system>
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/gh-aw-workflows/agent-efficiency-rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-workflows/scheduled-report-rwx.md}}

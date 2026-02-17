@@ -8,7 +8,7 @@ gh-agent-workflows/
 ├── issue-triage.md
 ├── mention-in-issue.md
 ├── mention-in-pr.md
-├── docs-drift.md             # Shim: imports scheduled-report-rwx.md + docs-specific instructions
+├── docs-drift.md             # Shim: imports docs-drift-rwx.md (report prompt)
 └── gh-aw-fragments/          # Shared fragments
     ├── elastic-tools.md      # Elastic MCP servers + their network entries
     ├── formatting.md         # Response formatting rules
@@ -23,7 +23,8 @@ gh-agent-workflows/
 │   ├── issue-triage-rwx.md   # Issue triage agent prompt
 │   ├── mention-in-pr-rwxp.md # Mention-in-PR agent prompt (with push)
 │   ├── mention-in-issue-rwxp.md  # Mention-in-issue agent prompt (with push)
-│   └── scheduled-report-rwx.md   # Reusable scheduled report prompt
+│   ├── scheduled-report-rwx.md   # Reusable scheduled report prompt
+│   └── docs-drift-rwx.md     # Report-specific prompt (imports scheduled-report-rwx.md)
 ├── pr-review.md              # Copied from gh-agent-workflows/ by scripts/dogfood.sh
 ├── issue-triage.md           # (shim copies needed for compilation)
 ├── ...
@@ -54,24 +55,21 @@ shim (pr-review.md)
       └── gh-aw-fragments/mcp-pagination.md # pagination best practices
 ```
 
-**Reusable prompts** can be shared across multiple shims. The shim body (markdown after the frontmatter `---`) is appended to the imported prompt, providing workflow-specific instructions. For example, `scheduled-report-rwx.md` is a generic report agent that multiple shims can import with different report assignments:
+**Reusable prompts** can be shared across multiple shims. For scheduled reports, keep shims frontmatter-only and put the report assignment in a report-specific prompt that imports `scheduled-report-rwx.md`:
 
 ```
-shim (docs-drift.md)                         # schedule + "check for docs drift" instructions
- └── gh-aw-workflows/scheduled-report-rwx.md # generic report framework
-      ├── gh-aw-fragments/elastic-tools.md
-      ├── gh-aw-fragments/formatting.md
-      ├── gh-aw-fragments/rigor.md
-      └── gh-aw-fragments/mcp-pagination.md
-
-shim (gh-aw-upgrade-check.md)                # schedule + "check for gh-aw upgrades" instructions
- └── gh-aw-workflows/scheduled-report-rwx.md # same generic report framework
-      └── ...
+shim (docs-drift.md)                          # schedule + imports docs-drift-rwx.md
+ └── gh-aw-workflows/docs-drift-rwx.md        # report assignment
+      └── gh-aw-workflows/scheduled-report-rwx.md # generic report framework
+           ├── gh-aw-fragments/elastic-tools.md
+           ├── gh-aw-fragments/formatting.md
+           ├── gh-aw-fragments/rigor.md
+           └── gh-aw-fragments/mcp-pagination.md
 ```
 
 `gh-aw-upgrade-check` is an **internal-only** workflow — its shim lives directly in `.github/workflows/` (not in `gh-agent-workflows/`) so it is not installable via `gh aw add`. It runs on weekdays to check for new `gh-aw` releases and files issues tagged `[gh-aw-upgrade]`.
 
-To add a new scheduled report, create a shim that imports `gh-aw-workflows/scheduled-report-rwx.md` and put the report-specific instructions in the shim body. No new prompt file needed.
+To add a new scheduled report, create a report-specific prompt (e.g., `gh-aw-workflows/my-report-rwx.md`) that imports `gh-aw-workflows/scheduled-report-rwx.md` and contains the assignment text, then create a shim that imports the report prompt and leave the shim body empty.
 
 ### Shared fragments
 

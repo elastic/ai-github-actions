@@ -32,8 +32,9 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-workflows/scheduled-report-rwx.md
+#     - gh-aw-workflows/docs-drift-rwx.md
 #
-# frontmatter-hash: 7f0e90e7750c2fb1b5dfb0c79c0231f6f29466cdc96ac6dcddea2e750bf14a4b
+# frontmatter-hash: d57c864d897be8e507c094b805d1a23e385ce880ccb63c4852abe26676477135
 
 name: "Docs Drift"
 "on":
@@ -584,6 +585,9 @@ jobs:
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           </system>
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          {{#runtime-import .github/workflows/gh-aw-workflows/docs-drift-rwx.md}}
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           {{#runtime-import .github/workflows/gh-aw-workflows/scheduled-report-rwx.md}}

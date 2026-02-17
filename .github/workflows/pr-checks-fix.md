@@ -10,6 +10,9 @@ on:
   workflow_run:
     workflows: ["CI", "Build", "Test"]
     types: [completed]
+if: >-
+  github.event.workflow_run.conclusion == 'failure' &&
+  toJSON(github.event.workflow_run.pull_requests) != '[]'
 concurrency:
   group: pr-checks-fix-${{ github.event.workflow_run.id }}
   cancel-in-progress: false

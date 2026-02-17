@@ -107,18 +107,27 @@ steps:
       go-version: '1.23'
 ```
 
-### Append to the prompt
+### Customize prompt content
 
-Add markdown after the shim's frontmatter — it's appended to the imported prompt:
+Keep shims minimal and put workflow-specific instructions in prompt files under `gh-agent-workflows/gh-aw-workflows/`, then import those prompts from the shim.
+
+```yaml
+# gh-agent-workflows/docs-drift.md
+imports:
+  - gh-aw-workflows/docs-drift-rwx.md
+```
 
 ```markdown
+# gh-agent-workflows/gh-aw-workflows/docs-drift-rwx.md
 ---
-# ... frontmatter ...
+imports:
+  - gh-aw-workflows/scheduled-report-rwx.md
 ---
 
-Always check for SQL injection vulnerabilities in database queries.
-Focus on Go-specific issues like goroutine leaks and race conditions.
+Detect documentation drift in recent commits.
 ```
+
+The shim body append mechanism still works, but in this repo report assignments should live in prompt files.
 
 ## Updating
 
