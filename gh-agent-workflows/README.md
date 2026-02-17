@@ -18,6 +18,7 @@
 | Docs Drift | `gh aw add elastic/ai-github-actions/gh-agent-workflows/docs-drift.md` | Weekday schedule |
 | Downstream Health | `gh aw add elastic/ai-github-actions/gh-agent-workflows/downstream-health.md` | Daily schedule |
 | Breaking Change Detect | `gh aw add elastic/ai-github-actions/gh-agent-workflows/breaking-change-detect.md` | Weekday schedule |
+| Semantic Function Clustering | `gh aw add elastic/ai-github-actions/gh-agent-workflows/semantic-function-clustering.md` | Weekday schedule |
 
 ## Prerequisites
 

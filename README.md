@@ -24,6 +24,7 @@ gh aw compile
 | Bug Hunter | Weekday schedule | Find a reproducible, user-impacting bug and file an issue |
 | Docs Drift | Weekday schedule | Detect code changes needing doc updates |
 | Breaking Change Detect | Weekday schedule | Detect undocumented public breaking changes |
+| Semantic Function Clustering | Weekday schedule | Identify semantic function clustering refactor opportunities |
 
 See **[gh-agent-workflows/](gh-agent-workflows/)** for install commands, customization, and updating.
 
