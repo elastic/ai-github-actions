@@ -1,5 +1,5 @@
 ---
-# COPY FOR RELOCATION — move to .github/workflows/code-simplifier.md
+# DO NOT EDIT — this is a synced copy. Source: gh-agent-workflows/code-simplifier.md
 description: "Simplify overcomplicated code with high-confidence refactors"
 imports:
   - gh-aw-workflows/code-simplifier-rwxp.md
