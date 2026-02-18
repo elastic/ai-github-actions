@@ -6,7 +6,7 @@ AI-powered GitHub workflows for Elastic repositories.
 
 [GitHub Agentic Workflows](https://github.com/github/gh-aw) with safe-output guardrails. Engine and model are configurable per workflow.
 
-Copy a trigger file from `gh-agent-workflows/`, change the `uses:` path to point at this repo, and customize inputs. No `gh-aw` CLI needed:
+Copy a workflow's `example.yml` from `gh-agent-workflows/` and customize inputs. No `gh-aw` CLI needed:
 
 ```yaml
 # .github/workflows/trigger-pr-review.yml
