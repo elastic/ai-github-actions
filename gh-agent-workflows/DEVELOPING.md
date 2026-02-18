@@ -8,6 +8,7 @@ gh-agent-workflows/
 ├── issue-triage.yml
 ├── mention-in-issue.yml
 ├── docs-drift.yml
+├── docs-new-contributor-review.yml
 ├── ...
 └── README.md, DEVELOPING.md   # Consumer-facing docs
 
@@ -103,6 +104,9 @@ The `gh-aw` compiler processes `.md` files in `.github/workflows/`. `make sync` 
 ├── gh-aw-docs-drift.md
 ├── gh-aw-docs-drift.lock.yml
 ├── trigger-docs-drift.yml
+├── gh-aw-docs-new-contributor-review.md
+├── gh-aw-docs-new-contributor-review.lock.yml
+├── trigger-docs-new-contributor-review.yml
 ├── gh-aw-upgrade-check.md      # repo-specific internal workflow
 ├── gh-aw-upgrade-check.lock.yml
 └── ...

@@ -44,6 +44,7 @@ jobs:
             mention-in-issue
             mention-in-pr
             docs-drift
+            docs-new-contributor-review
             downstream-health
             stale-issues
             agent-efficiency

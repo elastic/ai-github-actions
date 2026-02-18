@@ -80,7 +80,7 @@ Lookback 3 days.
      --jq '.workflow_runs[] | select(.created_at >= "DATE") | {id: .id, name: .name, conclusion: .conclusion, created_at: .created_at, html_url: .html_url}'
    ```
 
-   Filter to agentic workflow runs only (pr-review, issue-triage, mention-in-pr, mention-in-issue, docs-drift, downstream-health, stale-issues, agent-efficiency). Exclude non-agentic workflows (ci, release, agentics-maintenance).
+   Filter to agentic workflow runs only (pr-review, issue-triage, mention-in-pr, mention-in-issue, docs-drift, docs-new-contributor-review, downstream-health, stale-issues, agent-efficiency). Exclude non-agentic workflows (ci, release, agentics-maintenance).
 
 2. **Download and analyze job logs**
 
