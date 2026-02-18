@@ -2,6 +2,7 @@
 description: "Analyze agent workflow logs for inefficiencies, errors, and prompt improvement opportunities"
 imports:
   - gh-aw-fragments/elastic-tools.md
+  - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md

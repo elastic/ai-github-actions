@@ -2,6 +2,7 @@
 description: "Review docs from a new contributor perspective and file high-impact issues"
 imports:
   - gh-aw-fragments/elastic-tools.md
+  - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md

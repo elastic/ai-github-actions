@@ -29,10 +29,11 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/rigor.md
+#     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3eea9806a11e93068fa87c87d8a961c822b30b46759b165a34ead85eac16d7dd"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1b869102ab497f723706a8ba3e86188537a2e55f1fa407dd8813fc7a84449874"}
 
 name: "Gh Aw Upgrade Check"
 "on":
@@ -166,6 +167,9 @@ jobs:
           
           - **`generate_agents_md`** — generates a summary of the repository's structure, conventions, and coding guidelines from AGENTS.md and related files. Call at the start of every workflow to get repo context.
           - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           ## Formatting Guidelines
@@ -482,6 +486,32 @@ jobs:
           persist-credentials: false
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
+      - if: hashFiles('**/go.mod') != ''
+        name: Setup Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        with:
+          cache: true
+          go-version-file: go.mod
+      - if: hashFiles('**/.python-version') != ''
+        name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version-file: .python-version
+      - if: hashFiles('**/package.json') != ''
+        name: Setup Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version-file: package.json
+      - if: hashFiles('**/.ruby-version') != ''
+        name: Setup Ruby
+        uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd # v1
+        with:
+          bundler-cache: true
+          ruby-version: .ruby-version
+      - if: hashFiles('**/pyproject.toml', '**/uv.lock') != ''
+        name: Setup uv
+        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+
       - name: Configure Git credentials
         env:
           REPO_NAME: ${{ github.repository }}

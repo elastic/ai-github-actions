@@ -2,6 +2,7 @@
 description: "Find open issues that appear to already be resolved and recommend closing them"
 imports:
   - gh-aw-fragments/elastic-tools.md
+  - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md

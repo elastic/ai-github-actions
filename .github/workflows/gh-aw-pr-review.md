@@ -2,6 +2,7 @@
 description: "AI code review with inline comments on pull requests"
 imports:
   - gh-aw-fragments/elastic-tools.md
+  - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
