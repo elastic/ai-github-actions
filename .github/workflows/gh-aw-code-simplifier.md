@@ -74,11 +74,12 @@ Simplify overcomplicated code with high-confidence, behavior-preserving refactor
 - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request.
 - **CANNOT**: Directly push to the repository — use `create_pull_request`.
 - **Only one PR per run.**
-- Only make changes that are clearly behavior-preserving and low risk.
+- Only make changes that are **provably** behavior-preserving and low risk.
 - Keep changes small and localized (prefer 1-2 files and minimal line churn).
 - Avoid refactors that change public APIs, configs, or behavior (including logging/telemetry).
 - Prefer simplifying control flow (early returns), removing dead code, and replacing custom code with obvious standard library equivalents.
 - If no safe simplification is found, call `noop` with a brief reason.
+- **Most runs should end with `noop`.** Only open a PR for simplifications that are obviously correct at a glance. If a reviewer would need to think hard about whether behavior is preserved, it's not simple enough.
 
 ## Step 1: Find candidates
 
@@ -96,10 +97,21 @@ Pick one small area where the simplification is obvious and easy to validate. Pr
 ## Step 3: Implement
 
 1. Make the smallest safe change that preserves behavior.
-2. Run the most relevant targeted tests; if none are available, note that in the PR.
+2. Run the most relevant targeted tests. **Tests must pass.** If no tests cover the changed code, this is a strong signal to call `noop` — untested simplifications are high-risk.
 
-## Step 4: Create the PR
+## Step 4: Quality Gate — Prove Safety
 
-Call `create_pull_request` with a concise summary, why the change is safe, and the tests run (or not run).
+Before creating the PR, verify:
+
+- **Tests pass**: You ran tests and they succeeded. State which tests and their results.
+- **Behavior is identical**: You can explain in one sentence why the output is unchanged for all inputs.
+- **No hidden side effects**: The change doesn't alter error handling, logging, metrics, or concurrency behavior.
+- **Reviewer would approve quickly**: A maintainer would glance at this and merge, not debate it.
+
+If any of these checks fail, call `noop`. A simplification that might change behavior is not a simplification.
+
+## Step 5: Create the PR
+
+Call `create_pull_request` with a concise summary, a clear explanation of why the change is safe, and the exact tests run with their results.
 
 ${{ inputs.additional-instructions }}

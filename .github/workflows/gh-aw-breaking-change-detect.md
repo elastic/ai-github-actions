@@ -103,6 +103,17 @@ A breaking change is **undocumented** if none of the following mention the break
 - Changes that already include documentation or migration notes
 - Test-only changes
 - Changes already tracked by an open issue or PR
+- Additive changes that don't break existing consumers (new optional inputs with defaults, new workflows, new outputs)
+- Changes to internal/private interfaces not consumed by downstream repos
+
+### Quality Gate — When to Noop
+
+**Noop is the expected outcome most days.** Only file an issue when you can demonstrate a concrete break:
+- A downstream consumer using the documented interface would **fail or get wrong results** after this change.
+- You can identify the **specific interface contract** that was broken (removed input, changed type, renamed workflow, etc.).
+- The break is **not documented** anywhere in the PR, release notes, or repo docs.
+
+Do not file for: speculative breaks ("this might affect someone"), internal restructuring, or changes where backward compatibility is maintained (even if the approach changed).
 
 ### Issue Format
 

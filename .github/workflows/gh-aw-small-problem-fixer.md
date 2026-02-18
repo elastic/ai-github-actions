@@ -77,6 +77,7 @@ Find a small, clearly-scoped issue (or a very small set of related issues) and o
 - Only combine issues if they share the same root cause and the fix is a single small change (no broad refactors).
 - Skip issues that need design decisions, large refactors, or ambiguous reproduction steps.
 - If no suitable issue is found or the fix is not safe to implement quickly, call `noop` with a brief reason.
+- **Most runs should end with `noop`.** Only open a PR when the fix is clearly correct, tested, and small enough that a reviewer would approve it quickly.
 
 ## Step 1: Gather candidates
 
@@ -110,16 +111,27 @@ Prefer issues that:
 
 1. Locate the relevant code via search and file reads.
 2. Make the smallest safe change that fixes the issue(s).
-3. Run the most relevant targeted tests; if tests are not available, note that in the PR.
+3. Run the most relevant targeted tests. **Tests must pass.** If no tests exist for the area, write a minimal test that validates the fix.
 4. Commit the changes locally.
 
-## Step 4: Create the PR
+## Step 4: Quality Gate — Self-Review
+
+Before creating the PR, review your own changes critically:
+
+- **Correctness**: Does the fix actually address the issue? Did tests pass?
+- **Scope**: Is the change minimal? Would a reviewer question why any line was touched?
+- **Safety**: Could this break anything else? If you're unsure, call `noop`.
+- **Reviewer experience**: Would a maintainer approve this quickly, or would it need multiple rounds of review?
+
+If the fix feels uncertain, incomplete, or risky, call `noop` with a reason. A skipped run is better than a noisy PR.
+
+## Step 5: Create the PR
 
 Call `create_pull_request` with:
 - **Title**: concise fix summary
-- **Body**: summary, linked issue(s), tests run (or not run), and any follow-ups
+- **Body**: summary, linked issue(s), tests run and their results, and any follow-ups
 
-## Step 5: Close the loop
+## Step 6: Close the loop
 
 After creating the PR, add a brief comment on each issue linking to the PR.
 If no suitable issue is found, call `noop` with a brief reason.

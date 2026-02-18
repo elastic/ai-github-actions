@@ -102,6 +102,17 @@ For each potentially impactful change:
 - Changes where documentation was already updated in the same or a later commit
 - Changes where an open issue or PR already tracks the documentation update
 - Test-only changes
+- Minor changes where the existing docs are still substantially correct (e.g., a new optional parameter with a sensible default)
+- Changes that only affect internal implementation details not referenced in any documentation
+
+### Quality Gate — When to Noop
+
+**Noop is the expected outcome most days.** Only file an issue when:
+- The documentation is **concretely wrong** — a user following the docs would get incorrect results or errors
+- A **new public feature** has zero documentation
+- A **removed or renamed** public interface is still referenced in docs
+
+Do not file for: vague "could be improved" suggestions, minor wording drift, or documentation that is slightly imprecise but still functionally correct.
 
 ### Issue Format
 

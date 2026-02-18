@@ -200,10 +200,14 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           ## Rigor
           
-          - If you claim something is missing or broken, find the evidence in the code.
-          - If a conclusion depends on assumptions you haven't confirmed, do not assert it.
-          - "I don't know" is better than a wrong answer.
+          **Silence is better than noise. A false positive wastes a human's time and erodes trust in every future report.**
+          
+          - If you claim something is missing or broken, show the exact evidence in the code — file path, line number, and what you observed.
+          - If a conclusion depends on assumptions you haven't confirmed, do not assert it. Verify first; if you cannot verify, do not report.
+          - "I don't know" is better than a wrong answer. `noop` is better than a speculative finding.
           - It's worth the time to verify now versus guessing and forcing someone else to verify later.
+          - Before filing any issue or opening any PR, re-read your own output as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
+          - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
@@ -286,11 +290,20 @@ jobs:
           - What constitutes a finding worth reporting
           - What to skip or ignore
           
-          ### Step 3: Report
+          ### Step 3: Self-Review (Quality Gate)
           
-          If no findings, call `noop` with a brief reason and stop.
+          Before filing anything, critically evaluate every finding against these criteria:
           
-          If there are findings, call `create_issue` with a structured report. Use the issue format specified in the Report Assignment if one is provided, otherwise use this default format:
+          1. **Evidence is concrete** — you can point to exact file paths, line numbers, commit SHAs, or command outputs. No "I believe" or "it seems."
+          2. **Finding is actionable** — a maintainer reading the issue can act on it without re-investigating from scratch.
+          3. **Finding is not already tracked** — you checked open issues and recent PRs for duplicates.
+          4. **Finding is worth a human's time** — the issue is material enough that a maintainer would thank you for filing it, not close it as noise.
+          
+          If zero findings pass all four criteria, call `noop` with a brief reason and stop. **Noop is the expected outcome most days.** Filing nothing is a success when there is nothing worth filing.
+          
+          ### Step 4: Report
+          
+          If there are findings that pass the quality gate, call `create_issue` with a structured report. Use the issue format specified in the Report Assignment if one is provided, otherwise use this default format:
           
           **Issue title:** Brief summary of findings
           
@@ -312,13 +325,15 @@ jobs:
           - Be specific about what needs to happen
           - Include links and references where possible
           - Make suggested actions concrete enough to act on without re-investigating
-          - If a finding is ambiguous, include it but note the uncertainty
+          - If a finding is ambiguous, it does not pass the quality gate — drop it
           
           ## Report Assignment
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           Find a single reproducible, user-impacting bug in the repository that can be covered by a minimal failing test.
+          
+          **The bar is high: you must actually reproduce the bug before filing.** Most runs should end with `noop` — that means the codebase is healthy.
           
           ### Data Gathering
           
@@ -327,21 +342,32 @@ jobs:
              - Read the diffs and related files for each candidate.
           2. Check for existing reports:
              - Search open issues for similar symptoms or areas before filing a new issue.
-          3. Reproduce locally:
+          3. Reproduce locally — this step is **mandatory**, not optional:
              - Use the smallest relevant command from the docs or Makefile to trigger the behavior (for example `make compile` or `scripts/dogfood.sh`).
              - Capture the exact steps and output.
+             - If you cannot reproduce the bug, do **not** file it. Call `noop` instead.
           
           ### What to Look For
           
           - Clear user impact: command failure, incorrect output, broken workflow, or misconfiguration.
-          - Deterministic reproduction (not flaky).
+          - Deterministic reproduction (not flaky). You must reproduce it at least once yourself.
           - Can be expressed as a minimal failing test (unit, CLI, or workflow compilation step).
           
           ### What to Skip
           
-          - Theoretical concerns without a reproduction.
+          - Theoretical concerns without a reproduction — **no "this looks like it could break."**
+          - Code that "looks wrong" but works correctly in practice.
+          - Edge cases that require unusual or undocumented inputs.
           - Issues that require large refactors or design changes.
           - Behavior already tracked by an open issue.
+          
+          ### Quality Gate — When to Noop
+          
+          Call `noop` if any of these are true:
+          - You could not reproduce the bug with a concrete command and observed output.
+          - The bug is speculative — you inferred it from reading code but did not trigger it.
+          - A similar issue is already open.
+          - The impact is cosmetic or low-severity (e.g., a typo in a log message).
           
           ### Issue Format
           
@@ -353,17 +379,17 @@ jobs:
           > [Who/what is affected, why it matters]
           >
           > ## Reproduction Steps
-          > 1. ...
+          > 1. [Exact commands you ran]
           >
           > ## Expected vs Actual
           > **Expected:** ...
-          > **Actual:** ...
+          > **Actual:** ... [Include actual command output]
           >
           > ## Suggested Failing Test
           > [File path + outline of test]
           >
           > ## Evidence
-          > - [Commands/output, file references, or links]
+          > - [Commands/output you captured during reproduction, file references, or links]
           
           __GH_AW_EXPR_49B959F1__
           

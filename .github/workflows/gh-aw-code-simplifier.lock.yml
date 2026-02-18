@@ -200,10 +200,14 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           ## Rigor
           
-          - If you claim something is missing or broken, find the evidence in the code.
-          - If a conclusion depends on assumptions you haven't confirmed, do not assert it.
-          - "I don't know" is better than a wrong answer.
+          **Silence is better than noise. A false positive wastes a human's time and erodes trust in every future report.**
+          
+          - If you claim something is missing or broken, show the exact evidence in the code — file path, line number, and what you observed.
+          - If a conclusion depends on assumptions you haven't confirmed, do not assert it. Verify first; if you cannot verify, do not report.
+          - "I don't know" is better than a wrong answer. `noop` is better than a speculative finding.
           - It's worth the time to verify now versus guessing and forcing someone else to verify later.
+          - Before filing any issue or opening any PR, re-read your own output as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
+          - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
@@ -279,11 +283,12 @@ jobs:
           - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request.
           - **CANNOT**: Directly push to the repository — use `create_pull_request`.
           - **Only one PR per run.**
-          - Only make changes that are clearly behavior-preserving and low risk.
+          - Only make changes that are **provably** behavior-preserving and low risk.
           - Keep changes small and localized (prefer 1-2 files and minimal line churn).
           - Avoid refactors that change public APIs, configs, or behavior (including logging/telemetry).
           - Prefer simplifying control flow (early returns), removing dead code, and replacing custom code with obvious standard library equivalents.
           - If no safe simplification is found, call `noop` with a brief reason.
+          - **Most runs should end with `noop`.** Only open a PR for simplifications that are obviously correct at a glance. If a reviewer would need to think hard about whether behavior is preserved, it's not simple enough.
           
           ## Step 1: Find candidates
           
@@ -301,11 +306,22 @@ jobs:
           ## Step 3: Implement
           
           1. Make the smallest safe change that preserves behavior.
-          2. Run the most relevant targeted tests; if none are available, note that in the PR.
+          2. Run the most relevant targeted tests. **Tests must pass.** If no tests cover the changed code, this is a strong signal to call `noop` — untested simplifications are high-risk.
           
-          ## Step 4: Create the PR
+          ## Step 4: Quality Gate — Prove Safety
           
-          Call `create_pull_request` with a concise summary, why the change is safe, and the tests run (or not run).
+          Before creating the PR, verify:
+          
+          - **Tests pass**: You ran tests and they succeeded. State which tests and their results.
+          - **Behavior is identical**: You can explain in one sentence why the output is unchanged for all inputs.
+          - **No hidden side effects**: The change doesn't alter error handling, logging, metrics, or concurrency behavior.
+          - **Reviewer would approve quickly**: A maintainer would glance at this and merge, not debate it.
+          
+          If any of these checks fail, call `noop`. A simplification that might change behavior is not a simplification.
+          
+          ## Step 5: Create the PR
+          
+          Call `create_pull_request` with a concise summary, a clear explanation of why the change is safe, and the exact tests run with their results.
           
           __GH_AW_EXPR_49B959F1__
           
