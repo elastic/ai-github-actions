@@ -1,6 +1,8 @@
 ---
 safe-outputs:
   add-comment:
+    max: 1
+    discussions: false
 ---
 
 ## add-comment Limitations
