@@ -18,14 +18,14 @@ cd "$REPO_ROOT"
 
 echo "Syncing workflow files..."
 
-# Copy trigger .yml files from gh-agent-workflows/ → .github/workflows/trigger-*
+# Copy trigger example.yml files from gh-agent-workflows/*/ → .github/workflows/trigger-*
 # Rewrite remote uses: references to local paths for dogfooding.
-for f in gh-agent-workflows/*.yml; do
+for f in gh-agent-workflows/*/example.yml; do
   [ -e "$f" ] || continue
-  name=$(basename "$f")
+  dir=$(basename "$(dirname "$f")")
   sed 's|uses: elastic/ai-github-actions/\(.*\)@v0|uses: ./\1|' "$f" \
-    > ".github/workflows/trigger-$name"
-  echo "  ✓ gh-agent-workflows/$name → .github/workflows/trigger-$name"
+    > ".github/workflows/trigger-$dir.yml"
+  echo "  ✓ gh-agent-workflows/$dir/example.yml → .github/workflows/trigger-$dir.yml"
 done
 
 echo "✓ Sync complete"

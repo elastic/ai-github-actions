@@ -42,7 +42,7 @@ permissions:
   pull-requests: read
 tools:
   github:
-    toolsets: [repos, issues, pull_requests, search]
+    toolsets: [repos, issues, pull_requests, search, labels]
   bash: true
   web-fetch:
 network:
