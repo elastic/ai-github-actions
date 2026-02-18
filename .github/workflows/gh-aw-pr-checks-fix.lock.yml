@@ -35,7 +35,7 @@
 #     - gh-aw-fragments/safe-output-push-to-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"76b984affc4ae2b178de8c8ad92c69c764499915d0fcf7055c471bc2853ab3be"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7e99a242bb56894b07c90d22c7f38c127cbfc30403d03d15db238223e9b0a876"}
 
 name: "PR Checks Fixer"
 "on":
@@ -868,7 +868,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,actions"
                 }
               },
               "public-code-search": {
