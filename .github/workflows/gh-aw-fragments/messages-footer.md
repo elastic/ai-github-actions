@@ -1,7 +1,7 @@
 ---
 safe-outputs:
   messages:
-    footer: "---\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\n\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not."
+    footer: "${{ inputs.messages-footer || '---\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\n\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}"
 ---
 
 ## Message Footer

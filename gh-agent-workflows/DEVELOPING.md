@@ -69,7 +69,7 @@ Fragments live in `.github/workflows/gh-aw-fragments/`. Workflows import them us
 | [gh-aw-fragments/mcp-pagination.md](../.github/workflows/gh-aw-fragments/mcp-pagination.md) | MCP token limit guidance and pagination patterns |
 | [gh-aw-fragments/scheduled-report.md](../.github/workflows/gh-aw-fragments/scheduled-report.md) | Shared scheduled report framework |
 | [gh-aw-fragments/review-process.md](../.github/workflows/gh-aw-fragments/review-process.md) | Shared code review process, comment format, severity classification, and review criteria |
-| [gh-aw-fragments/messages-footer.md](../.github/workflows/gh-aw-fragments/messages-footer.md) | Global message footer appended to all comments and reviews |
+| [gh-aw-fragments/messages-footer.md](../.github/workflows/gh-aw-fragments/messages-footer.md) | Wires the `messages-footer` input to `safe-outputs.messages.footer`; consumers override the footer via the workflow input |
 | [gh-aw-fragments/safe-output-add-comment.md](../.github/workflows/gh-aw-fragments/safe-output-add-comment.md) | Limitations for `add-comment` (body length, mentions, links) |
 | [gh-aw-fragments/safe-output-review-comment.md](../.github/workflows/gh-aw-fragments/safe-output-review-comment.md) | Limitations for `create-pull-request-review-comment` (required fields, line rules) |
 | [gh-aw-fragments/safe-output-submit-review.md](../.github/workflows/gh-aw-fragments/safe-output-submit-review.md) | Limitations for `submit-pull-request-review` (event types, own-PR restriction) |
@@ -170,4 +170,4 @@ Consumer repos call the compiled `.lock.yml` via `uses:` in a plain YAML workflo
 
 Each workflow has a corresponding `<name>.yml` in `gh-agent-workflows/` that defines the actual event triggers and calls the compiled `.lock.yml`. These are plain YAML (not compiled by gh-aw) and are copied to `.github/workflows/trigger-<name>.yml` by `scripts/dogfood.sh` for dogfooding.
 
-Consumer repos use these as starting points: copy the trigger file from `gh-agent-workflows/`, change the `uses:` path from `./.github/workflows/gh-aw-<name>.lock.yml` to `elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@main`, and customize the `with:` inputs.
+Consumer repos use these as starting points: copy the trigger file from `gh-agent-workflows/`, change the `uses:` path from `./.github/workflows/gh-aw-<name>.lock.yml` to `elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@v0`, and customize the `with:` inputs.

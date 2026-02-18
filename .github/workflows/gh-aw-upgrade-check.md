@@ -5,7 +5,6 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
-  - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/scheduled-report.md
 engine:
@@ -34,6 +33,8 @@ network:
 strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
+  messages:
+    footer: "---\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\n\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not."
   noop:
   create-issue:
     max: 1
@@ -44,6 +45,8 @@ timeout-minutes: 30
 ---
 
 Check for recent gh-aw releases and determine if our workflows need upgrading or adjusting.
+
+A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
 
 ### Data Gathering
 

@@ -25,6 +25,11 @@ on:
         type: string
         required: false
         default: ""
+      messages-footer:
+        description: "Footer appended to all agent comments and reviews"
+        type: string
+        required: false
+        default: ""
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true

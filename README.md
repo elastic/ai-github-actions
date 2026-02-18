@@ -16,7 +16,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@main
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

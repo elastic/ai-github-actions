@@ -32,7 +32,7 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@main
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
     with:
       setup-commands: |
         pip install -e ".[dev]"
@@ -87,7 +87,7 @@ on:
   workflow_dispatch:
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@main
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@v0
     with:
       setup-commands: |
         <your setup commands>
@@ -107,7 +107,7 @@ on:
 jobs:
   run:
     if: startsWith(github.event.comment.body, '/ai')
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@main
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@v0
     with:
       additional-instructions: |
         <your repo-specific instructions>
@@ -127,7 +127,7 @@ jobs:
     if: >-
       github.event.pull_request.draft == false &&
       !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@main
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
@@ -141,7 +141,7 @@ on:
     types: [opened]
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-triage.lock.yml@main
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-triage.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
@@ -159,7 +159,7 @@ jobs:
     if: >-
       github.event.workflow_run.conclusion == 'failure' &&
       toJSON(github.event.workflow_run.pull_requests) != '[]'
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-checks-fix.lock.yml@main
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-checks-fix.lock.yml@v0
     with:
       setup-commands: |
         <your setup commands>
