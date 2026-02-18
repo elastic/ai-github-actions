@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e54f40896ed58186fd08f7d2b0b7f87b3fb0a09f7c309977657e12c4e0b5f7e8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bbb34986b4f3c1af9d34f6a904005cf7d01eb65763b70081ebe4bff7433db630"}
 
 name: "Gh Aw Bug Hunter"
 "on":
@@ -519,11 +519,16 @@ jobs:
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version-file: .python-version
-      - if: hashFiles('.node-version', '.nvmrc') != ''
-        name: Setup Node.js
+      - if: hashFiles('.node-version') != ''
+        name: Setup Node.js (.node-version)
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
           node-version-file: .node-version
+      - if: hashFiles('.node-version') == '' && hashFiles('.nvmrc') != ''
+        name: Setup Node.js (.nvmrc)
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version-file: .nvmrc
       - if: hashFiles('.ruby-version') != ''
         name: Setup Ruby
         uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd # v1

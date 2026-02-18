@@ -13,11 +13,17 @@ steps:
     with:
       python-version-file: '.python-version'
 
-  - name: Setup Node.js
-    if: hashFiles('.node-version', '.nvmrc') != ''
+  - name: Setup Node.js (.node-version)
+    if: hashFiles('.node-version') != ''
     uses: actions/setup-node@v6
     with:
       node-version-file: '.node-version'
+
+  - name: Setup Node.js (.nvmrc)
+    if: hashFiles('.node-version') == '' && hashFiles('.nvmrc') != ''
+    uses: actions/setup-node@v6
+    with:
+      node-version-file: '.nvmrc'
 
   - name: Setup Ruby
     if: hashFiles('.ruby-version') != ''

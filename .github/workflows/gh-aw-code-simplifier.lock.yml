@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5b9659a7bb5cc8812bc9a4688993522e4f4d49471024b29981314c3e7b45f77d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1713e356802103ea367a3096f796cdb0b21b9b4d60fb90b1fb85b44c94a2de1e"}
 
 name: "Code Simplifier"
 "on":
@@ -445,11 +445,16 @@ jobs:
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version-file: .python-version
-      - if: hashFiles('.node-version', '.nvmrc') != ''
-        name: Setup Node.js
+      - if: hashFiles('.node-version') != ''
+        name: Setup Node.js (.node-version)
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
         with:
           node-version-file: .node-version
+      - if: hashFiles('.node-version') == '' && hashFiles('.nvmrc') != ''
+        name: Setup Node.js (.nvmrc)
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
+        with:
+          node-version-file: .nvmrc
       - if: hashFiles('.ruby-version') != ''
         name: Setup Ruby
         uses: ruby/setup-ruby@09a7688d3b55cf0e976497ff046b70949eeaccfd # v1
