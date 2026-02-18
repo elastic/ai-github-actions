@@ -2,12 +2,14 @@ name: Mention in PR
 on:
   issue_comment:
     types: [created]
+  pull_request_review_comment:
+    types: [created]
 
 jobs:
   run:
     if: >-
-      github.event.issue.pull_request != null &&
-      startsWith(github.event.comment.body, '/ai')
+      startsWith(github.event.comment.body, '/ai') &&
+      (github.event.issue.pull_request != null || github.event_name == 'pull_request_review_comment')
     uses: ./.github/workflows/gh-aw-mention-in-pr.lock.yml
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
