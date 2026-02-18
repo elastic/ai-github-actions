@@ -4,11 +4,15 @@
 
 ```text
 gh-agent-workflows/
-├── pr-review.yml              # Trigger: event triggers + uses: .lock.yml (example + dogfood)
-├── issue-triage.yml
-├── mention-in-issue.yml
-├── docs-drift.yml
-├── docs-new-contributor-review.yml
+├── pr-review/
+│   ├── README.md              # Per-workflow docs (trigger, inputs, safe outputs)
+│   └── example.yml            # Trigger: event triggers + uses: .lock.yml (example + dogfood)
+├── issue-triage/
+│   ├── README.md
+│   └── example.yml
+├── mention-in-issue/
+│   ├── README.md
+│   └── example.yml
 ├── ...
 └── README.md, DEVELOPING.md   # Consumer-facing docs
 
@@ -22,14 +26,16 @@ gh-agent-workflows/
 │   └── safe-output-*.md
 ├── gh-aw-pr-review.md          # Workflow: self-contained (prompt + config)
 ├── gh-aw-pr-review.lock.yml    # Compiled output
-├── trigger-pr-review.yml       # Copied from gh-agent-workflows/ (event triggers)
+├── trigger-pr-review.yml       # Copied from gh-agent-workflows/pr-review/example.yml
 ├── ...
 └── gh-aw-upgrade-check.md      # Internal-only scheduled check
 ```
 
 **Workflows** (`.github/workflows/gh-aw-*.md`) are self-contained agent workflow definitions. Each file contains the engine, `workflow_call` trigger (with standard inputs), permissions, concurrency, roles, description, tools, network, safe-outputs, and the full agent prompt. Workflows import only shared fragments from `gh-aw-fragments/`. They trigger **only** on `workflow_call` — they do not have schedule, event, or dispatch triggers directly.
 
-**Triggers** (`gh-agent-workflows/*.yml`) are plain YAML files that define the actual event triggers (schedule, PR events, slash commands, etc.) and call the compiled `.lock.yml` via `uses:`. When copied to `.github/workflows/` by `scripts/dogfood.sh`, they become `trigger-*.yml` (e.g., `pr-review.yml` → `trigger-pr-review.yml`). They serve two purposes: (1) dogfood for running workflows in this repo, and (2) examples for consumer repos to copy and adapt. Triggers are NOT compiled by `gh-aw` — they are plain GitHub Actions YAML.
+**Triggers** (`gh-agent-workflows/<name>/example.yml`) are plain YAML files that define the actual event triggers (schedule, PR events, slash commands, etc.) and call the compiled `.lock.yml` via `uses:`. When copied to `.github/workflows/` by `scripts/dogfood.sh`, they become `trigger-<name>.yml` (e.g., `pr-review/example.yml` → `trigger-pr-review.yml`). They serve two purposes: (1) dogfood for running workflows in this repo, and (2) examples for consumer repos to copy and adapt. Triggers are NOT compiled by `gh-aw` — they are plain GitHub Actions YAML.
+
+Each workflow directory also contains a `README.md` with trigger details, inputs, and safe outputs.
 
 **Shared fragments** (`.github/workflows/gh-aw-fragments/`) provide cross-workflow configuration and guidance. Fragments live directly in this directory — no symlinks. No `on:` field — validated but never compiled standalone. For example, `scheduled-report.md` provides a shared framework for scheduled report workflows.
 
@@ -90,7 +96,7 @@ Fragments live in `.github/workflows/gh-aw-fragments/`. Workflows import them us
 
 ### How compilation works
 
-The `gh-aw` compiler processes `.md` files in `.github/workflows/`. `make sync` (which runs `scripts/dogfood.sh`) copies `*.yml` files from `gh-agent-workflows/` to `.github/workflows/trigger-*.yml`. Workflow `.md` files and `gh-aw-fragments/` live directly in `.github/workflows/` — no symlinks. `gh-aw-fragments/` is a real directory.
+The `gh-aw` compiler processes `.md` files in `.github/workflows/`. `make sync` (which runs `scripts/dogfood.sh`) copies `example.yml` files from `gh-agent-workflows/*/` to `.github/workflows/trigger-*.yml`. Workflow `.md` files and `gh-aw-fragments/` live directly in `.github/workflows/` — no symlinks. `gh-aw-fragments/` is a real directory.
 
 ```text
 .github/workflows/
@@ -100,7 +106,7 @@ The `gh-aw` compiler processes `.md` files in `.github/workflows/`. `make sync` 
 │   └── ...
 ├── gh-aw-pr-review.md          # Workflow (self-contained)
 ├── gh-aw-pr-review.lock.yml    # compiled output
-├── trigger-pr-review.yml       # copied from gh-agent-workflows/ (event triggers)
+├── trigger-pr-review.yml       # copied from gh-agent-workflows/pr-review/example.yml
 ├── gh-aw-docs-drift.md
 ├── gh-aw-docs-drift.lock.yml
 ├── trigger-docs-drift.yml
@@ -112,11 +118,11 @@ The `gh-aw` compiler processes `.md` files in `.github/workflows/`. `make sync` 
 └── ...
 ```
 
-Trigger `.yml` files are copied from `gh-agent-workflows/` as-is by `scripts/dogfood.sh` (with `trigger-` prefix added).
+Trigger `example.yml` files are copied from `gh-agent-workflows/*/` by `scripts/dogfood.sh` (with `trigger-` prefix added).
 
 ### Editing workflows
 
-1. Edit workflows in `.github/workflows/gh-aw-*.md`, triggers in `gh-agent-workflows/*.yml`, or fragments in `.github/workflows/gh-aw-fragments/`
+1. Edit workflows in `.github/workflows/gh-aw-*.md`, triggers in `gh-agent-workflows/*/example.yml`, or fragments in `.github/workflows/gh-aw-fragments/`
 2. Run `make compile` (syncs triggers, then compiles)
 3. Verify 0 errors, 0 warnings
 4. Commit all source files, trigger files, and generated `.lock.yml` files
@@ -128,9 +134,10 @@ make compile          # sync + compile
 ### Adding a new workflow
 
 1. Create the workflow `.github/workflows/gh-aw-<name>.md` with imports (fragments), tools, network, safe-outputs, and the full prompt
-2. Create the trigger `gh-agent-workflows/<name>.yml` with event triggers and `uses: ./.github/workflows/gh-aw-<name>.lock.yml`
-3. Run `make compile`
-4. Verify and commit
+2. Create `gh-agent-workflows/<name>/example.yml` with event triggers and `uses: elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@v0`
+3. Create `gh-agent-workflows/<name>/README.md` with trigger details, inputs, and safe outputs
+4. Run `make compile`
+5. Verify and commit
 
 ### workflow_call Convention
 
@@ -172,6 +179,6 @@ Consumer repos call the compiled `.lock.yml` via `uses:` in a plain YAML workflo
 
 ### Trigger files
 
-Each workflow has a corresponding `<name>.yml` in `gh-agent-workflows/` that defines the actual event triggers and calls the compiled `.lock.yml`. These are plain YAML (not compiled by gh-aw) and are copied to `.github/workflows/trigger-<name>.yml` by `scripts/dogfood.sh` for dogfooding.
+Each workflow has a corresponding `example.yml` in `gh-agent-workflows/<name>/` that defines the actual event triggers and calls the compiled `.lock.yml`. These are plain YAML (not compiled by gh-aw) and are copied to `.github/workflows/trigger-<name>.yml` by `scripts/dogfood.sh` for dogfooding.
 
-Consumer repos use these as starting points: copy the trigger file from `gh-agent-workflows/`, change the `uses:` path from `./.github/workflows/gh-aw-<name>.lock.yml` to `elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@v0`, and customize the `with:` inputs.
+Consumer repos copy a workflow's `example.yml` into their `.github/workflows/` directory and customize the `with:` inputs. The `uses:` path already points to the remote compiled workflow.
