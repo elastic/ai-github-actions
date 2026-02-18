@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# frontmatter-hash: 549ffbfec20849ed3354c6485a7288e0d2d2b30dfef0ac81a724cef7167e2ddd
+# frontmatter-hash: 9a88e75347db5e030ebc6435a5aa5ef06860230690a03ec15794e0a1f6dada7b
 
 name: "Gh Aw Bug Hunter"
 "on":
@@ -50,7 +50,7 @@ name: "Gh Aw Bug Hunter"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

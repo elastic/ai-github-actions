@@ -39,7 +39,7 @@ jobs:
       additional-instructions: |
         Focus on Python best practices and type safety.
     secrets:
-      COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 Commit and push. The workflow triggers on your repo's events and delegates to the centrally-compiled agent workflow. Updates propagate automatically when this repo recompiles -- no action needed in your repo.
@@ -94,7 +94,7 @@ jobs:
       additional-instructions: |
         <your repo-specific instructions>
     secrets:
-      COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 **Slash command workflows** (mention-in-issue, mention-in-pr):
@@ -112,7 +112,7 @@ jobs:
       additional-instructions: |
         <your repo-specific instructions>
     secrets:
-      COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 **PR review** (pr-review):
@@ -129,7 +129,7 @@ jobs:
       !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@main
     secrets:
-      COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 **Issue triage** (issue-triage):
@@ -143,7 +143,7 @@ jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-triage.lock.yml@main
     secrets:
-      COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 **PR checks fix** (pr-checks-fix):
@@ -164,7 +164,7 @@ jobs:
       setup-commands: |
         <your setup commands>
     secrets:
-      COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 ## Classic Installation (With gh-aw)
@@ -192,7 +192,7 @@ Note: with classic installation, you own the full `.md` shim and compile locally
 
 Each workflow has two layers:
 
-1. **Workflow** (`gh-aw-*.md` -> `gh-aw-*.lock.yml`): The agent logic, compiled by `gh-aw`. Triggers only on `workflow_call` with standard inputs (`additional-instructions`, `setup-commands`) and a `COPILOT_TOKEN` secret.
+1. **Workflow** (`gh-aw-*.md` -> `gh-aw-*.lock.yml`): The agent logic, compiled by `gh-aw`. Triggers only on `workflow_call` with standard inputs (`additional-instructions`, `setup-commands`) and a `COPILOT_GITHUB_TOKEN` secret.
 2. **Trigger** (`trigger-*.yml` in `.github/workflows/`): A plain YAML file that defines the actual event triggers (schedule, PR events, slash commands, etc.) and calls the compiled `.lock.yml` via `uses:`. These serve as both examples for consumers and dogfood for this repo.
 
 Consumer repos copy a trigger file from `.github/workflows/`, change the `uses:` path from `./.github/workflows/gh-aw-...` to `elastic/ai-github-actions/.github/workflows/gh-aw-...@main`, and customize the `with:` inputs. No `gh-aw` CLI needed. Updates propagate automatically when this repo recompiles and pushes to `main`.

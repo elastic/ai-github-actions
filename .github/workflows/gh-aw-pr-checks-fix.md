@@ -26,7 +26,7 @@ on:
         required: false
         default: ""
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 concurrency:
   group: pr-checks-fix-${{ github.event.workflow_run.id }}

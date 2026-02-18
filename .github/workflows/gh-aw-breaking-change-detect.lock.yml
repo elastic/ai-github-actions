@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# frontmatter-hash: 40457ca6f3e9f52b1481f81cb9ee0426fca7d5f972abc3d34addbee868865fa0
+# frontmatter-hash: 17290ffcb800e5dd741498a96389b9cb68b792dc2c9c2175ec11cdc9d844e53d
 
 name: "Gh Aw Breaking Change Detect"
 "on":
@@ -50,7 +50,7 @@ name: "Gh Aw Breaking Change Detect"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

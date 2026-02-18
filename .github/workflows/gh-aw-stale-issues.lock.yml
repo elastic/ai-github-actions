@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# frontmatter-hash: 96bd50933ded4e274d9e0cafa4d78b80f73977f41e9684562a3f257262f43d55
+# frontmatter-hash: d182333bd84741269f9ec38486579d650b78760a9c08eaaf2027211c79fbd447
 
 name: "Gh Aw Stale Issues"
 "on":
@@ -50,7 +50,7 @@ name: "Gh Aw Stale Issues"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

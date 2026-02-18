@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-push-to-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# frontmatter-hash: ef7b1ff34a9e145744287d939c02f8b9743fcdfe14f675ce7524a6af03e7430a
+# frontmatter-hash: aa4c88842d3c32f0341b3158f2e649458c522b2a5052033fef685b706303f3c6
 
 name: "PR Checks Fixer"
 "on":
@@ -51,7 +51,7 @@ name: "PR Checks Fixer"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# frontmatter-hash: 89a39e6a2813df628d91fbcca9c77f55e6b0d1d7ebb1c761174d11724cb34799
+# frontmatter-hash: 3ffc090e1054e7f015801565ffb8dc7ff922a819e94dfc1e25bd7baa334f082f
 
 name: "Gh Aw Agent Efficiency"
 "on":
@@ -50,7 +50,7 @@ name: "Gh Aw Agent Efficiency"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

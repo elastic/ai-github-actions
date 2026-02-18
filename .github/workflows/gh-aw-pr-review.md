@@ -37,7 +37,7 @@ on:
         required: false
         default: "low"
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 concurrency:
   group: pr-review-${{ github.event.pull_request.number }}

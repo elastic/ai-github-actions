@@ -10,4 +10,4 @@ jobs:
       !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')
     uses: ./.github/workflows/gh-aw-pr-review.lock.yml
     secrets:
-      COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

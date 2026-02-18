@@ -35,7 +35,7 @@
 #     - gh-aw-fragments/safe-output-review-comment.md
 #     - gh-aw-fragments/safe-output-submit-review.md
 #
-# frontmatter-hash: 158712cecc5ab86c85041816aedccc1bb0ccf716e68c0a76ceae6895847c0eda
+# frontmatter-hash: fcf32953216343581a7fab9e7b0583abc6c5b38ec4edb90a5388a582ccdaee73
 
 name: "PR Review Agent"
 "on":
@@ -62,7 +62,7 @@ name: "PR Review Agent"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

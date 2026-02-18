@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# frontmatter-hash: 186e9941cf6de6fc43aa9c97293af4f5e0415de1a9409887004e636d113debb6
+# frontmatter-hash: 0e7073fe5393704e74bd3277b914e04fda6061fdbef42fc5750809b57175831f
 
 name: "Gh Aw Semantic Function Clustering"
 "on":
@@ -50,7 +50,7 @@ name: "Gh Aw Semantic Function Clustering"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

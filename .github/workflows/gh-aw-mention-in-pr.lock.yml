@@ -38,7 +38,7 @@
 #     - gh-aw-fragments/safe-output-submit-review.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# frontmatter-hash: 6f248d91d032eadd1d12bec836a9781ee0f19640f6eebf93bfadaa5f778a5a98
+# frontmatter-hash: 2984b2a84fd2649858de6de43e010c8c2a4a4ce40e999d09946c5eb6426df12d
 
 name: "PR Assistant"
 "on":
@@ -55,7 +55,7 @@ name: "PR Assistant"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

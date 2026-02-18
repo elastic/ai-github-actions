@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# frontmatter-hash: 001f387ceeac0517dbafef8c8f86986480c3d4604c87f5c4248e4fd1198cfde0
+# frontmatter-hash: dadc7b09456af79c39b8a901a84489c338448b7567843aaf2b441b0487ee2721
 
 name: "Gh Aw Downstream Health"
 "on":
@@ -50,7 +50,7 @@ name: "Gh Aw Downstream Health"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

@@ -27,7 +27,7 @@ on:
         required: false
         default: ""
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
   reaction: "eyes"
 concurrency:

@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# frontmatter-hash: cf1b4cc2467e4f9ad524255f97c6719568d2c70a77b19b4701984312e3c7cda8
+# frontmatter-hash: e74c63272c3b0530266ee9818d872d0bdbf3e04420d7158aee9d79f85cf4c7e0
 
 name: "Code Simplifier"
 "on":
@@ -50,7 +50,7 @@ name: "Code Simplifier"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

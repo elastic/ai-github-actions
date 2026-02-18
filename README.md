@@ -18,7 +18,7 @@ jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@main
     secrets:
-      COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 | Workflow | Trigger | Description |

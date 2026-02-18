@@ -35,7 +35,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# frontmatter-hash: 46cc9514a85a45b63f08dc48e70597f3b4025845fb76d470c477d855e28b3ac1
+# frontmatter-hash: 016e42ad6632134feb9d801ebd567831cb28536a63c0f8400537e9317bedb7b1
 
 name: "Issue Assistant"
 "on":
@@ -52,7 +52,7 @@ name: "Issue Assistant"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

@@ -32,7 +32,7 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-add-comment.md
 #
-# frontmatter-hash: 839a7da4f7f05ef15b1b3d1efc5913a9dca6153ab28cd9633aa5b969d28d130e
+# frontmatter-hash: 6ef5a323cdbb28aeda17884ee63cb03e127998a62be8333b0e20d5e85ac34b43
 
 name: "Issue Triage Agent"
 "on":
@@ -49,7 +49,7 @@ name: "Issue Triage Agent"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

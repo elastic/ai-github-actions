@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# frontmatter-hash: 0f5cb88144e734e3ec40f52e7b45789996726254a26988f053e49634c2fac2d7
+# frontmatter-hash: 77495fe4759ae11c3bd051beea2054870d9ed73d0eb2d00f9bdc9c32da3d6c80
 
 name: "Gh Aw Docs Drift"
 "on":
@@ -50,7 +50,7 @@ name: "Gh Aw Docs Drift"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

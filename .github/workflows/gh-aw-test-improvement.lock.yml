@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# frontmatter-hash: 1c137d3a958cea139bea2ace4888668c7fc19987b09c9b69401d8001a0b28a42
+# frontmatter-hash: ff0d84434d82fa8a56c679a65b7206cf657cbf3da1423c1fb782fd06c54fa49c
 
 name: "Test Improvement Agent"
 "on":
@@ -50,7 +50,7 @@ name: "Test Improvement Agent"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}

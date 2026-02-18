@@ -10,4 +10,4 @@ jobs:
       startsWith(github.event.comment.body, '/ai')
     uses: ./.github/workflows/gh-aw-mention-in-pr.lock.yml
     secrets:
-      COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

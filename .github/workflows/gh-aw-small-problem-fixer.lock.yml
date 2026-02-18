@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# frontmatter-hash: 6a2465fb9090f6c9ad33a4135c14e75837f96924356acf43bf04bc29c690a760
+# frontmatter-hash: 7d4ae35c9129f549c2d1ca0cc70422285bb696fe1ac9b36a4e7cb8d7ffd111c9
 
 name: "Small Problem Fixer"
 "on":
@@ -50,7 +50,7 @@ name: "Small Problem Fixer"
         required: false
         type: string
     secrets:
-      COPILOT_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: true
 
 permissions: {}
