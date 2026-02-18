@@ -8,4 +8,4 @@ jobs:
   run:
     uses: ./.github/workflows/gh-aw-agent-efficiency.lock.yml
     secrets:
-      COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}
+      COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
