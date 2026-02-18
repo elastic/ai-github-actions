@@ -4,10 +4,6 @@ on:
     - cron: "0 13 * * 1-5"
   workflow_dispatch:
 
-concurrency:
-  group: breaking-change-detect
-  cancel-in-progress: true
-
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-breaking-change-detect.lock.yml

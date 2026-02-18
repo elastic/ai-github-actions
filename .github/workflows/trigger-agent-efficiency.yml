@@ -4,10 +4,6 @@ on:
     - cron: "0 16 * * 1-5"
   workflow_dispatch:
 
-concurrency:
-  group: agent-efficiency
-  cancel-in-progress: true
-
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-agent-efficiency.lock.yml

@@ -4,10 +4,6 @@ on:
     - cron: "0 12 * * 1-5"
   workflow_dispatch:
 
-concurrency:
-  group: small-problem-fixer
-  cancel-in-progress: true
-
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-small-problem-fixer.lock.yml

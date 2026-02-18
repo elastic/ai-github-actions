@@ -30,9 +30,6 @@ name: PR Review
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
-concurrency:
-  group: pr-review-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@main
@@ -107,9 +104,6 @@ name: <Workflow Name>
 on:
   issue_comment:
     types: [created]
-concurrency:
-  group: <name>-${{ github.event.issue.number }}
-  cancel-in-progress: true
 jobs:
   run:
     if: startsWith(github.event.comment.body, '/ai')
@@ -128,9 +122,6 @@ name: PR Review
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
-concurrency:
-  group: pr-review-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
 jobs:
   run:
     if: >-
@@ -148,9 +139,6 @@ name: Issue Triage
 on:
   issues:
     types: [opened]
-concurrency:
-  group: issue-triage-${{ github.event.issue.number }}
-  cancel-in-progress: true
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-triage.lock.yml@main

@@ -3,10 +3,6 @@ on:
   issue_comment:
     types: [created]
 
-concurrency:
-  group: mention-pr-${{ github.event.issue.number }}
-  cancel-in-progress: true
-
 jobs:
   run:
     if: >-

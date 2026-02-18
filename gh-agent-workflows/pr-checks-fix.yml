@@ -4,10 +4,6 @@ on:
     workflows: ["CI", "Build", "Test"]
     types: [completed]
 
-concurrency:
-  group: pr-checks-fix-${{ github.event.workflow_run.id }}
-  cancel-in-progress: false
-
 jobs:
   run:
     if: >-

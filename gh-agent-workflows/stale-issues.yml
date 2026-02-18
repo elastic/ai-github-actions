@@ -4,10 +4,6 @@ on:
     - cron: "0 15 * * 1-5"
   workflow_dispatch:
 
-concurrency:
-  group: stale-issues
-  cancel-in-progress: true
-
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-stale-issues.lock.yml
