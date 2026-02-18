@@ -76,6 +76,7 @@ Identify under-tested code paths, add focused tests, and remove or consolidate d
 - **Only one PR per run.**
 - No large refactors; prioritize targeted test additions or small cleanup of redundant tests.
 - If the change set is large or unsafe, call `noop` with a brief reason.
+- **Most runs should end with `noop`.** Only open a PR when the added tests are clearly valuable — they test real behavior, not trivial getters, and they would catch actual regressions.
 
 ## Step 1: Gather context
 
@@ -101,15 +102,26 @@ Identify under-tested code paths, add focused tests, and remove or consolidate d
 
 ## Step 4: Verify
 
-- Run the most relevant test command(s). If the full suite is too heavy, run targeted tests.
-- If tests or coverage cannot be run, explain why in the PR.
+- Run the most relevant test command(s). **All tests — new and existing — must pass.** If the full suite is too heavy, run targeted tests.
+- If tests or coverage cannot be run, call `noop`. Do not open a PR with untested test code.
 
-## Step 5: Create the PR
+## Step 5: Quality Gate — Test Value Check
+
+Before creating the PR, evaluate each new test:
+
+- **Does it test real behavior?** Tests for trivial getters, simple constructors, or obvious pass-through functions are not worth filing a PR for.
+- **Would it catch a real regression?** If the tested code changed in a buggy way, would this test actually fail?
+- **Is it maintainable?** Fragile tests that break on cosmetic changes (string formatting, log messages) add burden, not value.
+- **Does it follow project conventions?** Match the existing test style, naming, and organization.
+
+If the tests don't pass this bar, call `noop`. Low-value tests are worse than no tests — they create maintenance burden and false confidence.
+
+## Step 6: Create the PR
 
 1. Commit the changes locally.
 2. Call `create_pull_request` with:
    - **Title**: concise summary of the test improvements
-   - **Body**: summary, tests run (or not run), and any removed or merged tests
+   - **Body**: summary, what behavior the tests cover and why it matters, tests run and their results, and any removed or merged tests
 3. If no safe improvements are found, call `noop` with a brief reason.
 
 ${{ inputs.additional-instructions }}

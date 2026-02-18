@@ -99,6 +99,8 @@ Analyze Go source code to identify semantic function clusters, misplaced functio
 - Test or generated files
 - Trivial helpers (<5 lines) unless duplicated in multiple places
 - Single-occurrence patterns with no clear refactor benefit
+- Subjective code organization preferences — only flag placements that are clearly wrong, not "could be slightly better"
+- Near-duplicates that exist for good reasons (different error handling, different types, intentional specialization)
 
 ### Issue Format
 
@@ -131,6 +133,11 @@ Analyze Go source code to identify semantic function clusters, misplaced functio
 > - Serena tools used: `activate_project`, `get_symbols_overview`, `find_symbol`, `search_for_pattern`
 > - Analysis date: [timestamp]
 
-Only create an issue when there are clear, actionable findings; otherwise call `noop`.
+**Noop is the expected outcome most days.** Only create an issue when findings are:
+- **Concrete**: You can name the exact functions, files, and what should change.
+- **High-impact**: The refactor would meaningfully improve maintainability, not just satisfy an abstract ideal.
+- **Non-controversial**: A maintainer would agree this is a clear improvement without debate.
+
+If findings are marginal or subjective, call `noop`.
 
 ${{ inputs.additional-instructions }}

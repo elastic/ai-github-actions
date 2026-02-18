@@ -200,10 +200,14 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           ## Rigor
           
-          - If you claim something is missing or broken, find the evidence in the code.
-          - If a conclusion depends on assumptions you haven't confirmed, do not assert it.
-          - "I don't know" is better than a wrong answer.
+          **Silence is better than noise. A false positive wastes a human's time and erodes trust in every future report.**
+          
+          - If you claim something is missing or broken, show the exact evidence in the code — file path, line number, and what you observed.
+          - If a conclusion depends on assumptions you haven't confirmed, do not assert it. Verify first; if you cannot verify, do not report.
+          - "I don't know" is better than a wrong answer. `noop` is better than a speculative finding.
           - It's worth the time to verify now versus guessing and forcing someone else to verify later.
+          - Before filing any issue or opening any PR, re-read your own output as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
+          - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
@@ -286,11 +290,20 @@ jobs:
           - What constitutes a finding worth reporting
           - What to skip or ignore
           
-          ### Step 3: Report
+          ### Step 3: Self-Review (Quality Gate)
           
-          If no findings, call `noop` with a brief reason and stop.
+          Before filing anything, critically evaluate every finding against these criteria:
           
-          If there are findings, call `create_issue` with a structured report. Use the issue format specified in the Report Assignment if one is provided, otherwise use this default format:
+          1. **Evidence is concrete** — you can point to exact file paths, line numbers, commit SHAs, or command outputs. No "I believe" or "it seems."
+          2. **Finding is actionable** — a maintainer reading the issue can act on it without re-investigating from scratch.
+          3. **Finding is not already tracked** — you checked open issues and recent PRs for duplicates.
+          4. **Finding is worth a human's time** — the issue is material enough that a maintainer would thank you for filing it, not close it as noise.
+          
+          If zero findings pass all four criteria, call `noop` with a brief reason and stop. **Noop is the expected outcome most days.** Filing nothing is a success when there is nothing worth filing.
+          
+          ### Step 4: Report
+          
+          If there are findings that pass the quality gate, call `create_issue` with a structured report. Use the issue format specified in the Report Assignment if one is provided, otherwise use this default format:
           
           **Issue title:** Brief summary of findings
           
@@ -312,7 +325,7 @@ jobs:
           - Be specific about what needs to happen
           - Include links and references where possible
           - Make suggested actions concrete enough to act on without re-investigating
-          - If a finding is ambiguous, include it but note the uncertainty
+          - If a finding is ambiguous, it does not pass the quality gate — drop it
           
           ## Report Assignment
           
@@ -355,6 +368,17 @@ jobs:
           - Changes that already include documentation or migration notes
           - Test-only changes
           - Changes already tracked by an open issue or PR
+          - Additive changes that don't break existing consumers (new optional inputs with defaults, new workflows, new outputs)
+          - Changes to internal/private interfaces not consumed by downstream repos
+          
+          ### Quality Gate — When to Noop
+          
+          **Noop is the expected outcome most days.** Only file an issue when you can demonstrate a concrete break:
+          - A downstream consumer using the documented interface would **fail or get wrong results** after this change.
+          - You can identify the **specific interface contract** that was broken (removed input, changed type, renamed workflow, etc.).
+          - The break is **not documented** anywhere in the PR, release notes, or repo docs.
+          
+          Do not file for: speculative breaks ("this might affect someone"), internal restructuring, or changes where backward compatibility is maintained (even if the approach changed).
           
           ### Issue Format
           
