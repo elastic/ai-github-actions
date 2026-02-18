@@ -1,0 +1,15 @@
+name: Downstream Health
+on:
+  schedule:
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: downstream-health
+  cancel-in-progress: true
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-downstream-health.lock.yml
+    secrets:
+      COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}

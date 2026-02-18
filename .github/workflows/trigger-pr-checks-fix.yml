@@ -1,0 +1,18 @@
+name: PR Checks Fix
+on:
+  workflow_run:
+    workflows: ["CI", "Build", "Test"]
+    types: [completed]
+
+concurrency:
+  group: pr-checks-fix-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      toJSON(github.event.workflow_run.pull_requests) != '[]'
+    uses: ./.github/workflows/gh-aw-pr-checks-fix.lock.yml
+    secrets:
+      COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}

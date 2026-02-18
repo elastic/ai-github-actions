@@ -1,0 +1,15 @@
+name: Code Simplifier
+on:
+  schedule:
+    - cron: "0 13 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: code-simplifier
+  cancel-in-progress: true
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-code-simplifier.lock.yml
+    secrets:
+      COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}

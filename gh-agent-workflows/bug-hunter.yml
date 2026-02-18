@@ -1,0 +1,15 @@
+name: Bug Hunter
+on:
+  schedule:
+    - cron: "0 11 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: bug-hunter
+  cancel-in-progress: true
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-bug-hunter.lock.yml
+    secrets:
+      COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}

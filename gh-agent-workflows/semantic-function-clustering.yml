@@ -1,0 +1,15 @@
+name: Semantic Function Clustering
+on:
+  schedule:
+    - cron: "0 12 * * 1-5"
+  workflow_dispatch:
+
+concurrency:
+  group: semantic-function-clustering
+  cancel-in-progress: true
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-semantic-function-clustering.lock.yml
+    secrets:
+      COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}

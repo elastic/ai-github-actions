@@ -1,0 +1,14 @@
+name: Issue Triage
+on:
+  issues:
+    types: [opened]
+
+concurrency:
+  group: issue-triage-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-issue-triage.lock.yml
+    secrets:
+      COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}

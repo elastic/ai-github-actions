@@ -1,0 +1,17 @@
+name: Mention in Issue
+on:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: mention-issue-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  run:
+    if: >-
+      github.event.issue.pull_request == null &&
+      startsWith(github.event.comment.body, '/ai')
+    uses: ./.github/workflows/gh-aw-mention-in-issue.lock.yml
+    secrets:
+      COPILOT_TOKEN: ${{ secrets.COPILOT_TOKEN }}
