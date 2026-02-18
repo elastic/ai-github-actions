@@ -76,7 +76,9 @@ Find a single reproducible, user-impacting bug in the repository that can be cov
    - Run `git log --since="14 days ago" --stat` and identify candidates with user-facing impact.
    - Read the diffs and related files for each candidate.
 2. Check for existing reports:
-   - Search open issues for similar symptoms or areas before filing a new issue.
+   - Search open and closed issues for similar symptoms or areas before filing a new issue.
+   - Prioritize Bug Hunter reports by searching `repo:{owner}/{repo} is:issue (label:bug-hunter OR in:title "[bug-hunter]")`.
+   - If a close match exists, do not file a new issue.
 3. Reproduce locally — this step is **mandatory**, not optional:
    - Use the smallest relevant command from the docs or Makefile to trigger the behavior (for example `make compile` or `scripts/dogfood.sh`).
    - Capture the exact steps and output.
@@ -125,5 +127,9 @@ Call `noop` if any of these are true:
 >
 > ## Evidence
 > - [Commands/output you captured during reproduction, file references, or links]
+
+### Labeling
+
+- If the `bug-hunter` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[bug-hunter]` title prefix only.
 
 ${{ inputs.additional-instructions }}
