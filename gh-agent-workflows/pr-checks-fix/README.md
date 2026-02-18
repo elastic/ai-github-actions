@@ -1,0 +1,31 @@
+# PR Checks Fix
+
+Analyze failed PR checks and optionally push fixes.
+
+## Quick Install
+
+```bash
+mkdir -p .github/workflows && curl -sL \
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-checks-fix/example.yml \
+  -o .github/workflows/pr-checks-fix.yml
+```
+
+See [example.yml](example.yml) for the full workflow file.
+
+## Trigger
+
+| Event | Types | Condition |
+| --- | --- | --- |
+| `workflow_run` | `completed` | CI workflow failed and the run is associated with a PR |
+
+## Inputs
+
+| Input | Description | Required | Default |
+| --- | --- | --- | --- |
+| `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
+| `setup-commands` | Shell commands run before the agent starts | No | `""` |
+
+## Safe Outputs
+
+- `add-comment` — post a comment explaining the failure (max 3)
+- `push-to-pull-request-branch` — push a fix to the PR branch

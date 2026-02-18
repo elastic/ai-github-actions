@@ -6,20 +6,22 @@
 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
-| PR Review | PR opened/updated | AI code review with inline comments |
-| Issue Triage | New issues | Investigate and provide implementation plans |
-| Mention in Issue | `/ai` in issues | Answer questions, debug, create PRs |
-| Mention in PR | `/ai` in PRs | Review, fix code, push changes |
-| PR Checks Fix | Failed PR checks | Analyze failures and optionally push fixes |
-| Small Problem Fixer | Weekday schedule | Fix small, related issues and open a focused PR |
-| Code Simplifier | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
-| Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |
-| Bug Hunter | Weekday schedule | Find reproducible bugs and file reports |
-| Docs Drift | Weekday schedule | Detect code changes needing doc updates |
-| Docs New Contributor Review | Weekly schedule | Review docs from a new contributor perspective |
-| Downstream Health | Daily schedule | Monitor downstream repo quality |
-| Breaking Change Detect | Weekday schedule | Detect undocumented public breaking changes |
-| Semantic Function Clustering | Weekday schedule | Identify function clustering refactor opportunities |
+| [PR Review](pr-review/) | PR opened/updated | AI code review with inline comments |
+| [Issue Triage](issue-triage/) | New issues | Investigate and provide implementation plans |
+| [Mention in Issue](mention-in-issue/) | `/ai` in issues | Answer questions, debug, create PRs |
+| [Mention in PR](mention-in-pr/) | `/ai` in PRs | Review, fix code, push changes |
+| [PR Checks Fix](pr-checks-fix/) | Failed PR checks | Analyze failures and optionally push fixes |
+| [Small Problem Fixer](small-problem-fixer/) | Weekday schedule | Fix small, related issues and open a focused PR |
+| [Code Simplifier](code-simplifier/) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
+| [Test Improvement](test-improvement/) | Weekly schedule | Add targeted tests and clean up redundant coverage |
+| [Bug Hunter](bug-hunter/) | Weekday schedule | Find reproducible bugs and file reports |
+| [Docs Drift](docs-drift/) | Weekday schedule | Detect code changes needing doc updates |
+| [Docs New Contributor Review](docs-new-contributor-review/) | Weekly schedule | Review docs from a new contributor perspective |
+| [Downstream Health](downstream-health/) | Daily schedule | Monitor downstream repo quality |
+| [Breaking Change Detect](breaking-change-detect/) | Weekday schedule | Detect undocumented public breaking changes |
+| [Semantic Function Clustering](semantic-function-clustering/) | Weekday schedule | Identify function clustering refactor opportunities |
+| [Stale Issues](stale-issues/) | Weekday schedule | Find resolved issues that can be closed |
+| [Agent Efficiency](agent-efficiency/) | Weekday schedule | Analyze agent logs for inefficiencies |
 
 ## Quick Start (Caller-Based, Recommended)
 
@@ -44,6 +46,8 @@ jobs:
 ```
 
 Commit and push. The workflow triggers on your repo's events and delegates to the centrally-compiled agent workflow. Updates propagate automatically when this repo recompiles -- no action needed in your repo.
+
+Each workflow directory contains an [example.yml](pr-review/example.yml) you can copy as a starting point. See the per-workflow README for trigger details, inputs, and safe outputs.
 
 ### Standard Inputs
 
@@ -76,98 +80,6 @@ setup-commands: |
   make build
 ```
 
-### Consumer Caller Templates
-
-**Scheduled workflows** (test-improvement, code-simplifier, small-problem-fixer, bug-hunter, stale-issues, docs-drift, docs-new-contributor-review, downstream-health, breaking-change-detect, semantic-function-clustering, agent-efficiency):
-
-```yaml
-name: <Workflow Name>
-on:
-  schedule:
-    - cron: "<your schedule>"
-  workflow_dispatch:
-jobs:
-  run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@v0
-    with:
-      setup-commands: |
-        <your setup commands>
-      additional-instructions: |
-        <your repo-specific instructions>
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-```
-
-**Slash command workflows** (mention-in-issue, mention-in-pr):
-
-```yaml
-name: <Workflow Name>
-on:
-  issue_comment:
-    types: [created]
-jobs:
-  run:
-    if: startsWith(github.event.comment.body, '/ai')
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@v0
-    with:
-      additional-instructions: |
-        <your repo-specific instructions>
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-```
-
-**PR review** (pr-review):
-
-```yaml
-name: PR Review
-on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
-jobs:
-  run:
-    if: >-
-      github.event.pull_request.draft == false &&
-      !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-```
-
-**Issue triage** (issue-triage):
-
-```yaml
-name: Issue Triage
-on:
-  issues:
-    types: [opened]
-jobs:
-  run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-triage.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-```
-
-**PR checks fix** (pr-checks-fix):
-
-```yaml
-name: PR Checks Fix
-on:
-  workflow_run:
-    workflows: ["CI"]  # replace with your CI workflow name(s)
-    types: [completed]
-jobs:
-  run:
-    if: >-
-      github.event.workflow_run.conclusion == 'failure' &&
-      toJSON(github.event.workflow_run.pull_requests) != '[]'
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-checks-fix.lock.yml@v0
-    with:
-      setup-commands: |
-        <your setup commands>
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-```
-
 ## Classic Installation (With gh-aw)
 
 For repos that want local compilation and full customization (engine, permissions, safe-outputs), the `gh aw add` path is still supported.
@@ -194,9 +106,9 @@ Note: with classic installation, you own the full `.md` shim and compile locally
 Each workflow has two layers:
 
 1. **Workflow** (`gh-aw-*.md` -> `gh-aw-*.lock.yml`): The agent logic, compiled by `gh-aw`. Triggers only on `workflow_call` with standard inputs (`additional-instructions`, `setup-commands`) and a `COPILOT_GITHUB_TOKEN` secret.
-2. **Trigger** (`trigger-*.yml` in `.github/workflows/`): A plain YAML file that defines the actual event triggers (schedule, PR events, slash commands, etc.) and calls the compiled `.lock.yml` via `uses:`. These serve as both examples for consumers and dogfood for this repo.
+2. **Trigger** (`<name>/example.yml`): A plain YAML file that defines the actual event triggers (schedule, PR events, slash commands, etc.) and calls the compiled `.lock.yml` via `uses:`. These serve as both examples for consumers and dogfood for this repo (copied to `.github/workflows/trigger-*.yml` by `scripts/dogfood.sh`).
 
-Consumer repos copy a trigger file from `.github/workflows/`, change the `uses:` path from `./.github/workflows/gh-aw-...` to `elastic/ai-github-actions/.github/workflows/gh-aw-...@main`, and customize the `with:` inputs. No `gh-aw` CLI needed. Updates propagate automatically when this repo recompiles and pushes to `main`.
+Consumer repos copy a workflow's `example.yml`, change the `uses:` path if needed, and customize the `with:` inputs. No `gh-aw` CLI needed. Updates propagate automatically when this repo recompiles and pushes to `main`.
 
 ## Customization (Classic Installation)
 
