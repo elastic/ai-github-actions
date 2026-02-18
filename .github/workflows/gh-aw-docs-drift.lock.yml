@@ -21,36 +21,55 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Check for gh-aw releases and assess whether our workflows need upgrading
+# Detect code changes that require documentation updates and file issues
 #
 # Resolved workflow manifest:
 #   Imports:
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
+#     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3eea9806a11e93068fa87c87d8a961c822b30b46759b165a34ead85eac16d7dd"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"396deaa78c7d837eca54585db2639522b078775fd99ab5c023915966640eba3f"}
 
-name: "Gh Aw Upgrade Check"
+name: "Gh Aw Docs Drift"
 "on":
-  schedule:
-  - cron: "17 14 * * 1-5"
-    # Friendly format: daily around 14:00 on weekdays (scattered)
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      additional-instructions:
+        default: ""
+        description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      messages-footer:
+        default: ""
+        description: Footer appended to all agent comments and reviews
+        required: false
+        type: string
+      setup-commands:
+        default: ""
+        description: Shell commands to run before the agent starts (dependency install, build, etc.)
+        required: false
+        type: string
+    secrets:
+      COPILOT_GITHUB_TOKEN:
+        required: true
 
 permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: gh-aw-upgrade-check
+  group: docs-drift
 
-run-name: "Gh Aw Upgrade Check"
+run-name: "Gh Aw Docs Drift"
 
 jobs:
   activation:
+    needs: pre_activation
+    if: needs.pre_activation.outputs.activated == 'true'
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -73,7 +92,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-upgrade-check.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-docs-drift.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -84,6 +103,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -222,6 +242,11 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          ## Message Footer
+          
+          A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           ## create-issue Limitations
           
           - **Title**: Max 128 characters. Sanitized (special characters escaped).
@@ -293,79 +318,66 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          Check for recent gh-aw releases and determine if our workflows need upgrading or adjusting.
-          
-          A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
+          Detect documentation drift — code changes that require corresponding documentation updates.
           
           ### Data Gathering
           
-          1. Read our current `Makefile` to find the pinned `GH_AW_VERSION` (e.g., `v0.44.0`).
-          2. Read all workflow files in `.github/workflows/gh-aw-*.md` to understand our current configuration — frontmatter fields, imports, safe-outputs, tools, network allows, and prompt patterns.
-          3. Fetch recent gh-aw releases using `gh api repos/github/gh-aw/releases?per_page=10` to get the last 10 releases. Identify all releases newer than our pinned version.
-          4. If we are already on the latest release, report no findings and stop.
-          5. For each newer release, read the release notes (the `body` field). Also fetch the CHANGELOG if needed: `web-fetch` from `https://raw.githubusercontent.com/github/gh-aw/main/CHANGELOG.md`.
+          Determine the lookback window based on the current day of the week:
+          - **Monday**: Use `--since="3 days ago"` to capture Friday, Saturday, and Sunday
+          - **Tuesday through Friday**: Use `--since="1 day ago"` to capture the previous day
+          - **Manual trigger** (`workflow_dispatch`): Use `--since="1 day ago"`
+          
+          Run `git log --since="<window>" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
           
           ### What to Look For
           
-          Compare the release notes and changelog entries against our workflow configurations. Focus on:
+          For each commit (or group of related commits), determine whether the changes could require documentation updates. Focus on:
           
-          1. **Breaking changes** — removed or renamed frontmatter fields, changed compiler behavior, deprecated features we rely on
-          2. **New features we should adopt** — new frontmatter fields, new safe-outputs, new tools, new engine options that would benefit our workflows
-          3. **Bug fixes relevant to us** — fixes for issues we may be experiencing or working around
-          4. **Security improvements** — patches or hardening we should pick up
-          5. **Safe-output changes** — new safe-outputs, changed defaults, removed options
-          6. **Compiler changes** — new validation rules, changed strict mode behavior, new warnings that may affect our compilation
+          1. **Public API changes** — new, renamed, or removed functions, endpoints, CLI flags, configuration options, or workflow inputs/outputs
+          2. **Behavioral changes** — altered defaults, changed error messages, modified control flow that affects user-facing behavior
+          3. **New features or workflows** — anything a user or contributor would need to know about
+          4. **Dependency or tooling changes** — version bumps, new dependencies, changed build/test commands
+          5. **Structural changes** — moved, renamed, or deleted files that are referenced in documentation
+          6. **Configuration changes** — new environment variables, changed file formats, altered directory structures
           
           ### How to Analyze
           
-          For each finding:
-          - Cross-reference against our actual workflow files to determine if the change is relevant to us
-          - Check if we use the affected feature/field/option
-          - Assess the upgrade urgency: critical (breaking/security), recommended (useful features/fixes), or informational (nice-to-know)
-          - If a breaking change affects us, describe specifically which workflow files need updating and how
+          For each potentially impactful change:
+          - Read the full diff to understand what changed
+          - Read the current documentation files (README, DEVELOPING, CONTRIBUTING, docs/, etc.) to understand what's documented
+          - Check whether the relevant documentation was already updated in the same commit or a subsequent commit within the lookback window
+          - Check whether an open issue or PR already tracks the documentation update
           
           ### What to Skip
           
-          - Changes to gh-aw internals that don't affect workflow authors (compiler refactors, CI changes, test improvements)
-          - New features we have no use for based on our current workflow patterns
-          - Changes already addressed in our current configuration
+          - Purely internal refactors with no user-facing impact
+          - Changes where documentation was already updated in the same or a later commit
+          - Changes where an open issue or PR already tracks the documentation update
+          - Test-only changes
           
           ### Issue Format
           
-          **Issue title:** "gh-aw upgrade available: [current version] → [latest version]"
+          **Issue title:** Brief summary of what's out of date (e.g., "Update README for new docs-drift workflow")
           
           **Issue body:**
           
-          > A new version of gh-aw is available. We are currently on `[current version]`, latest is `[latest version]`.
+          > Recent code changes in the repository have introduced documentation drift. The following changes need corresponding documentation updates.
           >
-          > ## Upgrade Assessment
+          > ## Changes Requiring Documentation Updates
           >
-          > **Urgency:** [Critical / Recommended / Informational]
+          > ### 1. [Brief description of the change]
           >
-          > ## Relevant Changes
+          > **Commit(s):** [SHA(s) with links]
+          > **What changed:** [Concise description of the code change]
+          > **Documentation impact:** [Which doc file(s) need updating and what specifically needs to change]
           >
-          > ### [version tag]
+          > ### 2. [Next change...]
           >
-          > #### Breaking Changes (if any)
-          > - **[change]**: [impact on our workflows and what needs updating]
+          > ## Suggested Actions
           >
-          > #### New Features Worth Adopting
-          > - **[feature]**: [what it does and which of our workflows would benefit]
-          >
-          > #### Bug Fixes
-          > - **[fix]**: [what was broken and whether it affects us]
-          >
-          > #### Security
-          > - **[patch]**: [what was addressed]
-          >
-          > ### [next version tag...]
-          >
-          > ## Upgrade Steps
-          >
-          > - [ ] Update `GH_AW_VERSION` in `Makefile` from `[current]` to `[latest]`
-          > - [ ] [Any workflow file changes needed for breaking changes]
-          > - [ ] Run `make compile` and verify 0 errors, 0 warnings
-          > - [ ] [Any other specific steps]
+          > - [ ] [Specific, actionable checkbox for each documentation update needed]
+          
+          __GH_AW_EXPR_49B959F1__
           
           GH_AW_PROMPT_EOF
       - name: Interpolate variables and render templates
@@ -373,6 +385,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -383,6 +396,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -404,6 +418,7 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
+                GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -450,7 +465,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawupgradecheck
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawdocsdrift
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
@@ -469,6 +484,12 @@ jobs:
           persist-credentials: false
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
+      - env:
+          SETUP_COMMANDS: ${{ inputs.setup-commands }}
+        if: ${{ inputs.setup-commands != '' }}
+        name: Repo-specific setup
+        run: eval "$SETUP_COMMANDS"
+
       - name: Configure Git credentials
         env:
           REPO_NAME: ${{ github.repository }}
@@ -504,10 +525,10 @@ jobs:
             const awInfo = {
               engine_id: "copilot",
               engine_name: "GitHub Copilot CLI",
-              model: "claude-opus-4.6",
+              model: "gpt-5.2-codex",
               version: "",
               agent_version: "0.0.410",
-              workflow_name: "Gh Aw Upgrade Check",
+              workflow_name: "Gh Aw Docs Drift",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -569,7 +590,7 @@ jobs:
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[gh-aw-upgrade] \".",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[docs-drift] \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -876,7 +897,7 @@ jobs:
         run: |
           set -o pipefail
           sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.githubusercontent.com,agents-md-generator.fastmcp.app,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,codeload.github.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,lfs.github.com,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.0 --skip-pull --enable-api-proxy \
-            -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --model claude-opus-4.6 --allow-all-tools --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
+            -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --model gpt-5.2-codex --allow-all-tools --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -1064,7 +1085,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Gh Aw Upgrade Check"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Docs Drift"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1077,7 +1098,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Upgrade Check"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Docs Drift"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1090,13 +1111,13 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Upgrade Check"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Docs Drift"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-upgrade-check"
+          GH_AW_WORKFLOW_ID: "gh-aw-docs-drift"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
-          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.\"}"
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1109,7 +1130,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Upgrade Check"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Docs Drift"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1157,8 +1178,8 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Gh Aw Upgrade Check"
-          WORKFLOW_DESCRIPTION: "Check for gh-aw releases and assess whether our workflows need upgrading"
+          WORKFLOW_NAME: "Gh Aw Docs Drift"
+          WORKFLOW_DESCRIPTION: "Detect code changes that require documentation updates and file issues"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1195,7 +1216,7 @@ jobs:
           mkdir -p /tmp/gh-aw/
           mkdir -p /tmp/gh-aw/agent/
           mkdir -p /tmp/gh-aw/sandbox/agent/logs/
-          copilot --add-dir /tmp/ --add-dir /tmp/gh-aw/ --add-dir /tmp/gh-aw/agent/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --model claude-opus-4.6 --allow-tool 'shell(cat)' --allow-tool 'shell(grep)' --allow-tool 'shell(head)' --allow-tool 'shell(jq)' --allow-tool 'shell(ls)' --allow-tool 'shell(tail)' --allow-tool 'shell(wc)' --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$COPILOT_CLI_INSTRUCTION" 2>&1 | tee /tmp/gh-aw/threat-detection/detection.log
+          copilot --add-dir /tmp/ --add-dir /tmp/gh-aw/ --add-dir /tmp/gh-aw/agent/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --model gpt-5.2-codex --allow-tool 'shell(cat)' --allow-tool 'shell(grep)' --allow-tool 'shell(head)' --allow-tool 'shell(jq)' --allow-tool 'shell(ls)' --allow-tool 'shell(tail)' --allow-tool 'shell(wc)' --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$COPILOT_CLI_INSTRUCTION" 2>&1 | tee /tmp/gh-aw/threat-detection/detection.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -1222,6 +1243,28 @@ jobs:
           path: /tmp/gh-aw/threat-detection/detection.log
           if-no-files-found: ignore
 
+  pre_activation:
+    runs-on: ubuntu-slim
+    outputs:
+      activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
+    steps:
+      - name: Setup Scripts
+        uses: github/gh-aw/actions/setup@5d8900eb6f6230c9d41a3c30af320150a2361285 # v0.45.7
+        with:
+          destination: /opt/gh-aw/actions
+      - name: Check team membership for workflow
+        id: check_membership
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GH_AW_REQUIRED_ROLES: admin,maintainer,write
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('/opt/gh-aw/actions/check_membership.cjs');
+            await main();
+
   safe_outputs:
     needs:
       - agent
@@ -1234,10 +1277,10 @@ jobs:
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
-      GH_AW_ENGINE_MODEL: "claude-opus-4.6"
-      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-upgrade-check"
-      GH_AW_WORKFLOW_NAME: "Gh Aw Upgrade Check"
+      GH_AW_ENGINE_MODEL: "gpt-5.2-codex"
+      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
+      GH_AW_WORKFLOW_ID: "gh-aw-docs-drift"
+      GH_AW_WORKFLOW_NAME: "Gh Aw Docs Drift"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
@@ -1264,7 +1307,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"[gh-aw-upgrade] \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"[docs-drift] \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

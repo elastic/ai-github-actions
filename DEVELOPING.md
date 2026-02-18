@@ -4,17 +4,17 @@
 
 | Directory | What | Docs |
 | --- | --- | --- |
-| `gh-agent-workflows/` | Agentic workflow templates (shims, prompts, shared fragments) | [DEVELOPING.md](gh-agent-workflows/DEVELOPING.md) |
+| `.github/workflows/` | Workflow `gh-aw-*.md` sources, compiled `gh-aw-*.lock.yml` files, trigger copies, fragments | [DEVELOPING.md](gh-agent-workflows/DEVELOPING.md) |
+| `gh-agent-workflows/` | Trigger `.yml` examples/dogfood, shared fragments, consumer docs | [DEVELOPING.md](gh-agent-workflows/DEVELOPING.md) |
 | `claude-workflows/` | Composite actions wrapping Claude Code | [DEVELOPING.md](claude-workflows/DEVELOPING.md) |
-| `.github/workflows/` | Compiled lock files + copied shims for compilation | — |
 
-Internal-only workflows (e.g., `gh-aw-upgrade-check.md`, `ci.yml`, `release.yml`) live directly in `.github/workflows/` and are not installable via `gh aw add`. See [gh-agent-workflows/DEVELOPING.md](gh-agent-workflows/DEVELOPING.md) for details on internal agentic workflows.
+Internal-only workflows (e.g., `gh-aw-upgrade-check.md`, `ci.yml`, `release.yml`) also live in `.github/workflows/`. See [gh-agent-workflows/DEVELOPING.md](gh-agent-workflows/DEVELOPING.md) for the full architecture.
 
 ## Quick Start
 
 ```bash
 make setup            # install actionlint, action-validator, gh CLI, gh-aw compiler
-make compile          # sync copies + compile to lock files
+make compile          # sync triggers + compile to lock files
 make lint             # run all linters
 ```
 

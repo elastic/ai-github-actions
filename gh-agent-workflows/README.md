@@ -4,58 +4,206 @@
 
 ## Available Workflows
 
-| Workflow | Install command | Trigger |
+| Workflow | Trigger | Description |
 | --- | --- | --- |
-| PR Review | `gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review.md` | PR opened/updated |
-| Issue Triage | `gh aw add elastic/ai-github-actions/gh-agent-workflows/issue-triage.md` | New issues |
-| Mention in Issue | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-issue.md` | `/ai` in issues |
-| Mention in PR | `gh aw add elastic/ai-github-actions/gh-agent-workflows/mention-in-pr.md` | `/ai` in PRs |
-| PR Checks Fix | `gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-checks-fix.md` | Failed PR checks |
-| Small Problem Fixer | `gh aw add elastic/ai-github-actions/gh-agent-workflows/small-problem-fixer.md` | Weekday schedule |
-| Code Simplifier | `gh aw add elastic/ai-github-actions/gh-agent-workflows/code-simplifier.md` | Weekday schedule |
-| Test Improvement | `gh aw add elastic/ai-github-actions/gh-agent-workflows/test-improvement.md` | Weekly schedule |
-| Bug Hunter | `gh aw add elastic/ai-github-actions/gh-agent-workflows/bug-hunter.md` | Weekday schedule |
-| Docs Drift | `gh aw add elastic/ai-github-actions/gh-agent-workflows/docs-drift.md` | Weekday schedule |
-| Downstream Health | `gh aw add elastic/ai-github-actions/gh-agent-workflows/downstream-health.md` | Daily schedule |
-| Breaking Change Detect | `gh aw add elastic/ai-github-actions/gh-agent-workflows/breaking-change-detect.md` | Weekday schedule |
-| Semantic Function Clustering | `gh aw add elastic/ai-github-actions/gh-agent-workflows/semantic-function-clustering.md` | Weekday schedule |
+| PR Review | PR opened/updated | AI code review with inline comments |
+| Issue Triage | New issues | Investigate and provide implementation plans |
+| Mention in Issue | `/ai` in issues | Answer questions, debug, create PRs |
+| Mention in PR | `/ai` in PRs | Review, fix code, push changes |
+| PR Checks Fix | Failed PR checks | Analyze failures and optionally push fixes |
+| Small Problem Fixer | Weekday schedule | Fix small, related issues and open a focused PR |
+| Code Simplifier | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
+| Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |
+| Bug Hunter | Weekday schedule | Find reproducible bugs and file reports |
+| Docs Drift | Weekday schedule | Detect code changes needing doc updates |
+| Downstream Health | Daily schedule | Monitor downstream repo quality |
+| Breaking Change Detect | Weekday schedule | Detect undocumented public breaking changes |
+| Semantic Function Clustering | Weekday schedule | Identify function clustering refactor opportunities |
 
-## Prerequisites
+## Quick Start (Caller-Based, Recommended)
 
-- [GitHub CLI](https://cli.github.com/) installed
-- [gh-aw extension](https://github.com/github/gh-aw) installed: `gh extension install github/gh-aw`
-- Go 1.25+ installed (for compilation)
+Create a plain YAML workflow in your repo that calls the pre-compiled workflow from this repo. No `gh-aw` CLI needed.
 
-## Quick Start
+```yaml
+# .github/workflows/pr-review.yml
+name: PR Review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
+    with:
+      setup-commands: |
+        pip install -e ".[dev]"
+      additional-instructions: |
+        Focus on Python best practices and type safety.
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+```
 
-**Prerequisites:** [GitHub CLI](https://cli.github.com/) and [gh-aw extension](https://github.com/github/gh-aw) (`gh extension install github/gh-aw`).
+Commit and push. The workflow triggers on your repo's events and delegates to the centrally-compiled agent workflow. Updates propagate automatically when this repo recompiles -- no action needed in your repo.
+
+### Standard Inputs
+
+All workflows accept these optional inputs via `workflow_call`:
+
+| Input | Type | Description |
+| --- | --- | --- |
+| `additional-instructions` | string | Repo-specific instructions appended to the agent prompt |
+| `setup-commands` | string | Shell commands to run before the agent starts (dependency install, build, etc.) |
+
+### `setup-commands` Examples
+
+```yaml
+# Python
+setup-commands: |
+  pip install -e ".[dev]"
+
+# Node.js
+setup-commands: |
+  npm ci
+
+# Go
+setup-commands: |
+  go mod download
+
+# Multiple steps
+setup-commands: |
+  pip install -e ".[dev]"
+  npm ci
+  make build
+```
+
+### Consumer Caller Templates
+
+**Scheduled workflows** (test-improvement, code-simplifier, small-problem-fixer, bug-hunter, stale-issues, docs-drift, downstream-health, breaking-change-detect, semantic-function-clustering, agent-efficiency):
+
+```yaml
+name: <Workflow Name>
+on:
+  schedule:
+    - cron: "<your schedule>"
+  workflow_dispatch:
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@v0
+    with:
+      setup-commands: |
+        <your setup commands>
+      additional-instructions: |
+        <your repo-specific instructions>
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+```
+
+**Slash command workflows** (mention-in-issue, mention-in-pr):
+
+```yaml
+name: <Workflow Name>
+on:
+  issue_comment:
+    types: [created]
+jobs:
+  run:
+    if: startsWith(github.event.comment.body, '/ai')
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@v0
+    with:
+      additional-instructions: |
+        <your repo-specific instructions>
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+```
+
+**PR review** (pr-review):
+
+```yaml
+name: PR Review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+jobs:
+  run:
+    if: >-
+      github.event.pull_request.draft == false &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+```
+
+**Issue triage** (issue-triage):
+
+```yaml
+name: Issue Triage
+on:
+  issues:
+    types: [opened]
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-triage.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+```
+
+**PR checks fix** (pr-checks-fix):
+
+```yaml
+name: PR Checks Fix
+on:
+  workflow_run:
+    workflows: ["CI"]  # replace with your CI workflow name(s)
+    types: [completed]
+jobs:
+  run:
+    if: >-
+      github.event.workflow_run.conclusion == 'failure' &&
+      toJSON(github.event.workflow_run.pull_requests) != '[]'
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-checks-fix.lock.yml@v0
+    with:
+      setup-commands: |
+        <your setup commands>
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+```
+
+## Classic Installation (With gh-aw)
+
+For repos that want local compilation and full customization (engine, permissions, safe-outputs), the `gh aw add` path is still supported.
+
+**Prerequisites:** [GitHub CLI](https://cli.github.com/), [gh-aw extension](https://github.com/github/gh-aw) (`gh extension install github/gh-aw`), Go 1.25+.
 
 ```bash
-# Install a workflow
+# Install a workflow (classic install pulls the workflow .md from this repo)
 gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review.md
 
 # Compile to generate the lock file
 gh aw compile
 
 # Commit both files and push
-git add .github/workflows/pr-review.md .github/workflows/pr-review.lock.yml
+git add .github/workflows/gh-aw-pr-review.md .github/workflows/gh-aw-pr-review.lock.yml
 git commit -m "Add PR review workflow"
 git push
 ```
 
+Note: with classic installation, you own the full `.md` shim and compile locally. You'll still need a trigger workflow (plain YAML) to define event triggers separately, since the compiled `.lock.yml` only accepts `workflow_call`.
+
 ## How It Works
 
-`gh aw add` copies a slim **shim** file to `.github/workflows/` containing trigger config, engine, and a single `imports:` entry. `gh aw compile` fetches the imported prompt, tools, and safe-outputs, then generates a `.lock.yml` GitHub Actions workflow. Commit both files.
+Each workflow has two layers:
 
-Prompt improvements propagate automatically when you recompile. Only the shim is yours to customize.
+1. **Workflow** (`gh-aw-*.md` -> `gh-aw-*.lock.yml`): The agent logic, compiled by `gh-aw`. Triggers only on `workflow_call` with standard inputs (`additional-instructions`, `setup-commands`) and a `COPILOT_GITHUB_TOKEN` secret.
+2. **Trigger** (`trigger-*.yml` in `.github/workflows/`): A plain YAML file that defines the actual event triggers (schedule, PR events, slash commands, etc.) and calls the compiled `.lock.yml` via `uses:`. These serve as both examples for consumers and dogfood for this repo.
 
-## Customization
+Consumer repos copy a trigger file from `.github/workflows/`, change the `uses:` path from `./.github/workflows/gh-aw-...` to `elastic/ai-github-actions/.github/workflows/gh-aw-...@main`, and customize the `with:` inputs. No `gh-aw` CLI needed. Updates propagate automatically when this repo recompiles and pushes to `main`.
 
-All customization is done in the shim file (`.github/workflows/<name>.md`). Edit the frontmatter and recompile with `gh aw compile`.
+## Customization (Classic Installation)
+
+For classic `gh aw add` consumers: edit the workflow `.md` file in `.github/workflows/` and recompile with `gh aw compile`.
 
 ### Change the AI engine or model
 
-The default is Copilot with gpt-5.2-codex. Override in the shim's frontmatter:
+The default is Copilot with gpt-5.2-codex. Override in the workflow's frontmatter:
 
 ```yaml
 engine:
@@ -63,18 +211,19 @@ engine:
   model: claude-sonnet-4-20250514
 ```
 
-### Override triggers, permissions, or timeouts
+### Override permissions or timeouts
 
 ```yaml
-on:
-  pull_request:
-    types: [opened, synchronize, reopened, labeled]
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
 timeout-minutes: 30
 ```
 
 ### Add tools or MCP servers
 
-Tools and network allows from imports merge additively — add your own in the shim:
+Tools and network allows from imports merge additively — add your own in the workflow `.md`:
 
 ```yaml
 tools:
@@ -92,7 +241,7 @@ Each workflow already includes `github` (repos, issues, pull_requests, search), 
 
 ### Override safe outputs
 
-Shim-level safe-outputs override imported defaults:
+Workflow-level safe-outputs override imported defaults:
 
 ```yaml
 safe-outputs:
@@ -113,25 +262,21 @@ steps:
 
 ### Customize prompt content
 
-Keep shims minimal and put workflow-specific instructions in prompt files under `gh-agent-workflows/gh-aw-workflows/`, then import those prompts from the shim.
+Workflows contain their prompts directly in the `.md` body. Add instructions inline or via the workflow's frontmatter:
 
 ```yaml
-# gh-agent-workflows/docs-drift.md
-imports:
-  - gh-aw-workflows/docs-drift-rwx.md
+# .github/workflows/gh-aw-docs-drift.md
+---
+# frontmatter ...
+---
 ```
 
 ```markdown
-# gh-agent-workflows/gh-aw-workflows/docs-drift-rwx.md
----
-imports:
-  - gh-aw-workflows/scheduled-report-rwx.md
----
-
-Detect documentation drift in recent commits.
+Detect documentation drift in recent commits. Focus on API docs and README updates.
+Add any repo-specific instructions here.
 ```
 
-The shim body append mechanism still works, but in this repo report assignments should live in prompt files.
+The `${{ inputs.additional-instructions }}` append mechanism also lets callers inject repo-specific guidance without editing the workflow file.
 
 ## Updating
 

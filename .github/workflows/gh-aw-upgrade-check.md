@@ -1,7 +1,12 @@
 ---
 description: "Check for gh-aw releases and assess whether our workflows need upgrading"
 imports:
-  - gh-aw-workflows/scheduled-report-rwx.md
+  - gh-aw-fragments/elastic-tools.md
+  - gh-aw-fragments/formatting.md
+  - gh-aw-fragments/rigor.md
+  - gh-aw-fragments/mcp-pagination.md
+  - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/scheduled-report.md
 engine:
   id: copilot
   model: claude-opus-4.6
@@ -16,9 +21,21 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
+tools:
+  github:
+    toolsets: [repos, issues, pull_requests, search]
+  bash: true
+  web-fetch:
+network:
+  allowed:
+    - defaults
+    - github
 strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
+  messages:
+    footer: "---\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\n\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not."
+  noop:
   create-issue:
     max: 1
     title-prefix: "[gh-aw-upgrade] "
@@ -29,10 +46,12 @@ timeout-minutes: 30
 
 Check for recent gh-aw releases and determine if our workflows need upgrading or adjusting.
 
+A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
+
 ### Data Gathering
 
 1. Read our current `Makefile` to find the pinned `GH_AW_VERSION` (e.g., `v0.44.0`).
-2. Read all workflow shims in `gh-agent-workflows/*.md` and the prompts they import to understand our current configuration — frontmatter fields, safe-outputs, tools, network allows, and prompt patterns.
+2. Read all workflow files in `.github/workflows/gh-aw-*.md` to understand our current configuration — frontmatter fields, imports, safe-outputs, tools, network allows, and prompt patterns.
 3. Fetch recent gh-aw releases using `gh api repos/github/gh-aw/releases?per_page=10` to get the last 10 releases. Identify all releases newer than our pinned version.
 4. If we are already on the latest release, report no findings and stop.
 5. For each newer release, read the release notes (the `body` field). Also fetch the CHANGELOG if needed: `web-fetch` from `https://raw.githubusercontent.com/github/gh-aw/main/CHANGELOG.md`.

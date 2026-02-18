@@ -1,0 +1,16 @@
+name: Issue Triage
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  discussions: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-issue-triage.lock.yml
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

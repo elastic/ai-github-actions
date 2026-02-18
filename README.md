@@ -6,9 +6,19 @@ AI-powered GitHub workflows for Elastic repositories.
 
 [GitHub Agentic Workflows](https://github.com/github/gh-aw) with safe-output guardrails. Engine and model are configurable per workflow.
 
-```bash
-gh aw add elastic/ai-github-actions/gh-agent-workflows/pr-review.md
-gh aw compile
+Copy a trigger file from `gh-agent-workflows/`, change the `uses:` path to point at this repo, and customize inputs. No `gh-aw` CLI needed:
+
+```yaml
+# .github/workflows/trigger-pr-review.yml
+name: PR Review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 | Workflow | Trigger | Description |
@@ -33,9 +43,9 @@ See **[gh-agent-workflows/](gh-agent-workflows/)** for install commands, customi
 | Feature | GitHub Agent Workflows | Claude Composite Actions |
 | --- | --- | --- |
 | **Engine** | Copilot (default) or Claude | Claude only |
-| **Install** | `gh aw add` + `gh aw compile` | Copy `example.yml` to `.github/workflows/` |
+| **Install** | Copy trigger YAML (recommended) or `gh aw add` + `gh aw compile` | Copy `example.yml` to `.github/workflows/` |
 | **Guardrails** | Safe-outputs framework (structured API outputs) | Read-only/RWX/RWXP variants via permissions |
-| **Customization** | Edit shim frontmatter, recompile | Edit YAML directly, adjust composite action inputs |
+| **Customization** | `additional-instructions` input, `setup-commands` input, or full shim edit | Edit YAML directly, adjust composite action inputs |
 
 GitHub Agent Workflows are recommended for new deployments — they're more flexible and have better guardrails. Claude Composite Actions are still supported for legacy deployments.
 
