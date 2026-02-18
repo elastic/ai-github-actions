@@ -2,6 +2,7 @@
 description: "Find small, related issues and open a focused PR"
 imports:
   - gh-aw-fragments/elastic-tools.md
+  - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
