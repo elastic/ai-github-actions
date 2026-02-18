@@ -50,6 +50,16 @@ Commit and push. The workflow triggers on your repo's events and delegates to th
 
 Each workflow directory contains an [example.yml](pr-review/example.yml) you can copy as a starting point. See the per-workflow README for trigger details, inputs, and safe outputs.
 
+## Agentic Maintenance Workflow Required
+
+Any workflow that uses safe-outputs with `expires` (create-issue, create-pull-request, create-discussion) requires the `agentics-maintenance` workflow so expired items are closed automatically. Install it once per repo:
+
+````bash
+mkdir -p .github/workflows && curl -sL \
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/.github/workflows/agentics-maintenance.yml \
+  -o .github/workflows/agentics-maintenance.yml
+````
+
 ### Standard Inputs
 
 All workflows accept these optional inputs via `workflow_call`:
