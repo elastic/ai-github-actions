@@ -16,6 +16,7 @@
 | Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |
 | Bug Hunter | Weekday schedule | Find reproducible bugs and file reports |
 | Docs Drift | Weekday schedule | Detect code changes needing doc updates |
+| Docs New Contributor Review | Weekly schedule | Review docs from a new contributor perspective |
 | Downstream Health | Daily schedule | Monitor downstream repo quality |
 | Breaking Change Detect | Weekday schedule | Detect undocumented public breaking changes |
 | Semantic Function Clustering | Weekday schedule | Identify function clustering refactor opportunities |
@@ -77,7 +78,7 @@ setup-commands: |
 
 ### Consumer Caller Templates
 
-**Scheduled workflows** (test-improvement, code-simplifier, small-problem-fixer, bug-hunter, stale-issues, docs-drift, downstream-health, breaking-change-detect, semantic-function-clustering, agent-efficiency):
+**Scheduled workflows** (test-improvement, code-simplifier, small-problem-fixer, bug-hunter, stale-issues, docs-drift, docs-new-contributor-review, downstream-health, breaking-change-detect, semantic-function-clustering, agent-efficiency):
 
 ```yaml
 name: <Workflow Name>
