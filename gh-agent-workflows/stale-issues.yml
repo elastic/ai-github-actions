@@ -4,6 +4,11 @@ on:
     - cron: "0 15 * * 1-5"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-stale-issues.lock.yml@v0

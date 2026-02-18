@@ -4,6 +4,11 @@ on:
     - cron: "0 12 * * 1-5"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-semantic-function-clustering.lock.yml

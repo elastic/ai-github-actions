@@ -4,6 +4,13 @@ on:
     workflows: ["CI", "Build", "Test"]
     types: [completed]
 
+permissions:
+  actions: read
+  contents: write
+  discussions: write
+  issues: write
+  pull-requests: write
+
 jobs:
   run:
     if: >-
