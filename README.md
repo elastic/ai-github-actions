@@ -34,6 +34,7 @@ jobs:
 | Bug Hunter | Weekday schedule | Find a reproducible, user-impacting bug and file an issue |
 | Docs Drift | Weekday schedule | Detect code changes needing doc updates |
 | Docs New Contributor Review | Weekly schedule | Review docs from a new contributor perspective |
+| Project Summary | Daily schedule | Summarize recent activity and priorities |
 | Breaking Change Detect | Weekday schedule | Detect undocumented public breaking changes |
 | Semantic Function Clustering | Weekday schedule | Identify semantic function clustering refactor opportunities |
 

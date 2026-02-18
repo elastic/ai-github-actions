@@ -17,6 +17,7 @@
 | [Bug Hunter](bug-hunter/) | Weekday schedule | Find reproducible bugs and file reports |
 | [Docs Drift](docs-drift/) | Weekday schedule | Detect code changes needing doc updates |
 | [Docs New Contributor Review](docs-new-contributor-review/) | Weekly schedule | Review docs from a new contributor perspective |
+| [Project Summary](project-summary/) | Daily schedule | Summarize recent activity and priorities |
 | [Downstream Health](downstream-health/) | Daily schedule | Monitor downstream repo quality |
 | [Breaking Change Detect](breaking-change-detect/) | Weekday schedule | Detect undocumented public breaking changes |
 | [Semantic Function Clustering](semantic-function-clustering/) | Weekday schedule | Identify function clustering refactor opportunities |
