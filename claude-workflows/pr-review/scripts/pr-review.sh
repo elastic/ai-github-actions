@@ -37,6 +37,12 @@ declare -A SEVERITY_RANK=(
   [low]=3
   [nitpick]=4
 )
+SEVERITY_RANK_JSON=$(printf '{"critical":%s,"high":%s,"medium":%s,"low":%s,"nitpick":%s}' \
+  "${SEVERITY_RANK[critical]}" \
+  "${SEVERITY_RANK[high]}" \
+  "${SEVERITY_RANK[medium]}" \
+  "${SEVERITY_RANK[low]}" \
+  "${SEVERITY_RANK[nitpick]}")
 
 # Validate min_inline_severity
 if [ -z "${SEVERITY_RANK[$MIN_INLINE_SEVERITY]+x}" ]; then
@@ -127,14 +133,12 @@ fi
 # Issues at or above the threshold stay inline; issues below go into the review body.
 MIN_RANK="${SEVERITY_RANK[$MIN_INLINE_SEVERITY]}"
 
-COMMENTS=$(echo "$ALL_COMMENTS" | jq --argjson ranks "$(jq -n \
-  '{critical:0, high:1, medium:2, low:3, nitpick:4}')" \
+COMMENTS=$(echo "$ALL_COMMENTS" | jq --argjson ranks "$SEVERITY_RANK_JSON" \
   --argjson min_rank "$MIN_RANK" \
   '[.[] | select($ranks[._meta.severity] <= $min_rank) | del(._meta)]')
 COMMENT_COUNT=$(echo "$COMMENTS" | jq 'length')
 
-NITPICKS=$(echo "$ALL_COMMENTS" | jq --argjson ranks "$(jq -n \
-  '{critical:0, high:1, medium:2, low:3, nitpick:4}')" \
+NITPICKS=$(echo "$ALL_COMMENTS" | jq --argjson ranks "$SEVERITY_RANK_JSON" \
   --argjson min_rank "$MIN_RANK" \
   '[.[] | select($ranks[._meta.severity] > $min_rank)]')
 NITPICK_COUNT=$(echo "$NITPICKS" | jq 'length')
