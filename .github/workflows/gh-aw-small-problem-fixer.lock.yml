@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b93c4d62d61078fe33b2753c202ca3c13ec8ca42453fc2f324cbbfdbd1ce0763"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1ef2170afa0e97e6fe05c10cf39f99e47148ab51343d09f0ef3ff2e1de09e2fe"}
 
 name: "Small Problem Fixer"
 "on":
@@ -843,7 +843,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,labels"
                 }
               },
               "public-code-search": {
