@@ -54,9 +54,6 @@ network:
     - github
 strict: false
 roles: [admin, maintainer, write]
-safe-outputs:
-  add-comment:
-    max: 3
 timeout-minutes: 30
 steps:
   - name: Repo-specific setup

@@ -53,9 +53,6 @@ strict: false
 roles: [admin, maintainer, write]
 bots:
   - "github-actions[bot]"
-safe-outputs:
-  add-comment:
-    max: 1
 timeout-minutes: 30
 steps:
   - name: Repo-specific setup
