@@ -67,7 +67,7 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-Create a periodic project summary for ${{ github.repository }} with actionable highlights from recent activity.
+Create a periodic project summary with actionable highlights from recent activity.
 
 ### Data Gathering
 

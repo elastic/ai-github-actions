@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bbb34986b4f3c1af9d34f6a904005cf7d01eb65763b70081ebe4bff7433db630"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"61ce258c1a35faedf0d4e0cd8913580c4434e53fc3f0ad0fc85a1b7168489a8e"}
 
 name: "Gh Aw Bug Hunter"
 "on":
@@ -905,7 +905,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,labels"
                 }
               },
               "public-code-search": {
