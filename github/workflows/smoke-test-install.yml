@@ -1,0 +1,104 @@
+---
+name: Smoke Test — Install & Compile
+on:
+  schedule:
+    - cron: "0 6 * * *" # Daily at 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  smoke-test:
+    name: Install and compile all workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+          cache: false
+
+      - name: Install gh-aw extension
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh extension install github/gh-aw
+          gh aw version
+
+      - name: Create a fresh repo
+        run: |
+          mkdir /tmp/test-repo && cd /tmp/test-repo
+          git init -b main
+          git config user.name "smoke-test"
+          git config user.email "smoke-test@localhost"
+          git commit --allow-empty -m "init"
+
+      - name: Install every workflow
+        working-directory: /tmp/test-repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          WORKFLOWS=(
+            pr-review
+            issue-triage
+            mention-in-issue
+            mention-in-pr
+            docs-drift
+            docs-new-contributor-review
+            downstream-health
+            stale-issues
+            agent-efficiency
+          )
+
+          FAILED=0
+
+          for wf in "${WORKFLOWS[@]}"; do
+            echo "::group::Installing ${wf}"
+            if gh aw add "elastic/ai-github-actions/gh-agent-workflows/${wf}.md" --non-interactive; then
+              echo "::endgroup::"
+            else
+              echo "::endgroup::"
+              echo "::error::Failed to install ${wf}"
+              FAILED=$((FAILED + 1))
+            fi
+          done
+
+          echo ""
+          echo "=== Installed shims ==="
+          ls -la .github/workflows/*.md
+          echo ""
+          echo "=== Compiled lock files ==="
+          ls -lh .github/workflows/*.lock.yml
+
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::error::${FAILED} workflow(s) failed to install"
+            exit 1
+          fi
+
+      - name: Verify lock files
+        working-directory: /tmp/test-repo
+        run: |
+          set -euo pipefail
+          SHIMS=$(find .github/workflows -maxdepth 1 -name "*.md" | wc -l | tr -d ' ')
+          LOCKS=$(find .github/workflows -maxdepth 1 -name "*.lock.yml" | wc -l | tr -d ' ')
+
+          echo "Shims: ${SHIMS}"
+          echo "Lock files: ${LOCKS}"
+
+          if [ "$LOCKS" -eq 0 ]; then
+            echo "::error::No lock files generated"
+            exit 1
+          fi
+
+          if [ "$LOCKS" -ne "$SHIMS" ]; then
+            echo "::error::Shim count (${SHIMS}) does not match lock file count (${LOCKS})"
+            echo ""
+            echo "Shims:"
+            find .github/workflows -maxdepth 1 -name "*.md" | sort
+            echo ""
+            echo "Lock files:"
+            find .github/workflows -maxdepth 1 -name "*.lock.yml" | sort
+            exit 1
+          fi
+
+          echo "All ${SHIMS} workflows installed and compiled successfully."
