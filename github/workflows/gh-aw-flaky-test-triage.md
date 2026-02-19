@@ -71,19 +71,20 @@ steps:
 
 ## Report Assignment
 
-Detect flaky tests by combining open flaky-test issues and recent failed CI runs, then file one evidence-based triage issue when concrete action is needed.
+Detect flaky tests by combining open issues likely related to flakiness and recent failed CI runs, then file one evidence-based triage issue when concrete action is needed.
 
 ### Data Gathering
 
-1. Search open issues for likely flaky-test reports (`flaky`, `flakey`, `intermittent`) and gather:
+1. Discover candidate flakiness labels for this repository (for example labels containing `flaky`, `flakey`, or `intermittent`) and use them when searching issues.
+2. Search open issues for likely flaky-test reports using discovered labels plus keyword fallback (`flaky`, `flakey`, `intermittent`), then gather:
    - failing test names
    - workflow/job names
    - links to logs or run IDs
-2. Inspect failed workflow runs from the last 7 days:
+3. Inspect failed workflow runs from the last 7 days:
    - Use `github` Actions APIs (or `gh api`) to list recent failed runs.
    - For candidate runs, list failed jobs and inspect logs in `/tmp/gh-aw/agent/`.
-3. Build a frequency map of repeated failing tests across runs/issues.
-4. Check for duplicates:
+4. Build a frequency map of repeated failing tests across runs/issues.
+5. Check for duplicates:
    - existing open flaky-triage issues
    - open PRs that already fix the same repeated failure
 
