@@ -36,6 +36,8 @@ UI path: Settings → Secrets and variables → Actions → New repository secre
 
 See the upstream [gh-aw auth docs](https://github.com/github/gh-aw/blob/main/docs/src/content/docs/reference/auth.mdx) for canonical steps.
 
+### Human-coordinated workflows
+
 | Workflow | Trigger | Description |
 | --- | --- | --- |
 | PR Review | PR opened/updated | Automated code review with inline comments |
@@ -44,6 +46,11 @@ See the upstream [gh-aw auth docs](https://github.com/github/gh-aw/blob/main/doc
 | Mention in PR | `/ai` command | Review, fix code, push changes |
 | PR CI Detective | Failed PR checks | Diagnose failures and recommend fixes |
 | PR CI Fixer | Manual (workflow_dispatch) | Opt-in fixes for failed PR checks |
+
+### Continuous improvement / agent factory workflows
+
+| Workflow | Trigger | Description |
+| --- | --- | --- |
 | Small Problem Fixer | Weekday schedule | Fix a small, related issue set and open a focused PR |
 | Code Simplifier | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |
