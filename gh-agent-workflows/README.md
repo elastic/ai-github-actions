@@ -61,6 +61,30 @@ Commit and push. The workflow triggers on your repo's events and delegates to th
 
 Each workflow directory contains an [example.yml](pr-review/example.yml) you can copy as a starting point. See the per-workflow README for trigger details, inputs, and safe outputs.
 
+### Quick setup script
+
+Run from the repo you want to configure:
+
+````bash
+curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/scripts/quick-setup.sh \
+  | bash -s -- --repo OWNER/REPO
+````
+
+The script downloads workflow triggers into `.github/workflows/trigger-*.yml`, adds
+`agentics-maintenance.yml`, sets `COPILOT_GITHUB_TOKEN` (prompt or env), creates a branch,
+and opens a PR.
+
+Default workflows:
+- pr-review
+- issue-triage
+- mention-in-issue
+- mention-in-pr
+- pr-ci-detective
+- pr-ci-fixer
+
+Use `--workflows` to override the list (comma-separated) or `--skip-secret` to set the
+secret manually.
+
 ## Secrets
 
 These workflows require a Copilot PAT stored as `COPILOT_GITHUB_TOKEN`.

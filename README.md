@@ -21,6 +21,19 @@ jobs:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
+## Quick setup script
+
+Run from the repo you want to configure (requires `gh`, `git`, and a Copilot PAT):
+
+````bash
+curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/scripts/quick-setup.sh \
+  | bash -s -- --repo OWNER/REPO
+````
+
+Defaults: installs the recommended workflow triggers, adds `agentics-maintenance.yml`, sets
+`COPILOT_GITHUB_TOKEN`, creates branch `ai-gh-aw-setup`, and opens a PR. Use `--workflows`
+to override the workflow list or `--skip-secret` to set the secret manually.
+
 ## Secrets
 
 These workflows require a Copilot PAT stored as `COPILOT_GITHUB_TOKEN`.
