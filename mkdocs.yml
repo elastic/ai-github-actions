@@ -1,0 +1,18 @@
+site_name: AI GitHub Actions
+repo_url: https://github.com/elastic/ai-github-actions
+docs_dir: docs
+site_dir: site
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Workflows:
+      - GitHub Agent Workflows: workflows/gh-agent-workflows.md
+      - Claude Composite Actions: workflows/claude-workflows.md
+  - Developing: developing.md
+  - Security: security.md
+  - Release: release.md
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true

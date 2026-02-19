@@ -16,7 +16,7 @@ imports:
   - gh-aw-fragments/safe-output-resolve-thread.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-mention-pr-${{ github.event.issue.number }}"
 on:
@@ -32,6 +32,11 @@ on:
         type: string
         required: false
         default: ""
+      model:
+        description: "Model to use for the Copilot engine"
+        type: string
+        required: false
+        default: "gpt-5.3-codex"
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string
