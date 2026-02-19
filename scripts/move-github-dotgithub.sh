@@ -47,6 +47,7 @@ echo "Moved $count file(s) from $src/ to .github/"
 
 if [ "$push" = true ] && [ "$count" -gt 0 ]; then
   git add "${moved_files[@]}"
+  git add "$src"
   git commit -m "Move agent output from github/ to .github/"
   git push
   echo "Committed and pushed."
