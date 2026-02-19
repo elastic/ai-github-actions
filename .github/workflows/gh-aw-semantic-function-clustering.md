@@ -1,5 +1,5 @@
 ---
-description: "Analyze Go code for semantic function clustering and refactoring opportunities"
+description: "Analyze source code for semantic function clustering and refactoring opportunities"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
@@ -15,6 +15,16 @@ engine:
 on:
   workflow_call:
     inputs:
+      languages:
+        description: "Comma-separated languages to analyze (e.g., go,python,typescript). Ignored if file-globs is set."
+        type: string
+        required: false
+        default: "go"
+      file-globs:
+        description: "Comma-separated file globs to analyze (overrides languages mapping)"
+        type: string
+        required: false
+        default: ""
       additional-instructions:
         description: "Repo-specific instructions appended to the agent prompt"
         type: string
@@ -45,7 +55,7 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
-  serena: ["go"]
+  serena: ["go", "python", "javascript", "typescript", "java", "ruby", "csharp", "rust"]
 network:
   allowed:
     - defaults
@@ -72,31 +82,55 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-Analyze Go source code to identify semantic function clusters, misplaced functions, and duplicate implementations that warrant refactoring.
+Analyze source code to identify semantic function clusters, misplaced functions, and duplicate implementations that warrant refactoring.
+
+**Inputs**
+- **Languages**: `${{ inputs.languages }}`
+- **File globs**: `${{ inputs.file-globs }}`
 
 ### Data Gathering
 
-1. Find all Go files (excluding tests and generated files):
+1. Determine file globs and store them as a space-delimited `GLOBS` list:
+   - If `file-globs` is set, split it on commas and trim whitespace.
+   - Otherwise, map `languages` (comma-separated) to globs using:
+     - go → `**/*.go`
+     - python → `**/*.py`
+     - javascript → `**/*.{js,mjs,cjs}`
+     - typescript → `**/*.{ts,tsx}`
+     - java → `**/*.java`
+     - ruby → `**/*.rb`
+     - csharp → `**/*.cs`
+     - rust → `**/*.rs`
+2. Find all matching files (excluding tests and generated files):
    ```bash
-   find . -name "*.go" ! -name "*_test.go" ! -name "*.pb.go" ! -name "*_gen.go" -type f | sort
+   FILES=$(for glob in ${GLOBS}; do
+     rg --files \
+       -g "${glob}" \
+       -g "!**/*_test.*" \
+       -g "!**/test_*" \
+       -g "!**/*.spec.*" \
+       -g "!**/*.test.*" \
+       -g "!**/*.pb.*" \
+       -g "!**/*_gen.*" \
+       -g "!**/generated/**"
+   done | sort -u)
    ```
-2. If no Go files are found, call `noop` with a brief reason and stop.
-3. Call Serena `activate_project` with `${{ github.workspace }}`.
-4. If there are more than 200 Go files, focus on the 200 largest by line count:
+3. If no files are found, call `noop` with a brief reason and stop.
+4. Call Serena `activate_project` with `${{ github.workspace }}`.
+5. If there are more than 200 files, focus on the 200 largest by line count:
    ```bash
-   find . -name "*.go" ! -name "*_test.go" ! -name "*.pb.go" ! -name "*_gen.go" -type f -print0 \
-     | xargs -0 wc -l | sort -nr | head -200 | awk '{print $2}'
+   printf '%s\n' "$FILES" | xargs wc -l | sort -nr | head -200 | awk '{print $2}'
    ```
-5. For each selected file, use `get_symbols_overview` to capture functions and methods.
+6. For each selected file, use `get_symbols_overview` (Serena) when supported; otherwise, extract functions/methods with language-appropriate `rg` patterns and light file inspection.
 
 ### How to Analyze
 
 1. Build an inventory by file and directory of:
-   - Package name
-   - Function and method names (with receivers)
+   - Module/package/namespace (when applicable)
+   - Function and method names (with receivers/classes if relevant)
 2. Cluster functions by naming patterns and purpose (e.g., `parse*`, `validate*`, `create*`).
 3. Identify outliers: functions that do not align with their file's primary purpose.
-4. Use Serena (`find_symbol`, `search_for_pattern`, `find_referencing_symbols`) to find duplicates or near-duplicates across files.
+4. Use Serena (`find_symbol`, `search_for_pattern`, `find_referencing_symbols`) when supported to find duplicates or near-duplicates across files.
 5. Focus on high-impact, actionable findings (clear duplication or misplacement).
 
 ### What to Skip
@@ -114,20 +148,20 @@ Analyze Go source code to identify semantic function clusters, misplaced functio
 **Issue body:**
 
 > ## Summary
-> - Go files analyzed: [count]
+> - Files analyzed: [count]
 > - Functions cataloged: [count]
 > - Clusters with issues: [count]
 >
 > ## Findings
 >
 > ### 1. Outlier function in wrong file
-> **File:** `path/to/file.go`  
+> **File:** `path/to/file.ext`  
 > **Function:** `FuncName(...)`  
 > **Why outlier:** [brief explanation]  
 > **Recommendation:** [move/rename/refactor]  
 >
 > ### 2. Duplicate or near-duplicate functions
-> **Occurrences:** `path/a.go:FuncA`, `path/b.go:FuncB`  
+> **Occurrences:** `path/a.ext:FuncA`, `path/b.ext:FuncB`  
 > **Similarity:** [brief summary]  
 > **Recommendation:** [consolidate/extract helper]  
 >
