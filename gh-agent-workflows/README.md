@@ -153,7 +153,7 @@ For classic `gh aw add` consumers: edit the workflow `.md` file in `.github/work
 
 ### Change the AI engine or model
 
-The default is Copilot with gpt-5.2-codex. Override in the workflow's frontmatter:
+The default is Copilot with gpt-5.3-codex. Override by passing `model` in the trigger workflow `with:` block, or edit the workflow's frontmatter:
 
 ```yaml
 engine:
