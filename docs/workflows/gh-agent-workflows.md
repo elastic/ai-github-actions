@@ -1,0 +1,42 @@
+# GitHub Agent Workflows
+
+GitHub Agentic Workflows with safe-output guardrails. Engine and model are configurable per workflow.
+
+## Install
+
+Copy a workflow's `example.yml` from `gh-agent-workflows/` and customize inputs.
+
+```yaml
+# .github/workflows/trigger-pr-review.yml
+name: PR Review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+```
+
+## Catalog
+
+| Workflow | Trigger | Description |
+| --- | --- | --- |
+| PR Review | PR opened/updated | Automated code review with inline comments |
+| Issue Triage | New issues | Investigate and provide implementation plans |
+| Mention in Issue | `/ai` command | Answer questions, debug, create PRs |
+| Mention in PR | `/ai` command | Review, fix code, push changes |
+| PR Checks Fix | Failed PR checks | Analyze failures and optionally push fixes |
+| Small Problem Fixer | Weekday schedule | Fix a small, related issue set and open a focused PR |
+| Code Simplifier | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
+| Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |
+| Release Update Check | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
+| Bug Hunter | Weekday schedule | Find a reproducible, user-impacting bug and file an issue |
+| Docs Drift | Weekday schedule | Detect code changes needing doc updates |
+| Docs New Contributor Review | Weekly schedule | Review docs from a new contributor perspective |
+| Project Summary | Daily schedule | Summarize recent activity and priorities |
+| Breaking Change Detect | Weekday schedule | Detect undocumented public breaking changes |
+| Semantic Function Clustering | Weekday schedule | Identify semantic function clustering refactor opportunities |
+
+See the full workflow catalog in the repository: https://github.com/elastic/ai-github-actions/tree/main/gh-agent-workflows
