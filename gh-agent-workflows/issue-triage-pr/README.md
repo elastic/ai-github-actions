@@ -1,6 +1,6 @@
-# Issue Triage (Optional PRs)
+# Issue Triage (with PR)
 
-Investigate new issues and provide triage analysis, with optional automatic PR creation controlled by workflow inputs.
+Investigate new issues and provide actionable triage analysis. For straightforward fixes, implement and open a draft PR.
 
 ## Quick Install
 
@@ -24,10 +24,8 @@ See [example.yml](example.yml) for the full workflow file.
 | --- | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
-| `automatic-prs` | Allow automatic PR creation for straightforward fixes | No | `"false"` |
-| `draft-prs` | Create PRs as draft when PR creation is enabled | No | `"true"` |
 
 ## Safe Outputs
 
 - `add-comment` — post triage analysis on the issue
-- `create-pull-request` — open a PR when `automatic-prs` is enabled and a verified fix is implemented
+- `create-pull-request` — open a draft PR when a verified fix is implemented

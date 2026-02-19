@@ -1,5 +1,5 @@
 ---
-description: "Investigate new issues and optionally implement fixes with PRs"
+description: "Investigate new issues and provide actionable triage analysis with optional PR creation"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
@@ -33,16 +33,6 @@ on:
         type: string
         required: false
         default: ""
-      automatic-prs:
-        description: "Allow the agent to create a PR when implementation is straightforward (default: false)"
-        type: string
-        required: false
-        default: "false"
-      draft-prs:
-        description: "Create PRs as draft (default: true)"
-        type: string
-        required: false
-        default: "true"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -80,21 +70,19 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-# Issue Triage Agent (Optional PRs)
+# Issue Triage Agent (with PR)
 
-Triage new issues in ${{ github.repository }} and provide actionable analysis, with optional PR creation controlled by workflow input.
+Triage new issues in ${{ github.repository }} and provide actionable analysis with implementation plans. For straightforward fixes, implement and open a draft PR.
 
 ## Context
 
 - **Repository**: ${{ github.repository }}
 - **Issue**: #${{ github.event.issue.number }} — ${{ github.event.issue.title }}
-- **Automatic PRs Enabled**: `${{ inputs.automatic-prs }}`
 
 ## Constraints
 
-- **CAN**: Read files, search code, run tests and commands, and comment on the issue.
-- **OPTIONAL**: If `automatic-prs` is `true`, you may implement straightforward fixes and call `create_pull_request` once.
-- **DEFAULT**: If `automatic-prs` is not `true`, this is investigation and planning only and your only output is an issue comment.
+- **CAN**: Read files, search code, run tests and commands, comment on the issue, and open a draft PR for straightforward fixes.
+- This workflow is primarily for investigation and planning. Local file changes are for verification only unless you implement a fix.
 
 ## Triage Process
 
@@ -110,24 +98,37 @@ Follow these steps in order.
 
 1. Read the issue description carefully to understand the request or problem.
 2. Explore the relevant parts of the codebase using `grep` and file reading.
-3. Run tests or commands in the workspace to verify reported bugs when possible.
-4. If `automatic-prs` is `true` and the required change is small, clear, and verifiable, implement it directly and run relevant validation before proposing a PR.
+3. Run tests or commands in the workspace to verify reported bugs when possible:
+   - Run existing tests to confirm reported behavior
+   - Execute scripts to understand current behavior
+   - Run linters or static analysis if relevant
+   - Write small test files to validate findings
+   - Always explain what you're testing and why, and include command output in your response
+4. If the required change is small, clear, and verifiable, implement it directly and run relevant validation.
 
 ### Step 3: Formulate Response
 
-Provide a concise response with:
+Provide a response with the following sections. Be concise and actionable — no filler or praise.
 
-1. **Recommendation** — clear recommendation and rationale.
-2. **Findings** — key facts from investigation (use `<details>` for long sections).
-3. **Verification** — command/test output when run.
-4. **Detailed Action Plan** — concrete implementation plan (or summary of implemented changes if you completed them).
-5. **Related Items** — table of related issues, PRs, files, and resources.
+**Always lead with a tl;dr** — your first sentence should be the most important takeaway.
 
-Always lead with a tl;dr. If confidence is low, say so explicitly.
+**Sections:**
+
+1. **Recommendation** — A clear, specific recommendation for how to address the issue. If you cannot recommend a course of action, say so with a reason. "I don't know" is better than a wrong answer.
+
+2. **Findings** — Key facts from your investigation (related code, existing implementations, relevant issues/PRs). Use `<details>` tags for longer content.
+
+3. **Verification** — If you ran tests or commands, include the output. Use `<details>` tags.
+
+4. **Detailed Action Plan** — Step-by-step plan a developer could follow to implement the recommendation (or summary of implemented changes if you completed them). Reference specific files, functions, and line numbers. Use `<details>` tags.
+
+5. **Related Items** — Table of related issues, PRs, files, and web resources.
+
+Use `<details>` and `<summary>` tags for sections that would otherwise make the response too long. Short responses don't need collapsible sections. Your performance is judged by how accurate your findings are — do the investigation required to have high confidence. "I don't know" or "I'm unable to recommend a course of action" is better than a wrong answer.
 
 ### Step 4: Post Response
 
-1. Call `add_comment` with your response.
-2. If `automatic-prs` is `true` **and** you completed a valid implementation with verification, call `create_pull_request`.
+1. Call `add_comment` with your triage response.
+2. If you implemented a valid fix with verification, call `create_pull_request` to open a draft PR.
 
 ${{ inputs.additional-instructions }}
