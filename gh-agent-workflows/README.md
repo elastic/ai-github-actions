@@ -15,6 +15,7 @@
 | [Code Simplifier](code-simplifier/) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | [Test Improvement](test-improvement/) | Weekly schedule | Add targeted tests and clean up redundant coverage |
 | [Release Update Check](release-update/) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
+| [Agent Suggestions](agent-suggestions/) | Weekly schedule | Suggest new agent workflows based on repo and downstream needs |
 | [Bug Hunter](bug-hunter/) | Weekday schedule | Find reproducible bugs and file reports |
 | [Docs Drift](docs-drift/) | Weekday schedule | Detect code changes needing doc updates |
 | [Docs New Contributor Review](docs-new-contributor-review/) | Weekly schedule | Review docs from a new contributor perspective |
