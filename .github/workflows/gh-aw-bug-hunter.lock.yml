@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bca833808281e4fff944693e669d432fe5cc8f88b3d37a314039871309599706"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9619d69406f46d2d5f029b9ea3119224219b692ec3159562bcc01b4ce9196e36"}
 
 name: "Gh Aw Bug Hunter"
 "on":
@@ -552,6 +552,11 @@ jobs:
           chmod +x "$install_dir/uv"
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
+      - name: Ensure full history
+        run: |
+          if git rev-parse --is-shallow-repository | grep -q true; then
+            git fetch --unshallow --quiet
+          fi
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

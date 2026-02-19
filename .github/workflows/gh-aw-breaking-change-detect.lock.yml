@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"fb0617317c04e30816d256e69710257b45088b885a895cb3fc13a9abf72c0f9a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3feea962b72a9bc1083d884185f9090a1bd9a4f74f5fb207132d671c654ffdbc"}
 
 name: "Gh Aw Breaking Change Detect"
 "on":
@@ -557,6 +557,11 @@ jobs:
           chmod +x "$install_dir/uv"
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
+      - name: Ensure full history
+        run: |
+          if git rev-parse --is-shallow-repository | grep -q true; then
+            git fetch --unshallow --quiet
+          fi
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

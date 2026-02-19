@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"66b9027da5dad552442b3d44c058407988be706d4ef568ac3e20547423dd9246"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d27573b05ed34c5064d77515496eb6682600514fb1dd578bb1a5d49ac491b33b"}
 
 name: "Gh Aw Docs Drift"
 "on":
@@ -556,6 +556,11 @@ jobs:
           chmod +x "$install_dir/uv"
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
+      - name: Ensure full history
+        run: |
+          if git rev-parse --is-shallow-repository | grep -q true; then
+            git fetch --unshallow --quiet
+          fi
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
