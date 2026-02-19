@@ -29,6 +29,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 | --- | --- | --- |
 | PR Review | PR opened/updated | AI code review with inline comments |
 | Issue Triage | New issues | Investigate and provide implementation plans |
+| Issue Triage (Optional PRs) | New issues | Triage plus optional auto-PR creation via input |
 | Mention in Issue | `/ai` in issues | Answer questions, debug, create PRs |
 | Mention in PR | `/ai` in PRs | Review, fix code, push changes |
 | PR CI Detective | Failed PR checks | Diagnose failures and recommend fixes |
