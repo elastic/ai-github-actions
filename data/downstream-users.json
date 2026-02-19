@@ -1,0 +1,43 @@
+{
+  "generated_at": "2026-02-19T04:12:59Z",
+  "source": {
+    "query": "\"uses: elastic/ai-github-actions\" extension:yaml",
+    "notes": "Parsed GitHub code search results and extracted uses entries from workflow files."
+  },
+  "repos": [
+    {
+      "repo": "elastic/infra-party",
+      "workflows": [
+        "workflows/issue-triage/ro",
+        "workflows/mention-in-issue/rwxp",
+        "workflows/mention-in-pr/rwxp",
+        "workflows/pr-review/ro"
+      ]
+    },
+    {
+      "repo": "elastic/integrations",
+      "workflows": [
+        "workflows/issue-triage/ro",
+        "workflows/mention-in-issue/rwxp",
+        "workflows/mention-in-pr/rwxp",
+        "workflows/pr-review/rwx"
+      ]
+    },
+    {
+      "repo": "strawgate/py-key-value",
+      "workflows": [
+        ".github/workflows/gh-aw-bug-hunter.lock.yml",
+        ".github/workflows/gh-aw-code-simplifier.lock.yml",
+        ".github/workflows/gh-aw-docs-drift.lock.yml",
+        ".github/workflows/gh-aw-issue-triage.lock.yml",
+        ".github/workflows/gh-aw-mention-in-issue.lock.yml",
+        ".github/workflows/gh-aw-mention-in-pr.lock.yml",
+        ".github/workflows/gh-aw-pr-checks-fix.lock.yml",
+        ".github/workflows/gh-aw-pr-review.lock.yml",
+        ".github/workflows/gh-aw-small-problem-fixer.lock.yml",
+        ".github/workflows/gh-aw-stale-issues.lock.yml",
+        ".github/workflows/gh-aw-test-improvement.lock.yml"
+      ]
+    }
+  ]
+}
