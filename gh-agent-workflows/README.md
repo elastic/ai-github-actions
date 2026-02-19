@@ -15,6 +15,7 @@
 | [Small Problem Fixer](small-problem-fixer/) | Weekday schedule | Fix small, related issues and open a focused PR |
 | [Code Simplifier](code-simplifier/) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | [Test Improvement](test-improvement/) | Weekly schedule | Add targeted tests and clean up redundant coverage |
+| [Release Update Check](release-update/) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
 | [Bug Hunter](bug-hunter/) | Weekday schedule | Find reproducible bugs and file reports |
 | [Docs Drift](docs-drift/) | Weekday schedule | Detect code changes needing doc updates |
 | [Docs New Contributor Review](docs-new-contributor-review/) | Weekly schedule | Review docs from a new contributor perspective |
@@ -47,7 +48,7 @@ jobs:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
-Commit and push. The workflow triggers on your repo's events and delegates to the centrally-compiled agent workflow. Updates propagate automatically when this repo recompiles -- no action needed in your repo.
+Commit and push. The workflow triggers on your repo's events and delegates to the centrally-compiled agent workflow. Updates propagate automatically when this repo updates the `v0` tag on release -- no action needed in your repo.
 
 Each workflow directory contains an [example.yml](pr-review/example.yml) you can copy as a starting point. See the per-workflow README for trigger details, inputs, and safe outputs.
 
@@ -120,7 +121,7 @@ Each workflow has two layers:
 1. **Workflow** (`gh-aw-*.md` -> `gh-aw-*.lock.yml`): The agent logic, compiled by `gh-aw`. Triggers only on `workflow_call` with standard inputs (`additional-instructions`, `setup-commands`) and a `COPILOT_GITHUB_TOKEN` secret.
 2. **Trigger** (`<name>/example.yml`): A plain YAML file that defines the actual event triggers (schedule, PR events, slash commands, etc.) and calls the compiled `.lock.yml` via `uses:`. These serve as both examples for consumers and dogfood for this repo (copied to `.github/workflows/trigger-*.yml` by `scripts/dogfood.sh`).
 
-Consumer repos copy a workflow's `example.yml`, change the `uses:` path if needed, and customize the `with:` inputs. No `gh-aw` CLI needed. Updates propagate automatically when this repo recompiles and pushes to `main`.
+Consumer repos copy a workflow's `example.yml`, change the `uses:` path if needed, and customize the `with:` inputs. No `gh-aw` CLI needed. Updates propagate automatically when this repo updates the `v0` tag on release.
 
 ## Customization (Classic Installation)
 
