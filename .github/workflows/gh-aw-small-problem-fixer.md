@@ -105,6 +105,7 @@ github-search_issues: query="repo:{owner}/{repo} is:issue is:open -label:bug-hun
 ````
 
 4. For each candidate, read the full issue and comments using `issue_read` (methods `get` and `get_comments`).
+5. Only keep candidates whose `author_association` is `OWNER`, `MEMBER`, or `COLLABORATOR` (skip all others).
 
 ## Step 2: Select a target
 
