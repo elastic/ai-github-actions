@@ -1,7 +1,7 @@
-name: Semantic Function Clustering
+name: Agent Suggestions
 on:
   schedule:
-    - cron: "0 12 * * 1-5"
+    - cron: "0 12 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -11,8 +11,6 @@ permissions:
 
 jobs:
   run:
-    uses: ./.github/workflows/gh-aw-semantic-function-clustering.lock.yml
-    with:
-      languages: "go,python,typescript"
+    uses: ./.github/workflows/gh-aw-agent-suggestions.lock.yml
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
