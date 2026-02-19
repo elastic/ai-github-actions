@@ -1,29 +1,28 @@
-# PR Checks Fix
+# PR CI Fixer
 
-Deprecated: use [PR CI Detective](../pr-ci-detective/) and [PR CI Fixer](../pr-ci-fixer/).
-
-Analyze failed PR checks and optionally push fixes.
+Opt-in fixer for failed PR checks that can push safe, targeted changes.
 
 ## Quick Install
 
-```bash
+````bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-checks-fix/example.yml \
-  -o .github/workflows/pr-checks-fix.yml
-```
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-ci-fixer/example.yml \
+  -o .github/workflows/pr-ci-fixer.yml
+````
 
 See [example.yml](example.yml) for the full workflow file.
 
 ## Trigger
 
-| Event | Types | Condition |
-| --- | --- | --- |
-| `workflow_run` | `completed` | CI workflow failed and the run is associated with a PR |
+| Event | Description |
+| --- | --- |
+| `workflow_dispatch` | Manual (requires a workflow run ID) |
 
 ## Inputs
 
 | Input | Description | Required | Default |
 | --- | --- | --- | --- |
+| `workflow-run-id` | Failed workflow run ID to analyze | Yes | — |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 

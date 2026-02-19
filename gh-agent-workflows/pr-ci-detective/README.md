@@ -1,16 +1,14 @@
-# PR Checks Fix
+# PR CI Detective
 
-Deprecated: use [PR CI Detective](../pr-ci-detective/) and [PR CI Fixer](../pr-ci-fixer/).
-
-Analyze failed PR checks and optionally push fixes.
+Analyze failed PR checks and report findings (read-only).
 
 ## Quick Install
 
-```bash
+````bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-checks-fix/example.yml \
-  -o .github/workflows/pr-checks-fix.yml
-```
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-ci-detective/example.yml \
+  -o .github/workflows/pr-ci-detective.yml
+````
 
 See [example.yml](example.yml) for the full workflow file.
 
@@ -30,4 +28,3 @@ See [example.yml](example.yml) for the full workflow file.
 ## Safe Outputs
 
 - `add-comment` — post a comment explaining the failure (max 3)
-- `push-to-pull-request-branch` — push a fix to the PR branch
