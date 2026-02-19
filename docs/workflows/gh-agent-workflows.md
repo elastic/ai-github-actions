@@ -27,32 +27,32 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
-| PR Review | PR opened/updated | AI code review with inline comments |
 | Issue Triage | New issues | Investigate and provide implementation plans |
 | Mention in Issue | `/ai` in issues | Answer questions, debug, create PRs |
 | Mention in PR | `/ai` in PRs | Review, fix code, push changes |
 | PR CI Detective | Failed PR checks | Diagnose failures and recommend fixes |
 | PR CI Fixer | Manual (workflow_dispatch) | Opt-in fixes for failed PR checks |
+| PR Review | PR opened/updated | AI code review with inline comments |
 
 ### Continuous improvement / agent factory workflows
 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
-| Small Problem Fixer | Weekday schedule | Fix small, related issues and open a focused PR |
-| Code Simplifier | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
-| Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |
-| Release Update Check | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
+| Agent Efficiency | Weekday schedule | Analyze agent logs for inefficiencies |
 | Agent Suggestions | Weekly schedule | Suggest new agent workflows based on repo and downstream needs |
-| Bug Hunter | Weekday schedule | Find reproducible bugs and file reports |
+| Breaking Change Detect | Weekday schedule | Detect undocumented public breaking changes |
 | Bug Exterminator | Weekday schedule | Fix bug-hunter issues and open a focused PR |
+| Bug Hunter | Weekday schedule | Find reproducible bugs and file reports |
+| Code Simplifier | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | Docs Drift | Weekday schedule | Detect code changes needing doc updates |
 | Docs New Contributor Review | Weekly schedule | Review docs from a new contributor perspective |
-| Project Summary | Daily schedule | Summarize recent activity and priorities |
 | Downstream Health | Daily schedule | Monitor downstream repo quality |
-| Breaking Change Detect | Weekday schedule | Detect undocumented public breaking changes |
+| Project Summary | Daily schedule | Summarize recent activity and priorities |
+| Release Update Check | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
 | Semantic Function Clustering | Weekday schedule | Identify function clustering refactor opportunities |
+| Small Problem Fixer | Weekday schedule | Fix small, related issues and open a focused PR |
 | Stale Issues | Weekday schedule | Find resolved issues that can be closed |
-| Agent Efficiency | Weekday schedule | Analyze agent logs for inefficiencies |
+| Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |
 
 ## Secrets
 
