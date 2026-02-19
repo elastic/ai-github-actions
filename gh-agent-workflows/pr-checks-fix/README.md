@@ -1,7 +1,5 @@
 # PR Checks Fix
 
-Deprecated: use [PR CI Detective](../pr-ci-detective/) and [PR CI Fixer](../pr-ci-fixer/).
-
 Analyze failed PR checks and optionally push fixes.
 
 ## Quick Install
