@@ -4,6 +4,8 @@
 
 ## Available Workflows
 
+### Human-coordinated workflows
+
 | Workflow | Trigger | Description |
 | --- | --- | --- |
 | [PR Review](pr-review/) | PR opened/updated | AI code review with inline comments |
@@ -11,6 +13,11 @@
 | [Mention in Issue](mention-in-issue/) | `/ai` in issues | Answer questions, debug, create PRs |
 | [Mention in PR](mention-in-pr/) | `/ai` in PRs | Review, fix code, push changes |
 | [PR Checks Fix](pr-checks-fix/) | Failed PR checks | Analyze failures and optionally push fixes |
+
+### Continuous improvement / agent factory workflows
+
+| Workflow | Trigger | Description |
+| --- | --- | --- |
 | [Small Problem Fixer](small-problem-fixer/) | Weekday schedule | Fix small, related issues and open a focused PR |
 | [Code Simplifier](code-simplifier/) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | [Test Improvement](test-improvement/) | Weekly schedule | Add targeted tests and clean up redundant coverage |

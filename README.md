@@ -21,6 +21,8 @@ jobs:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
+### Human-coordinated workflows
+
 | Workflow | Trigger | Description |
 | --- | --- | --- |
 | PR Review | PR opened/updated | Automated code review with inline comments |
@@ -28,6 +30,11 @@ jobs:
 | Mention in Issue | `/ai` command | Answer questions, debug, create PRs |
 | Mention in PR | `/ai` command | Review, fix code, push changes |
 | PR Checks Fix | Failed PR checks | Analyze failures and optionally push fixes |
+
+### Continuous improvement / agent factory workflows
+
+| Workflow | Trigger | Description |
+| --- | --- | --- |
 | Small Problem Fixer | Weekday schedule | Fix a small, related issue set and open a focused PR |
 | Code Simplifier | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |
