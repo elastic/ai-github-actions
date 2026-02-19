@@ -12,7 +12,8 @@
 | [Issue Triage](issue-triage/) | New issues | Investigate and provide implementation plans |
 | [Mention in Issue](mention-in-issue/) | `/ai` in issues | Answer questions, debug, create PRs |
 | [Mention in PR](mention-in-pr/) | `/ai` in PRs | Review, fix code, push changes |
-| [PR Checks Fix](pr-checks-fix/) | Failed PR checks | Analyze failures and optionally push fixes |
+| [PR CI Detective](pr-ci-detective/) | Failed PR checks | Diagnose failures and recommend fixes |
+| [PR CI Fixer](pr-ci-fixer/) | Manual (workflow_dispatch) | Opt-in fixes for failed PR checks |
 
 ### Continuous improvement / agent factory workflows
 
@@ -22,7 +23,9 @@
 | [Code Simplifier](code-simplifier/) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | [Test Improvement](test-improvement/) | Weekly schedule | Add targeted tests and clean up redundant coverage |
 | [Release Update Check](release-update/) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
+| [Agent Suggestions](agent-suggestions/) | Weekly schedule | Suggest new agent workflows based on repo and downstream needs |
 | [Bug Hunter](bug-hunter/) | Weekday schedule | Find reproducible bugs and file reports |
+| [Bug Exterminator](bug-exterminator/) | Weekday schedule | Fix bug-hunter issues and open a focused PR |
 | [Docs Drift](docs-drift/) | Weekday schedule | Detect code changes needing doc updates |
 | [Docs New Contributor Review](docs-new-contributor-review/) | Weekly schedule | Review docs from a new contributor perspective |
 | [Project Summary](project-summary/) | Daily schedule | Summarize recent activity and priorities |
@@ -57,6 +60,21 @@ jobs:
 Commit and push. The workflow triggers on your repo's events and delegates to the centrally-compiled agent workflow. Updates propagate automatically when this repo updates the `v0` tag on release -- no action needed in your repo.
 
 Each workflow directory contains an [example.yml](pr-review/example.yml) you can copy as a starting point. See the per-workflow README for trigger details, inputs, and safe outputs.
+
+## Secrets
+
+These workflows require a Copilot PAT stored as `COPILOT_GITHUB_TOKEN`.
+
+1. Create a Copilot PAT with the `copilot-requests` scope (the scope is only available for public repositories).
+2. Store it as a repository secret:
+
+````bash
+gh aw secrets set COPILOT_GITHUB_TOKEN --value "(pat)"
+````
+
+UI path: Settings → Secrets and variables → Actions → New repository secret.
+
+See the upstream [gh-aw auth docs](https://github.com/github/gh-aw/blob/main/docs/src/content/docs/reference/auth.mdx) for canonical steps.
 
 ## Agentic Maintenance Workflow Required
 

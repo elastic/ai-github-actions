@@ -21,6 +21,21 @@ jobs:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
+## Secrets
+
+These workflows require a Copilot PAT stored as `COPILOT_GITHUB_TOKEN`.
+
+1. Create a Copilot PAT with the `copilot-requests` scope (the scope is only available for public repositories).
+2. Store it as a repository secret:
+
+````bash
+gh aw secrets set COPILOT_GITHUB_TOKEN --value "(pat)"
+````
+
+UI path: Settings → Secrets and variables → Actions → New repository secret.
+
+See the upstream [gh-aw auth docs](https://github.com/github/gh-aw/blob/main/docs/src/content/docs/reference/auth.mdx) for canonical steps.
+
 ### Human-coordinated workflows
 
 | Workflow | Trigger | Description |
@@ -29,7 +44,8 @@ jobs:
 | Issue Triage | New issues | Investigate and provide implementation plans |
 | Mention in Issue | `/ai` command | Answer questions, debug, create PRs |
 | Mention in PR | `/ai` command | Review, fix code, push changes |
-| PR Checks Fix | Failed PR checks | Analyze failures and optionally push fixes |
+| PR CI Detective | Failed PR checks | Diagnose failures and recommend fixes |
+| PR CI Fixer | Manual (workflow_dispatch) | Opt-in fixes for failed PR checks |
 
 ### Continuous improvement / agent factory workflows
 
@@ -39,7 +55,9 @@ jobs:
 | Code Simplifier | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |
 | Release Update Check | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
+| Agent Suggestions | Weekly schedule | Suggest new agent workflows based on repo and downstream needs |
 | Bug Hunter | Weekday schedule | Find a reproducible, user-impacting bug and file an issue |
+| Bug Exterminator | Weekday schedule | Fix bug-hunter issues and open a focused PR |
 | Docs Drift | Weekday schedule | Detect code changes needing doc updates |
 | Docs New Contributor Review | Weekly schedule | Review docs from a new contributor perspective |
 | Project Summary | Daily schedule | Summarize recent activity and priorities |
