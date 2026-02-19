@@ -29,3 +29,15 @@ Default workflows:
 Use `--workflows` (comma-separated) to override the defaults, `--skip-secret` to set the
 secret manually, `--continuous-improvement` to also install selected continuous improvement
 workflows, or `--repo OWNER/REPO` when auto-detection is not available.
+
+`--continuous-improvement` adds:
+- `bug-hunter`
+- `bug-exterminator`
+- `code-simplifier`
+- `docs-drift`
+- `docs-new-contributor-review`
+- `small-problem-fixer`
+- `stale-issues`
+- `test-improvement`
+- `breaking-change-detect`
+- `semantic-function-clustering`

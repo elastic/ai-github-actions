@@ -124,8 +124,12 @@ continuous_improvement_workflows=(
   bug-exterminator
   code-simplifier
   docs-drift
+  docs-new-contributor-review
   small-problem-fixer
+  stale-issues
   test-improvement
+  breaking-change-detect
+  semantic-function-clustering
 )
 
 if [ -n "$workflows_csv" ]; then
