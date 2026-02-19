@@ -48,7 +48,9 @@ See the upstream [gh-aw auth docs](https://github.com/github/gh-aw/blob/main/doc
 | Code Simplifier | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |
 | Release Update Check | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
+| Agent Suggestions | Weekly schedule | Suggest new agent workflows based on repo and downstream needs |
 | Bug Hunter | Weekday schedule | Find a reproducible, user-impacting bug and file an issue |
+| Bug Exterminator | Weekday schedule | Fix bug-hunter issues and open a focused PR |
 | Docs Drift | Weekday schedule | Detect code changes needing doc updates |
 | Docs New Contributor Review | Weekly schedule | Review docs from a new contributor perspective |
 | Project Summary | Daily schedule | Summarize recent activity and priorities |

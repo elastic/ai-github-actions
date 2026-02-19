@@ -23,6 +23,8 @@ See [example.yml](example.yml) for the full workflow file.
 
 | Input | Description | Required | Default |
 | --- | --- | --- | --- |
+| `languages` | Comma-separated languages to analyze (ignored if `file-globs` is set) | No | `"go"` |
+| `file-globs` | Comma-separated file globs to analyze (overrides `languages`) | No | `""` |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 
