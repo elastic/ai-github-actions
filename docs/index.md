@@ -2,15 +2,21 @@
 
 AI-powered GitHub workflows for Elastic repositories.
 
-## GitHub Agent Workflows (recommended)
+## Choose an approach
 
-GitHub Agentic Workflows with safe-output guardrails and configurable engines.
-See [GitHub Agent Workflows](workflows/gh-agent-workflows.md) for installation and catalog details.
+| Feature | GitHub Agent Workflows | Claude Composite Actions |
+| --- | --- | --- |
+| Engine | Copilot (default) or Claude | Claude only |
+| Install | Copy trigger YAML (recommended) or `gh aw add` + `gh aw compile` | Copy `example.yml` to `.github/workflows/` |
+| Guardrails | Safe-outputs framework (structured API outputs) | Read-only/RWX/RWXP variants via permissions |
+| Customization | `additional-instructions`, `setup-commands`, or full shim edit | Edit YAML directly, adjust composite action inputs |
 
-## Claude Composite Actions
+GitHub Agent Workflows are recommended for new deployments; Claude Composite Actions remain supported for legacy deployments.
 
-Traditional GitHub Actions wrapping Claude Code with RO/RWX/RWXP permission variants.
-See [Claude Composite Actions](workflows/claude-workflows.md) for usage and configuration.
+## Workflows
+
+- [GitHub Agent Workflows](workflows/gh-agent-workflows.md)
+- [Claude Composite Actions](workflows/claude-workflows.md)
 
 ## More
 
