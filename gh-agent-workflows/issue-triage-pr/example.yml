@@ -1,4 +1,4 @@
-name: Issue Triage (Optional PRs)
+name: Issue Triage (with PR)
 on:
   issues:
     types: [opened]
@@ -7,13 +7,10 @@ permissions:
   contents: read
   discussions: write
   issues: write
-  pull-requests: write
+  pull-requests: write  # required by gh-aw compiler for add-comment (github/gh-aw#16673)
 
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-triage-pr.lock.yml@v0
-    with:
-      automatic-prs: "false"
-      draft-prs: "true"
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
