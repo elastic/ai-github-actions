@@ -16,6 +16,7 @@
 | [Test Improvement](test-improvement/) | Weekly schedule | Add targeted tests and clean up redundant coverage |
 | [Release Update Check](release-update/) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
 | [Bug Hunter](bug-hunter/) | Weekday schedule | Find reproducible bugs and file reports |
+| [Bug Exterminator](bug-exterminator/) | Weekday schedule | Fix bug-hunter issues and open a focused PR |
 | [Docs Drift](docs-drift/) | Weekday schedule | Detect code changes needing doc updates |
 | [Docs New Contributor Review](docs-new-contributor-review/) | Weekly schedule | Review docs from a new contributor perspective |
 | [Project Summary](project-summary/) | Daily schedule | Summarize recent activity and priorities |
