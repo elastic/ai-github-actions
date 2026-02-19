@@ -12,7 +12,7 @@ imports:
   - gh-aw-fragments/safe-output-push-to-pr.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: ${{ inputs.model }}
 on:
   workflow_call:
     inputs:
@@ -26,6 +26,11 @@ on:
         type: string
         required: false
         default: ""
+      model:
+        description: "Model to use for the Copilot engine"
+        type: string
+        required: false
+        default: "gpt-5.3-codex"
       workflow-run-id:
         description: "Workflow run ID to analyze"
         type: string
