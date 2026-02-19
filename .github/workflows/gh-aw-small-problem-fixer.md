@@ -11,7 +11,7 @@ imports:
   - gh-aw-fragments/safe-output-create-pr.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: ${{ inputs.model }}
 on:
   workflow_call:
     inputs:
@@ -25,6 +25,11 @@ on:
         type: string
         required: false
         default: ""
+      model:
+        description: "Model to use for the Copilot engine"
+        type: string
+        required: false
+        default: "gpt-5.3-codex"
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string
@@ -118,8 +123,8 @@ Prefer issues that:
 
 1. Locate the relevant code via search and file reads.
 2. Make the smallest safe change that fixes the issue(s).
-3. Determine required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config; run required commands relevant to the change and capture results. If required commands cannot be run, call `noop` with a brief reason.
-4. Run the most relevant targeted tests. **Tests must pass.** If no tests exist for the area, write a minimal test that validates the fix.
+3. Determine required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config; run required commands relevant to the change and capture results, even if they are long-running or marked as heavy.
+4. Run the most relevant tests (prefer the full relevant suite even if slow). **Tests must pass.** If no tests exist for the area, write a minimal test that validates the fix.
 5. Commit the changes locally.
 
 ## Step 4: Quality Gate — Self-Review
