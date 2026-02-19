@@ -1,5 +1,5 @@
 ---
-description: "Analyze failed PR checks and optionally push fixes"
+description: "Analyze failed PR checks and report findings"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
@@ -9,12 +9,9 @@ imports:
   - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment.md
-  - gh-aw-fragments/safe-output-push-to-pr.md
 engine:
   id: copilot
   model: gpt-5.2-codex
-  concurrency:
-    group: "gh-aw-copilot-pr-checks-fix-${{ github.event.workflow_run.id }}"
 on:
   workflow_call:
     inputs:
@@ -37,7 +34,7 @@ on:
       COPILOT_GITHUB_TOKEN:
         required: true
 concurrency:
-  group: pr-checks-fix-${{ github.event.workflow_run.id }}
+  group: pr-ci-detective-${{ github.event.workflow_run.id }}
   cancel-in-progress: false
 permissions:
   actions: read
@@ -53,10 +50,6 @@ network:
   allowed:
     - defaults
     - github
-    - go
-    - node
-    - python
-    - ruby
 strict: false
 roles: [admin, maintainer, write]
 timeout-minutes: 30
@@ -68,9 +61,9 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-# PR Checks Fixer
+# PR CI Detective
 
-Assist with failed GitHub Actions checks for pull requests in ${{ github.repository }}. Analyze workflow run logs, explain failures, and optionally push fixes.
+Assist with failed GitHub Actions checks for pull requests in ${{ github.repository }}. Analyze workflow run logs, explain failures, and recommend fixes. This workflow is read-only.
 
 ## Context
 
@@ -80,10 +73,8 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 
 ## Constraints
 
-- **CAN**: Read files, search code, modify files locally, run tests and commands, comment on PRs, push changes to same-repo PR branches
-- **CANNOT**: Push to fork PR branches, merge PRs, or modify `.github/workflows/`
-
-When pushing changes, the workspace already has the PR branch checked out. Make your changes, run required repo commands (lint/build/test) relevant to the fix, commit them locally, then use `push_to_pull_request_branch`.
+- **CAN**: Read files, search code, run tests and commands, comment on PRs
+- **CANNOT**: Push changes, merge PRs, or modify `.github/workflows/`
 
 ## Instructions
 
@@ -106,22 +97,18 @@ When pushing changes, the workspace already has the PR branch checked out. Make 
      unzip -o /tmp/gh-aw/agent/workflow-logs-{run_id}.zip -d /tmp/gh-aw/agent/workflow-logs-{run_id}/
      ````
 
-### Step 2: Analyze and Fix
+### Step 2: Analyze
 
 - Identify the failing job/step and summarize the root cause.
-- If the fix is straightforward and safe, implement it locally, run required repo commands (lint/build/test) relevant to the fix, commit, and push to the PR branch.
-- If the fix is risky or requires broader refactoring, propose a concrete remediation plan instead of pushing.
-- If the PR is from a fork, do not push; provide patch guidance in the comment.
+- Propose a concrete, minimal fix or remediation plan.
+- If the logs are inconclusive, state what additional data is needed.
 
 ### Step 3: Respond
 
 Call `add_comment` on the PR with:
 - A concise summary of the failure and root cause
-- The recommended fix (or the applied fix if you pushed changes)
-- Required commands/tests run and their results
+- The recommended fix or remediation plan
+- Tests run and their results (if any)
 - Any follow-up steps required
-
-**Additional tools:**
-- `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
 
 ${{ inputs.additional-instructions }}
