@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7644fa762a2a9bb8a5d4624a63de48ce772b1d2ec4de1fae6f74b9c9a7897c00"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a5e84b062e200c4caf25bc799d7adc876dbcbac30ad0e7a64f306efe48cc167d"}
 
 name: "Test Improvement Agent"
 "on":

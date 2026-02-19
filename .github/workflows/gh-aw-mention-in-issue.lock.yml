@@ -36,7 +36,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f83b60f2deeb0dfe989b1ad3a3246c31108a7bbdf9808ea7be50b7453b69e4c3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e1cfbb050a3cac5fca66b98b55e736425debf2541f07f72339813caaf11201cb"}
 
 name: "Issue Assistant"
 "on":
@@ -45,6 +45,11 @@ name: "Issue Assistant"
       additional-instructions:
         default: ""
         description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      draft-prs:
+        default: "true"
+        description: "Create PRs as draft (default: true)"
         required: false
         type: string
       messages-footer:
@@ -434,7 +439,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
+      group: "gh-aw-copilot-mention-issue-${{ github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -1272,7 +1277,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
+      group: "gh-aw-copilot-mention-issue-${{ github.event.issue.number }}"
     timeout-minutes: 10
     outputs:
       success: ${{ steps.parse_results.outputs.success }}

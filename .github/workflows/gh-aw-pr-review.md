@@ -14,6 +14,8 @@ imports:
 engine:
   id: copilot
   model: gpt-5.2-codex
+  concurrency:
+    group: "gh-aw-copilot-pr-review-${{ github.event.pull_request.number }}"
 on:
   workflow_call:
     inputs:

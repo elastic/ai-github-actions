@@ -1,6 +1,7 @@
 ---
 safe-outputs:
   create-pull-request:
+    draft: ${{ inputs.draft-prs != 'false' }}
 ---
 
 ## create-pull-request Limitations

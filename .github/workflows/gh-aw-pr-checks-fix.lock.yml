@@ -35,7 +35,7 @@
 #     - gh-aw-fragments/safe-output-push-to-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4c7f4666aea65628ce2db602d86fbc7b4b2ad28c8a66aff4de2f638e91c07b57"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1e9c89ff22f43ddb7a73d69b3b9fc13dd64361c32eed693e84e1c0223f3488c1"}
 
 name: "PR Checks Fixer"
 "on":
@@ -433,7 +433,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
+      group: "gh-aw-copilot-pr-checks-fix-${{ github.event.workflow_run.id }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -1169,7 +1169,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
+      group: "gh-aw-copilot-pr-checks-fix-${{ github.event.workflow_run.id }}"
     timeout-minutes: 10
     outputs:
       success: ${{ steps.parse_results.outputs.success }}

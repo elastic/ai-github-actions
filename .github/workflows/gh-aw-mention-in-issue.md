@@ -14,6 +14,8 @@ imports:
 engine:
   id: copilot
   model: gpt-5.2-codex
+  concurrency:
+    group: "gh-aw-copilot-mention-issue-${{ github.event.issue.number }}"
 on:
   workflow_call:
     inputs:
@@ -32,6 +34,11 @@ on:
         type: string
         required: false
         default: ""
+      draft-prs:
+        description: "Create PRs as draft (default: true)"
+        type: string
+        required: false
+        default: "true"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
