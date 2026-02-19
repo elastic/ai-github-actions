@@ -35,4 +35,19 @@ steps:
   - name: Setup uv
     if: hashFiles('pyproject.toml', 'uv.lock') != ''
     uses: astral-sh/setup-uv@v5
+    id: setup-uv
+
+  - name: Expose uv in workspace
+    if: hashFiles('pyproject.toml', 'uv.lock') != ''
+    shell: bash
+    env:
+      UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
+      WORKSPACE: ${{ github.workspace }}
+    run: |
+      set -euo pipefail
+      install_dir="$WORKSPACE/.gh-aw-tools/bin"
+      mkdir -p "$install_dir"
+      cp "$UV_PATH" "$install_dir/uv"
+      chmod +x "$install_dir/uv"
+      echo "$install_dir" >> "$GITHUB_PATH"
 ---

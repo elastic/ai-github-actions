@@ -52,6 +52,21 @@ Commit and push. The workflow triggers on your repo's events and delegates to th
 
 Each workflow directory contains an [example.yml](pr-review/example.yml) you can copy as a starting point. See the per-workflow README for trigger details, inputs, and safe outputs.
 
+## Secrets
+
+These workflows require a Copilot PAT stored as `COPILOT_GITHUB_TOKEN`.
+
+1. Create a Copilot PAT with the `copilot-requests` scope (the scope is only available for public repositories).
+2. Store it as a repository secret:
+
+````bash
+gh aw secrets set COPILOT_GITHUB_TOKEN --value "(pat)"
+````
+
+UI path: Settings → Secrets and variables → Actions → New repository secret.
+
+See the upstream [gh-aw auth docs](https://github.com/github/gh-aw/blob/main/docs/src/content/docs/reference/auth.mdx) for canonical steps.
+
 ## Agentic Maintenance Workflow Required
 
 Any workflow that uses safe-outputs with `expires` (create-issue, create-pull-request, create-discussion) requires the `agentics-maintenance` workflow so expired items are closed automatically. Install it once per repo:
