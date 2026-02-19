@@ -39,7 +39,7 @@
 #     - gh-aw-fragments/safe-output-submit-review.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"efc157d9db8455638af72c596fbf94b01f2d6279c16acffe586782da19ef2730"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"278538070a12253de528b1ae24e3620b1a28625684e0f8d0b588fb75aa9bde47"}
 
 name: "PR Assistant"
 "on":
@@ -584,7 +584,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
+      group: "gh-aw-copilot-mention-pr-${{ github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -1462,7 +1462,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
+      group: "gh-aw-copilot-mention-pr-${{ github.event.issue.number }}"
     timeout-minutes: 10
     outputs:
       success: ${{ steps.parse_results.outputs.success }}

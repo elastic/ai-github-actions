@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1713e356802103ea367a3096f796cdb0b21b9b4d60fb90b1fb85b44c94a2de1e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2d7cb401bf685ba2e0fece015b871517f2278e0cb85a908d4f133ca7bd6f1cf2"}
 
 name: "Code Simplifier"
 "on":

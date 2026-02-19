@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1ef2170afa0e97e6fe05c10cf39f99e47148ab51343d09f0ef3ff2e1de09e2fe"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d1521e177b2eee9689e5126bb0fe71e19a6659ca7eaf84d7e274be4051aa4407"}
 
 name: "Small Problem Fixer"
 "on":
