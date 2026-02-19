@@ -45,6 +45,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 | Agent Suggestions | Weekly schedule | Suggest new agent workflows based on repo and downstream needs |
 | Bug Hunter | Weekday schedule | Find reproducible bugs and file reports |
 | Bug Exterminator | Weekday schedule | Fix bug-hunter issues and open a focused PR |
+| Flaky Test Triage | Weekday schedule + failed CI runs | Identify repeated flaky failures and file root-cause-first triage reports |
 | Docs Drift | Weekday schedule | Detect code changes needing doc updates |
 | Docs New Contributor Review | Weekly schedule | Review docs from a new contributor perspective |
 | Project Summary | Daily schedule | Summarize recent activity and priorities |
