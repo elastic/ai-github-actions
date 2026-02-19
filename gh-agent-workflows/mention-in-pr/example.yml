@@ -1,11 +1,13 @@
 name: Mention in PR
 on:
+  # Customize trigger events, filters, and schedules for your repo.
   issue_comment:
     types: [created]
   pull_request_review_comment:
     types: [created]
 
 permissions:
+  # Use least-privilege; add write scopes only when needed.
   contents: write
   discussions: write
   issues: write
@@ -13,9 +15,12 @@ permissions:
 
 jobs:
   run:
+    # Gate execution (for example, /ai commands or label filters).
     if: >-
       startsWith(github.event.comment.body, '/ai') &&
       (github.event.issue.pull_request != null || github.event_name == 'pull_request_review_comment')
+    # Pin to a release tag; update when upgrading.
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-mention-in-pr.lock.yml@v0
+    # Required: COPILOT_GITHUB_TOKEN secret.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

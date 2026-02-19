@@ -1,16 +1,20 @@
 name: Docs Drift
 on:
+  # Customize trigger events, filters, and schedules for your repo.
   schedule:
-    - cron: "0 14 * * 1-5"
-  workflow_dispatch:
+    - cron: "0 14 * * 1-5"  # adjust schedule
+  workflow_dispatch:  # enable manual runs
 
 permissions:
+  # Use least-privilege; add write scopes only when needed.
   contents: read
   issues: write
   pull-requests: read
 
 jobs:
   run:
+    # Pin to a release tag; update when upgrading.
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-docs-drift.lock.yml@v0
+    # Required: COPILOT_GITHUB_TOKEN secret.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

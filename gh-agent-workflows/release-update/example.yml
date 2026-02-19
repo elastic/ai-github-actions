@@ -1,16 +1,20 @@
 name: Release Update Check
 on:
+  # Customize trigger events, filters, and schedules for your repo.
   schedule:
-    - cron: "0 11 * * 1"
-  workflow_dispatch:
+    - cron: "0 11 * * 1"  # adjust schedule
+  workflow_dispatch:  # enable manual runs
 
 permissions:
+  # Use least-privilege; add write scopes only when needed.
   contents: write
   issues: write
   pull-requests: write
 
 jobs:
   run:
+    # Pin to a release tag; update when upgrading.
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-release-update.lock.yml@v0
+    # Required: COPILOT_GITHUB_TOKEN secret.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

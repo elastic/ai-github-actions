@@ -1,9 +1,11 @@
 name: Issue Triage
 on:
+  # Customize trigger events, filters, and schedules for your repo.
   issues:
     types: [opened]
 
 permissions:
+  # Use least-privilege; add write scopes only when needed.
   contents: read
   discussions: write
   issues: write
@@ -11,6 +13,8 @@ permissions:
 
 jobs:
   run:
+    # Pin to a release tag; update when upgrading.
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-triage.lock.yml@v0
+    # Required: COPILOT_GITHUB_TOKEN secret.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
