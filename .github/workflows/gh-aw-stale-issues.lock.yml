@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"956524b1f5e5e9eb0c03e1b451e2fa4137f83c9c746037eeee7e419df765f255"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bdcd6ddcc9ace84bfb9f71836fd6c84409da74fbf047c55208278c60ba6c164e"}
 
 name: "Gh Aw Stale Issues"
 "on":
@@ -548,9 +548,23 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: .ruby-version
-      - if: hashFiles('pyproject.toml', 'uv.lock') != ''
+      - id: setup-uv
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
         name: Setup uv
         uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - env:
+          UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
+          WORKSPACE: ${{ github.workspace }}
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
+        name: Expose uv in workspace
+        run: |-
+          set -euo pipefail
+          install_dir="$WORKSPACE/.gh-aw-tools/bin"
+          mkdir -p "$install_dir"
+          cp "$UV_PATH" "$install_dir/uv"
+          chmod +x "$install_dir/uv"
+          echo "$install_dir" >> "$GITHUB_PATH"
+        shell: bash
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

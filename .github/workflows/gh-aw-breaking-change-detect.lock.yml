@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9c607aa0baaba47e9dfd0c43a06e81f6a78fa598e0018a2139d87cc319567465"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4c8a5d929266c83c02f475507ebbf10725c829f31edcc2942d9383c7b56ac267"}
 
 name: "Gh Aw Breaking Change Detect"
 "on":
@@ -540,9 +540,23 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: .ruby-version
-      - if: hashFiles('pyproject.toml', 'uv.lock') != ''
+      - id: setup-uv
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
         name: Setup uv
         uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - env:
+          UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
+          WORKSPACE: ${{ github.workspace }}
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
+        name: Expose uv in workspace
+        run: |-
+          set -euo pipefail
+          install_dir="$WORKSPACE/.gh-aw-tools/bin"
+          mkdir -p "$install_dir"
+          cp "$UV_PATH" "$install_dir/uv"
+          chmod +x "$install_dir/uv"
+          echo "$install_dir" >> "$GITHUB_PATH"
+        shell: bash
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

@@ -53,7 +53,7 @@ network:
     - node
     - python
     - ruby
-  strict: false
+strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
   noop:

@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b36aa4ac0c0d2b79561a187714bb4581398d4c8c4b0327503d42db1176dcebf3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e77290e4a3ee79eedbe57fbe41b4017505436b6875a023f22bb8ffb905f65165"}
 
 name: "Gh Aw Upgrade Check"
 "on":
@@ -513,9 +513,23 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: .ruby-version
-      - if: hashFiles('pyproject.toml', 'uv.lock') != ''
+      - id: setup-uv
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
         name: Setup uv
         uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - env:
+          UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
+          WORKSPACE: ${{ github.workspace }}
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
+        name: Expose uv in workspace
+        run: |-
+          set -euo pipefail
+          install_dir="$WORKSPACE/.gh-aw-tools/bin"
+          mkdir -p "$install_dir"
+          cp "$UV_PATH" "$install_dir/uv"
+          chmod +x "$install_dir/uv"
+          echo "$install_dir" >> "$GITHUB_PATH"
+        shell: bash
 
       - name: Configure Git credentials
         env:
