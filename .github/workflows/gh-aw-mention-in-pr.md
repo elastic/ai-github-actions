@@ -114,7 +114,7 @@ Based on what's asked, do the appropriate thing:
 **If asked to fix code or address review feedback:**
 - Call `pull_request_read` with method `get_review_comments` to see open review threads and understand what needs to be addressed.
 - Make the changes in the workspace.
-- Run tests to verify the fix.
+- Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
 - Commit your changes locally, then use `push_to_pull_request_branch` to push them.
 - After pushing, resolve each addressed review thread by calling `resolve_pull_request_review_thread` with the thread's node ID (the `id` field from `get_review_comments`, e.g., `PRRT_kwDO...`). Only resolve threads you have actually addressed — do not resolve threads you skipped or disagreed with.
 - **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.
