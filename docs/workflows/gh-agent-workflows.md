@@ -28,6 +28,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 | Workflow | Trigger | Description |
 | --- | --- | --- |
 | Issue Triage | New issues | Investigate and provide implementation plans |
+| Issue Triage (with PR) | New issues | Triage plus automatic draft PR for straightforward fixes |
 | Mention in Issue | `/ai` in issues | Answer questions, debug, create PRs |
 | Mention in PR | `/ai` in PRs | Review, fix code, push changes |
 | PR CI Detective | Failed PR checks | Diagnose failures and recommend fixes |
