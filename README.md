@@ -42,7 +42,8 @@ See the upstream [gh-aw auth docs](https://github.com/github/gh-aw/blob/main/doc
 | Issue Triage | New issues | Investigate and provide implementation plans |
 | Mention in Issue | `/ai` command | Answer questions, debug, create PRs |
 | Mention in PR | `/ai` command | Review, fix code, push changes |
-| PR Checks Fix | Failed PR checks | Analyze failures and optionally push fixes |
+| PR CI Detective | Failed PR checks | Diagnose failures and recommend fixes |
+| PR CI Fixer | Manual (workflow_dispatch) | Opt-in fixes for failed PR checks |
 | Small Problem Fixer | Weekday schedule | Fix a small, related issue set and open a focused PR |
 | Code Simplifier | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | Test Improvement | Weekly schedule | Add targeted tests and clean up redundant coverage |

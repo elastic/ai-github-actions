@@ -102,13 +102,14 @@ Pick one small area where the simplification is obvious and easy to validate. Pr
 ## Step 3: Implement
 
 1. Make the smallest safe change that preserves behavior.
-2. Run the most relevant targeted tests. **Tests must pass.** If no tests cover the changed code, this is a strong signal to call `noop` — untested simplifications are high-risk.
+2. Determine required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config; run required commands relevant to the change and capture results. If required commands cannot be run, call `noop`.
+3. Run the most relevant targeted tests. **Tests must pass.** If no tests cover the changed code, this is a strong signal to call `noop` — untested simplifications are high-risk.
 
 ## Step 4: Quality Gate — Prove Safety
 
 Before creating the PR, verify:
 
-- **Tests pass**: You ran tests and they succeeded. State which tests and their results.
+- **Required commands pass**: You ran required repo commands (lint/build/test) and they succeeded. State which commands and their results.
 - **Behavior is identical**: You can explain in one sentence why the output is unchanged for all inputs.
 - **No hidden side effects**: The change doesn't alter error handling, logging, metrics, or concurrency behavior.
 - **Reviewer would approve quickly**: A maintainer would glance at this and merge, not debate it.
@@ -117,6 +118,6 @@ If any of these checks fail, call `noop`. A simplification that might change beh
 
 ## Step 5: Create the PR
 
-Call `create_pull_request` with a concise summary, a clear explanation of why the change is safe, and the exact tests run with their results.
+Call `create_pull_request` with a concise summary, a clear explanation of why the change is safe, and the exact commands run with their results.
 
 ${{ inputs.additional-instructions }}

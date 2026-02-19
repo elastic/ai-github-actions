@@ -1,0 +1,23 @@
+name: PR CI Fixer
+on:
+  workflow_dispatch:
+    inputs:
+      workflow-run-id:
+        description: "Failed workflow run ID to analyze"
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+  discussions: write
+  issues: write
+  pull-requests: write  # required by gh-aw compiler for add-comment (github/gh-aw#16673)
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-ci-fixer.lock.yml@v0
+    with:
+      workflow-run-id: ${{ inputs.workflow-run-id }}
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
