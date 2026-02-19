@@ -27,7 +27,8 @@ curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/script
 ````
 
 By default, this installs recommended GitHub Agent Workflow triggers, adds `agentics-maintenance.yml`,
-sets `COPILOT_GITHUB_TOKEN`, creates branch `ai-gh-aw-setup`, pushes it, and opens a PR.
+sets `COPILOT_GITHUB_TOKEN`, creates branch `ai-gh-aw-setup`, pushes it, and opens a PR. Use
+`--continuous-improvement` to also install selected continuous improvement workflows.
 
 ## License
 

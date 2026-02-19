@@ -12,6 +12,7 @@ branch="ai-gh-aw-setup"
 repo=""
 workflows_csv=""
 skip_secret=false
+continuous_improvement=false
 dry_run=false
 
 usage() {
@@ -23,6 +24,8 @@ Options:
   --branch NAME         Branch name to create (default: ai-gh-aw-setup)
   --workflows CSV       Comma-separated workflow list (default: recommended set)
   --skip-secret         Skip setting COPILOT_GITHUB_TOKEN
+  --continuous-improvement
+                        Add recommended continuous improvement workflows
   --dry-run             Print actions without making changes
   -h, --help            Show this help
 EOF
@@ -44,6 +47,10 @@ while [ $# -gt 0 ]; do
       ;;
     --skip-secret)
       skip_secret=true
+      shift
+      ;;
+    --continuous-improvement)
+      continuous_improvement=true
       shift
       ;;
     --dry-run)
@@ -111,7 +118,14 @@ default_workflows=(
   mention-in-issue
   mention-in-pr
   pr-ci-detective
-  pr-ci-fixer
+)
+continuous_improvement_workflows=(
+  bug-hunter
+  bug-exterminator
+  code-simplifier
+  docs-drift
+  small-problem-fixer
+  test-improvement
 )
 
 if [ -n "$workflows_csv" ]; then
@@ -119,6 +133,23 @@ if [ -n "$workflows_csv" ]; then
   IFS=',' read -r -a workflows <<<"$workflows_csv"
 else
   workflows=("${default_workflows[@]}")
+fi
+
+append_workflow_if_missing() {
+  local candidate="$1"
+  local existing
+  for existing in "${workflows[@]}"; do
+    if [ "$existing" = "$candidate" ]; then
+      return
+    fi
+  done
+  workflows+=("$candidate")
+}
+
+if [ "$continuous_improvement" = true ]; then
+  for workflow in "${continuous_improvement_workflows[@]}"; do
+    append_workflow_if_missing "$workflow"
+  done
 fi
 
 if [ "${#workflows[@]}" -eq 0 ]; then

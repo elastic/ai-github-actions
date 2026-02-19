@@ -25,7 +25,7 @@ Default workflows:
 - `mention-in-issue`
 - `mention-in-pr`
 - `pr-ci-detective`
-- `pr-ci-fixer`
 
 Use `--workflows` (comma-separated) to override the defaults, `--skip-secret` to set the
-secret manually, or `--repo OWNER/REPO` when auto-detection is not available.
+secret manually, `--continuous-improvement` to also install selected continuous improvement
+workflows, or `--repo OWNER/REPO` when auto-detection is not available.
