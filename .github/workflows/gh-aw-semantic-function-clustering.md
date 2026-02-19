@@ -55,7 +55,7 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
-  serena: ["go", "python", "javascript", "typescript", "java", "ruby", "csharp", "rust"]
+  serena: ["go", "python", "typescript", "java", "csharp", "rust"]
 network:
   allowed:
     - defaults

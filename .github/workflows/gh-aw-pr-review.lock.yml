@@ -36,7 +36,7 @@
 #     - gh-aw-fragments/safe-output-review-comment.md
 #     - gh-aw-fragments/safe-output-submit-review.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4ef188581e90714c9fd17312a84327c6c9b1af35714a9729a9a980f3f9eef537"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ae2d5dec9d721d1baaeb71affa66abf959da294a0f11688a0c4ed5577c2cf0d6"}
 
 name: "PR Review Agent"
 "on":
@@ -660,9 +660,23 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: .ruby-version
-      - if: hashFiles('pyproject.toml', 'uv.lock') != ''
+      - id: setup-uv
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
         name: Setup uv
         uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - env:
+          UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
+          WORKSPACE: ${{ github.workspace }}
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
+        name: Expose uv in workspace
+        run: |-
+          set -euo pipefail
+          install_dir="$WORKSPACE/.gh-aw-tools/bin"
+          mkdir -p "$install_dir"
+          cp "$UV_PATH" "$install_dir/uv"
+          chmod +x "$install_dir/uv"
+          echo "$install_dir" >> "$GITHUB_PATH"
+        shell: bash
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

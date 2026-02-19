@@ -35,7 +35,7 @@
 #     - gh-aw-fragments/safe-output-push-to-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"fd803103037b60f0d1fca0776acf8164d03bb097924d2e22a1a903b8d689d272"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"21451543491d9447bcb207162f66e82cfd5dd19d8230e215b248b4e1dbceb622"}
 
 name: "PR Checks Fixer"
 "on":
@@ -307,7 +307,7 @@ jobs:
           - **CAN**: Read files, search code, modify files locally, run tests and commands, comment on PRs, push changes to same-repo PR branches
           - **CANNOT**: Push to fork PR branches, merge PRs, or modify `.github/workflows/`
           
-          When pushing changes, the workspace already has the PR branch checked out. Make your changes, run tests, commit them locally, then use `push_to_pull_request_branch`.
+          When pushing changes, the workspace already has the PR branch checked out. Make your changes, run required repo commands (lint/build/test) relevant to the fix, commit them locally, then use `push_to_pull_request_branch`.
           
           ## Instructions
           
@@ -333,7 +333,7 @@ jobs:
           ### Step 2: Analyze and Fix
           
           - Identify the failing job/step and summarize the root cause.
-          - If the fix is straightforward and safe, implement it locally, run tests, commit, and push to the PR branch.
+          - If the fix is straightforward and safe, implement it locally, run required repo commands (lint/build/test) relevant to the fix, commit, and push to the PR branch.
           - If the fix is risky or requires broader refactoring, propose a concrete remediation plan instead of pushing.
           - If the PR is from a fork, do not push; provide patch guidance in the comment.
           
@@ -342,7 +342,7 @@ jobs:
           Call `add_comment` on the PR with:
           - A concise summary of the failure and root cause
           - The recommended fix (or the applied fix if you pushed changes)
-          - Tests run and their results
+          - Required commands/tests run and their results
           - Any follow-up steps required
           
           **Additional tools:**
@@ -489,9 +489,23 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: .ruby-version
-      - if: hashFiles('pyproject.toml', 'uv.lock') != ''
+      - id: setup-uv
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
         name: Setup uv
         uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - env:
+          UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
+          WORKSPACE: ${{ github.workspace }}
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
+        name: Expose uv in workspace
+        run: |-
+          set -euo pipefail
+          install_dir="$WORKSPACE/.gh-aw-tools/bin"
+          mkdir -p "$install_dir"
+          cp "$UV_PATH" "$install_dir/uv"
+          chmod +x "$install_dir/uv"
+          echo "$install_dir" >> "$GITHUB_PATH"
+        shell: bash
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

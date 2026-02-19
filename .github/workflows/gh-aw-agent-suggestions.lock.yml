@@ -21,7 +21,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Simplify overcomplicated code with high-confidence refactors
+# Suggest new agent workflows based on repo needs and downstream activity
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -31,12 +31,12 @@
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
-#     - gh-aw-fragments/safe-output-create-pr.md
-#     - gh-aw-fragments/workflow-edit-guardrails.md
+#     - gh-aw-fragments/safe-output-create-issue.md
+#     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"870868964074fd4db15db5a7094ebee5e2360ddd2dc515005aa9b59c3ec35081"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"981ed779d5e48e64928a080eb143b946d5422d1bebc83750d83b4182e7f02e69"}
 
-name: "Code Simplifier"
+name: "Gh Aw Agent Suggestions"
 "on":
   workflow_call:
     inputs:
@@ -63,9 +63,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: code-simplifier
+  group: agent-suggestions
 
-run-name: "Code Simplifier"
+run-name: "Gh Aw Agent Suggestions"
 
 jobs:
   activation:
@@ -93,7 +93,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-code-simplifier.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-agent-suggestions.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -250,33 +250,24 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          ## Workflow Editing Guardrails
-          
-          - Do not modify files under `.github/workflows/`.
-          - If asked to change workflow files, place a copy under `github/` (no leading dot) and note that a maintainer must relocate it into `.github/workflows/`.
-          
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           ## Message Footer
           
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          ## create-pull-request Limitations
+          ## create-issue Limitations
           
-          - **Patch files**: Max 100 files per PR. If changes span more files, split into multiple focused PRs.
-          - **Patch size**: Max 1,024 KB by default. Keep changes focused.
-          - **Title**: Max 128 characters. Sanitized.
-          - **Body**: No explicit mention/link limits, but bot triggers (`fixes #123`, `closes #456`) are neutralized.
-          - **Committed changes required**: You must have locally committed changes before creating a PR (unless `allow_empty` is configured).
-          - **Base branch**: Must be configured in the safe-output config. The PR targets this branch.
-          - **Max per run**: Typically 1 PR creation per workflow run.
-          - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
+          - **Title**: Max 128 characters. Sanitized (special characters escaped).
+          - **Labels**: Max 10 labels per issue. Each label max 64 characters. Labels containing only `-` are rejected.
+          - **Assignees**: Max 5 assignees per issue.
+          - **Body**: No strict character limit beyond GitHub's API limit (~65,536 characters), but fields over 16,000 tokens are written to a file reference instead of inlined.
+          - **Bot triggers**: References like `fixes #123` or `closes #456` in the body are neutralized to prevent unintended issue closures.
+          - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          # Code Simplifier
+          # Scheduled Report Agent
           
-          Simplify overcomplicated code with high-confidence, behavior-preserving refactors.
+          You are a report agent for __GH_AW_GITHUB_REPOSITORY__. You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
           
           ## Context
           
@@ -284,49 +275,133 @@ jobs:
           
           ## Constraints
           
-          - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request.
-          - **CANNOT**: Directly push to the repository — use `create_pull_request`.
-          - **Only one PR per run.**
-          - Only make changes that are **provably** behavior-preserving and low risk.
-          - Keep changes small and localized (prefer 1-2 files and minimal line churn).
-          - Avoid refactors that change public APIs, configs, or behavior (including logging/telemetry).
-          - Prefer simplifying control flow (early returns), removing dead code, and replacing custom code with obvious standard library equivalents.
-          - If no safe simplification is found, call `noop` with a brief reason.
-          - **Most runs should end with `noop`.** Only open a PR for simplifications that are obviously correct at a glance. If a reviewer would need to think hard about whether behavior is preserved, it's not simple enough.
+          This workflow is for detection and reporting only. You can read files, search code, run commands, and read PR/issue details — but your only output is either a single issue or a noop.
           
-          ## Step 1: Find candidates
+          ## Process
           
-          1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-          2. Use search and file reading to identify overcomplicated code:
-             - deep nesting
-             - redundant conditionals
-             - duplicated logic
-             - verbose helpers that can be simplified
+          Follow these steps in order.
           
-          ## Step 2: Select a target
+          ### Step 1: Gather Context
           
-          Pick one small area where the simplification is obvious and easy to validate. Prioritize code with existing tests or easy-to-run checks.
+          1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
+          2. Follow the data gathering instructions in the **Report Assignment** section.
           
-          ## Step 3: Implement
+          ### Step 2: Analyze
           
-          1. Make the smallest safe change that preserves behavior.
-          2. Determine required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config; run required commands relevant to the change and capture results. If required commands cannot be run, call `noop`.
-          3. Run the most relevant targeted tests. **Tests must pass.** If no tests cover the changed code, this is a strong signal to call `noop` — untested simplifications are high-risk.
+          Follow the analysis instructions in the **Report Assignment** section to determine whether an issue should be filed. The Report Assignment defines:
+          - What data to gather and how
+          - What to look for
+          - What constitutes a finding worth reporting
+          - What to skip or ignore
           
-          ## Step 4: Quality Gate — Prove Safety
+          ### Step 3: Self-Review (Quality Gate)
           
-          Before creating the PR, verify:
+          Before filing anything, critically evaluate every finding against these criteria:
           
-          - **Required commands pass**: You ran required repo commands (lint/build/test) and they succeeded. State which commands and their results.
-          - **Behavior is identical**: You can explain in one sentence why the output is unchanged for all inputs.
-          - **No hidden side effects**: The change doesn't alter error handling, logging, metrics, or concurrency behavior.
-          - **Reviewer would approve quickly**: A maintainer would glance at this and merge, not debate it.
+          1. **Evidence is concrete** — you can point to exact file paths, line numbers, commit SHAs, or command outputs. No "I believe" or "it seems."
+          2. **Finding is actionable** — a maintainer reading the issue can act on it without re-investigating from scratch.
+          3. **Finding is not already tracked** — you checked open issues and recent PRs for duplicates.
+          4. **Finding is worth a human's time** — the issue is material enough that a maintainer would thank you for filing it, not close it as noise.
           
-          If any of these checks fail, call `noop`. A simplification that might change behavior is not a simplification.
+          If zero findings pass all four criteria, call `noop` with a brief reason and stop. **Noop is the expected outcome most days.** Filing nothing is a success when there is nothing worth filing.
           
-          ## Step 5: Create the PR
+          ### Step 4: Report
           
-          Call `create_pull_request` with a concise summary, a clear explanation of why the change is safe, and the exact commands run with their results.
+          If there are findings that pass the quality gate, call `create_issue` with a structured report. Use the issue format specified in the Report Assignment if one is provided, otherwise use this default format:
+          
+          **Issue title:** Brief summary of findings
+          
+          **Issue body:**
+          
+          > ## Findings
+          >
+          > ### 1. [Brief description]
+          >
+          > **Evidence:** [Links, references, or data supporting the finding]
+          > **Action needed:** [What should be done]
+          >
+          > ## Suggested Actions
+          >
+          > - [ ] [Actionable checkbox for each finding]
+          
+          **Guidelines:**
+          - Group related findings together
+          - Be specific about what needs to happen
+          - Include links and references where possible
+          - Make suggested actions concrete enough to act on without re-investigating
+          - If a finding is ambiguous, it does not pass the quality gate — drop it
+          
+          ## Report Assignment
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          Suggest new agent workflows that would materially improve software development for this repository and its downstream users.
+          
+          ## Report Assignment
+          
+          ### Data Gathering
+          
+          1. **Inventory existing workflows**
+             - Read `README.md` and `gh-agent-workflows/README.md` to list current workflows, triggers, and scopes.
+             - Skim `gh-agent-workflows/` directory names to confirm what already exists.
+          
+          2. **Check for duplicates or in-flight work**
+             - Search open issues for existing requests: `repo:{owner}/{repo} is:issue is:open (agent OR workflow OR automation)`.
+             - Search open PRs for new workflows: `repo:{owner}/{repo} is:pr is:open (agent OR workflow)`.
+             - Search past reports: `repo:{owner}/{repo} is:issue in:title "[agent-suggestions]"`.
+          
+          3. **Evaluate software development needs in this repo**
+             - Review open issues and PRs updated in the last 30 days for recurring work patterns (maintenance, docs, testing, releases, dependency updates).
+             - Identify any recurring tasks that are not already covered by existing agents.
+          
+          4. **Evaluate downstream activity**
+             - Discover downstream repos using these workflows:
+               `github-search_code: query="org:elastic elastic/ai-github-actions/.github/workflows/gh-aw- language:yaml"`.
+             - For 3-5 active downstream repos, review open issues and PRs updated in the last 30 days.
+             - Look for recurring needs that could be automated by a new agent workflow.
+          
+          ### What to Suggest
+          
+          - Propose **1–3** new workflows only when there is strong evidence of a gap.
+          - Each suggestion must include:
+            - **Proposed workflow name**
+            - **Trigger** (schedule, issue/PR events, slash command)
+            - **Purpose and scope**
+            - **Proposed safe outputs** (issue, PR, comment)
+            - **Evidence** (links to issues/PRs or downstream repo activity)
+            - **Why it is not already covered** by existing workflows
+          
+          ### Noop
+          
+          If no strong, actionable gaps are found, call `noop` with:
+          "Agent suggestions skipped — no clear, actionable gaps found in current workflows or downstream needs".
+          
+          ### Issue Format
+          
+          **Issue title:** Agent suggestions - YYYY-MM-DD
+          
+          **Issue body:**
+          
+          > ## Agent Suggestions
+          > **Date:** YYYY-MM-DD
+          >
+          > ### 1. [Proposed workflow name]
+          > **Trigger:** [event or schedule]
+          > **Purpose:** [what it does and why it helps]
+          > **Proposed safe outputs:** [create-issue/create-pull-request/add-comment]
+          > **Evidence:** [links]
+          > **Why not covered already:** [short explanation]
+          >
+          > ### 2. [Next suggestion if any]
+          >
+          > ## Duplicate Checks
+          > - [Links to open issues/PRs reviewed]
+          >
+          > ## Downstream Signals
+          > - [Repo + issue/PR links]
+          >
+          > ## Suggested Next Steps
+          > - [ ] [Actionable follow-up]
           
           __GH_AW_EXPR_49B959F1__
           
@@ -416,7 +491,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawcodesimplifier
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawagentsuggestions
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
@@ -523,7 +598,7 @@ jobs:
               model: "gpt-5.2-codex",
               version: "",
               agent_version: "0.0.410",
-              workflow_name: "Code Simplifier",
+              workflow_name: "Gh Aw Agent Suggestions",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -580,32 +655,40 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"create_pull_request":{},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
+          {"create_issue":{"expires":168,"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub pull request to propose code changes. Use this after making file edits to submit them for review and merging. The PR will be created from the current branch with your committed changes. For code review comments on an existing PR, use create_pull_request_review_comment instead. CONSTRAINTS: Maximum 1 pull request(s) can be created.",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[agent-suggestions] \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
                   "body": {
-                    "description": "Detailed PR description in Markdown. Include what changes were made, why, testing notes, and any breaking changes. Do NOT repeat the title as a heading.",
-                    "type": "string"
-                  },
-                  "branch": {
-                    "description": "Source branch name containing the changes. If omitted, uses the current working branch.",
+                    "description": "Detailed issue description in Markdown. Do NOT repeat the title as a heading since it already appears as the issue's h1. Include context, reproduction steps, or acceptance criteria as appropriate.",
                     "type": "string"
                   },
                   "labels": {
-                    "description": "Labels to categorize the PR (e.g., 'enhancement', 'bugfix'). Labels must exist in the repository.",
+                    "description": "Labels to categorize the issue (e.g., 'bug', 'enhancement'). Labels must exist in the repository.",
                     "items": {
                       "type": "string"
                     },
                     "type": "array"
                   },
+                  "parent": {
+                    "description": "Parent issue number for creating sub-issues. This is the numeric ID from the GitHub URL (e.g., 42 in github.com/owner/repo/issues/42). Can also be a temporary_id (e.g., 'aw_abc123', 'aw_Test123') from a previously created issue in the same workflow run.",
+                    "type": [
+                      "number",
+                      "string"
+                    ]
+                  },
+                  "temporary_id": {
+                    "description": "Unique temporary identifier for referencing this issue before it's created. Format: 'aw_' followed by 3 to 8 alphanumeric characters (e.g., 'aw_abc1', 'aw_Test123'). Use '#aw_ID' in body text to reference other issues by their temporary_id; these are replaced with actual issue numbers after creation.",
+                    "pattern": "^aw_[A-Za-z0-9]{3,8}$",
+                    "type": "string"
+                  },
                   "title": {
-                    "description": "Concise PR title describing the changes. Follow repository conventions (e.g., conventional commits). The title appears as the main heading.",
+                    "description": "Concise issue title summarizing the bug, feature, or task. The title appears as the main heading, so keep it brief and descriptive.",
                     "type": "string"
                   }
                 },
@@ -615,7 +698,7 @@ jobs:
                 ],
                 "type": "object"
               },
-              "name": "create_pull_request"
+              "name": "create_issue"
             },
             {
               "description": "Report that a tool or capability needed to complete the task is not available, or share any information you deem important about missing functionality or limitations. Use this when you cannot accomplish what was requested because the required functionality is missing or access is restricted.",
@@ -690,7 +773,7 @@ jobs:
           GH_AW_SAFE_OUTPUTS_TOOLS_EOF
           cat > /opt/gh-aw/safeoutputs/validation.json << 'GH_AW_SAFE_OUTPUTS_VALIDATION_EOF'
           {
-            "create_pull_request": {
+            "create_issue": {
               "defaultMax": 1,
               "fields": {
                 "body": {
@@ -699,17 +782,21 @@ jobs:
                   "sanitize": true,
                   "maxLength": 65000
                 },
-                "branch": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 256
-                },
                 "labels": {
                   "type": "array",
                   "itemType": "string",
                   "itemSanitize": true,
                   "itemMaxLength": 128
+                },
+                "parent": {
+                  "issueOrPRNumber": true
+                },
+                "repo": {
+                  "type": "string",
+                  "maxLength": 256
+                },
+                "temporary_id": {
+                  "type": "string"
                 },
                 "title": {
                   "required": true,
@@ -1029,7 +1116,6 @@ jobs:
             /tmp/gh-aw/sandbox/firewall/logs/
             /tmp/gh-aw/agent-stdio.log
             /tmp/gh-aw/agent/
-            /tmp/gh-aw/aw.patch
           if-no-files-found: ignore
 
   conclusion:
@@ -1041,9 +1127,8 @@ jobs:
     if: (always()) && (needs.agent.result != 'skipped')
     runs-on: ubuntu-slim
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
       tools_reported: ${{ steps.missing_tool.outputs.tools_reported }}
@@ -1070,7 +1155,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Code Simplifier"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Agent Suggestions"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1083,7 +1168,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Code Simplifier"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Agent Suggestions"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1096,10 +1181,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Code Simplifier"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Agent Suggestions"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-code-simplifier"
+          GH_AW_WORKFLOW_ID: "gh-aw-agent-suggestions"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
@@ -1115,7 +1200,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Code Simplifier"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Agent Suggestions"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1126,20 +1211,6 @@ jobs:
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/handle_noop_message.cjs');
-            await main();
-      - name: Handle Create Pull Request Error
-        id: handle_create_pr_error
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Code Simplifier"
-          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/handle_create_pr_error.cjs');
             await main();
 
   detection:
@@ -1177,8 +1248,8 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Code Simplifier"
-          WORKFLOW_DESCRIPTION: "Simplify overcomplicated code with high-confidence refactors"
+          WORKFLOW_NAME: "Gh Aw Agent Suggestions"
+          WORKFLOW_DESCRIPTION: "Suggest new agent workflows based on repo needs and downstream activity"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1266,22 +1337,20 @@ jobs:
 
   safe_outputs:
     needs:
-      - activation
       - agent
       - detection
     if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (needs.detection.outputs.success == 'true')
     runs-on: ubuntu-slim
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "gpt-5.2-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-code-simplifier"
-      GH_AW_WORKFLOW_NAME: "Code Simplifier"
+      GH_AW_WORKFLOW_ID: "gh-aw-agent-suggestions"
+      GH_AW_WORKFLOW_NAME: "Gh Aw Agent Suggestions"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
@@ -1303,38 +1372,12 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs/
           find "/tmp/gh-aw/safeoutputs/" -type f -print
           echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/safeoutputs/agent_output.json" >> "$GITHUB_ENV"
-      - name: Download patch artifact
-        continue-on-error: true
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
-        with:
-          name: agent-artifacts
-          path: /tmp/gh-aw/
-      - name: Checkout repository
-        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          persist-credentials: false
-          fetch-depth: 1
-      - name: Configure Git credentials
-        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
-        env:
-          REPO_NAME: ${{ github.repository }}
-          SERVER_URL: ${{ github.server_url }}
-          GIT_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          # Re-authenticate git with GitHub token
-          SERVER_URL_STRIPPED="${SERVER_URL#https://}"
-          git remote set-url origin "https://x-access-token:${GIT_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git"
-          echo "Git configured with standard GitHub Actions identity"
       - name: Process Safe Outputs
         id: process_safe_outputs
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"[agent-suggestions] \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

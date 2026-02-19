@@ -21,7 +21,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Simplify overcomplicated code with high-confidence refactors
+# Fix bug-hunter issues and open a focused PR
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -34,9 +34,9 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"870868964074fd4db15db5a7094ebee5e2360ddd2dc515005aa9b59c3ec35081"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a38de37bb8c6e976ed7750c97c02e6134d7fdcfc8127cbf3beee6907b1fa7011"}
 
-name: "Code Simplifier"
+name: "Bug Exterminator"
 "on":
   workflow_call:
     inputs:
@@ -63,9 +63,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: code-simplifier
+  group: bug-exterminator
 
-run-name: "Code Simplifier"
+run-name: "Bug Exterminator"
 
 jobs:
   activation:
@@ -93,7 +93,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-code-simplifier.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-bug-exterminator.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -274,9 +274,9 @@ jobs:
           - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          # Code Simplifier
+          # Bug Exterminator
           
-          Simplify overcomplicated code with high-confidence, behavior-preserving refactors.
+          Fix a reproducible `bug-hunter` issue by opening a single focused PR.
           
           ## Context
           
@@ -287,46 +287,53 @@ jobs:
           - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request.
           - **CANNOT**: Directly push to the repository — use `create_pull_request`.
           - **Only one PR per run.**
-          - Only make changes that are **provably** behavior-preserving and low risk.
-          - Keep changes small and localized (prefer 1-2 files and minimal line churn).
-          - Avoid refactors that change public APIs, configs, or behavior (including logging/telemetry).
-          - Prefer simplifying control flow (early returns), removing dead code, and replacing custom code with obvious standard library equivalents.
-          - If no safe simplification is found, call `noop` with a brief reason.
-          - **Most runs should end with `noop`.** Only open a PR for simplifications that are obviously correct at a glance. If a reviewer would need to think hard about whether behavior is preserved, it's not simple enough.
+          - Only consider issues labeled `bug-hunter` or with `[bug-hunter]` in the title.
+          - You must reproduce the issue locally before proposing a fix.
+          - If no suitable issue is found or reproduction fails, call `noop` with a brief reason.
+          - **Most runs should end with `noop`.** Only open a PR when the fix is clearly correct, tested, and small enough for quick review.
           
-          ## Step 1: Find candidates
+          ## Step 1: Gather candidates
           
           1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-          2. Use search and file reading to identify overcomplicated code:
-             - deep nesting
-             - redundant conditionals
-             - duplicated logic
-             - verbose helpers that can be simplified
+          2. Search for open Bug Hunter issues:
+          
+          ````text
+          github-search_issues: query="repo:{owner}/{repo} is:issue is:open (label:bug-hunter OR in:title \"[bug-hunter]\") sort:updated-asc"
+          ````
+          
+          3. For each candidate, read the full issue and comments using `issue_read` (methods `get` and `get_comments`).
           
           ## Step 2: Select a target
           
-          Pick one small area where the simplification is obvious and easy to validate. Prioritize code with existing tests or easy-to-run checks.
+          Choose one issue with:
           
-          ## Step 3: Implement
+          - Clear reproduction steps
+          - A small, well-scoped fix
+          - No active discussion pointing to a larger design change
           
-          1. Make the smallest safe change that preserves behavior.
-          2. Determine required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config; run required commands relevant to the change and capture results. If required commands cannot be run, call `noop`.
-          3. Run the most relevant targeted tests. **Tests must pass.** If no tests cover the changed code, this is a strong signal to call `noop` — untested simplifications are high-risk.
+          Skip any issue that cannot be reproduced locally.
           
-          ## Step 4: Quality Gate — Prove Safety
+          ## Step 3: Reproduce and fix
+          
+          1. Reproduce the bug locally with the exact steps from the issue.
+          2. Make the smallest safe change that fixes the issue.
+          3. Run the most relevant targeted tests. **Tests must pass.**
+          4. Commit the changes locally.
+          
+          ## Step 4: Quality Gate — Self-Review
           
           Before creating the PR, verify:
           
-          - **Required commands pass**: You ran required repo commands (lint/build/test) and they succeeded. State which commands and their results.
-          - **Behavior is identical**: You can explain in one sentence why the output is unchanged for all inputs.
-          - **No hidden side effects**: The change doesn't alter error handling, logging, metrics, or concurrency behavior.
-          - **Reviewer would approve quickly**: A maintainer would glance at this and merge, not debate it.
+          - **Reproduction**: You reproduced the bug before fixing it.
+          - **Fix correctness**: The change directly addresses the issue.
+          - **Tests pass**: List the tests and results in the PR body.
+          - **Scope**: The change is minimal and focused.
           
-          If any of these checks fail, call `noop`. A simplification that might change behavior is not a simplification.
+          If any check fails, call `noop`.
           
           ## Step 5: Create the PR
           
-          Call `create_pull_request` with a concise summary, a clear explanation of why the change is safe, and the exact commands run with their results.
+          Call `create_pull_request` with a concise summary, a link to the issue, and the exact tests run.
           
           __GH_AW_EXPR_49B959F1__
           
@@ -416,7 +423,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawcodesimplifier
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawbugexterminator
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
@@ -523,7 +530,7 @@ jobs:
               model: "gpt-5.2-codex",
               version: "",
               agent_version: "0.0.410",
-              workflow_name: "Code Simplifier",
+              workflow_name: "Bug Exterminator",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -834,7 +841,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,labels"
                 }
               },
               "public-code-search": {
@@ -1070,7 +1077,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Code Simplifier"
+          GH_AW_WORKFLOW_NAME: "Bug Exterminator"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1083,7 +1090,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Code Simplifier"
+          GH_AW_WORKFLOW_NAME: "Bug Exterminator"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1096,10 +1103,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Code Simplifier"
+          GH_AW_WORKFLOW_NAME: "Bug Exterminator"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-code-simplifier"
+          GH_AW_WORKFLOW_ID: "gh-aw-bug-exterminator"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
@@ -1115,7 +1122,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Code Simplifier"
+          GH_AW_WORKFLOW_NAME: "Bug Exterminator"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1132,7 +1139,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Code Simplifier"
+          GH_AW_WORKFLOW_NAME: "Bug Exterminator"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1177,8 +1184,8 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Code Simplifier"
-          WORKFLOW_DESCRIPTION: "Simplify overcomplicated code with high-confidence refactors"
+          WORKFLOW_NAME: "Bug Exterminator"
+          WORKFLOW_DESCRIPTION: "Fix bug-hunter issues and open a focused PR"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1280,8 +1287,8 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "gpt-5.2-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-code-simplifier"
-      GH_AW_WORKFLOW_NAME: "Code Simplifier"
+      GH_AW_WORKFLOW_ID: "gh-aw-bug-exterminator"
+      GH_AW_WORKFLOW_NAME: "Bug Exterminator"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
