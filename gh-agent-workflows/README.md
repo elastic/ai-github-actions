@@ -4,18 +4,28 @@
 
 ## Available Workflows
 
+### Human-coordinated workflows
+
 | Workflow | Trigger | Description |
 | --- | --- | --- |
 | [PR Review](pr-review/) | PR opened/updated | AI code review with inline comments |
 | [Issue Triage](issue-triage/) | New issues | Investigate and provide implementation plans |
 | [Mention in Issue](mention-in-issue/) | `/ai` in issues | Answer questions, debug, create PRs |
 | [Mention in PR](mention-in-pr/) | `/ai` in PRs | Review, fix code, push changes |
-| [PR Checks Fix](pr-checks-fix/) | Failed PR checks | Analyze failures and optionally push fixes |
+| [PR CI Detective](pr-ci-detective/) | Failed PR checks | Diagnose failures and recommend fixes |
+| [PR CI Fixer](pr-ci-fixer/) | Manual (workflow_dispatch) | Opt-in fixes for failed PR checks |
+
+### Continuous improvement / agent factory workflows
+
+| Workflow | Trigger | Description |
+| --- | --- | --- |
 | [Small Problem Fixer](small-problem-fixer/) | Weekday schedule | Fix small, related issues and open a focused PR |
 | [Code Simplifier](code-simplifier/) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | [Test Improvement](test-improvement/) | Weekly schedule | Add targeted tests and clean up redundant coverage |
 | [Release Update Check](release-update/) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
+| [Agent Suggestions](agent-suggestions/) | Weekly schedule | Suggest new agent workflows based on repo and downstream needs |
 | [Bug Hunter](bug-hunter/) | Weekday schedule | Find reproducible bugs and file reports |
+| [Bug Exterminator](bug-exterminator/) | Weekday schedule | Fix bug-hunter issues and open a focused PR |
 | [Docs Drift](docs-drift/) | Weekday schedule | Detect code changes needing doc updates |
 | [Docs New Contributor Review](docs-new-contributor-review/) | Weekly schedule | Review docs from a new contributor perspective |
 | [Project Summary](project-summary/) | Daily schedule | Summarize recent activity and priorities |
