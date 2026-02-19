@@ -17,6 +17,8 @@ imports:
 engine:
   id: copilot
   model: gpt-5.2-codex
+  concurrency:
+    group: "gh-aw-copilot-mention-pr-${{ github.event.issue.number }}"
 on:
   workflow_call:
     inputs:
@@ -55,6 +57,10 @@ network:
   allowed:
     - defaults
     - github
+    - go
+    - node
+    - python
+    - ruby
 strict: false
 roles: [admin, maintainer, write]
 timeout-minutes: 30

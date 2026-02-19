@@ -49,6 +49,10 @@ network:
   allowed:
     - defaults
     - github
+    - go
+    - node
+    - python
+    - ruby
 strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
