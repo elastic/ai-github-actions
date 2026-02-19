@@ -35,7 +35,7 @@ define download-file
 	fi
 endef
 
-.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile sync lint-workflows lint-actions release
+.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile sync lint-workflows lint-actions docs-install docs-serve docs-build release
 
 help:
 	@echo "This repository contains GitHub Actions workflows and gh-agent-workflows templates."
@@ -174,6 +174,15 @@ lint-actions: setup-action-validator
 	done
 
 lint: lint-workflows lint-actions
+
+docs-install:
+	@python -m pip install -r docs/requirements.txt
+
+docs-serve: docs-install
+	@python -m mkdocs serve
+
+docs-build: docs-install
+	@python -m mkdocs build --strict
 
 # Release a new version
 # Usage: make release VERSION=1.0.0
