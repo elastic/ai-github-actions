@@ -13,7 +13,7 @@ imports:
   - gh-aw-fragments/safe-output-submit-review.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+  model: gpt-5.3-codex
   concurrency:
     group: "gh-aw-copilot-pr-review-${{ github.event.pull_request.number }}"
 on:
@@ -29,11 +29,6 @@ on:
         type: string
         required: false
         default: ""
-      model:
-        description: "Model to use for the Copilot engine"
-        type: string
-        required: false
-        default: "gpt-5.3-codex"
       intensity:
         description: "Review intensity: conservative, balanced, or aggressive"
         type: string

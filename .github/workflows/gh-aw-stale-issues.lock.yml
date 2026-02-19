@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bdcd6ddcc9ace84bfb9f71836fd6c84409da74fbf047c55208278c60ba6c164e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6bc8436c2535c40f1ae3346ae1ab885151327c08fbbe039508190accd4db20dd"}
 
 name: "Gh Aw Stale Issues"
 "on":
@@ -339,31 +339,49 @@ jobs:
           
           ### Data Gathering
           
-          1. **Get open issues**
+          1. **Build a candidate set (progressive age tiers)**
           
-             Search for open issues in the repository, starting with the oldest:
+             Start with the oldest issues and work toward newer ones. Run high-signal queries first, then fill with dormant-issue queries tier by tier until you have at least 10 candidates or exhaust all tiers.
+          
+          
+             **Dormant-issue tiers (oldest first):**
              ```
-             github-search_issues: query="repo:{owner}/{repo} is:issue is:open sort:created-asc"
+             Tier 1: updated:<{today - 90 days}
+             Tier 2: updated:<{today - 60 days}
+             Tier 3: updated:<{today - 30 days}
              ```
           
-             Paginate through all open issues (use `per_page: 20`). For each issue, gather:
+             Run Tier 1 first. If the total candidate pool (high-signal + dormant) has fewer than 10 issues after de-duplication, run Tier 2. If still under 10, run Tier 3. Stop as soon as you reach 10+ candidates or exhaust all tiers.
+          
+             Paginate each query (use `per_page: 50`), collect issue numbers, and de-duplicate across all queries.
+          
+          2. **Fetch candidate details**
+          
+             For each candidate issue, gather:
              - The issue title, body, and labels
              - The full comment thread via `issue_read` with method `get_comments`
              - Any linked PRs mentioned in comments or the issue body
           
-          2. **Check for resolving PRs**
+             Track coverage stats: total open issues (from `repo:{owner}/{repo} is:issue is:open`), candidate count, and fully analyzed count.
           
-             For each open issue, look for merged PRs that resolve it:
+          3. **Check for resolving PRs**
+          
+             For each candidate issue, look for merged PRs that resolve it:
              - Search for PRs that reference the issue number: `repo:{owner}/{repo} is:pr is:merged {issue_number}`
              - Check if any merged PR body contains `fixes #{number}`, `closes #{number}`, or `resolves #{number}` (these may not have auto-closed the issue due to branch targeting or other reasons)
              - Check the issue timeline for linked PR events
           
-          3. **Check the codebase**
+          4. **Check the codebase**
           
              For issues reporting bugs or requesting specific changes:
              - Read the relevant code to determine if the described problem still exists
              - Run tests if applicable to verify the fix
              - Check git log for commits that reference the issue number
+          
+          If there isnt enough to chew on from that, investigat high-signal queries like:
+          ```
+          github-search_issues: query="repo:{owner}/{repo} is:issue is:open in:comments (fixed OR resolved OR closed)"
+          ```
           
           ### What Qualifies as "Very Likely Resolved"
           
@@ -409,10 +427,11 @@ jobs:
           
           **Guidelines:**
           - Do not actually place the issue body in a block quote.
-          - Order by confidence level (most confident first)
+          - Cap the report at 10 issues per run. If more qualify, prefer oldest issues first — they are highest priority for cleanup.
+          - Within the same age tier, order by confidence level (most confident first)
           - Always include the specific evidence — don't just say "this looks resolved"
           - Link to the resolving PR, commit, or code when possible
-          - If no issues qualify, call `noop` with message "No stale issues found — all open issues appear to still be active or unresolved"
+          - If no issues qualify, call `noop` with message "No stale issues found — reviewed {analyzed_count}/{candidate_count} candidates ({total_open} open issues total)"
           
           __GH_AW_EXPR_49B959F1__
           
@@ -606,7 +625,7 @@ jobs:
             const awInfo = {
               engine_id: "copilot",
               engine_name: "GitHub Copilot CLI",
-              model: "gpt-5.2-codex",
+              model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.410",
               workflow_name: "Gh Aw Stale Issues",
@@ -978,7 +997,7 @@ jobs:
         run: |
           set -o pipefail
           sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.githubusercontent.com,*.jsr.io,*.pythonhosted.org,*.rvm.io,agents-md-generator.fastmcp.app,anaconda.org,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.rubygems.org,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,binstar.org,bootstrap.pypa.io,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,codeload.github.com,conda.anaconda.org,conda.binstar.org,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,deb.nodesource.com,deno.land,files.pythonhosted.org,gems.rubyforge.org,gems.rubyonrails.org,get.pnpm.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,goproxy.io,host.docker.internal,index.rubygems.org,json-schema.org,json.schemastore.org,jsr.io,keyserver.ubuntu.com,lfs.github.com,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pip.pypa.io,pkg.go.dev,ppa.launchpad.net,proxy.golang.org,public-code-search.fastmcp.app,pypi.org,pypi.python.org,raw.githubusercontent.com,registry.bower.io,registry.npmjs.com,registry.npmjs.org,registry.yarnpkg.com,repo.anaconda.com,repo.continuum.io,repo.yarnpkg.com,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,security.ubuntu.com,skimdb.npmjs.com,storage.googleapis.com,sum.golang.org,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.npmjs.com,www.npmjs.org,yarnpkg.com' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.0 --skip-pull --enable-api-proxy \
-            -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --model gpt-5.2-codex --allow-all-tools --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
+            -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --model gpt-5.3-codex --allow-all-tools --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -1297,7 +1316,7 @@ jobs:
           mkdir -p /tmp/gh-aw/
           mkdir -p /tmp/gh-aw/agent/
           mkdir -p /tmp/gh-aw/sandbox/agent/logs/
-          copilot --add-dir /tmp/ --add-dir /tmp/gh-aw/ --add-dir /tmp/gh-aw/agent/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --model gpt-5.2-codex --allow-tool 'shell(cat)' --allow-tool 'shell(grep)' --allow-tool 'shell(head)' --allow-tool 'shell(jq)' --allow-tool 'shell(ls)' --allow-tool 'shell(tail)' --allow-tool 'shell(wc)' --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$COPILOT_CLI_INSTRUCTION" 2>&1 | tee /tmp/gh-aw/threat-detection/detection.log
+          copilot --add-dir /tmp/ --add-dir /tmp/gh-aw/ --add-dir /tmp/gh-aw/agent/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --model gpt-5.3-codex --allow-tool 'shell(cat)' --allow-tool 'shell(grep)' --allow-tool 'shell(head)' --allow-tool 'shell(jq)' --allow-tool 'shell(ls)' --allow-tool 'shell(tail)' --allow-tool 'shell(wc)' --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$COPILOT_CLI_INSTRUCTION" 2>&1 | tee /tmp/gh-aw/threat-detection/detection.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -1358,7 +1377,7 @@ jobs:
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
-      GH_AW_ENGINE_MODEL: "gpt-5.2-codex"
+      GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-stale-issues"
       GH_AW_WORKFLOW_NAME: "Gh Aw Stale Issues"

@@ -12,7 +12,7 @@ imports:
   - gh-aw-fragments/safe-output-push-to-pr.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+  model: gpt-5.3-codex
   concurrency:
     group: "gh-aw-copilot-pr-checks-fix-${{ github.event.workflow_run.id }}"
 on:
@@ -28,11 +28,6 @@ on:
         type: string
         required: false
         default: ""
-      model:
-        description: "Model to use for the Copilot engine"
-        type: string
-        required: false
-        default: "gpt-5.3-codex"
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string

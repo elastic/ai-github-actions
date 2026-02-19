@@ -21,7 +21,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# AI assistant for issues — answer questions, debug, and create PRs via /ai
+# Analyze failed PR checks and optionally push fixes
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -32,13 +32,12 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
-#     - gh-aw-fragments/safe-output-create-issue.md
-#     - gh-aw-fragments/safe-output-create-pr.md
+#     - gh-aw-fragments/safe-output-push-to-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4fd14c7d9e429254bb032242227adfd559812370637ac00eed4778a47865058e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"58c922e2a3a6a102704e5e34f7e90f738d0ab2feb5b3134e3c5ecce94bab1874"}
 
-name: "Issue Assistant"
+name: "PR Checks Fixer"
 "on":
   workflow_call:
     inputs:
@@ -47,14 +46,14 @@ name: "Issue Assistant"
         description: Repo-specific instructions appended to the agent prompt
         required: false
         type: string
-      draft-prs:
-        default: "true"
-        description: "Create PRs as draft (default: true)"
-        required: false
-        type: string
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
+        required: false
+        type: string
+      model:
+        default: gpt-5.3-codex
+        description: Model to use for the Copilot engine
         required: false
         type: string
       setup-commands:
@@ -69,10 +68,10 @@ name: "Issue Assistant"
 permissions: {}
 
 concurrency:
-  cancel-in-progress: true
-  group: mention-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+  group: pr-checks-fix-${{ github.event.workflow_run.id }}
 
-run-name: "Issue Assistant"
+run-name: "PR Checks Fixer"
 
 jobs:
   activation:
@@ -81,9 +80,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      discussions: write
-      issues: write
-      pull-requests: write
     outputs:
       comment_id: ""
       comment_repo: ""
@@ -103,7 +99,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-mention-in-issue.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-pr-checks-fix.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -119,12 +115,12 @@ jobs:
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
           GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
           GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+          GH_AW_GITHUB_EVENT_WORKFLOW_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          GH_AW_GITHUB_EVENT_WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         run: |
           bash /opt/gh-aw/actions/create_prompt_first.sh
           cat << 'GH_AW_PROMPT_EOF' > "$GH_AW_PROMPT"
@@ -286,75 +282,76 @@ jobs:
           If you exceed 10 mentions or 50 links, the comment will be rejected.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          ## create-pull-request Limitations
+          ## push-to-pull-request-branch Limitations
           
-          - **Patch files**: Max 100 files per PR. If changes span more files, split into multiple focused PRs.
-          - **Patch size**: Max 1,024 KB by default. Keep changes focused.
-          - **Title**: Max 128 characters. Sanitized.
-          - **Body**: No explicit mention/link limits, but bot triggers (`fixes #123`, `closes #456`) are neutralized.
-          - **Committed changes required**: You must have locally committed changes before creating a PR (unless `allow_empty` is configured).
-          - **Base branch**: Must be configured in the safe-output config. The PR targets this branch.
-          - **Max per run**: Typically 1 PR creation per workflow run.
+          - **Patch size**: Max 1,024 KB by default. Keep changes focused — large refactors may exceed this.
+          - **Fork PRs**: Cannot push to fork PR branches. Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, explain that you cannot push and suggest the author apply changes themselves.
+          - **Committed changes required**: You must have locally committed changes before calling push. Uncommitted or staged-only changes will fail.
+          - **Branch**: Pushes to the PR's head branch. The workspace must have the PR branch checked out.
           - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
+          
+          Trying to resolve merge conflicts? Do NOT use `git merge` or `git rebase`. Instead:
+          1. Compare the conflicting files between this PR branch and origin/main
+          2. Edit the files directly to incorporate the changes from main
+          3. Commit the changes as regular commits
+          4. Use push_to_pull_request_branch to push
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          ## create-issue Limitations
+          # PR Checks Fixer
           
-          - **Title**: Max 128 characters. Sanitized (special characters escaped).
-          - **Labels**: Max 10 labels per issue. Each label max 64 characters. Labels containing only `-` are rejected.
-          - **Assignees**: Max 5 assignees per issue.
-          - **Body**: No strict character limit beyond GitHub's API limit (~65,536 characters), but fields over 16,000 tokens are written to a file reference instead of inlined.
-          - **Bot triggers**: References like `fixes #123` or `closes #456` in the body are neutralized to prevent unintended issue closures.
-          - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          # Issue Assistant
-          
-          Assist with issues on __GH_AW_GITHUB_REPOSITORY__ — answer questions, debug problems, suggest solutions, and create PRs.
+          Assist with failed GitHub Actions checks for pull requests in __GH_AW_GITHUB_REPOSITORY__. Analyze workflow run logs, explain failures, and optionally push fixes.
           
           ## Context
           
           - **Repository**: __GH_AW_GITHUB_REPOSITORY__
-          - **Issue**: #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__ — __GH_AW_GITHUB_EVENT_ISSUE_TITLE__
-          - **Request**: "__GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT__"
+          - **Workflow Run ID**: __GH_AW_GITHUB_EVENT_WORKFLOW_RUN_ID__
+          - **Conclusion**: __GH_AW_GITHUB_EVENT_WORKFLOW_RUN_CONCLUSION__
           
           ## Constraints
           
-          - **CAN**: Read files, search code, modify files locally, run tests and commands, comment on issues, create pull requests, create issues
-          - **CANNOT**: Directly push or commit to the repository — use `create_pull_request` to propose changes
+          - **CAN**: Read files, search code, modify files locally, run tests and commands, comment on PRs, push changes to same-repo PR branches
+          - **CANNOT**: Push to fork PR branches, merge PRs, or modify `.github/workflows/`
           
-          When creating pull requests, make the changes in the workspace first, then use `create_pull_request` — branches are managed automatically.
+          When pushing changes, the workspace already has the PR branch checked out. Make your changes, run required repo commands (lint/build/test) relevant to the fix, commit them locally, then use `push_to_pull_request_branch`.
           
           ## Instructions
-          
-          Understand the request, investigate the codebase, and respond with a helpful, actionable answer.
           
           ### Step 1: Gather Context
           
           1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-          2. Read the full issue thread to understand the discussion so far.
-          3. If the issue references other issues or PRs, call `issue_read` or `pull_request_read` with method `get` on each to understand the broader context.
-          4. Use `grep` and file reading to explore the relevant parts of the codebase.
+          2. Identify the PRs associated with the workflow run using `github.event.workflow_run.pull_requests`. If there are none, call `noop` with message "No pull request associated with workflow run; nothing to do" and stop.
+          3. For each PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status.
+          4. Fetch workflow run details and logs with `bash` + `gh api`:
+             - List jobs and their conclusions:
+               ````bash
+               gh api repos/{owner}/{repo}/actions/runs/{run_id}/jobs \
+                 --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
+               ````
+             - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
+               ````bash
+               gh api repos/{owner}/{repo}/actions/runs/{run_id}/logs \
+                 -H "Accept: application/vnd.github+json" \
+                 > /tmp/gh-aw/agent/workflow-logs-{run_id}.zip
+               unzip -o /tmp/gh-aw/agent/workflow-logs-{run_id}.zip -d /tmp/gh-aw/agent/workflow-logs-{run_id}/
+               ````
           
-          ### Step 2: Investigate and Respond
+          ### Step 2: Analyze and Fix
           
-          Based on the request, do what's appropriate:
+          - Identify the failing job/step and summarize the root cause.
+          - If the fix is straightforward and safe, implement it locally, run required repo commands (lint/build/test) relevant to the fix, commit, and push to the PR branch.
+          - If the fix is risky or requires broader refactoring, propose a concrete remediation plan instead of pushing.
+          - If the PR is from a fork, do not push; provide patch guidance in the comment.
           
-          - **Answer questions** about the codebase — find the relevant code and explain it
-          - **Debug reported problems** — reproduce locally, run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config, and trace the code path
-          - **Suggest solutions** — provide concrete code examples and implementation guidance
-          - **Clarify requirements** — ask follow-up questions if the request is ambiguous
-          - **Create a PR** — if asked to implement something, make the changes in the workspace, then use `create_pull_request` to submit them
+          ### Step 3: Respond
           
-          When making code changes, identify and run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config and include results. If required commands cannot be run, explain why.
-          
-          ### Step 3: Post Response
-          
-          Call `add_comment` with your response. Be concise and actionable — no filler or praise. If the request is unclear, ask clarifying questions rather than guessing.
+          Call `add_comment` on the PR with:
+          - A concise summary of the failure and root cause
+          - The recommended fix (or the applied fix if you pushed changes)
+          - Required commands/tests run and their results
+          - Any follow-up steps required
           
           **Additional tools:**
-          - `create_pull_request` — create a PR with your changes
-          - `create_issue` — create a new issue (e.g. to split off sub-tasks)
+          - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
           
           __GH_AW_EXPR_49B959F1__
           
@@ -363,11 +360,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
+          GH_AW_GITHUB_EVENT_WORKFLOW_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          GH_AW_GITHUB_EVENT_WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -383,14 +379,14 @@ jobs:
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
           GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
           GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+          GH_AW_GITHUB_EVENT_WORKFLOW_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          GH_AW_GITHUB_EVENT_WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: ${{ needs.pre_activation.outputs.matched_command }}
-          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -407,14 +403,14 @@ jobs:
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
                 GH_AW_GITHUB_EVENT_ISSUE_NUMBER: process.env.GH_AW_GITHUB_EVENT_ISSUE_NUMBER,
-                GH_AW_GITHUB_EVENT_ISSUE_TITLE: process.env.GH_AW_GITHUB_EVENT_ISSUE_TITLE,
                 GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: process.env.GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER,
+                GH_AW_GITHUB_EVENT_WORKFLOW_RUN_CONCLUSION: process.env.GH_AW_GITHUB_EVENT_WORKFLOW_RUN_CONCLUSION,
+                GH_AW_GITHUB_EVENT_WORKFLOW_RUN_ID: process.env.GH_AW_GITHUB_EVENT_WORKFLOW_RUN_ID,
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND,
-                GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: process.env.GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND
               }
             });
       - name: Validate prompt placeholders
@@ -437,11 +433,12 @@ jobs:
     needs: activation
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-mention-issue-${{ github.event.issue.number }}"
+      group: "gh-aw-copilot-pr-checks-fix-${{ github.event.workflow_run.id }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -451,7 +448,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawmentioninissue
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawprchecksfix
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
@@ -555,10 +552,10 @@ jobs:
             const awInfo = {
               engine_id: "copilot",
               engine_name: "GitHub Copilot CLI",
-              model: "gpt-5.3-codex",
+              model: "${{ inputs.model }}",
               version: "",
               agent_version: "0.0.410",
-              workflow_name: "Issue Assistant",
+              workflow_name: "PR Checks Fixer",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -615,51 +612,10 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"add_comment":{"max":1},"create_issue":{"max":1},"create_pull_request":{},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
+          {"add_comment":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1},"push_to_pull_request_branch":{"max":0}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
-            {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created.",
-              "inputSchema": {
-                "additionalProperties": false,
-                "properties": {
-                  "body": {
-                    "description": "Detailed issue description in Markdown. Do NOT repeat the title as a heading since it already appears as the issue's h1. Include context, reproduction steps, or acceptance criteria as appropriate.",
-                    "type": "string"
-                  },
-                  "labels": {
-                    "description": "Labels to categorize the issue (e.g., 'bug', 'enhancement'). Labels must exist in the repository.",
-                    "items": {
-                      "type": "string"
-                    },
-                    "type": "array"
-                  },
-                  "parent": {
-                    "description": "Parent issue number for creating sub-issues. This is the numeric ID from the GitHub URL (e.g., 42 in github.com/owner/repo/issues/42). Can also be a temporary_id (e.g., 'aw_abc123', 'aw_Test123') from a previously created issue in the same workflow run.",
-                    "type": [
-                      "number",
-                      "string"
-                    ]
-                  },
-                  "temporary_id": {
-                    "description": "Unique temporary identifier for referencing this issue before it's created. Format: 'aw_' followed by 3 to 8 alphanumeric characters (e.g., 'aw_abc1', 'aw_Test123'). Use '#aw_ID' in body text to reference other issues by their temporary_id; these are replaced with actual issue numbers after creation.",
-                    "pattern": "^aw_[A-Za-z0-9]{3,8}$",
-                    "type": "string"
-                  },
-                  "title": {
-                    "description": "Concise issue title summarizing the bug, feature, or task. The title appears as the main heading, so keep it brief and descriptive.",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "title",
-                  "body"
-                ],
-                "type": "object"
-              },
-              "name": "create_issue"
-            },
             {
               "description": "Add a comment to an existing GitHub issue, pull request, or discussion. Use this to provide feedback, answer questions, or add information to an existing conversation. For creating new items, use create_issue, create_discussion, or create_pull_request instead. IMPORTANT: Comments are subject to validation constraints enforced by the MCP server - maximum 65536 characters for the complete comment (including footer which is added automatically), 10 mentions (@username), and 50 links. Exceeding these limits will result in an immediate error with specific guidance. CONSTRAINTS: Maximum 1 comment(s) can be added.",
               "inputSchema": {
@@ -682,37 +638,32 @@ jobs:
               "name": "add_comment"
             },
             {
-              "description": "Create a new GitHub pull request to propose code changes. Use this after making file edits to submit them for review and merging. The PR will be created from the current branch with your committed changes. For code review comments on an existing PR, use create_pull_request_review_comment instead. CONSTRAINTS: Maximum 1 pull request(s) can be created.",
+              "description": "Push committed changes to a pull request's branch. Use this to add follow-up commits to an existing PR, such as addressing review feedback or fixing issues. Changes must be committed locally before calling this tool.",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
-                  "body": {
-                    "description": "Detailed PR description in Markdown. Include what changes were made, why, testing notes, and any breaking changes. Do NOT repeat the title as a heading.",
-                    "type": "string"
-                  },
                   "branch": {
-                    "description": "Source branch name containing the changes. If omitted, uses the current working branch.",
+                    "description": "Branch name to push changes from. If omitted, uses the current working branch. Only specify if you need to push from a different branch.",
                     "type": "string"
                   },
-                  "labels": {
-                    "description": "Labels to categorize the PR (e.g., 'enhancement', 'bugfix'). Labels must exist in the repository.",
-                    "items": {
-                      "type": "string"
-                    },
-                    "type": "array"
-                  },
-                  "title": {
-                    "description": "Concise PR title describing the changes. Follow repository conventions (e.g., conventional commits). The title appears as the main heading.",
+                  "message": {
+                    "description": "Commit message describing the changes. Follow repository commit message conventions (e.g., conventional commits).",
                     "type": "string"
+                  },
+                  "pull_request_number": {
+                    "description": "Pull request number to push changes to. This is the numeric ID from the GitHub URL (e.g., 654 in github.com/owner/repo/pull/654). Required when the workflow target is '*' (any PR).",
+                    "type": [
+                      "number",
+                      "string"
+                    ]
                   }
                 },
                 "required": [
-                  "title",
-                  "body"
+                  "message"
                 ],
                 "type": "object"
               },
-              "name": "create_pull_request"
+              "name": "push_to_pull_request_branch"
             },
             {
               "description": "Report that a tool or capability needed to complete the task is not available, or share any information you deem important about missing functionality or limitations. Use this when you cannot accomplish what was requested because the required functionality is missing or access is restricted.",
@@ -801,68 +752,6 @@ jobs:
                 }
               }
             },
-            "create_issue": {
-              "defaultMax": 1,
-              "fields": {
-                "body": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 65000
-                },
-                "labels": {
-                  "type": "array",
-                  "itemType": "string",
-                  "itemSanitize": true,
-                  "itemMaxLength": 128
-                },
-                "parent": {
-                  "issueOrPRNumber": true
-                },
-                "repo": {
-                  "type": "string",
-                  "maxLength": 256
-                },
-                "temporary_id": {
-                  "type": "string"
-                },
-                "title": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 128
-                }
-              }
-            },
-            "create_pull_request": {
-              "defaultMax": 1,
-              "fields": {
-                "body": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 65000
-                },
-                "branch": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 256
-                },
-                "labels": {
-                  "type": "array",
-                  "itemType": "string",
-                  "itemSanitize": true,
-                  "itemMaxLength": 128
-                },
-                "title": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 128
-                }
-              }
-            },
             "missing_tool": {
               "defaultMax": 20,
               "fields": {
@@ -892,6 +781,26 @@ jobs:
                   "type": "string",
                   "sanitize": true,
                   "maxLength": 65000
+                }
+              }
+            },
+            "push_to_pull_request_branch": {
+              "defaultMax": 1,
+              "fields": {
+                "branch": {
+                  "required": true,
+                  "type": "string",
+                  "sanitize": true,
+                  "maxLength": 256
+                },
+                "message": {
+                  "required": true,
+                  "type": "string",
+                  "sanitize": true,
+                  "maxLength": 65000
+                },
+                "pull_request_number": {
+                  "issueOrPRNumber": true
                 }
               }
             }
@@ -978,7 +887,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,actions"
                 }
               },
               "public-code-search": {
@@ -1024,7 +933,7 @@ jobs:
         run: |
           set -o pipefail
           sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.githubusercontent.com,*.jsr.io,*.pythonhosted.org,*.rvm.io,agents-md-generator.fastmcp.app,anaconda.org,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.rubygems.org,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,binstar.org,bootstrap.pypa.io,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,codeload.github.com,conda.anaconda.org,conda.binstar.org,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,deb.nodesource.com,deno.land,files.pythonhosted.org,gems.rubyforge.org,gems.rubyonrails.org,get.pnpm.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,goproxy.io,host.docker.internal,index.rubygems.org,json-schema.org,json.schemastore.org,jsr.io,keyserver.ubuntu.com,lfs.github.com,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pip.pypa.io,pkg.go.dev,ppa.launchpad.net,proxy.golang.org,public-code-search.fastmcp.app,pypi.org,pypi.python.org,raw.githubusercontent.com,registry.bower.io,registry.npmjs.com,registry.npmjs.org,registry.yarnpkg.com,repo.anaconda.com,repo.continuum.io,repo.yarnpkg.com,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,security.ubuntu.com,skimdb.npmjs.com,storage.googleapis.com,sum.golang.org,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.npmjs.com,www.npmjs.org,yarnpkg.com' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.0 --skip-pull --enable-api-proxy \
-            -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --model gpt-5.3-codex --allow-all-tools --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
+            -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --model '\''${{ inputs.model }}'\'' --allow-all-tools --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -1215,7 +1124,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Issue Assistant"
+          GH_AW_WORKFLOW_NAME: "PR Checks Fixer"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1228,7 +1137,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Issue Assistant"
+          GH_AW_WORKFLOW_NAME: "PR Checks Fixer"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1241,10 +1150,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Issue Assistant"
+          GH_AW_WORKFLOW_NAME: "PR Checks Fixer"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-mention-in-issue"
+          GH_AW_WORKFLOW_ID: "gh-aw-pr-checks-fix"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
@@ -1260,7 +1169,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Issue Assistant"
+          GH_AW_WORKFLOW_NAME: "PR Checks Fixer"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1272,20 +1181,6 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/handle_noop_message.cjs');
             await main();
-      - name: Handle Create Pull Request Error
-        id: handle_create_pr_error
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Issue Assistant"
-          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/handle_create_pr_error.cjs');
-            await main();
 
   detection:
     needs: agent
@@ -1293,7 +1188,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     concurrency:
-      group: "gh-aw-copilot-mention-issue-${{ github.event.issue.number }}"
+      group: "gh-aw-copilot-pr-checks-fix-${{ github.event.workflow_run.id }}"
     timeout-minutes: 10
     outputs:
       success: ${{ steps.parse_results.outputs.success }}
@@ -1322,8 +1217,8 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Issue Assistant"
-          WORKFLOW_DESCRIPTION: "AI assistant for issues — answer questions, debug, and create PRs via /ai"
+          WORKFLOW_NAME: "PR Checks Fixer"
+          WORKFLOW_DESCRIPTION: "Analyze failed PR checks and optionally push fixes"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1360,7 +1255,7 @@ jobs:
           mkdir -p /tmp/gh-aw/
           mkdir -p /tmp/gh-aw/agent/
           mkdir -p /tmp/gh-aw/sandbox/agent/logs/
-          copilot --add-dir /tmp/ --add-dir /tmp/gh-aw/ --add-dir /tmp/gh-aw/agent/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --model gpt-5.3-codex --allow-tool 'shell(cat)' --allow-tool 'shell(grep)' --allow-tool 'shell(head)' --allow-tool 'shell(jq)' --allow-tool 'shell(ls)' --allow-tool 'shell(tail)' --allow-tool 'shell(wc)' --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$COPILOT_CLI_INSTRUCTION" 2>&1 | tee /tmp/gh-aw/threat-detection/detection.log
+          copilot --add-dir /tmp/ --add-dir /tmp/gh-aw/ --add-dir /tmp/gh-aw/agent/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --model '${{ inputs.model }}' --allow-tool 'shell(cat)' --allow-tool 'shell(grep)' --allow-tool 'shell(head)' --allow-tool 'shell(jq)' --allow-tool 'shell(ls)' --allow-tool 'shell(tail)' --allow-tool 'shell(wc)' --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$COPILOT_CLI_INSTRUCTION" 2>&1 | tee /tmp/gh-aw/threat-detection/detection.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -1389,10 +1284,6 @@ jobs:
 
   pre_activation:
     runs-on: ubuntu-slim
-    permissions:
-      discussions: write
-      issues: write
-      pull-requests: write
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
     steps:
@@ -1400,19 +1291,6 @@ jobs:
         uses: github/gh-aw/actions/setup@5d8900eb6f6230c9d41a3c30af320150a2361285 # v0.45.7
         with:
           destination: /opt/gh-aw/actions
-      - name: Add eyes reaction for immediate feedback
-        id: react
-        if: github.event_name == 'issues' || github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment' || github.event_name == 'discussion' || github.event_name == 'discussion_comment' || (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.id == github.repository_id)
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_REACTION: "eyes"
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/add_reaction.cjs');
-            await main();
       - name: Check team membership for workflow
         id: check_membership
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -1441,10 +1319,10 @@ jobs:
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
-      GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
+      GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-mention-in-issue"
-      GH_AW_WORKFLOW_NAME: "Issue Assistant"
+      GH_AW_WORKFLOW_ID: "gh-aw-pr-checks-fix"
+      GH_AW_WORKFLOW_NAME: "PR Checks Fixer"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
@@ -1473,14 +1351,14 @@ jobs:
           name: agent-artifacts
           path: /tmp/gh-aw/
       - name: Checkout repository
-        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
+        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'push_to_pull_request_branch'))
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           persist-credentials: false
           fetch-depth: 1
       - name: Configure Git credentials
-        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
+        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'push_to_pull_request_branch'))
         env:
           REPO_NAME: ${{ github.repository }}
           SERVER_URL: ${{ github.server_url }}
@@ -1497,7 +1375,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"create_issue\":{\"max\":1},\"create_pull_request\":{\"base_branch\":\"${{ github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"missing_data\":{},\"missing_tool\":{},\"push_to_pull_request_branch\":{\"base_branch\":\"${{ github.ref_name }}\",\"if_no_changes\":\"warn\",\"max_patch_size\":1024}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
