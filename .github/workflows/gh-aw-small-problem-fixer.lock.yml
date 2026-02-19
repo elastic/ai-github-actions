@@ -308,6 +308,7 @@ jobs:
           ````
           
           4. For each candidate, read the full issue and comments using `issue_read` (methods `get` and `get_comments`).
+          5. Only keep candidates whose `author_association` is `OWNER`, `MEMBER`, or `COLLABORATOR` (skip all others).
           
           ## Step 2: Select a target
           
@@ -1366,4 +1367,3 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/safe_output_handler_manager.cjs');
             await main();
-
