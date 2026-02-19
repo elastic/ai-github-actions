@@ -12,7 +12,7 @@ imports:
   - gh-aw-fragments/safe-output-push-to-pr.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: gpt-5.3-codex
   concurrency:
     group: "gh-aw-copilot-pr-checks-fix-${{ github.event.workflow_run.id }}"
 on:
@@ -83,7 +83,7 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 - **CAN**: Read files, search code, modify files locally, run tests and commands, comment on PRs, push changes to same-repo PR branches
 - **CANNOT**: Push to fork PR branches, merge PRs, or modify `.github/workflows/`
 
-When pushing changes, the workspace already has the PR branch checked out. Make your changes, run tests, commit them locally, then use `push_to_pull_request_branch`.
+When pushing changes, the workspace already has the PR branch checked out. Make your changes, run required repo commands (lint/build/test) relevant to the fix, commit them locally, then use `push_to_pull_request_branch`.
 
 ## Instructions
 
@@ -109,7 +109,7 @@ When pushing changes, the workspace already has the PR branch checked out. Make 
 ### Step 2: Analyze and Fix
 
 - Identify the failing job/step and summarize the root cause.
-- If the fix is straightforward and safe, implement it locally, run tests, commit, and push to the PR branch.
+- If the fix is straightforward and safe, implement it locally, run required repo commands (lint/build/test) relevant to the fix, commit, and push to the PR branch.
 - If the fix is risky or requires broader refactoring, propose a concrete remediation plan instead of pushing.
 - If the PR is from a fork, do not push; provide patch guidance in the comment.
 
@@ -118,7 +118,7 @@ When pushing changes, the workspace already has the PR branch checked out. Make 
 Call `add_comment` on the PR with:
 - A concise summary of the failure and root cause
 - The recommended fix (or the applied fix if you pushed changes)
-- Tests run and their results
+- Required commands/tests run and their results
 - Any follow-up steps required
 
 **Additional tools:**

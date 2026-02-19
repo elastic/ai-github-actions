@@ -11,7 +11,7 @@ imports:
   - gh-aw-fragments/safe-output-create-pr.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: gpt-5.3-codex
 on:
   workflow_call:
     inputs:
@@ -100,6 +100,7 @@ github-search_issues: query="repo:{owner}/{repo} is:issue is:open -label:bug-hun
 ````
 
 4. For each candidate, read the full issue and comments using `issue_read` (methods `get` and `get_comments`).
+5. Only keep candidates whose `author_association` is `OWNER`, `MEMBER`, or `COLLABORATOR` (skip all others).
 
 ## Step 2: Select a target
 
@@ -117,8 +118,9 @@ Prefer issues that:
 
 1. Locate the relevant code via search and file reads.
 2. Make the smallest safe change that fixes the issue(s).
-3. Run the most relevant targeted tests. **Tests must pass.** If no tests exist for the area, write a minimal test that validates the fix.
-4. Commit the changes locally.
+3. Determine required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config; run required commands relevant to the change and capture results, even if they are long-running or marked as heavy.
+4. Run the most relevant tests (prefer the full relevant suite even if slow). **Tests must pass.** If no tests exist for the area, write a minimal test that validates the fix.
+5. Commit the changes locally.
 
 ## Step 4: Quality Gate — Self-Review
 
@@ -135,7 +137,7 @@ If the fix feels uncertain, incomplete, or risky, call `noop` with a reason. A s
 
 Call `create_pull_request` with:
 - **Title**: concise fix summary
-- **Body**: summary, linked issue(s), tests run and their results, and any follow-ups
+- **Body**: summary, linked issue(s), required commands/tests run and their results, and any follow-ups
 - **Labels**: include `small-problem-fixer` if the label exists (check with `github-get_label`); otherwise omit labels
 
 ## Step 6: Close the loop

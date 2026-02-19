@@ -11,7 +11,7 @@ imports:
   - gh-aw-fragments/scheduled-report.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: gpt-5.3-codex
 on:
   workflow_call:
     inputs:
@@ -55,7 +55,7 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
-  serena: ["go", "python", "javascript", "typescript", "java", "ruby", "csharp", "rust"]
+  serena: ["go", "python", "typescript", "java", "csharp", "rust"]
 network:
   allowed:
     - defaults

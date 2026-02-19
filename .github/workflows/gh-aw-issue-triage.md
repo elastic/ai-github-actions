@@ -10,7 +10,7 @@ imports:
   - gh-aw-fragments/safe-output-add-comment.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: gpt-5.3-codex
   concurrency:
     group: "gh-aw-copilot-issue-triage-${{ github.event.issue.number }}"
 on:

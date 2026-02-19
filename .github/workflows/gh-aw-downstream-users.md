@@ -11,7 +11,7 @@ imports:
   - gh-aw-fragments/safe-output-create-pr.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: gpt-5.3-codex
 on:
   workflow_call:
     inputs:

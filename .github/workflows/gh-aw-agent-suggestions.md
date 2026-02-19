@@ -11,7 +11,7 @@ imports:
   - gh-aw-fragments/scheduled-report.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: gpt-5.3-codex
 on:
   workflow_call:
     inputs:
@@ -53,7 +53,7 @@ network:
     - node
     - python
     - ruby
-  strict: false
+strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
   noop:

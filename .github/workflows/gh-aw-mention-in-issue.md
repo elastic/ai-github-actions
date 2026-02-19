@@ -13,7 +13,7 @@ imports:
   - gh-aw-fragments/safe-output-create-issue.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: gpt-5.3-codex
   concurrency:
     group: "gh-aw-copilot-mention-issue-${{ github.event.issue.number }}"
 on:
@@ -107,10 +107,12 @@ Understand the request, investigate the codebase, and respond with a helpful, ac
 Based on the request, do what's appropriate:
 
 - **Answer questions** about the codebase — find the relevant code and explain it
-- **Debug reported problems** — reproduce locally, run tests, trace the code path
+- **Debug reported problems** — reproduce locally, run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config, and trace the code path
 - **Suggest solutions** — provide concrete code examples and implementation guidance
 - **Clarify requirements** — ask follow-up questions if the request is ambiguous
 - **Create a PR** — if asked to implement something, make the changes in the workspace, then use `create_pull_request` to submit them
+
+When making code changes, identify and run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config and include results. If required commands cannot be run, explain why.
 
 ### Step 3: Post Response
 

@@ -36,7 +36,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f3108fd7a4df1ce84e7e35d962acc9ce1122285fba5a41568a349e52824ebbfe"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4fd14c7d9e429254bb032242227adfd559812370637ac00eed4778a47865058e"}
 
 name: "Issue Assistant"
 "on":
@@ -341,10 +341,12 @@ jobs:
           Based on the request, do what's appropriate:
           
           - **Answer questions** about the codebase — find the relevant code and explain it
-          - **Debug reported problems** — reproduce locally, run tests, trace the code path
+          - **Debug reported problems** — reproduce locally, run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config, and trace the code path
           - **Suggest solutions** — provide concrete code examples and implementation guidance
           - **Clarify requirements** — ask follow-up questions if the request is ambiguous
           - **Create a PR** — if asked to implement something, make the changes in the workspace, then use `create_pull_request` to submit them
+          
+          When making code changes, identify and run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config and include results. If required commands cannot be run, explain why.
           
           ### Step 3: Post Response
           
@@ -495,9 +497,23 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: .ruby-version
-      - if: hashFiles('pyproject.toml', 'uv.lock') != ''
+      - id: setup-uv
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
         name: Setup uv
         uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - env:
+          UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
+          WORKSPACE: ${{ github.workspace }}
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
+        name: Expose uv in workspace
+        run: |-
+          set -euo pipefail
+          install_dir="$WORKSPACE/.gh-aw-tools/bin"
+          mkdir -p "$install_dir"
+          cp "$UV_PATH" "$install_dir/uv"
+          chmod +x "$install_dir/uv"
+          echo "$install_dir" >> "$GITHUB_PATH"
+        shell: bash
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
@@ -539,7 +555,7 @@ jobs:
             const awInfo = {
               engine_id: "copilot",
               engine_name: "GitHub Copilot CLI",
-              model: "gpt-5.2-codex",
+              model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.410",
               workflow_name: "Issue Assistant",
@@ -1008,7 +1024,7 @@ jobs:
         run: |
           set -o pipefail
           sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.githubusercontent.com,*.jsr.io,*.pythonhosted.org,*.rvm.io,agents-md-generator.fastmcp.app,anaconda.org,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.rubygems.org,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,binstar.org,bootstrap.pypa.io,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,codeload.github.com,conda.anaconda.org,conda.binstar.org,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,deb.nodesource.com,deno.land,files.pythonhosted.org,gems.rubyforge.org,gems.rubyonrails.org,get.pnpm.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,goproxy.io,host.docker.internal,index.rubygems.org,json-schema.org,json.schemastore.org,jsr.io,keyserver.ubuntu.com,lfs.github.com,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pip.pypa.io,pkg.go.dev,ppa.launchpad.net,proxy.golang.org,public-code-search.fastmcp.app,pypi.org,pypi.python.org,raw.githubusercontent.com,registry.bower.io,registry.npmjs.com,registry.npmjs.org,registry.yarnpkg.com,repo.anaconda.com,repo.continuum.io,repo.yarnpkg.com,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,security.ubuntu.com,skimdb.npmjs.com,storage.googleapis.com,sum.golang.org,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.npmjs.com,www.npmjs.org,yarnpkg.com' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.0 --skip-pull --enable-api-proxy \
-            -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --model gpt-5.2-codex --allow-all-tools --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
+            -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --model gpt-5.3-codex --allow-all-tools --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -1344,7 +1360,7 @@ jobs:
           mkdir -p /tmp/gh-aw/
           mkdir -p /tmp/gh-aw/agent/
           mkdir -p /tmp/gh-aw/sandbox/agent/logs/
-          copilot --add-dir /tmp/ --add-dir /tmp/gh-aw/ --add-dir /tmp/gh-aw/agent/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --model gpt-5.2-codex --allow-tool 'shell(cat)' --allow-tool 'shell(grep)' --allow-tool 'shell(head)' --allow-tool 'shell(jq)' --allow-tool 'shell(ls)' --allow-tool 'shell(tail)' --allow-tool 'shell(wc)' --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$COPILOT_CLI_INSTRUCTION" 2>&1 | tee /tmp/gh-aw/threat-detection/detection.log
+          copilot --add-dir /tmp/ --add-dir /tmp/gh-aw/ --add-dir /tmp/gh-aw/agent/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --model gpt-5.3-codex --allow-tool 'shell(cat)' --allow-tool 'shell(grep)' --allow-tool 'shell(head)' --allow-tool 'shell(jq)' --allow-tool 'shell(ls)' --allow-tool 'shell(tail)' --allow-tool 'shell(wc)' --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$COPILOT_CLI_INSTRUCTION" 2>&1 | tee /tmp/gh-aw/threat-detection/detection.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
@@ -1425,7 +1441,7 @@ jobs:
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
-      GH_AW_ENGINE_MODEL: "gpt-5.2-codex"
+      GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-mention-in-issue"
       GH_AW_WORKFLOW_NAME: "Issue Assistant"

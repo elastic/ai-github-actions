@@ -13,7 +13,7 @@ imports:
   - gh-aw-fragments/safe-output-submit-review.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: gpt-5.3-codex
   concurrency:
     group: "gh-aw-copilot-pr-review-${{ github.event.pull_request.number }}"
 on:

@@ -11,7 +11,7 @@ imports:
   - gh-aw-fragments/scheduled-report.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: gpt-5.3-codex
 on:
   workflow_call:
     inputs:
@@ -75,31 +75,49 @@ Find open issues that are very likely already resolved and recommend them for cl
 
 ### Data Gathering
 
-1. **Get open issues**
+1. **Build a candidate set (progressive age tiers)**
 
-   Search for open issues in the repository, starting with the oldest:
+   Start with the oldest issues and work toward newer ones. Run high-signal queries first, then fill with dormant-issue queries tier by tier until you have at least 10 candidates or exhaust all tiers.
+
+
+   **Dormant-issue tiers (oldest first):**
    ```
-   github-search_issues: query="repo:{owner}/{repo} is:issue is:open sort:created-asc"
+   Tier 1: updated:<{today - 90 days}
+   Tier 2: updated:<{today - 60 days}
+   Tier 3: updated:<{today - 30 days}
    ```
 
-   Paginate through all open issues (use `per_page: 20`). For each issue, gather:
+   Run Tier 1 first. If the total candidate pool (high-signal + dormant) has fewer than 10 issues after de-duplication, run Tier 2. If still under 10, run Tier 3. Stop as soon as you reach 10+ candidates or exhaust all tiers.
+
+   Paginate each query (use `per_page: 50`), collect issue numbers, and de-duplicate across all queries.
+
+2. **Fetch candidate details**
+
+   For each candidate issue, gather:
    - The issue title, body, and labels
    - The full comment thread via `issue_read` with method `get_comments`
    - Any linked PRs mentioned in comments or the issue body
 
-2. **Check for resolving PRs**
+   Track coverage stats: total open issues (from `repo:{owner}/{repo} is:issue is:open`), candidate count, and fully analyzed count.
 
-   For each open issue, look for merged PRs that resolve it:
+3. **Check for resolving PRs**
+
+   For each candidate issue, look for merged PRs that resolve it:
    - Search for PRs that reference the issue number: `repo:{owner}/{repo} is:pr is:merged {issue_number}`
    - Check if any merged PR body contains `fixes #{number}`, `closes #{number}`, or `resolves #{number}` (these may not have auto-closed the issue due to branch targeting or other reasons)
    - Check the issue timeline for linked PR events
 
-3. **Check the codebase**
+4. **Check the codebase**
 
    For issues reporting bugs or requesting specific changes:
    - Read the relevant code to determine if the described problem still exists
    - Run tests if applicable to verify the fix
    - Check git log for commits that reference the issue number
+
+If there isnt enough to chew on from that, investigat high-signal queries like:
+```
+github-search_issues: query="repo:{owner}/{repo} is:issue is:open in:comments (fixed OR resolved OR closed)"
+```
 
 ### What Qualifies as "Very Likely Resolved"
 
@@ -145,9 +163,10 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 
 **Guidelines:**
 - Do not actually place the issue body in a block quote.
-- Order by confidence level (most confident first)
+- Cap the report at 10 issues per run. If more qualify, prefer oldest issues first — they are highest priority for cleanup.
+- Within the same age tier, order by confidence level (most confident first)
 - Always include the specific evidence — don't just say "this looks resolved"
 - Link to the resolving PR, commit, or code when possible
-- If no issues qualify, call `noop` with message "No stale issues found — all open issues appear to still be active or unresolved"
+- If no issues qualify, call `noop` with message "No stale issues found — reviewed {analyzed_count}/{candidate_count} candidates ({total_open} open issues total)"
 
 ${{ inputs.additional-instructions }}

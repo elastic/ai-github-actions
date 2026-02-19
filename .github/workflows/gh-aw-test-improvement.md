@@ -11,7 +11,7 @@ imports:
   - gh-aw-fragments/safe-output-create-pr.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: gpt-5.3-codex
 on:
   workflow_call:
     inputs:
@@ -86,8 +86,8 @@ Identify under-tested code paths, add focused tests, and remove or consolidate d
 ## Step 1: Gather context
 
 1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-2. Determine how to run tests:
-   - Check README, CONTRIBUTING, DEVELOPING, Makefile, package.json, pyproject.toml, and similar files.
+2. Determine required repo commands (lint/build/test) and how to run tests:
+   - Check README, CONTRIBUTING, DEVELOPING, Makefile, CI config, package.json, pyproject.toml, and similar files.
 3. Identify coverage tooling (nyc, jest --coverage, pytest --cov, go test -cover, etc.).
    - If coverage is available and reasonably fast, run it to find low-coverage files.
 
@@ -107,8 +107,9 @@ Identify under-tested code paths, add focused tests, and remove or consolidate d
 
 ## Step 4: Verify
 
+- Run required repo commands (lint/build/test) relevant to the change and capture results.
 - Run the most relevant test command(s). **All tests — new and existing — must pass.** If the full suite is too heavy, run targeted tests.
-- If tests or coverage cannot be run, call `noop`. Do not open a PR with untested test code.
+- If required commands, tests, or coverage cannot be run, call `noop`. Do not open a PR with untested test code.
 
 ## Step 5: Quality Gate — Test Value Check
 
