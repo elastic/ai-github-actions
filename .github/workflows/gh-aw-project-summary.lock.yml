@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e72540f6891d251b27c66799e6adb99310cc66ad3d893ce708ec9dd0fc3eff2e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"051ed53881892f0629c34b6194dc6d214030a4faa1eae46ee56aac2b821191d9"}
 
 name: "Gh Aw Project Summary"
 "on":
@@ -545,6 +545,11 @@ jobs:
           chmod +x "$install_dir/uv"
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
+      - name: Ensure full history
+        run: |
+          if git rev-parse --is-shallow-repository | grep -q true; then
+            git fetch --unshallow --quiet
+          fi
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

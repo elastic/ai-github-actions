@@ -64,6 +64,11 @@ safe-outputs:
     expires: 7d
 timeout-minutes: 30
 steps:
+  - name: Ensure full history
+    run: |
+      if git rev-parse --is-shallow-repository | grep -q true; then
+        git fetch --unshallow --quiet
+      fi
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
