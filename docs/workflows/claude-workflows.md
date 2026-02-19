@@ -25,12 +25,12 @@ Traditional GitHub Actions wrapping Claude Code. Consumed via `uses:` in standar
 
 | Action | Description | R | W | X | Git | Push |
 |--------|-------------|---|---|---|-----|------|
+| Build Failure Buildkite (RWX) | Analyze Buildkite CI failures | ✅ | ✅ | ⚙️ | ✅ | ❌ |
+| Build Failure GitHub Actions (RWX) | Analyze GitHub Actions failures | ✅ | ✅ | ⚙️ | ✅ | ❌ |
 | Mention in Issue (RWX) | @claude in issues (no push) | ✅ | ✅ | ✅ | ✅ | ❌** |
 | Mention in Issue (RWXP) | @claude in issues (full access) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Mention in PR (RWX) | @claude in PRs (no push) | ✅ | ✅ | ✅ | ✅ | ❌** |
 | Mention in PR (RWXP) | @claude in PRs (full access) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Build Failure Buildkite (RWX) | Analyze Buildkite CI failures | ✅ | ✅ | ⚙️ | ✅ | ❌ |
-| Build Failure GitHub Actions (RWX) | Analyze GitHub Actions failures | ✅ | ✅ | ⚙️ | ✅ | ❌ |
 
 ### Overview agents
 

@@ -7,7 +7,7 @@ AI-powered GitHub workflows for Elastic repositories.
 | Feature | GitHub Agent Workflows | Claude Composite Actions |
 | --- | --- | --- |
 | Engine | Copilot (default) or Claude | Claude only |
-| Install | Copy trigger YAML (recommended) or `gh aw add` + `gh aw compile` | Copy `example.yml` to `.github/workflows/` |
+| Install | Copy trigger YAML (recommended) | Copy `example.yml` to `.github/workflows/` |
 | Guardrails | Safe-outputs framework (structured API outputs) | Read-only/RWX/RWXP variants via permissions |
 | Customization | `additional-instructions`, `setup-commands`, or full shim edit | Edit YAML directly, adjust composite action inputs |
 
