@@ -28,6 +28,7 @@ See [example.yml](example.yml) for the full workflow file.
 | --- | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
+| `allowed-bot-users` | Allowlisted bot actors (comma-separated usernames) | No | `github-actions[bot]` |
 
 ## Safe Outputs
 
