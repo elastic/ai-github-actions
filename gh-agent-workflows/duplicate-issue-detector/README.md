@@ -2,6 +2,10 @@
 
 Check whether a newly opened issue is a duplicate of an existing open or previously closed issue, and notify the reporter.
 
+## How it works
+
+When a new issue is opened, searches both open and closed issues using multiple targeted queries derived from the issue title and body. Posts a notice on the issue only when a strong duplicate match is found.
+
 ## Quick Install
 
 ```bash

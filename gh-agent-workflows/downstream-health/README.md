@@ -2,6 +2,10 @@
 
 Monitor downstream repositories using AI workflows and report quality issues.
 
+## How it works
+
+Discovers elastic-owned repositories that use ai-github-actions workflows, monitors recent agent activity (comments and PR reviews by `github-actions[bot]`), and reports when agents are silent or producing unexpected outputs.
+
 ## Quick Install
 
 ```bash

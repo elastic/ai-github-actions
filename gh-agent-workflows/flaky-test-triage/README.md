@@ -2,6 +2,10 @@
 
 Investigate flaky tests using open issues and failed CI runs, then file a single triage report issue with root-cause-first recommendations.
 
+## How it works
+
+Discovers flakiness labels, searches open issues for flaky-test reports, and inspects recent failed CI runs. Builds a frequency map of failing tests across runs and issues, then files a single triage report with root-cause-first recommendations when there is concrete evidence of flakiness.
+
 ## Quick Install
 
 ````bash

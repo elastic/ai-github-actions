@@ -2,6 +2,10 @@
 
 Investigate new issues and provide actionable triage analysis.
 
+## How it works
+
+When a new issue is opened, reads the issue and related code, reproduces or validates the report where possible, and posts a comment with a root cause analysis and actionable next steps.
+
 ## Quick Install
 
 ```bash

@@ -2,6 +2,10 @@
 
 Analyze agent workflow logs for inefficiencies, errors, and prompt improvement opportunities.
 
+## How it works
+
+Reviews the last 3 days of agent workflow run logs, looking for recurring errors, tool call failures, and prompt patterns that lead to poor outcomes. Files an issue only when there is actionable evidence of systemic inefficiency.
+
 ## Quick Install
 
 ```bash

@@ -2,6 +2,10 @@
 
 Review docs from a new contributor perspective, cross-referencing against published Elastic documentation.
 
+## How it works
+
+Same as Docs New Contributor Review, but also cross-references the repo's documentation against published Elastic docs on `elastic.co/docs`, flagging contradictions that would block an external contributor.
+
 ## Quick Install
 
 ```bash

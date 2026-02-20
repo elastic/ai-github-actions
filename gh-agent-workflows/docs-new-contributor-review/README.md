@@ -2,6 +2,10 @@
 
 Review docs from a new contributor perspective and file high-impact issues.
 
+## How it works
+
+Simulates the onboarding experience of a first-time contributor — reading setup docs and following the quick-start path as far as possible without secrets or admin privileges. Only files an issue for **high-impact** blockers (missing steps, broken commands, undocumented prerequisites).
+
 ## Quick Install
 
 ```bash
