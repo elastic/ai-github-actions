@@ -3,6 +3,7 @@ description: "Detect code changes that require documentation updates and file is
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
+  - gh-aw-fragments/ensure-full-history.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
@@ -68,11 +69,6 @@ safe-outputs:
     close-older-issues: true
     expires: 7d
 steps:
-  - name: Ensure full history
-    run: |
-      if git rev-parse --is-shallow-repository | grep -q true; then
-        git fetch --unshallow --quiet
-      fi
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:

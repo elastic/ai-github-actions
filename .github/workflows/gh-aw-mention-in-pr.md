@@ -65,7 +65,14 @@ strict: false
 roles: [admin, maintainer, write]
 steps:
   - name: Ensure origin refs for PR patch generation
-    run: git fetch --no-tags --prune origin '+refs/heads/*:refs/remotes/origin/*'
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
+      SERVER_URL: ${{ github.server_url }}
+      REPO_NAME: ${{ github.repository }}
+    run: |
+      SERVER_URL_STRIPPED="${SERVER_URL#https://}"
+      git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git"
+      git fetch --no-tags --prune origin '+refs/heads/*:refs/remotes/origin/*'
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
