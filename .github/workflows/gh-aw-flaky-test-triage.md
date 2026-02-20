@@ -34,6 +34,7 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+  roles: [admin, maintainer, write]
 concurrency:
   group: flaky-test-triage
   cancel-in-progress: true
@@ -52,7 +53,6 @@ network:
     - defaults
     - github
 strict: false
-roles: [admin, maintainer, write]
 safe-outputs:
   noop:
   create-issue:

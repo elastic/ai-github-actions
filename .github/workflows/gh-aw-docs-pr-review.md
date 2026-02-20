@@ -45,6 +45,9 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+  roles: [admin, maintainer, write]
+  bots:
+    - "github-actions[bot]"
 concurrency:
   group: docs-pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -81,9 +84,6 @@ network:
     - "www.elastic.co"
     - "docs-v3-preview.elastic.dev"
 strict: false
-roles: [admin, maintainer, write]
-bots:
-  - "github-actions[bot]"
 timeout-minutes: 30
 steps:
   - name: Repo-specific setup

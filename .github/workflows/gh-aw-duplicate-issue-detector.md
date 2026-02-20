@@ -28,6 +28,9 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+  roles: [admin, maintainer, write]
+  bots:
+    - "github-actions[bot]"
 concurrency:
   group: duplicate-issue-detector-${{ github.event.issue.number }}
   cancel-in-progress: true
@@ -39,9 +42,6 @@ tools:
   github:
     toolsets: [repos, issues, pull_requests, search]
 strict: false
-roles: [admin, maintainer, write]
-bots:
-  - "github-actions[bot]"
 timeout-minutes: 15
 safe-outputs:
   noop:

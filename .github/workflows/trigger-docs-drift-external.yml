@@ -1,0 +1,16 @@
+name: Docs Drift External
+on:
+  schedule:
+    - cron: "0 14 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-docs-drift-external.lock.yml
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
