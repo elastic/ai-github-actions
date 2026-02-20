@@ -27,7 +27,7 @@ See [example.yml](example.yml) for the full workflow file.
 | Input | Description | Required | Default |
 | --- | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
-| `allowed-bot-users` | Allowlisted bot actors (comma-separated usernames) | No | `github-actions[bot]` |
+| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 
 ## Safe Outputs
 

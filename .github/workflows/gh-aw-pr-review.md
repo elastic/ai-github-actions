@@ -29,6 +29,11 @@ on:
         type: string
         required: false
         default: ""
+      allowed-bot-users:
+        description: "Allowlisted bot actor usernames (comma-separated)"
+        type: string
+        required: false
+        default: "github-actions[bot]"
       intensity:
         description: "Review intensity: conservative, balanced, or aggressive"
         type: string
@@ -49,7 +54,7 @@ on:
         required: true
   roles: [admin, maintainer, write]
   bots:
-    - "github-actions[bot]"
+    - "${{ inputs.allowed-bot-users }}"
 concurrency:
   group: pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true

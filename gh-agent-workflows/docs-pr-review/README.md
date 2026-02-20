@@ -33,7 +33,7 @@ Invoke by commenting `/docs-review` on any pull request.
 | --- | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt. | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts. | No | `""` |
-| `allowed-bot-users` | Allowlisted bot actors (comma-separated usernames) | No | `github-actions[bot]` |
+| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 | `intensity` | Review intensity (`conservative`, `balanced`, `aggressive`). | No | `balanced` |
 | `minimum_severity` | Minimum severity for inline comments (`critical`, `high`, `medium`, `low`, `nitpick`). | No | `low` |
 
