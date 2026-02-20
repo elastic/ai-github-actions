@@ -130,6 +130,7 @@ continuous_improvement_workflows=(
   test-improvement
   breaking-change-detect
   semantic-function-clustering
+  update-pr-body
 )
 
 if [ -n "$workflows_csv" ]; then
