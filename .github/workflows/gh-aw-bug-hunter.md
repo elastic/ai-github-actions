@@ -83,27 +83,29 @@ Find a single reproducible, user-impacting bug in the repository that can be cov
 ### Data Gathering
 
 1. Review recent changes:
-   - Run `git log --since="14 days ago" --stat` and identify candidates with user-facing impact.
+   - Run `git log --since="28 days ago" --stat` and identify candidates with user-facing impact.
    - Read the diffs and related files for each candidate.
 2. Check for existing reports:
    - Search open and closed issues for similar symptoms or areas before filing a new issue.
    - Prioritize Bug Hunter reports by searching `repo:{owner}/{repo} is:issue (label:bug-hunter OR in:title "[bug-hunter]")`.
    - If a close match exists, do not file a new issue.
 3. Reproduce locally — this step is **mandatory**, not optional:
-   - Use the smallest relevant command from the docs or Makefile to trigger the behavior (for example `make compile` or `scripts/dogfood.sh`).
-   - Capture the exact steps and output.
-   - If you cannot reproduce the bug, do **not** file it. Call `noop` instead.
+   - Write a **new** minimal reproduction: a small script or test case that directly triggers the specific bug you identified through code analysis. Do **not** run the existing test suite (e.g. `make test`, `pytest`, `go test ./...`) — if you did not write the test, a failure is not your finding.
+   - Capture the exact steps and output from your reproduction.
+   - If you cannot write a concrete reproduction that fails due to the bug, do **not** file it. Call `noop` instead.
 
 ### What to Look For
 
+- Logic errors: incorrect conditionals, off-by-one errors, wrong variable used, missing edge-case handling.
 - Clear user impact: command failure, incorrect output, broken workflow, or misconfiguration.
-- Deterministic reproduction (not flaky). You must reproduce it at least once yourself.
+- Deterministic reproduction (not flaky). You must trigger the bug yourself with code you wrote.
 - Can be expressed as a minimal failing test (unit, CLI, or workflow compilation step).
 
 ### What to Skip
 
 - Theoretical concerns without a reproduction — **no "this looks like it could break."**
 - Code that "looks wrong" but works correctly in practice.
+- Test suite failures from running existing tests — do not run `make test` or similar and report the output as a bug.
 - Edge cases that require unusual or undocumented inputs.
 - Issues that require large refactors or design changes.
 - Behavior already tracked by an open issue.
@@ -111,8 +113,9 @@ Find a single reproducible, user-impacting bug in the repository that can be cov
 ### Quality Gate — When to Noop
 
 Call `noop` if any of these are true:
-- You could not reproduce the bug with a concrete command and observed output.
-- The bug is speculative — you inferred it from reading code but did not trigger it.
+- You could not write a concrete reproduction that triggers the bug and observed the failure.
+- Your only evidence is an existing test failure you did not cause — you ran `make test` or similar and a test failed.
+- The bug is speculative — you inferred it from reading code but did not trigger it with code you wrote.
 - A similar issue is already open.
 - The impact is cosmetic or low-severity (e.g., a typo in a log message).
 
@@ -126,14 +129,14 @@ Call `noop` if any of these are true:
 > [Who/what is affected, why it matters]
 >
 > ## Reproduction Steps
-> 1. [Exact commands you ran]
+> 1. [Exact commands you ran, including the new test or script you wrote]
 >
 > ## Expected vs Actual
 > **Expected:** ...
 > **Actual:** ... [Include actual command output]
 >
-> ## Suggested Failing Test
-> [File path + outline of test]
+> ## Failing Test
+> [The new test or script you wrote that reproduces the bug — include the full code]
 >
 > ## Evidence
 > - [Commands/output you captured during reproduction, file references, or links]
