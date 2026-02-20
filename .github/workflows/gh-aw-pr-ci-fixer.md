@@ -38,6 +38,7 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+  roles: [admin, maintainer, write]
 concurrency:
   group: pr-ci-fixer-${{ inputs.workflow-run-id }}
   cancel-in-progress: false
@@ -56,7 +57,6 @@ network:
     - defaults
     - github
 strict: false
-roles: [admin, maintainer, write]
 timeout-minutes: 30
 steps:
   - name: Repo-specific setup

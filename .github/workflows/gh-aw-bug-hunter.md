@@ -34,6 +34,7 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+  roles: [admin, maintainer, write]
 concurrency:
   group: bug-hunter
   cancel-in-progress: true
@@ -55,7 +56,6 @@ network:
     - python
     - ruby
 strict: false
-roles: [admin, maintainer, write]
 safe-outputs:
   noop:
   create-issue:

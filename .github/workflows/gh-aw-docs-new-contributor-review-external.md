@@ -33,6 +33,7 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+  roles: [admin, maintainer, write]
 concurrency:
   group: docs-new-contributor-review-external
   cancel-in-progress: true
@@ -62,7 +63,6 @@ network:
     - ruby
     - "www.elastic.co"
 strict: false
-roles: [admin, maintainer, write]
 safe-outputs:
   noop:
   create-issue:

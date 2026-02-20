@@ -43,6 +43,7 @@ on:
       COPILOT_GITHUB_TOKEN:
         required: true
   reaction: "eyes"
+  roles: [admin, maintainer, write]
 concurrency:
   group: mention-issue-${{ github.event.issue.number }}
   cancel-in-progress: true
@@ -64,7 +65,6 @@ network:
     - python
     - ruby
 strict: false
-roles: [admin, maintainer, write]
 timeout-minutes: 30
 steps:
   - name: Repo-specific setup

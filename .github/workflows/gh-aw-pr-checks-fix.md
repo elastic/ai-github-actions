@@ -36,6 +36,7 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+  roles: [admin, maintainer, write]
 concurrency:
   group: pr-checks-fix-${{ github.event.workflow_run.id }}
   cancel-in-progress: false
@@ -58,7 +59,6 @@ network:
     - python
     - ruby
 strict: false
-roles: [admin, maintainer, write]
 timeout-minutes: 30
 steps:
   - name: Repo-specific setup

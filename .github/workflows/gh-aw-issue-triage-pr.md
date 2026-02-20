@@ -37,6 +37,9 @@ on:
       COPILOT_GITHUB_TOKEN:
         required: true
   reaction: "eyes"
+  roles: [admin, maintainer, write]
+  bots:
+    - "github-actions[bot]"
 concurrency:
   group: issue-triage-pr-${{ github.event.issue.number }}
   cancel-in-progress: true
@@ -58,9 +61,6 @@ network:
     - python
     - ruby
 strict: false
-roles: [admin, maintainer, write]
-bots:
-  - "github-actions[bot]"
 timeout-minutes: 30
 steps:
   - name: Repo-specific setup

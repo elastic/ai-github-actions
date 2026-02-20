@@ -34,6 +34,9 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+  roles: [admin, maintainer, write]
+  bots:
+    - "github-actions[bot]"
 concurrency:
   group: update-pr-body-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -55,9 +58,6 @@ network:
     - python
     - ruby
 strict: false
-roles: [admin, maintainer, write]
-bots:
-  - "github-actions[bot]"
 timeout-minutes: 15
 steps:
   - name: Repo-specific setup
