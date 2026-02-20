@@ -1,0 +1,22 @@
+name: Docs PR Review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+    paths:
+      - "**.md"
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: write
+  checks: read
+  actions: read
+
+jobs:
+  run:
+    if: >-
+      github.event.pull_request.draft == false &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-auto-docs-review')
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-docs-pr-review.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
