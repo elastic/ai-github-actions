@@ -32,6 +32,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 | [Issue Triage (with PR)](gh-agent-workflows/issue-triage-pr.md) | New issues | Triage plus automatic draft PR for straightforward fixes |
 | [Mention in Issue](gh-agent-workflows/mention-in-issue.md) | `/ai` in issues | Answer questions, debug, create PRs |
 | [Mention in PR](gh-agent-workflows/mention-in-pr.md) | `/ai` in PRs | Review, fix code, push changes |
+| [PR Buildkite Detective](gh-agent-workflows/pr-buildkite-detective.md) | Failed PR checks | Diagnose Buildkite failures and recommend fixes |
 | [PR CI Detective](gh-agent-workflows/pr-ci-detective.md) | Failed PR checks | Diagnose failures and recommend fixes |
 | [PR CI Fixer](gh-agent-workflows/pr-ci-fixer.md) | Manual (workflow_dispatch) | Opt-in fixes for failed PR checks |
 | [PR Checks Fix](gh-agent-workflows/pr-checks-fix.md) | Failed PR checks | Analyze and push fixes for failed PR checks |
@@ -74,6 +75,8 @@ gh aw secrets set COPILOT_GITHUB_TOKEN --value "(pat)"
 UI path: Settings → Secrets and variables → Actions → New repository secret.
 
 See the upstream [gh-aw auth docs](https://github.com/github/gh-aw/blob/main/docs/src/content/docs/reference/auth.mdx) for canonical steps.
+
+Some workflows require additional provider-specific secrets (for example, `PR Buildkite Detective` requires `BUILDKITE_API_TOKEN`).
 
 ## Agentic maintenance workflow required
 
