@@ -35,12 +35,12 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"06a2c1d6cc1d3e8aa63002b4b9a540b05abc70be0cba0eebe2bbe3aac1ad3ed0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"172aabe99d27e236acb0e91fccfd49d613a9111b0ec6167e80dbe2bad5c00182"}
 
 name: "Issue Triage Agent (with PR)"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
-  # - github-actions[bot] # Bots processed as bot check in pre-activation job
+  # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintainer # Roles processed as role check in pre-activation job
@@ -50,6 +50,11 @@ name: "Issue Triage Agent (with PR)"
       additional-instructions:
         default: ""
         description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      allowed-bot-users:
+        default: github-actions[bot]
+        description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:
@@ -1461,7 +1466,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
-          GH_AW_ALLOWED_BOTS: github-actions[bot]
+          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

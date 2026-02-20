@@ -35,10 +35,12 @@
 #     - gh-aw-fragments/scheduled-report.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"89da49e053bcde32bd6901aa179c29924d2b3fbcf919f00719599d3ec89d8258"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"89622b26a4734509d21d64e7df1c09e06061d6270dba75c9bf3b40ba9a2124e3"}
 
 name: "Gh Aw Flaky Test Triage"
 "on":
+  # bots: # Bots processed as bot check in pre-activation job
+  # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintainer # Roles processed as role check in pre-activation job
@@ -48,6 +50,11 @@ name: "Gh Aw Flaky Test Triage"
       additional-instructions:
         default: ""
         description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      allowed-bot-users:
+        default: github-actions[bot]
+        description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:
@@ -1347,6 +1354,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
+          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

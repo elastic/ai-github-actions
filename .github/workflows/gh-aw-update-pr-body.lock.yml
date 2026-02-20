@@ -33,12 +33,12 @@
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-update-pr.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7313fb3ed0b65b00863c3af6b475356dfc256f9a5dab3af9199fac66c8ab83dc"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"56b8bdada8c5aed1fcef5c14243ea6dbc76733f3b2ea6b97332dfa5e8ccb0140"}
 
 name: "PR Body Update Agent"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
-  # - github-actions[bot] # Bots processed as bot check in pre-activation job
+  # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintainer # Roles processed as role check in pre-activation job
@@ -48,6 +48,11 @@ name: "PR Body Update Agent"
       additional-instructions:
         default: ""
         description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      allowed-bot-users:
+        default: github-actions[bot]
+        description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:
@@ -1265,7 +1270,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
-          GH_AW_ALLOWED_BOTS: github-actions[bot]
+          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

@@ -16,6 +16,8 @@ on:
     - cron: "daily around 14:00 on weekdays"
   workflow_dispatch:
   roles: [admin, maintainer, write]
+  bots:
+    - "github-actions[bot]"
 concurrency:
   group: gh-aw-upgrade-check
   cancel-in-progress: true

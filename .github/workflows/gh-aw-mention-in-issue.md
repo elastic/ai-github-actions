@@ -29,6 +29,11 @@ on:
         type: string
         required: false
         default: ""
+      allowed-bot-users:
+        description: "Allowlisted bot actor usernames (comma-separated)"
+        type: string
+        required: false
+        default: "github-actions[bot]"
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string
@@ -44,6 +49,8 @@ on:
         required: true
   reaction: "eyes"
   roles: [admin, maintainer, write]
+  bots:
+    - "${{ inputs.allowed-bot-users }}"
 concurrency:
   group: mention-issue-${{ github.event.issue.number }}
   cancel-in-progress: true

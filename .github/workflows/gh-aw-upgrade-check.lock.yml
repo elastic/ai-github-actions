@@ -33,10 +33,12 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"fcfe2190f940b23eab10d28e181acf42fb23de42e3aae477f45fa8ae836d58df"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"032ae3809223c0bbaaa679fbfc6c5f2f1947489d82ae9407905391ed87f5c65c"}
 
 name: "Gh Aw Upgrade Check"
 "on":
+  # bots: # Bots processed as bot check in pre-activation job
+  # - github-actions[bot] # Bots processed as bot check in pre-activation job
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintainer # Roles processed as role check in pre-activation job
