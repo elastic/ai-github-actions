@@ -132,7 +132,7 @@ setup-gh-aw:
 sync:
 	@./scripts/dogfood.sh
 
-compile: setup-gh-aw sync
+compile: setup-gh-aw
 	@echo "Compiling agentic workflows..."
 	@.bin/gh-aw compile --inline-prompt --action-mode release --action-tag $(GH_AW_VERSION)
 
