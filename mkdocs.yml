@@ -14,6 +14,7 @@ nav:
       - GitHub Agent Workflows:
           - Overview: workflows/gh-agent-workflows.md
           - Human-coordinated:
+              - Docs PR Review: workflows/gh-agent-workflows/docs-pr-review.md
               - Issue Triage: workflows/gh-agent-workflows/issue-triage.md
               - Issue Triage (with PR): workflows/gh-agent-workflows/issue-triage-pr.md
               - Mention in Issue: workflows/gh-agent-workflows/mention-in-issue.md
@@ -30,7 +31,9 @@ nav:
               - Bug Hunter: workflows/gh-agent-workflows/bug-hunter.md
               - Code Simplifier: workflows/gh-agent-workflows/code-simplifier.md
               - Docs Drift: workflows/gh-agent-workflows/docs-drift.md
+              - Docs Drift External: workflows/gh-agent-workflows/docs-drift-external.md
               - Docs New Contributor Review: workflows/gh-agent-workflows/docs-new-contributor-review.md
+              - Docs New Contributor Review External: workflows/gh-agent-workflows/docs-new-contributor-review-external.md
               - Downstream Health: workflows/gh-agent-workflows/downstream-health.md
               - Flaky Test Triage: workflows/gh-agent-workflows/flaky-test-triage.md
               - Project Summary: workflows/gh-agent-workflows/project-summary.md
