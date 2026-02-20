@@ -21,7 +21,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Add focused tests for under-tested code and clean up redundant tests
+# Investigate flaky tests from issues and failed CI runs; file triage reports
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -31,12 +31,13 @@
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
-#     - gh-aw-fragments/safe-output-create-pr.md
+#     - gh-aw-fragments/safe-output-create-issue.md
+#     - gh-aw-fragments/scheduled-report.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"836f90f841724f13998329cc607b280affae73db4c53294300f95a310b53b636"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f04732576a18038c341878ec5420daf03971ccf593ffd893f06a4f1ca7ba957a"}
 
-name: "Test Improvement Agent"
+name: "Gh Aw Flaky Test Triage"
 "on":
   workflow_call:
     inputs:
@@ -63,9 +64,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: test-improvement
+  group: flaky-test-triage
 
-run-name: "Test Improvement Agent"
+run-name: "Gh Aw Flaky Test Triage"
 
 jobs:
   activation:
@@ -93,7 +94,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-test-improvement.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-flaky-test-triage.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -262,21 +263,19 @@ jobs:
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          ## create-pull-request Limitations
+          ## create-issue Limitations
           
-          - **Patch files**: Max 100 files per PR. If changes span more files, split into multiple focused PRs.
-          - **Patch size**: Max 1,024 KB by default. Keep changes focused.
-          - **Title**: Max 128 characters. Sanitized.
-          - **Body**: No explicit mention/link limits, but bot triggers (`fixes #123`, `closes #456`) are neutralized.
-          - **Committed changes required**: You must have locally committed changes before creating a PR (unless `allow_empty` is configured).
-          - **Base branch**: Must be configured in the safe-output config. The PR targets this branch.
-          - **Max per run**: Typically 1 PR creation per workflow run.
-          - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
+          - **Title**: Max 128 characters. Sanitized (special characters escaped).
+          - **Labels**: Max 10 labels per issue. Each label max 64 characters. Labels containing only `-` are rejected.
+          - **Assignees**: Max 5 assignees per issue.
+          - **Body**: No strict character limit beyond GitHub's API limit (~65,536 characters), but fields over 16,000 tokens are written to a file reference instead of inlined.
+          - **Bot triggers**: References like `fixes #123` or `closes #456` in the body are neutralized to prevent unintended issue closures.
+          - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          # Test Improvement Agent
+          # Scheduled Report Agent
           
-          Identify under-tested code paths, add focused tests, and remove or consolidate duplicate or useless tests when safe. Open a single PR with the improvements.
+          You are a report agent for __GH_AW_GITHUB_REPOSITORY__. You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
           
           ## Context
           
@@ -284,67 +283,130 @@ jobs:
           
           ## Constraints
           
-          - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request.
-          - **CANNOT**: Push directly to the repository — use `create_pull_request`.
-          - **Only one PR per run.**
-          - No large refactors; prioritize targeted test additions or small cleanup of redundant tests.
-          - If the change set is large or unsafe, call `noop` with a brief reason.
-          - **Most runs should end with `noop`.** Only open a PR when the added tests are clearly valuable — they test real behavior, not trivial getters, and they would catch actual regressions.
+          This workflow is for detection and reporting only. You can read files, search code, run commands, and read PR/issue details — but your only output is either a single issue or a noop.
           
-          ## Step 1: Gather context
+          ## Process
           
-          1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-          2. Determine required repo commands (lint/build/test) and how to run tests:
-             - Check README, CONTRIBUTING, DEVELOPING, Makefile, CI config, package.json, pyproject.toml, and similar files.
-          3. Identify coverage tooling (nyc, jest --coverage, pytest --cov, go test -cover, etc.).
-             - If coverage is available and reasonably fast, run it to find low-coverage files.
+          Follow these steps in order.
           
-          ## Step 2: Identify targets
+          ### Step 1: Gather Context
           
-          - Prefer low-coverage or untested public APIs, error paths, or recent changes without tests.
-          - **Trace to user-facing behavior.** For every candidate, answer: "What end-to-end user action would exercise this code path?" If you cannot describe a concrete user scenario (e.g., "a user configures X and then Y happens"), the target is too internal to justify a PR.
-          - Prefer code paths reachable from public entry points (CLI commands, API endpoints, config parsing, UI interactions) over deeply internal helpers.
-          - Look for redundant tests:
-            - identical assertions or test bodies,
-            - tests that only duplicate coverage from more comprehensive tests.
-          - Only remove or merge tests when a clearer, equivalent test remains.
+          1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
+          2. Follow the data gathering instructions in the **Report Assignment** section.
           
-          ## Step 3: Implement improvements
+          ### Step 2: Analyze
           
-          1. Add minimal, focused tests in existing test suites.
-          2. Keep production code changes minimal and only when needed to enable testing.
-          3. Consolidate or remove redundant tests if safe, keeping behavior coverage intact.
+          Follow the analysis instructions in the **Report Assignment** section to determine whether an issue should be filed. The Report Assignment defines:
+          - What data to gather and how
+          - What to look for
+          - What constitutes a finding worth reporting
+          - What to skip or ignore
           
-          ## Step 4: Verify
+          ### Step 3: Self-Review (Quality Gate)
           
-          - Run required repo commands (lint/build/test) relevant to the change and capture results.
-          - Run the most relevant test command(s). **All tests — new and existing — must pass.** If the full suite is too heavy, run targeted tests.
-          - If required commands, tests, or coverage cannot be run, call `noop`. Do not open a PR with untested test code.
+          Before filing anything, critically evaluate every finding against these criteria:
           
-          ## Step 5: Quality Gate — Test Value Check
+          1. **Evidence is concrete** — you can point to exact file paths, line numbers, commit SHAs, or command outputs. No "I believe" or "it seems."
+          2. **Finding is actionable** — a maintainer reading the issue can act on it without re-investigating from scratch.
+          3. **Finding is not already tracked** — you checked open issues and recent PRs for duplicates.
+          4. **Finding is worth a human's time** — the issue is material enough that a maintainer would thank you for filing it, not close it as noise.
           
-          Before creating the PR, evaluate each new test:
+          If zero findings pass all four criteria, call `noop` with a brief reason and stop. **Noop is the expected outcome most days.** Filing nothing is a success when there is nothing worth filing.
           
-          - **Does it test real behavior?** Tests for trivial getters, simple constructors, or obvious pass-through functions are not worth filing a PR for.
-          - **Would it catch a real regression?** If the tested code changed in a buggy way, would this test actually fail?
-          - **Can you describe the user scenario?** For each test, you must be able to state: "A user doing [action] would hit this code path when [condition]." If you cannot connect the test to a describable end-to-end user experience, drop it.
-          - **Is it maintainable?** Fragile tests that break on cosmetic changes (string formatting, log messages) add burden, not value.
-          - **Does it follow project conventions?** Match the existing test style, naming, and organization.
+          ### Step 4: Report
           
-          If the tests don't pass this bar, call `noop`. Low-value tests are worse than no tests — they create maintenance burden and false confidence.
+          If there are findings that pass the quality gate, call `create_issue` with a structured report. Use the issue format specified in the Report Assignment if one is provided, otherwise use this default format:
           
-          ## Step 6: Create the PR
+          **Issue title:** Brief summary of findings
           
-          1. Commit the changes locally.
-          2. Call `create_pull_request` with:
-             - **Title**: concise summary of the test improvements
-             - **Body** must include:
-               - Summary of what changed
-               - **User scenario**: for each test, describe the real-world user action or workflow that exercises the tested code path (e.g., "When a user runs `beat setup` with an invalid config, this error path is triggered")
-               - Why the tests matter — what regressions they would catch
-               - Tests run and their results
-               - Any removed or merged tests
-          3. If no safe improvements are found, call `noop` with a brief reason.
+          **Issue body:**
+          
+          > ## Findings
+          >
+          > ### 1. [Brief description]
+          >
+          > **Evidence:** [Links, references, or data supporting the finding]
+          > **Action needed:** [What should be done]
+          >
+          > ## Suggested Actions
+          >
+          > - [ ] [Actionable checkbox for each finding]
+          
+          **Guidelines:**
+          - Group related findings together
+          - Be specific about what needs to happen
+          - Include links and references where possible
+          - Make suggested actions concrete enough to act on without re-investigating
+          - If a finding is ambiguous, it does not pass the quality gate — drop it
+          
+          ## Report Assignment
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          ## Report Assignment
+          
+          Detect flaky tests by combining open issues likely related to flakiness and recent failed CI runs, then file one evidence-based triage issue when concrete action is needed.
+          
+          ### Data Gathering
+          
+          1. Discover candidate flakiness labels for this repository (for example labels containing `flaky`, `flakey`, or `intermittent`) and use them when searching issues.
+          2. Search open issues for likely flaky-test reports using discovered labels plus keyword fallback (`flaky`, `flakey`, `intermittent`), then gather:
+             - failing test names
+             - workflow/job names
+             - links to logs or run IDs
+          3. Inspect failed workflow runs from the last 7 days:
+             - Use `github` Actions APIs (or `gh api`) to list recent failed runs.
+             - For candidate runs, list failed jobs and inspect logs in `/tmp/gh-aw/agent/`.
+          4. Build a frequency map of repeated failing tests across runs/issues.
+          5. Check for duplicates:
+             - existing open flaky-triage issues
+             - open PRs that already fix the same repeated failure
+          
+          ### What to Look For
+          
+          - Failures that recur across multiple runs or branches.
+          - Same test failing with different surrounding stack traces or timing symptoms.
+          - Environment-sensitive failures (race, timeout, order dependence, resource contention).
+          - Existing retry/timeout mitigations that mask a persistent underlying defect.
+          
+          ### Analysis Rules
+          
+          - Only recommend a fix when you have identified the **true root cause** with clear, supporting evidence — not a hypothesis. A noop is always preferable to a speculative or workaround fix.
+          - Retries, timeouts, and quarantine are **not fixes**. Do not recommend them as remediation steps. They may be noted as existing mitigations already in place, but never as the recommended action.
+          - Do not report one-off or non-reproducible failures lacking repeat evidence.
+          - Do not include items already tracked by a current open issue/PR unless new, material evidence changes prioritization.
+          
+          ### Quality Gate — When to Noop
+          
+          Call `noop` when:
+          - no repeated flaky pattern is found, or
+          - all repeated failures are already actively tracked with sufficient detail, or
+          - a root cause cannot be clearly identified from the available evidence, or
+          - the only available remediation is a workaround (retry, timeout, quarantine) rather than a true fix.
+          
+          ### Issue Format
+          
+          **Issue title:** Brief flaky-test triage summary for the window
+          
+          **Issue body:**
+          
+          > ## Flaky Test Triage Report
+          >
+          > **Window:** [date range analyzed]
+          >
+          > ### 1. [Test or failure cluster]
+          > **Evidence:**
+          > - Run(s): [links]
+          > - Job(s): [names]
+          > - Frequency: [count]
+          > - Representative error: [short snippet]
+          >
+          > **Root cause:** [specific, evidence-based — only include if truly identified; otherwise do not file an issue]
+          > **Recommended fix:** [concrete root-cause fix steps]
+          >
+          > ## Suggested Actions
+          > - [ ] [Concrete fix task]
+          > - [ ] [Validation task to confirm stability]
           
           __GH_AW_EXPR_49B959F1__
           
@@ -420,6 +482,7 @@ jobs:
     needs: activation
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
       issues: read
       pull-requests: read
@@ -434,7 +497,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawtestimprovement
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawflakytesttriage
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
@@ -541,7 +604,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.410",
-              workflow_name: "Test Improvement Agent",
+              workflow_name: "Gh Aw Flaky Test Triage",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -553,7 +616,7 @@ jobs:
               actor: context.actor,
               event_name: context.eventName,
               staged: false,
-              allowed_domains: ["agents-md-generator.fastmcp.app","defaults","github","go","node","public-code-search.fastmcp.app","python","ruby"],
+              allowed_domains: ["agents-md-generator.fastmcp.app","defaults","github","public-code-search.fastmcp.app"],
               firewall_enabled: true,
               awf_version: "v0.20.0",
               awmg_version: "v0.1.4",
@@ -598,32 +661,40 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"create_pull_request":{},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
+          {"create_issue":{"expires":168,"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub pull request to propose code changes. Use this after making file edits to submit them for review and merging. The PR will be created from the current branch with your committed changes. For code review comments on an existing PR, use create_pull_request_review_comment instead. CONSTRAINTS: Maximum 1 pull request(s) can be created.",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[flaky-test-triage] \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
                   "body": {
-                    "description": "Detailed PR description in Markdown. Include what changes were made, why, testing notes, and any breaking changes. Do NOT repeat the title as a heading.",
-                    "type": "string"
-                  },
-                  "branch": {
-                    "description": "Source branch name containing the changes. If omitted, uses the current working branch.",
+                    "description": "Detailed issue description in Markdown. Do NOT repeat the title as a heading since it already appears as the issue's h1. Include context, reproduction steps, or acceptance criteria as appropriate.",
                     "type": "string"
                   },
                   "labels": {
-                    "description": "Labels to categorize the PR (e.g., 'enhancement', 'bugfix'). Labels must exist in the repository.",
+                    "description": "Labels to categorize the issue (e.g., 'bug', 'enhancement'). Labels must exist in the repository.",
                     "items": {
                       "type": "string"
                     },
                     "type": "array"
                   },
+                  "parent": {
+                    "description": "Parent issue number for creating sub-issues. This is the numeric ID from the GitHub URL (e.g., 42 in github.com/owner/repo/issues/42). Can also be a temporary_id (e.g., 'aw_abc123', 'aw_Test123') from a previously created issue in the same workflow run.",
+                    "type": [
+                      "number",
+                      "string"
+                    ]
+                  },
+                  "temporary_id": {
+                    "description": "Unique temporary identifier for referencing this issue before it's created. Format: 'aw_' followed by 3 to 8 alphanumeric characters (e.g., 'aw_abc1', 'aw_Test123'). Use '#aw_ID' in body text to reference other issues by their temporary_id; these are replaced with actual issue numbers after creation.",
+                    "pattern": "^aw_[A-Za-z0-9]{3,8}$",
+                    "type": "string"
+                  },
                   "title": {
-                    "description": "Concise PR title describing the changes. Follow repository conventions (e.g., conventional commits). The title appears as the main heading.",
+                    "description": "Concise issue title summarizing the bug, feature, or task. The title appears as the main heading, so keep it brief and descriptive.",
                     "type": "string"
                   }
                 },
@@ -633,7 +704,7 @@ jobs:
                 ],
                 "type": "object"
               },
-              "name": "create_pull_request"
+              "name": "create_issue"
             },
             {
               "description": "Report that a tool or capability needed to complete the task is not available, or share any information you deem important about missing functionality or limitations. Use this when you cannot accomplish what was requested because the required functionality is missing or access is restricted.",
@@ -708,7 +779,7 @@ jobs:
           GH_AW_SAFE_OUTPUTS_TOOLS_EOF
           cat > /opt/gh-aw/safeoutputs/validation.json << 'GH_AW_SAFE_OUTPUTS_VALIDATION_EOF'
           {
-            "create_pull_request": {
+            "create_issue": {
               "defaultMax": 1,
               "fields": {
                 "body": {
@@ -717,17 +788,21 @@ jobs:
                   "sanitize": true,
                   "maxLength": 65000
                 },
-                "branch": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 256
-                },
                 "labels": {
                   "type": "array",
                   "itemType": "string",
                   "itemSanitize": true,
                   "itemMaxLength": 128
+                },
+                "parent": {
+                  "issueOrPRNumber": true
+                },
+                "repo": {
+                  "type": "string",
+                  "maxLength": 256
+                },
+                "temporary_id": {
+                  "type": "string"
                 },
                 "title": {
                   "required": true,
@@ -852,7 +927,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,actions"
                 }
               },
               "public-code-search": {
@@ -894,10 +969,10 @@ jobs:
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
-        timeout-minutes: 45
+        timeout-minutes: 30
         run: |
           set -o pipefail
-          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.githubusercontent.com,*.jsr.io,*.pythonhosted.org,*.rvm.io,agents-md-generator.fastmcp.app,anaconda.org,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.rubygems.org,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,binstar.org,bootstrap.pypa.io,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,codeload.github.com,conda.anaconda.org,conda.binstar.org,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,deb.nodesource.com,deno.land,files.pythonhosted.org,gems.rubyforge.org,gems.rubyonrails.org,get.pnpm.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,goproxy.io,host.docker.internal,index.rubygems.org,json-schema.org,json.schemastore.org,jsr.io,keyserver.ubuntu.com,lfs.github.com,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pip.pypa.io,pkg.go.dev,ppa.launchpad.net,proxy.golang.org,public-code-search.fastmcp.app,pypi.org,pypi.python.org,raw.githubusercontent.com,registry.bower.io,registry.npmjs.com,registry.npmjs.org,registry.yarnpkg.com,repo.anaconda.com,repo.continuum.io,repo.yarnpkg.com,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,security.ubuntu.com,skimdb.npmjs.com,storage.googleapis.com,sum.golang.org,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.npmjs.com,www.npmjs.org,yarnpkg.com' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.0 --skip-pull --enable-api-proxy \
+          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.githubusercontent.com,agents-md-generator.fastmcp.app,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,codeload.github.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,lfs.github.com,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.0 --skip-pull --enable-api-proxy \
             -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --model gpt-5.3-codex --allow-all-tools --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
@@ -975,7 +1050,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_ALLOWED_DOMAINS: "*.githubusercontent.com,*.jsr.io,*.pythonhosted.org,*.rvm.io,agents-md-generator.fastmcp.app,anaconda.org,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.rubygems.org,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,binstar.org,bootstrap.pypa.io,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,codeload.github.com,conda.anaconda.org,conda.binstar.org,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,deb.nodesource.com,deno.land,files.pythonhosted.org,gems.rubyforge.org,gems.rubyonrails.org,get.pnpm.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,goproxy.io,host.docker.internal,index.rubygems.org,json-schema.org,json.schemastore.org,jsr.io,keyserver.ubuntu.com,lfs.github.com,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pip.pypa.io,pkg.go.dev,ppa.launchpad.net,proxy.golang.org,public-code-search.fastmcp.app,pypi.org,pypi.python.org,raw.githubusercontent.com,registry.bower.io,registry.npmjs.com,registry.npmjs.org,registry.yarnpkg.com,repo.anaconda.com,repo.continuum.io,repo.yarnpkg.com,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,security.ubuntu.com,skimdb.npmjs.com,storage.googleapis.com,sum.golang.org,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.npmjs.com,www.npmjs.org,yarnpkg.com"
+          GH_AW_ALLOWED_DOMAINS: "*.githubusercontent.com,agents-md-generator.fastmcp.app,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,codeload.github.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,lfs.github.com,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
         with:
@@ -1047,7 +1122,6 @@ jobs:
             /tmp/gh-aw/sandbox/firewall/logs/
             /tmp/gh-aw/agent-stdio.log
             /tmp/gh-aw/agent/
-            /tmp/gh-aw/aw.patch
           if-no-files-found: ignore
 
   conclusion:
@@ -1059,9 +1133,8 @@ jobs:
     if: (always()) && (needs.agent.result != 'skipped')
     runs-on: ubuntu-slim
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
       tools_reported: ${{ steps.missing_tool.outputs.tools_reported }}
@@ -1088,7 +1161,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Test Improvement Agent"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Flaky Test Triage"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1101,7 +1174,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Test Improvement Agent"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Flaky Test Triage"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1114,10 +1187,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Test Improvement Agent"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Flaky Test Triage"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-test-improvement"
+          GH_AW_WORKFLOW_ID: "gh-aw-flaky-test-triage"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
@@ -1133,7 +1206,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Test Improvement Agent"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Flaky Test Triage"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1144,20 +1217,6 @@ jobs:
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/handle_noop_message.cjs');
-            await main();
-      - name: Handle Create Pull Request Error
-        id: handle_create_pr_error
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Test Improvement Agent"
-          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/handle_create_pr_error.cjs');
             await main();
 
   detection:
@@ -1195,8 +1254,8 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Test Improvement Agent"
-          WORKFLOW_DESCRIPTION: "Add focused tests for under-tested code and clean up redundant tests"
+          WORKFLOW_NAME: "Gh Aw Flaky Test Triage"
+          WORKFLOW_DESCRIPTION: "Investigate flaky tests from issues and failed CI runs; file triage reports"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1284,22 +1343,20 @@ jobs:
 
   safe_outputs:
     needs:
-      - activation
       - agent
       - detection
     if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (needs.detection.outputs.success == 'true')
     runs-on: ubuntu-slim
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-test-improvement"
-      GH_AW_WORKFLOW_NAME: "Test Improvement Agent"
+      GH_AW_WORKFLOW_ID: "gh-aw-flaky-test-triage"
+      GH_AW_WORKFLOW_NAME: "Gh Aw Flaky Test Triage"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
@@ -1321,38 +1378,12 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs/
           find "/tmp/gh-aw/safeoutputs/" -type f -print
           echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/safeoutputs/agent_output.json" >> "$GITHUB_ENV"
-      - name: Download patch artifact
-        continue-on-error: true
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
-        with:
-          name: agent-artifacts
-          path: /tmp/gh-aw/
-      - name: Checkout repository
-        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          persist-credentials: false
-          fetch-depth: 1
-      - name: Configure Git credentials
-        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
-        env:
-          REPO_NAME: ${{ github.repository }}
-          SERVER_URL: ${{ github.server_url }}
-          GIT_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          # Re-authenticate git with GitHub token
-          SERVER_URL_STRIPPED="${SERVER_URL#https://}"
-          git remote set-url origin "https://x-access-token:${GIT_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git"
-          echo "Git configured with standard GitHub Actions identity"
       - name: Process Safe Outputs
         id: process_safe_outputs
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"[flaky-test-triage] \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
