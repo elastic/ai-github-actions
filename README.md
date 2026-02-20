@@ -11,6 +11,7 @@ Full documentation lives at https://elastic.github.io/ai-github-actions/.
 - Developing: https://elastic.github.io/ai-github-actions/developing/
 - Security: https://elastic.github.io/ai-github-actions/security/
 - Release process: https://elastic.github.io/ai-github-actions/release/
+- Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Overview
 

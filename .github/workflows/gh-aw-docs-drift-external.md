@@ -3,6 +3,7 @@ description: "Detect code changes that require updates to published Elastic docu
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
+  - gh-aw-fragments/ensure-full-history.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
@@ -78,11 +79,6 @@ safe-outputs:
     expires: 7d
 timeout-minutes: 30
 steps:
-  - name: Ensure full history
-    run: |
-      if git rev-parse --is-shallow-repository | grep -q true; then
-        git fetch --unshallow --quiet
-      fi
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
