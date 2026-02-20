@@ -15,6 +15,9 @@ on:
   schedule:
     - cron: "daily around 14:00 on weekdays"
   workflow_dispatch:
+  roles: [admin, maintainer, write]
+  bots:
+    - "github-actions[bot]"
 concurrency:
   group: gh-aw-upgrade-check
   cancel-in-progress: true
@@ -32,7 +35,6 @@ network:
     - defaults
     - github
 strict: false
-roles: [admin, maintainer, write]
 safe-outputs:
   messages:
     footer: "---\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\n\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not."

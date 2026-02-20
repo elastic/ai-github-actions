@@ -25,6 +25,11 @@ on:
         type: string
         required: false
         default: ""
+      allowed-bot-users:
+        description: "Allowlisted bot actor usernames (comma-separated)"
+        type: string
+        required: false
+        default: "github-actions[bot]"
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string
@@ -33,6 +38,9 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+  roles: [admin, maintainer, write]
+  bots:
+    - "${{ inputs.allowed-bot-users }}"
 concurrency:
   group: docs-new-contributor-review-external
   cancel-in-progress: true
@@ -62,7 +70,6 @@ network:
     - ruby
     - "www.elastic.co"
 strict: false
-roles: [admin, maintainer, write]
 safe-outputs:
   noop:
   create-issue:

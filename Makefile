@@ -1,7 +1,7 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.45.1
+GH_AW_VERSION := v0.47.4
 
 # Helper: Detect OS and architecture (sets OS and ARCH variables)
 # Usage: $(DETECT_OS_ARCH)
@@ -112,9 +112,18 @@ setup-gh-debian:
 setup-gh-aw:
 	@echo "Setting up gh-aw compiler..."
 	@if command -v go >/dev/null 2>&1; then \
-		echo "Installing gh-aw $(GH_AW_VERSION)..."; \
-		GOBIN="$$(pwd)/bin" go install github.com/github/gh-aw/cmd/gh-aw@$(GH_AW_VERSION) && \
-		echo "✓ gh-aw installed to bin/gh-aw"; \
+		mkdir -p .bin && \
+		if [ -f .bin/gh-aw ]; then \
+			echo "✓ gh-aw already installed"; \
+		else \
+			echo "Cloning strawgate/gh-aw@feature/inline-prompt..."; \
+			TMPDIR=$$(mktemp -d) && \
+			git clone --depth 1 --branch feature/inline-prompt https://github.com/strawgate/gh-aw.git "$$TMPDIR/gh-aw" && \
+			cd "$$TMPDIR/gh-aw" && \
+			GOBIN="$(CURDIR)/.bin" go install ./cmd/gh-aw && \
+			rm -rf "$$TMPDIR" && \
+			echo "✓ gh-aw installed to .bin/gh-aw"; \
+		fi; \
 	else \
 		echo "⚠ Go not found. Install Go first: https://go.dev/dl/"; \
 		exit 1; \
@@ -123,9 +132,9 @@ setup-gh-aw:
 sync:
 	@./scripts/dogfood.sh
 
-compile: setup-gh-aw sync
+compile: setup-gh-aw
 	@echo "Compiling agentic workflows..."
-	@bin/gh-aw compile --action-tag $(GH_AW_VERSION)
+	@.bin/gh-aw compile --inline-prompt --action-mode release --action-tag $(GH_AW_VERSION)
 
 setup-actionlint:
 	@echo "Setting up actionlint..."

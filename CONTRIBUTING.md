@@ -2,7 +2,10 @@
 
 Thank you for your interest in contributing! We welcome contributions from the community.
 
-**This project uses agentic development exclusively.** You do not create pull requests directly. Instead, you create detailed agentic plans in issues, and an AI agent implements the PR after maintainer approval.
+⚠️ IMPORTANT: This project requires agentic development using GitHub Copilot Agent. No local development environment is needed or expected.
+
+🚫 Traditional Pull Requests Are Not Enabled: You cannot create pull requests directly. Instead, you create detailed agentic plans in issues, and GitHub Copilot Agent will create and implement the PR for you after maintainer approval.
+
 
 ## Why Agentic Development?
 

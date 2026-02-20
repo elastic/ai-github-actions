@@ -1,5 +1,6 @@
 # Local tools
 bin/
+.bin/
 
 # Python
 __pycache__/

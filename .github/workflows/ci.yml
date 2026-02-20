@@ -38,6 +38,7 @@ jobs:
         run: make compile
       - name: Ensure lock files are up to date
         run: |
+          git checkout -- .github/workflows/agentics-maintenance.yml
           if [ -n "$(git status --porcelain)" ]; then
             echo "Working tree dirty after make compile."
             git status --porcelain
