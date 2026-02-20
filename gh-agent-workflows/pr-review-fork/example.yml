@@ -1,0 +1,39 @@
+# ⚠️  SECURITY WARNING — READ BEFORE USING
+#
+# This workflow uses the `pull_request_target` trigger so that it runs in the
+# context of the *base* repository and has access to repository secrets.
+# That makes it work for pull requests from forks, which do NOT have access
+# to secrets when triggered by the standard `pull_request` event.
+#
+# RISKS ON PUBLIC REPOSITORIES
+# • `pull_request_target` grants access to secrets even for untrusted forks.
+# • If you add `setup-commands` that execute code from the pull request, a
+#   malicious fork could exfiltrate your secrets.
+# • The agent itself does NOT check out PR code — it reads the diff via the
+#   GitHub API — so it is safe in the default configuration.  Any change to
+#   `setup-commands` that runs fork code breaks that guarantee.
+#
+# RECOMMENDATION
+# • Only use this trigger on PRIVATE repositories, or on public repositories
+#   where every contributor is explicitly trusted.
+# • Never pass `setup-commands` that check out or execute code from the PR.
+# • Prefer the standard `pull_request` trigger (pr-review/example.yml) for
+#   public repositories.
+name: PR Review (Fork)
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: write
+
+jobs:
+  run:
+    if: >-
+      github.event.pull_request.draft == false &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
