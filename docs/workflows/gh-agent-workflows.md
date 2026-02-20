@@ -47,7 +47,9 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 | [Bug Hunter](gh-agent-workflows/bug-hunter.md) | Weekday schedule | Find reproducible bugs and file reports |
 | [Code Simplifier](gh-agent-workflows/code-simplifier.md) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | [Docs Drift](gh-agent-workflows/docs-drift.md) | Weekday schedule | Detect code changes needing doc updates |
+| [Docs Drift External](gh-agent-workflows/docs-drift-external.md) | Weekday schedule | Detect code changes needing published Elastic doc updates |
 | [Docs New Contributor Review](gh-agent-workflows/docs-new-contributor-review.md) | Weekly schedule | Review docs from a new contributor perspective |
+| [Docs New Contributor Review External](gh-agent-workflows/docs-new-contributor-review-external.md) | Weekly schedule | Review docs cross-referencing published Elastic documentation |
 | [Downstream Health](gh-agent-workflows/downstream-health.md) | Daily schedule | Monitor downstream repo quality |
 | [Flaky Test Triage](gh-agent-workflows/flaky-test-triage.md) | Weekday schedule + failed CI runs | Identify repeated flaky failures and file root-cause-first triage reports |
 | [Project Summary](gh-agent-workflows/project-summary.md) | Daily schedule | Summarize recent activity and priorities |
