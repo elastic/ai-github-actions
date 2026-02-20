@@ -27,6 +27,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
+| [Docs PR Review](gh-agent-workflows/docs-pr-review.md) | `/docs-review` on PRs | Review docs for style guide, `applies_to`, and consistency |
 | [Issue Triage](gh-agent-workflows/issue-triage.md) | New issues | Investigate and provide implementation plans |
 | [Issue Triage (with PR)](gh-agent-workflows/issue-triage-pr.md) | New issues | Triage plus automatic draft PR for straightforward fixes |
 | [Mention in Issue](gh-agent-workflows/mention-in-issue.md) | `/ai` in issues | Answer questions, debug, create PRs |
