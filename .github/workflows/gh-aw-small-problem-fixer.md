@@ -1,5 +1,6 @@
 ---
 description: "Find small, related issues and open a focused PR"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

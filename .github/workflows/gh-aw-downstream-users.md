@@ -1,5 +1,6 @@
 ---
 description: "Track downstream public repo usage of elastic/ai-github-actions and update data"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

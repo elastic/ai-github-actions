@@ -1,5 +1,6 @@
 ---
 description: "AI assistant for issues — answer questions, debug, and create PRs via /ai"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

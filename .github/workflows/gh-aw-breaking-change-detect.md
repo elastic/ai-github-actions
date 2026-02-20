@@ -1,5 +1,6 @@
 ---
 description: "Detect undocumented breaking changes in public interfaces"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

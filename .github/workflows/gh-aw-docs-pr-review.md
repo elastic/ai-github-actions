@@ -1,5 +1,6 @@
 ---
 description: "Docs PR review from an Elastic technical writer perspective"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

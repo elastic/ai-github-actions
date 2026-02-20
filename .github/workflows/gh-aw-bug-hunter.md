@@ -1,5 +1,6 @@
 ---
 description: "Find a reproducible, user-impacting bug and file a report issue"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

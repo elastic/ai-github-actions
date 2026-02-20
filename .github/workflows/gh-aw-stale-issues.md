@@ -1,5 +1,6 @@
 ---
 description: "Find open issues that appear to already be resolved and recommend closing them"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

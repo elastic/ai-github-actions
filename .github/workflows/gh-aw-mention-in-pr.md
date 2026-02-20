@@ -1,5 +1,6 @@
 ---
 description: "AI assistant for PRs — review, fix code, and push changes via /ai"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

@@ -1,5 +1,6 @@
 ---
 description: "Add focused tests for under-tested code and clean up redundant tests"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

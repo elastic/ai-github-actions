@@ -1,5 +1,6 @@
 ---
 description: "Detect code changes that require updates to published Elastic documentation"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

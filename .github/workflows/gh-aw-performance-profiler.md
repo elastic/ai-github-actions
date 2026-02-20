@@ -1,5 +1,6 @@
 ---
 description: "Identify hot paths, profile code, and propose meaningful performance improvements"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

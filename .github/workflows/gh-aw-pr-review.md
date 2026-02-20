@@ -1,5 +1,6 @@
 ---
 description: "AI code review with inline comments on pull requests"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

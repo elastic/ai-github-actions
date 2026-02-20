@@ -1,5 +1,6 @@
 ---
 description: "Create periodic project summary issues covering recent activity and priorities"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

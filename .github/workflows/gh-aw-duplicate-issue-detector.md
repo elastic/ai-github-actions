@@ -1,5 +1,6 @@
 ---
 description: "Detect duplicate issues and notify reporters when a matching open or closed issue exists"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/formatting.md

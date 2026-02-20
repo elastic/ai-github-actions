@@ -1,5 +1,6 @@
 ---
 description: "Analyze agent workflow logs for inefficiencies, errors, and prompt improvement opportunities"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

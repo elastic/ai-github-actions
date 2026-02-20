@@ -1,5 +1,6 @@
 ---
 description: "Investigate flaky tests from issues and failed CI runs; file triage reports"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

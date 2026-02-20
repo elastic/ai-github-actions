@@ -1,5 +1,6 @@
 ---
 description: "Investigate new issues and provide actionable triage analysis with optional PR creation"
+timeout-minutes: 60
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
