@@ -182,3 +182,5 @@ Consumer repos call the compiled `.lock.yml` via `uses:` in a plain YAML workflo
 Each workflow has a corresponding `example.yml` in `gh-agent-workflows/<name>/` that defines the actual event triggers and calls the compiled `.lock.yml`. These are plain YAML (not compiled by gh-aw) and are copied to `.github/workflows/trigger-<name>.yml` by `scripts/dogfood.sh` for dogfooding when the workflow is not listed in `EXCLUDED_WORKFLOWS`.
 
 Consumer repos copy a workflow's `example.yml` into their `.github/workflows/` directory and customize the `with:` inputs. The `uses:` path already points to the remote compiled workflow.
+
+Each `example.yml` includes a `timeout-minutes:` on the calling job as a recommended default. Callers can raise or lower this value to match their repo's needs — the reusable workflows themselves do not impose a runtime limit.

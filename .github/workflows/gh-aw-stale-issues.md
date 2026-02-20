@@ -69,7 +69,6 @@ safe-outputs:
     title-prefix: "[stale-issues] "
     close-older-issues: true
     expires: 7d
-timeout-minutes: 30
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}

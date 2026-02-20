@@ -15,6 +15,7 @@ jobs:
     if: >-
       github.event.issue.pull_request != null &&
       startsWith(github.event.comment.body, '/docs-review')
+    timeout-minutes: 30
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-docs-pr-review.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

@@ -84,7 +84,6 @@ safe-outputs:
     title-prefix: "[docs-drift-external] "
     close-older-issues: true
     expires: 7d
-timeout-minutes: 30
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}

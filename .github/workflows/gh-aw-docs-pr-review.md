@@ -89,7 +89,6 @@ network:
     - "www.elastic.co"
     - "docs-v3-preview.elastic.dev"
 strict: false
-timeout-minutes: 30
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}

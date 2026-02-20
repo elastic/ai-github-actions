@@ -70,7 +70,6 @@ network:
     - python
     - ruby
 strict: false
-timeout-minutes: 30
 steps:
   - name: Ensure origin refs for PR patch generation
     env:

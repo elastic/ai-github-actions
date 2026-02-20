@@ -63,7 +63,6 @@ network:
     - python
     - ruby
 strict: false
-timeout-minutes: 15
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}

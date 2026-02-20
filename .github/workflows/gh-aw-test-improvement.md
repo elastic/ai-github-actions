@@ -64,7 +64,6 @@ network:
 strict: false
 safe-outputs:
   noop:
-timeout-minutes: 45
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
