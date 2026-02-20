@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d27573b05ed34c5064d77515496eb6682600514fb1dd578bb1a5d49ac491b33b"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"234809271c7839a740edd00f3ad3d96601105c9e0387c6d301313367d019fc52"}
 
 name: "Gh Aw Docs Drift"
 "on":
@@ -43,6 +43,11 @@ name: "Gh Aw Docs Drift"
       additional-instructions:
         default: ""
         description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      lookback-window:
+        default: 7 days ago
+        description: Git lookback window for detecting recent commits (e.g. '7 days ago', '14 days ago')
         required: false
         type: string
       messages-footer:
@@ -105,6 +110,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_C9922AB3: ${{ inputs.lookback-window }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -339,9 +345,9 @@ jobs:
           
           ### Data Gathering
           
-          Use a lookback window of `--since="7 days ago"` for all runs (scheduled and manual).
+          Use a lookback window of `--since="__GH_AW_EXPR_C9922AB3__"` for all runs (scheduled and manual).
           
-          Run `git log --since="7 days ago" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
+          Run `git log --since="__GH_AW_EXPR_C9922AB3__" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
           
           ### What to Look For
           
@@ -411,6 +417,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_C9922AB3: ${{ inputs.lookback-window }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -422,6 +429,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_C9922AB3: ${{ inputs.lookback-window }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -444,6 +452,7 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_EXPR_C9922AB3: process.env.GH_AW_EXPR_C9922AB3,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
