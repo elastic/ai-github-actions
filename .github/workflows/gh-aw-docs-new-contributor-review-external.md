@@ -1,5 +1,5 @@
 ---
-description: "Review docs from a new contributor perspective and file high-impact issues"
+description: "Review docs from a new contributor perspective, cross-referencing published Elastic documentation"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
@@ -34,7 +34,7 @@ on:
       COPILOT_GITHUB_TOKEN:
         required: true
 concurrency:
-  group: docs-new-contributor-review
+  group: docs-new-contributor-review-external
   cancel-in-progress: true
 permissions:
   contents: read
@@ -45,6 +45,13 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
+mcp-servers:
+  elastic-docs:
+    url: "https://www.elastic.co/docs/_mcp/"
+    allowed:
+      - "SemanticSearch"
+      - "GetDocumentByUrl"
+      - "FindRelatedDocs"
 network:
   allowed:
     - defaults
@@ -53,13 +60,14 @@ network:
     - node
     - python
     - ruby
+    - "www.elastic.co"
 strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[docs-new-contributor] "
+    title-prefix: "[docs-new-contributor-external] "
     close-older-issues: true
     expires: 7d
 timeout-minutes: 30
@@ -71,11 +79,11 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-Review repository documentation from the perspective of an external contributor who knows the language/framework but is new to this project. Only file an issue for **high-impact** gaps or blockers; otherwise, report no findings.
+Review repository documentation from the perspective of an external contributor, cross-referencing against published Elastic documentation on `elastic.co/docs`. Only file an issue for **high-impact** gaps or blockers; otherwise, report no findings.
 
 ### Data Gathering
 
-1. Discover documentation files — scan the repository for common doc locations and read all that exist:
+1. Discover documentation files dynamically — scan the repository for common doc locations and read all that exist:
    - Repository root: `README.md`, `CONTRIBUTING.md`, `DEVELOPING.md`, `CHANGELOG.md`, `SECURITY.md`.
    - Documentation directories: `docs/`, `documentation/`, `doc/`.
    - Any other `.md` files in the repository root that appear to be contributor-facing.
@@ -83,11 +91,16 @@ Review repository documentation from the perspective of an external contributor 
 2. Follow the quick start or recommended install path as far as possible without secrets, elevated privileges, or write access:
    - If a step requires secrets or admin privileges, stop and note whether the docs clearly warned about it.
 3. Check for existing open issues that already cover the same documentation gaps.
+4. Use the `elastic-docs` MCP server to cross-reference the repo's documentation against published Elastic documentation:
+   - Call `SemanticSearch` or `FindRelatedDocs` with the project name and key concepts to find the published getting-started guide, if one exists.
+   - Call `GetDocumentByUrl` to read any published pages that describe this project's setup or usage.
+   - Check whether the repo's onboarding docs are consistent with what's published. Contradictions between the repo and `elastic.co/docs` are blockers for new contributors.
 
 ### What to Look For
 
 - Missing prerequisites or setup steps that would block a new contributor.
 - Inconsistent instructions between the repo's own documentation files.
+- Contradictions between the repo's docs and published Elastic documentation on `elastic.co/docs`.
 - Commands or file paths that do not exist in a fresh checkout.
 - Required secrets, permissions, or roles that are not documented where the step appears.
 - Getting-started paths that are unclear or force the contributor to guess between undocumented alternatives.
@@ -96,9 +109,11 @@ Review repository documentation from the perspective of an external contributor 
 
 Only report **blocking** or **high-impact** documentation issues that would prevent an external contributor from getting started. Minor wording improvements, stylistic tweaks, or optional clarifications should result in a `noop`.
 
+Contradictions between the repo and published Elastic documentation are always considered blocking.
+
 ### Issue Format
 
-**Issue title:** New contributor docs review — [brief summary]
+**Issue title:** New contributor docs review (external) — [brief summary]
 
 **Issue body:**
 
@@ -111,6 +126,7 @@ Only report **blocking** or **high-impact** documentation issues that would prev
 >
 > **Where:** [doc path + section]
 > **Problem:** [what is missing or incorrect]
+> **Published docs conflict:** [If applicable — which elastic.co/docs page contradicts the repo, with URL]
 > **Impact:** [how this blocks a new contributor]
 > **Suggested fix:** [specific change]
 >
