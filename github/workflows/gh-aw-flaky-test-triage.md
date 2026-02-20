@@ -97,8 +97,8 @@ Detect flaky tests by combining open issues likely related to flakiness and rece
 
 ### Analysis Rules
 
-- Prioritize root-cause fixes and clear investigation tasks.
-- Only recommend retries/timeouts/quarantine when root-cause action is not yet feasible, and explain why.
+- Only recommend a fix when you have identified the **true root cause** with clear, supporting evidence — not a hypothesis. A noop is always preferable to a speculative or workaround fix.
+- Retries, timeouts, and quarantine are **not fixes**. Do not recommend them as remediation steps. They may be noted as existing mitigations already in place, but never as the recommended action.
 - Do not report one-off or non-reproducible failures lacking repeat evidence.
 - Do not include items already tracked by a current open issue/PR unless new, material evidence changes prioritization.
 
@@ -106,7 +106,9 @@ Detect flaky tests by combining open issues likely related to flakiness and rece
 
 Call `noop` when:
 - no repeated flaky pattern is found, or
-- all repeated failures are already actively tracked with sufficient detail.
+- all repeated failures are already actively tracked with sufficient detail, or
+- a root cause cannot be clearly identified from the available evidence, or
+- the only available remediation is a workaround (retry, timeout, quarantine) rather than a true fix.
 
 ### Issue Format
 
@@ -125,9 +127,8 @@ Call `noop` when:
 > - Frequency: [count]
 > - Representative error: [short snippet]
 >
-> **Likely root cause hypothesis:** [specific, evidence-based]
-> **Recommended action:** [root-cause fix steps]
-> **Fallback (if needed):** [retry/timeout/quarantine with justification]
+> **Root cause:** [specific, evidence-based — only include if truly identified; otherwise do not file an issue]
+> **Recommended fix:** [concrete root-cause fix steps]
 >
 > ## Suggested Actions
 > - [ ] [Concrete fix task]
