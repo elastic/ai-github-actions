@@ -2,6 +2,10 @@
 
 AI code review with inline comments on pull requests.
 
+## How it works
+
+Reads the PR diff, repo conventions, and relevant source files. Posts inline review comments on specific changed lines with actionable feedback, then submits a review (approve, request changes, or comment) based on the configurable `intensity` level.
+
 ## Quick Install
 
 ```bash

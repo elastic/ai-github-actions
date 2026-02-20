@@ -2,6 +2,10 @@
 
 Check for new ai-github-actions releases and open a PR updating pinned workflow SHAs, with suggestions based on release notes.
 
+## How it works
+
+Checks the elastic/ai-github-actions releases page for versions newer than the ones pinned in the repo's workflow files. When a new release is found, opens a PR that updates all pinned SHA references and summarizes the relevant release notes.
+
 ## Quick Install
 
 ````bash

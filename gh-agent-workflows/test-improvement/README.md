@@ -2,6 +2,10 @@
 
 Add focused tests for under-tested code and clean up redundant tests.
 
+## How it works
+
+Identifies code paths with no or minimal test coverage, adds focused tests that validate real behavior, and removes or consolidates clearly redundant tests. Only opens a PR for changes that would catch actual regressions — not trivial getters or incidental coverage. Most runs end with `noop`.
+
 ## Quick Install
 
 ```bash

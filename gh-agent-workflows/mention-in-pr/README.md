@@ -2,6 +2,10 @@
 
 AI assistant for PRs — review, fix code, and push changes via `/ai`.
 
+## How it works
+
+Responds to `/ai <request>` comments on pull requests or inline review threads. Can review code, push fixes to the PR branch, answer questions, and resolve review threads.
+
 ## Quick Install
 
 ```bash

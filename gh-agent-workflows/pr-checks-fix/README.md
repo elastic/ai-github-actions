@@ -2,6 +2,10 @@
 
 Analyze failed PR checks and optionally push fixes.
 
+## How it works
+
+Triggered automatically when a CI workflow fails on a PR. Reads the failed job logs, identifies the root cause, and pushes a targeted fix to the PR branch. Posts a comment explaining the failure whether or not a fix was applied.
+
 ## Quick Install
 
 ```bash

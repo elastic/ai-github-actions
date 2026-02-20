@@ -2,6 +2,10 @@
 
 AI assistant for issues — answer questions, debug, and create PRs via `/ai`.
 
+## How it works
+
+Responds to `/ai <request>` comments on issues. Can read code, run commands, answer questions, suggest solutions, or open a PR with a proposed fix.
+
 ## Quick Install
 
 ```bash

@@ -2,6 +2,10 @@
 
 Detect code changes that require updates to published Elastic documentation, `applies_to` tags, or backports.
 
+## How it works
+
+Like Docs Drift, but focuses on changes that require updates to published Elastic documentation on `elastic.co/docs`. Also flags features that need `applies_to` tag updates or documentation backports to earlier release branches.
+
 ## Quick Install
 
 ```bash

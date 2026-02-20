@@ -2,6 +2,10 @@
 
 Analyze code for semantic function clustering and refactoring opportunities.
 
+## How it works
+
+Scans source files (by language or custom glob) to find semantically related functions that live in different files, duplicate implementations of the same logic, and functions that belong in a different module. Files a report with specific refactoring recommendations.
+
 ## Quick Install
 
 ```bash
