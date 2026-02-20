@@ -16,11 +16,27 @@ mkdir -p .github/workflows && curl -sL \
 
 See [example.yml](example.yml) for the full workflow file.
 
+## Fork Support
+
+To review pull requests from forked repositories, use the `pull_request_target` variant:
+
+```bash
+mkdir -p .github/workflows && curl -sL \
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-review/example-fork.yml \
+  -o .github/workflows/pr-review.yml
+```
+
+> [!WARNING]
+> **Private repositories only.** `pull_request_target` runs in the base repository context and exposes repository secrets to fork-triggered runs. On public repositories, any external contributor can open a fork PR and trigger expensive API calls or attempt prompt injection. Use the standard `pull_request` trigger for public repos — GitHub's fork approval gate ensures the workflow only runs for trusted contributors.
+
+See [example-fork.yml](example-fork.yml) for the full workflow file.
+
 ## Trigger
 
 | Event | Types |
 | --- | --- |
 | `pull_request` | `opened`, `synchronize`, `reopened`, `ready_for_review`, `labeled`, `unlabeled` |
+| `pull_request_target` (fork support) | `opened`, `synchronize`, `reopened`, `ready_for_review`, `labeled`, `unlabeled` |
 
 ## Inputs
 

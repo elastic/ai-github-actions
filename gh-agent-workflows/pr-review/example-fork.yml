@@ -1,0 +1,32 @@
+# ⚠️  SECURITY WARNING — Private repositories only
+#
+# This workflow uses pull_request_target, which runs in the context of the base
+# repository and has access to repository secrets. This is required to review
+# pull requests opened from forks.
+#
+# DO NOT use this on public repositories:
+# — Anyone can open a fork PR and trigger expensive API calls.
+# — Malicious fork content can attempt prompt injection against the AI agent.
+# — Your COPILOT_GITHUB_TOKEN is exposed to all fork-triggered workflow runs.
+#
+# For public repos, use the standard pull_request trigger (example.yml) instead.
+# GitHub's fork approval gate ensures the workflow only runs for trusted contributors.
+
+name: PR Review (Fork-Compatible)
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: write
+
+jobs:
+  run:
+    if: >-
+      github.event.pull_request.draft == false &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

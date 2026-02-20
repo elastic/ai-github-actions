@@ -1,0 +1,51 @@
+# ⚠️  SECURITY WARNING — Private repositories only
+#
+# This workflow uses pull_request_target, which runs in the context of the base
+# repository and has access to repository secrets. This is required to review
+# pull requests opened from forks.
+#
+# DO NOT use this on public repositories:
+# — Anyone can open a fork PR and trigger expensive API calls.
+# — Your CLAUDE_CODE_OAUTH_TOKEN is exposed to all fork-triggered workflow runs.
+#
+# For public repos, use the standard pull_request trigger (example.yml) instead.
+# GitHub's fork approval gate ensures the workflow only runs for trusted contributors.
+
+name: PR Review (Read-Only, Fork-Compatible)
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    # Skip draft PRs and allow opt-out with the skip-auto-pr-review label.
+    if: >-
+      github.event.pull_request.draft == false &&
+      !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the fork's code at the exact PR head SHA.
+      # Using the SHA (not the branch name) is important for security with pull_request_target.
+      - name: Checkout PR head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      # Place environment setup commands here (e.g., install dependencies, configure tools)
+
+      - name: Run Claude PR Review (Read-Only)
+        uses: elastic/ai-github-actions/workflows/pr-review/ro@v0
+        with:
+          claude-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github-token: ${{ github.token }}
+          # Optional: add custom instructions
+          # additional-instructions: "Pay special attention to security patterns"

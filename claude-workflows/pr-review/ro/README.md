@@ -13,6 +13,15 @@ Review pull requests with read-only access. Provides feedback via comments with 
 
 See [example.yml](example.yml) for a complete workflow example.
 
+## Fork Support
+
+To review pull requests from forked repositories, use the `pull_request_target` variant:
+
+See [example-fork.yml](example-fork.yml) for a complete fork-compatible workflow example.
+
+> [!WARNING]
+> **Private repositories only.** `pull_request_target` runs in the base repository context and exposes repository secrets to fork-triggered runs. On public repositories, any external contributor can open a fork PR and trigger expensive API calls. Use the standard `pull_request` trigger for public repos — GitHub's fork approval gate ensures the workflow only runs for trusted contributors.
+
 ## Optional: Minimize resolved review threads
 
 To keep PR conversations focused, add the [minimize-resolved-pr-reviews](https://github.com/strawgate/minimize-resolved-pr-reviews) action after the PR review step. This requires `pull-requests: write` permissions and can be scoped to bots via `users`.

@@ -13,6 +13,11 @@ Review pull requests with code suggestions and test execution capabilities. Can 
 
 See [example.yml](example.yml) for a complete workflow example.
 
+## Fork Support
+
+> [!CAUTION]
+> **Fork-compatible examples are not provided for the read-write-execute variant.** The `rwx` action allows all Bash commands, which means checking out and running fork code with `pull_request_target` would execute untrusted code with full access to your repository secrets. Do not use `pull_request_target` with the `rwx` action. Use the `ro` action's [example-fork.yml](../ro/example-fork.yml) for fork-compatible PR review.
+
 ## Optional: Minimize resolved review threads
 
 To keep PR conversations focused, add the [minimize-resolved-pr-reviews](https://github.com/strawgate/minimize-resolved-pr-reviews) action after the PR review step. This requires `pull-requests: write` permissions and can be scoped to bots via `users`.
