@@ -1,9 +1,7 @@
 name: Docs PR Review
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
-    paths:
-      - "**.md"
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: read
@@ -15,8 +13,8 @@ permissions:
 jobs:
   run:
     if: >-
-      github.event.pull_request.draft == false &&
-      !contains(github.event.pull_request.labels.*.name, 'skip-auto-docs-review')
+      github.event.issue.pull_request != null &&
+      startsWith(github.event.comment.body, '/docs-review')
     uses: ./.github/workflows/gh-aw-docs-pr-review.lock.yml
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

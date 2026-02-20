@@ -8,7 +8,6 @@ Docs PR review from an Elastic technical writer perspective. Reviews documentati
 - **Elastic style guide**: Voice and tone, grammar and spelling, formatting, word choice, accessibility, and inclusivity.
 - **`applies_to` tags**: Validates page-level, section-level, and inline applicability metadata against the cumulative docs guidelines.
 - **Docs consistency**: Uses the Elastic docs MCP server to check for contradictions and inconsistencies with published documentation.
-- **Cross-links**: Validates cross-link URIs resolve to valid targets.
 
 ## Quick install
 
@@ -22,9 +21,11 @@ See [example.yml](example.yml) for the full workflow file.
 
 ## Trigger
 
-| Event | Types | Path filter |
+Invoke by commenting `/docs-review` on any pull request.
+
+| Event | Types | Condition |
 | --- | --- | --- |
-| `pull_request` | `opened`, `synchronize`, `reopened`, `ready_for_review`, `labeled`, `unlabeled` | `**.md` |
+| `issue_comment` | `created` | Comment starts with `/docs-review` on a PR |
 
 ## Inputs
 

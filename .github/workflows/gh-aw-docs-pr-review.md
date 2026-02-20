@@ -69,8 +69,6 @@ mcp-servers:
       - "CheckCoherence"
       - "FindInconsistencies"
       - "GetContentTypeGuidelines"
-      - "ResolveCrossLink"
-      - "ValidateCrossLinks"
       - "AnalyzeDocumentStructure"
 network:
   allowed:
@@ -164,7 +162,7 @@ Fetch changed files with `pull_request_read` method `get_files` using `per_page:
 3. **Check style guide compliance** against the guidelines loaded in Step 2, covering all focus areas listed below.
 4. **Check `applies_to` tags** against the guidelines loaded in Step 2, using PR labels and issue context to determine expected applicability. See the `applies_to` review checklist below.
 5. **Check docs consistency** using the Elastic docs MCP server — call `FindRelatedDocs` or `SemanticSearch` to find existing published docs covering the same topic and verify the PR's content is consistent with them. Call `CheckCoherence` for topics that span multiple pages.
-6. **Validate cross-links** — if the file contains cross-link URIs (e.g., `docs-content://path/to/page.md`), call `ResolveCrossLink` to verify they resolve. If the file links to `elastic.co/docs/` URLs, call `GetDocumentByUrl` to confirm the target exists.
+6. **Check discoverability of new content** — if the PR adds a new page or a new section, use `FindRelatedDocs` or `SemanticSearch` to identify related published pages that should link to the new content, and check whether the PR adds corresponding links from the new content back to those pages. New pages and sections that aren't linked from anywhere are hard to discover.
 7. **Verify each issue** before commenting:
    1. What specific text or pattern triggers this concern?
    2. Read the surrounding context — is this addressed elsewhere in the file or PR?
@@ -219,7 +217,7 @@ Only include a `suggestion` block when you can provide a concrete text fix. For 
 
 ## Severity Classification
 
-- 🔴 **CRITICAL** — Must fix before merge (incorrect technical information, broken cross-links, missing mandatory `applies_to` page-level tags).
+- 🔴 **CRITICAL** — Must fix before merge (incorrect technical information, missing mandatory `applies_to` page-level tags).
 - 🟠 **HIGH** — Should fix before merge (wrong `applies_to` dimension, factual inconsistency with published docs, accessibility violations).
 - 🟡 **MEDIUM** — Address soon, non-blocking (style guide violations, missing section-level `applies_to` where content varies by product).
 - ⚪ **LOW** — Author discretion (minor wording improvements, formatting polish).
@@ -265,9 +263,7 @@ Use the `elastic-docs` MCP tools during file review:
 - **`CheckCoherence`**: Verify a topic is covered consistently across the docs.
 - **`FindInconsistencies`**: Find potential contradictions across pages covering the same topic.
 - **`GetContentTypeGuidelines`**: Check if the page follows the recommended structure for its content type (overview, how-to, tutorial, troubleshooting).
-- **`ResolveCrossLink`**: Verify cross-link URIs resolve to valid targets.
-- **`ValidateCrossLinks`**: Check for broken cross-links in a repository.
 
-Don't call every tool on every file. Use judgment: call `SemanticSearch` or `FindRelatedDocs` when reviewing content that covers a specific Elastic feature, call `CheckCoherence` for topics that might be documented in multiple places, and call `ResolveCrossLink` when you encounter cross-link URIs.
+Don't call every tool on every file. Use judgment: call `SemanticSearch` or `FindRelatedDocs` when reviewing content that covers a specific Elastic feature, and call `CheckCoherence` for topics that might be documented in multiple places.
 
 ${{ inputs.additional-instructions }}
