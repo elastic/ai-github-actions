@@ -27,6 +27,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
+| [Docs PR Review](gh-agent-workflows/docs-pr-review.md) | `/docs-review` on PRs | Review docs for style guide, `applies_to`, and consistency |
 | [Issue Triage](gh-agent-workflows/issue-triage.md) | New issues | Investigate and provide implementation plans |
 | [Issue Triage (with PR)](gh-agent-workflows/issue-triage-pr.md) | New issues | Triage plus automatic draft PR for straightforward fixes |
 | [Mention in Issue](gh-agent-workflows/mention-in-issue.md) | `/ai` in issues | Answer questions, debug, create PRs |
@@ -47,7 +48,9 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 | [Bug Hunter](gh-agent-workflows/bug-hunter.md) | Weekday schedule | Find reproducible bugs and file reports |
 | [Code Simplifier](gh-agent-workflows/code-simplifier.md) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | [Docs Drift](gh-agent-workflows/docs-drift.md) | Weekday schedule | Detect code changes needing doc updates |
+| [Docs Drift External](gh-agent-workflows/docs-drift-external.md) | Weekday schedule | Detect code changes needing published Elastic doc updates |
 | [Docs New Contributor Review](gh-agent-workflows/docs-new-contributor-review.md) | Weekly schedule | Review docs from a new contributor perspective |
+| [Docs New Contributor Review External](gh-agent-workflows/docs-new-contributor-review-external.md) | Weekly schedule | Review docs cross-referencing published Elastic documentation |
 | [Downstream Health](gh-agent-workflows/downstream-health.md) | Daily schedule | Monitor downstream repo quality |
 | [Flaky Test Triage](gh-agent-workflows/flaky-test-triage.md) | Weekday schedule + failed CI runs | Identify repeated flaky failures and file root-cause-first triage reports |
 | [Project Summary](gh-agent-workflows/project-summary.md) | Daily schedule | Summarize recent activity and priorities |
