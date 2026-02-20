@@ -51,6 +51,8 @@ help:
 	@echo "  sync                 - Run scripts/dogfood.sh to copy shims, prompts, and fragments"
 	@echo "  compile              - Sync files + compile agentic workflows to lock files"
 	@echo "  lint                 - Run all linters"
+	@echo "  docs-build           - Build the MkDocs site (outputs to site/)"
+	@echo "  docs-serve           - Serve the MkDocs site locally with live reload"
 	@echo "  release VERSION=x.y.z - Create and push a new release tag"
 
 setup: setup-actionlint setup-action-validator setup-gh setup-gh-aw
