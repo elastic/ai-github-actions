@@ -58,7 +58,6 @@ strict: false
 roles: [admin, maintainer, write]
 bots:
   - "github-actions[bot]"
-timeout-minutes: 15
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}

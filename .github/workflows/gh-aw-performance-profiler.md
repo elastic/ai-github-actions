@@ -63,7 +63,6 @@ safe-outputs:
     title-prefix: "[performance-profiler] "
     close-older-issues: true
     expires: 7d
-timeout-minutes: 45
 steps:
   - name: Ensure full history
     run: |

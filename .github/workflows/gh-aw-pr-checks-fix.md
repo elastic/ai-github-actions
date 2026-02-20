@@ -59,7 +59,6 @@ network:
     - ruby
 strict: false
 roles: [admin, maintainer, write]
-timeout-minutes: 30
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}

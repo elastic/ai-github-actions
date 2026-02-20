@@ -62,7 +62,6 @@ safe-outputs:
     title-prefix: "[project-summary] "
     close-older-issues: true
     expires: 7d
-timeout-minutes: 30
 steps:
   - name: Ensure full history
     run: |

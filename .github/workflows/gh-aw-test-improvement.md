@@ -57,7 +57,6 @@ strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
   noop:
-timeout-minutes: 45
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}

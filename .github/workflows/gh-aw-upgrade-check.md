@@ -42,7 +42,6 @@ safe-outputs:
     title-prefix: "[gh-aw-upgrade] "
     close-older-issues: true
     expires: 7d
-timeout-minutes: 30
 ---
 
 Check for recent gh-aw releases and determine if our workflows need upgrading or adjusting.

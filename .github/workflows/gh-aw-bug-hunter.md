@@ -62,7 +62,6 @@ safe-outputs:
     title-prefix: "[bug-hunter] "
     close-older-issues: true
     expires: 7d
-timeout-minutes: 30
 steps:
   - name: Ensure full history
     run: |

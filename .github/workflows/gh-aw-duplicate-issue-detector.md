@@ -42,7 +42,6 @@ strict: false
 roles: [admin, maintainer, write]
 bots:
   - "github-actions[bot]"
-timeout-minutes: 15
 safe-outputs:
   noop:
   add-comment:
