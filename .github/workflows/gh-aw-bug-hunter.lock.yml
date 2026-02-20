@@ -26,6 +26,7 @@
 # Resolved workflow manifest:
 #   Imports:
 #     - gh-aw-fragments/elastic-tools.md
+#     - gh-aw-fragments/ensure-full-history.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
@@ -34,7 +35,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8a36b310ad20adce2efa9d663924889a2b155030bd0a9c53ce9d1db50296572a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f11a5d032629152a545001f30da499d76c3f9b8b5e9e13bdf43051982f39c15f"}
 
 name: "Gh Aw Bug Hunter"
 "on":
@@ -187,6 +188,9 @@ jobs:
           
           - **`generate_agents_md`** — generates a summary of the repository's structure, conventions, and coding guidelines from AGENTS.md and related files. Call at the start of every workflow to get repo context.
           - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           
@@ -555,11 +559,12 @@ jobs:
           chmod +x "$install_dir/uv"
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
-      - name: Ensure full history
-        run: |
-          if git rev-parse --is-shallow-repository | grep -q true; then
-            git fetch --unshallow --quiet
-          fi
+      - env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPO_NAME: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+        name: Ensure full history
+        run: "if git rev-parse --is-shallow-repository | grep -q true; then\n  SERVER_URL_STRIPPED=\"${SERVER_URL#https://}\"\n  git remote set-url origin \"https://x-access-token:${GITHUB_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git\"\n  git fetch --unshallow --quiet\nfi"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
