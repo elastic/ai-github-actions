@@ -178,13 +178,13 @@ lint-actions: setup-action-validator
 lint: lint-workflows lint-actions
 
 docs-install:
-	@python -m pip install -r docs/requirements.txt
+	@uv sync --dev
 
 docs-serve: docs-install
-	@python -m mkdocs serve
+	@uv run mkdocs serve
 
 docs-build: docs-install
-	@python -m mkdocs build --strict
+	@uv run mkdocs build --strict
 
 # Release a new version
 # Usage: make release VERSION=1.0.0
