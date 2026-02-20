@@ -294,6 +294,16 @@ jobs:
           - If no safe simplification is found, call `noop` with a brief reason.
           - **Most runs should end with `noop`.** Only open a PR for simplifications that are obviously correct at a glance. If a reviewer would need to think hard about whether behavior is preserved, it's not simple enough.
           
+          ## Bar for merit
+          
+          A simplification must clear at least one of these bars to be worth submitting:
+          
+          1. **Style conformance** — the code is a clear outlier compared to the rest of the codebase (e.g., one function uses a verbose pattern that every other function avoids). The change brings it in line with the established style.
+          2. **Helper reuse** — an existing utility or helper function already does what the code is reimplementing. The change replaces the inline logic with a call to the existing helper.
+          3. **Significant clarity or DRY improvement** — the change meaningfully reduces complexity or duplication (e.g., collapses 10+ lines of tangled logic into 2–3 readable lines, or eliminates a non-trivial copy-paste pattern across multiple sites).
+          
+          **Do not submit** micro-changes that swap one valid idiom for another (e.g., replacing a two-line map lookup + nil check with a one-line direct access, renaming variables for style, or reordering equivalent expressions). These changes take longer to review than they provide benefit. If the best candidate you found is a micro-change, call `noop`.
+          
           ## Step 1: Find candidates
           
           1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
@@ -302,6 +312,8 @@ jobs:
              - redundant conditionals
              - duplicated logic
              - verbose helpers that can be simplified
+             - code that is a style outlier compared to the rest of the codebase
+             - inline logic that reimplements an existing helper
           
           ## Step 2: Select a target
           
