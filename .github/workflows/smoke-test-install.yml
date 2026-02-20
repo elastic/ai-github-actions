@@ -46,6 +46,7 @@ jobs:
             docs-drift
             docs-drift-external
             docs-new-contributor-review
+            docs-pr-review
             docs-new-contributor-review-external
             downstream-health
             stale-issues
