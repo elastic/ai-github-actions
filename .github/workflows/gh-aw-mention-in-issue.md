@@ -82,7 +82,7 @@ Assist with issues on ${{ github.repository }} — answer questions, debug probl
 
 - **Repository**: ${{ github.repository }}
 - **Issue**: #${{ github.event.issue.number }} — ${{ github.event.issue.title }}
-- **Request**: "${{ needs.activation.outputs.text }}"
+- **Request**: "${{ steps.sanitized.outputs.text }}"
 
 ## Constraints
 
