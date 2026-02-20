@@ -339,12 +339,9 @@ jobs:
           
           ### Data Gathering
           
-          Determine the lookback window based on the current day of the week:
-          - **Monday**: Use `--since="3 days ago"` to capture Friday, Saturday, and Sunday
-          - **Tuesday through Friday**: Use `--since="1 day ago"` to capture the previous day
-          - **Manual trigger** (`workflow_dispatch`): Use `--since="1 day ago"`
+          Use a lookback window of `--since="7 days ago"` for all runs (scheduled and manual).
           
-          Run `git log --since="<window>" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
+          Run `git log --since="7 days ago" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
           
           ### What to Look For
           
