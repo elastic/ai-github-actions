@@ -13,6 +13,11 @@ network:
   allowed:
     - "agents-md-generator.fastmcp.app"
     - "public-code-search.fastmcp.app"
+    - "elastic.co"
+    - "www.elastic.co"
+    - "cloud.elastic.co"
+    - "artifacts.elastic.co"
+    - "ela.st"
 ---
 
 ## MCP Servers
