@@ -30,6 +30,11 @@ on:
         type: string
         required: false
         default: ""
+      lookback-window:
+        description: "Git lookback window for detecting recent commits (e.g. '7 days ago', '14 days ago')"
+        type: string
+        required: false
+        default: "7 days ago"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -80,9 +85,9 @@ Detect documentation drift — code changes that require corresponding documenta
 
 ### Data Gathering
 
-Use a lookback window of `--since="7 days ago"` for all runs (scheduled and manual).
+Use a lookback window of `--since="${{ inputs.lookback-window }}"` for all runs (scheduled and manual).
 
-Run `git log --since="7 days ago" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
+Run `git log --since="${{ inputs.lookback-window }}" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
 
 ### What to Look For
 
