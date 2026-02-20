@@ -34,12 +34,12 @@
 #     - gh-aw-fragments/safe-output-review-comment.md
 #     - gh-aw-fragments/safe-output-submit-review.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a14cf047811bd09159340279108df8b3cae741fdbc9ea05eb6fb2c08c6600ad8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7e787dc844c5f1ec5d61d12bad5ca37d06bdeac7712d089fa2ba8478b76dbbbd"}
 
 name: "Docs PR Review Agent"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
-  # - github-actions[bot] # Bots processed as bot check in pre-activation job
+  # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintainer # Roles processed as role check in pre-activation job
@@ -49,6 +49,11 @@ name: "Docs PR Review Agent"
       additional-instructions:
         default: ""
         description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      allowed-bot-users:
+        default: github-actions[bot]
+        description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
       intensity:
@@ -1473,7 +1478,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
-          GH_AW_ALLOWED_BOTS: github-actions[bot]
+          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
