@@ -302,6 +302,8 @@ jobs:
           ## Step 2: Identify targets
           
           - Prefer low-coverage or untested public APIs, error paths, or recent changes without tests.
+          - **Trace to user-facing behavior.** For every candidate, answer: "What end-to-end user action would exercise this code path?" If you cannot describe a concrete user scenario (e.g., "a user configures X and then Y happens"), the target is too internal to justify a PR.
+          - Prefer code paths reachable from public entry points (CLI commands, API endpoints, config parsing, UI interactions) over deeply internal helpers.
           - Look for redundant tests:
             - identical assertions or test bodies,
             - tests that only duplicate coverage from more comprehensive tests.
@@ -325,6 +327,7 @@ jobs:
           
           - **Does it test real behavior?** Tests for trivial getters, simple constructors, or obvious pass-through functions are not worth filing a PR for.
           - **Would it catch a real regression?** If the tested code changed in a buggy way, would this test actually fail?
+          - **Can you describe the user scenario?** For each test, you must be able to state: "A user doing [action] would hit this code path when [condition]." If you cannot connect the test to a describable end-to-end user experience, drop it.
           - **Is it maintainable?** Fragile tests that break on cosmetic changes (string formatting, log messages) add burden, not value.
           - **Does it follow project conventions?** Match the existing test style, naming, and organization.
           
@@ -335,7 +338,12 @@ jobs:
           1. Commit the changes locally.
           2. Call `create_pull_request` with:
              - **Title**: concise summary of the test improvements
-             - **Body**: summary, what behavior the tests cover and why it matters, tests run and their results, and any removed or merged tests
+             - **Body** must include:
+               - Summary of what changed
+               - **User scenario**: for each test, describe the real-world user action or workflow that exercises the tested code path (e.g., "When a user runs `beat setup` with an invalid config, this error path is triggered")
+               - Why the tests matter — what regressions they would catch
+               - Tests run and their results
+               - Any removed or merged tests
           3. If no safe improvements are found, call `noop` with a brief reason.
           
           __GH_AW_EXPR_49B959F1__
