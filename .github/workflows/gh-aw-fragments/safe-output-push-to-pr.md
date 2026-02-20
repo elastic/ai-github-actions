@@ -1,7 +1,22 @@
 ---
+safe-inputs:
+  ready-to-make-pr:
+    description: "Run the PR readiness checklist before creating or updating a PR"
+    script: |
+      const fs = require('fs');
+      const find = (...paths) => paths.find(p => fs.existsSync(p)) || null;
+      const contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md');
+      const prTemplate = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md');
+      const checklist = [];
+      if (contributing) checklist.push(`Review the contributing guide (${contributing}) before opening or updating a PR.`);
+      if (prTemplate) checklist.push(`Follow the PR template (${prTemplate}) for title, description, and validation notes.`);
+      checklist.push('Confirm the requested task is fully completed and validated before creating or pushing PR changes.');
+      return { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
 safe-outputs:
   push-to-pull-request-branch:
 ---
+
+Before calling `push_to_pull_request_branch`, call `ready_to_make_pr` and apply its checklist.
 
 ## push-to-pull-request-branch Limitations
 
