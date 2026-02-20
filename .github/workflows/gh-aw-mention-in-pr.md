@@ -65,6 +65,8 @@ strict: false
 roles: [admin, maintainer, write]
 timeout-minutes: 30
 steps:
+  - name: Ensure origin refs for PR patch generation
+    run: git fetch --no-tags --prune origin '+refs/heads/*:refs/remotes/origin/*'
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
