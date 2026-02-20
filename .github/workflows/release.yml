@@ -73,8 +73,6 @@ jobs:
           "
           
           gh release create "$TAG" \
-            --generate-notes \
-            --notes-start-tag "" \
             --title "$TAG" \
             --notes "${NOTES_HEADER}$(gh api repos/${{ github.repository }}/releases/generate-notes -f tag_name="$TAG" --jq '.body')"
 

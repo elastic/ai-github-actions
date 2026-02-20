@@ -2,6 +2,10 @@
 
 Fix bug-hunter issues by opening a focused PR.
 
+## How it works
+
+Searches for open issues labeled `bug-hunter` or titled `[bug-hunter]`. For each candidate, attempts to reproduce the bug locally — if reproduction succeeds and a minimal fix is safe to apply, it opens a PR. Most runs end with `noop`.
+
 ## Quick Install
 
 ````bash

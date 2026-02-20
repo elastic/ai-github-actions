@@ -2,6 +2,10 @@
 
 Create a periodic project summary issue covering recent activity, priorities, and next steps.
 
+## How it works
+
+Finds the last project summary issue to determine the reporting window, then collects commits, opened and merged PRs, and updated issues. Highlights items needing attention — stale reviews, blocking issues, decisions needed — in a concise periodic report.
+
 ## Quick Install
 
 ```bash

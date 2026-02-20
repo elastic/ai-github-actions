@@ -30,6 +30,11 @@ on:
         type: string
         required: false
         default: ""
+      lookback-window:
+        description: "Git lookback window for detecting recent commits (e.g. '7 days ago', '14 days ago')"
+        type: string
+        required: false
+        default: "7 days ago"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -80,12 +85,10 @@ Detect documentation drift — code changes that require corresponding documenta
 
 ### Data Gathering
 
-Determine the lookback window based on the current day of the week:
-- **Monday**: Use `--since="3 days ago"` to capture Friday, Saturday, and Sunday
-- **Tuesday through Friday**: Use `--since="1 day ago"` to capture the previous day
-- **Manual trigger** (`workflow_dispatch`): Use `--since="1 day ago"`
+Use a lookback window of `--since="${{ inputs.lookback-window }}"` for all runs (scheduled and manual).
 
-Run `git log --since="<window>" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
+1. Run `git log --since="${{ inputs.lookback-window }}" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
+2. Discover documentation files dynamically — scan the repository for common doc locations: `README.md`, `CONTRIBUTING.md`, `DEVELOPING.md`, `docs/`, `documentation/`, and any `.md` files in the repository root. Do not assume a fixed directory structure.
 
 ### What to Look For
 
@@ -102,7 +105,7 @@ For each commit (or group of related commits), determine whether the changes cou
 
 For each potentially impactful change:
 - Read the full diff to understand what changed
-- Read the current documentation files (README, DEVELOPING, CONTRIBUTING, docs/, etc.) to understand what's documented
+- Read the current documentation files to understand what's documented
 - Check whether the relevant documentation was already updated in the same commit or a subsequent commit within the lookback window
 - Check whether an open issue or PR already tracks the documentation update
 

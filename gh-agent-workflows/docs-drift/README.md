@@ -2,6 +2,10 @@
 
 Detect code changes that require documentation updates and file issues.
 
+## How it works
+
+Scans recent commits (7-day lookback by default) for public API or behavioral changes not reflected in nearby documentation. Checks READMEs, contribution guides, and other discovered markdown files before filing.
+
 ## Quick Install
 
 ```bash
@@ -25,6 +29,7 @@ See [example.yml](example.yml) for the full workflow file.
 | --- | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
+| `lookback-window` | Git lookback window for detecting recent commits (e.g. `7 days ago`, `14 days ago`) | No | `"7 days ago"` |
 
 ## Safe Outputs
 

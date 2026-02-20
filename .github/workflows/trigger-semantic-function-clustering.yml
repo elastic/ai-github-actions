@@ -12,5 +12,7 @@ permissions:
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-semantic-function-clustering.lock.yml
+    with:
+      languages: "go,python,typescript"
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

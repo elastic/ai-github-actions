@@ -3,4 +3,7 @@ name = "ai-github-actions"
 version = "0.1.0"
 description = "GitHub Actions workflows for AI-powered development"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "mkdocs>=1.6.0,<2.0",
+    "mkdocs-material>=9.5.0",
+]

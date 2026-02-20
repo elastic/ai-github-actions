@@ -51,6 +51,8 @@ help:
 	@echo "  sync                 - Run scripts/dogfood.sh to copy shims, prompts, and fragments"
 	@echo "  compile              - Sync files + compile agentic workflows to lock files"
 	@echo "  lint                 - Run all linters"
+	@echo "  docs-build           - Build the MkDocs site (outputs to site/)"
+	@echo "  docs-serve           - Serve the MkDocs site locally with live reload"
 	@echo "  release VERSION=x.y.z - Create and push a new release tag"
 
 setup: setup-actionlint setup-action-validator setup-gh setup-gh-aw
@@ -176,13 +178,13 @@ lint-actions: setup-action-validator
 lint: lint-workflows lint-actions
 
 docs-install:
-	@python -m pip install -r docs/requirements.txt
+	@uv sync --dev
 
 docs-serve: docs-install
-	@python -m mkdocs serve
+	@uv run mkdocs serve
 
 docs-build: docs-install
-	@python -m mkdocs build --strict
+	@uv run mkdocs build --strict
 
 # Release a new version
 # Usage: make release VERSION=1.0.0

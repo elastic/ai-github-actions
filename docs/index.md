@@ -1,3 +1,5 @@
+![AI GitHub Actions Banner](assets/banner.png)
+
 # AI GitHub Actions
 
 AI-powered GitHub workflows for Elastic repositories.

@@ -2,6 +2,10 @@
 
 Detect undocumented breaking changes in public interfaces.
 
+## How it works
+
+Scans recent commits (1-day lookback, 3-day on Mondays) for public interface or behavioral changes. Cross-references each commit against its PR description, changelog, and documentation before concluding a change is undocumented.
+
 ## Quick Install
 
 ```bash
