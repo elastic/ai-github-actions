@@ -35,10 +35,12 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b3a845533b9b698a8346e5576d958eadc1fe3dba897a65d09334dcf9e9a7e5d1"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"73f59fe519844f9e66e2fc7f408c3f25dfd8aa4d95b1988f7c4d54d5670c875b"}
 
 name: "Gh Aw Bug Hunter"
 "on":
+  # bots: # Bots processed as bot check in pre-activation job
+  # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintainer # Roles processed as role check in pre-activation job
@@ -48,6 +50,11 @@ name: "Gh Aw Bug Hunter"
       additional-instructions:
         default: ""
         description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      allowed-bot-users:
+        default: github-actions[bot]
+        description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:
@@ -1352,6 +1359,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
+          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

@@ -35,10 +35,12 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"deea3775ea53350805dc7d72417b625f19d7518268735b0c99f2b3f10ecb35e1"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2b538fb63ae49fb937b28ff9818dc818cbd50b9a951dd31badcf89a3d8591643"}
 
 name: "Gh Aw Docs Drift"
 "on":
+  # bots: # Bots processed as bot check in pre-activation job
+  # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintainer # Roles processed as role check in pre-activation job
@@ -48,6 +50,11 @@ name: "Gh Aw Docs Drift"
       additional-instructions:
         default: ""
         description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      allowed-bot-users:
+        default: github-actions[bot]
+        description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
       lookback-window:
@@ -1360,6 +1367,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
+          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

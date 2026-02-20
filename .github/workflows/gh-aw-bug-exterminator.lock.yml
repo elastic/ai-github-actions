@@ -34,10 +34,12 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"def0d715f26d3e9829f2b33482d208d17a7a903cc36c3a22988618e234f92e7c"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4b9e80a5b81775e2536d8793d048668260dfd2998a38dc9c8e48da022a8c3253"}
 
 name: "Bug Exterminator"
 "on":
+  # bots: # Bots processed as bot check in pre-activation job
+  # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintainer # Roles processed as role check in pre-activation job
@@ -47,6 +49,11 @@ name: "Bug Exterminator"
       additional-instructions:
         default: ""
         description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      allowed-bot-users:
+        default: github-actions[bot]
+        description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:
@@ -1386,6 +1393,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
+          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

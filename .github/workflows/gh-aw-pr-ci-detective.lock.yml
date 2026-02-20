@@ -34,10 +34,12 @@
 #     - gh-aw-fragments/safe-output-add-comment.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3f59e639c8d9079c20f8c903eeed5f9136de8812a61f6df882dd178a3e5cd96b"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"710ca9af0aff04005624870e71fae849b574c3ddc54eb9db5e4ee87ca1e948e2"}
 
 name: "PR CI Detective"
 "on":
+  # bots: # Bots processed as bot check in pre-activation job
+  # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintainer # Roles processed as role check in pre-activation job
@@ -47,6 +49,11 @@ name: "PR CI Detective"
       additional-instructions:
         default: ""
         description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      allowed-bot-users:
+        default: github-actions[bot]
+        description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:
@@ -1232,6 +1239,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
+          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

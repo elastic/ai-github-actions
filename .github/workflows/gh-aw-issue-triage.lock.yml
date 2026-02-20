@@ -33,12 +33,12 @@
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8df7cbc5ebd3e1e83e2dbecae8988a5710dad07cfad7bc30f0fb658d96a2a7ae"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"16a0785fbe96159699b982e8cbb44def9409fd3f24f8c32d0e7c8ba02bf0ad26"}
 
 name: "Issue Triage Agent"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
-  # - github-actions[bot] # Bots processed as bot check in pre-activation job
+  # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintainer # Roles processed as role check in pre-activation job
@@ -48,6 +48,11 @@ name: "Issue Triage Agent"
       additional-instructions:
         default: ""
         description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      allowed-bot-users:
+        default: github-actions[bot]
+        description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:
@@ -1283,7 +1288,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
-          GH_AW_ALLOWED_BOTS: github-actions[bot]
+          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
