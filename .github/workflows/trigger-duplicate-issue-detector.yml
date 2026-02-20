@@ -1,0 +1,16 @@
+name: Duplicate Issue Detector
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  discussions: write
+  issues: write
+  pull-requests: write  # required by gh-aw compiler for add-comment (github/gh-aw#16673)
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-duplicate-issue-detector.lock.yml
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
