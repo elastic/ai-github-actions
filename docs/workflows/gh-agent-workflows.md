@@ -48,6 +48,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 | Docs Drift | Weekday schedule | Detect code changes needing doc updates |
 | Docs New Contributor Review | Weekly schedule | Review docs from a new contributor perspective |
 | Downstream Health | Daily schedule | Monitor downstream repo quality |
+| Flaky Test Triage | Weekday schedule + failed CI runs | Identify repeated flaky failures and file root-cause-first triage reports |
 | Project Summary | Daily schedule | Summarize recent activity and priorities |
 | Release Update Check | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
 | Semantic Function Clustering | Weekday schedule | Identify function clustering refactor opportunities |
