@@ -10,6 +10,7 @@ permissions:
 jobs:
   run:
     if: github.event.pull_request.draft == false
+    timeout-minutes: 15
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-update-pr-body.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

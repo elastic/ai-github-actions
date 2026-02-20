@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   run:
+    timeout-minutes: 30
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-semantic-function-clustering.lock.yml@v0
     with:
       languages: "go,python,typescript"

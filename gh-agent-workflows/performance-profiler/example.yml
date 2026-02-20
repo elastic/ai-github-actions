@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   run:
+    timeout-minutes: 45
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-performance-profiler.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
