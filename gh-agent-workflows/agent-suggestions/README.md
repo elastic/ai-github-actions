@@ -2,6 +2,10 @@
 
 Suggest new agent workflows based on software development needs and downstream activity.
 
+## How it works
+
+Inventories existing workflows, reviews open issues and PRs for recurring unmet needs, and checks the activity of downstream users. Suggests new workflows that would fill clear gaps — and only files a report when there are high-confidence, non-duplicate suggestions.
+
 ## Quick Install
 
     mkdir -p .github/workflows && curl -sL \

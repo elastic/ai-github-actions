@@ -2,6 +2,10 @@
 
 Opt-in fixer for failed PR checks that can push safe, targeted changes.
 
+## How it works
+
+Manually triggered with a specific failed workflow run ID. Reads the failed job logs, identifies the root cause, and pushes a targeted fix to the PR branch. Use this for opt-in repair of CI failures.
+
 ## Quick Install
 
 ````bash

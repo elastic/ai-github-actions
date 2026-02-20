@@ -2,6 +2,10 @@
 
 Analyze failed PR checks and report findings (read-only).
 
+## How it works
+
+Triggered automatically when a CI workflow fails on a PR. Reads the failed job logs, identifies the root cause, and posts a comment with findings and recommended fixes. Read-only — never pushes changes.
+
 ## Quick Install
 
 ````bash

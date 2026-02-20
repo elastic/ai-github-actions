@@ -2,6 +2,10 @@
 
 Detect code changes that require documentation updates and file issues.
 
+## How it works
+
+Scans recent commits (7-day lookback by default) for public API or behavioral changes not reflected in nearby documentation. Checks READMEs, contribution guides, and other discovered markdown files before filing.
+
 ## Quick Install
 
 ```bash

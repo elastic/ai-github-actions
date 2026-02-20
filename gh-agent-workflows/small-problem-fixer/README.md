@@ -2,6 +2,10 @@
 
 Find small, related issues and open a focused PR.
 
+## How it works
+
+Searches open issues for small, actionable candidates — first by labels (`good first issue`, `small`, `quick fix`, `easy`) then by low comment count (≤2). Only considers issues authored by trusted members (`OWNER`, `MEMBER`, or `COLLABORATOR`). Picks one issue (or up to three tightly related issues with a shared root cause), implements the smallest safe fix, verifies it with tests, and opens a PR. Most runs end with `noop`.
+
 ## Quick Install
 
 ```bash

@@ -2,6 +2,10 @@
 
 Find a reproducible, user-impacting bug and file a report issue.
 
+## How it works
+
+Reviews 28 days of git history for user-facing changes that could introduce bugs. For each candidate, writes a **new** minimal reproduction script and runs it — filing a report only when the bug is concretely confirmed. The bar is high; most runs end with `noop`.
+
 ## Quick Install
 
 ```bash

@@ -2,6 +2,10 @@
 
 Investigate new issues and provide actionable triage analysis. For straightforward fixes, implement and open a draft PR.
 
+## How it works
+
+Same as Issue Triage, but also implements the fix and opens a draft PR when the fix is straightforward and safe to land quickly.
+
 ## Quick Install
 
 ```bash

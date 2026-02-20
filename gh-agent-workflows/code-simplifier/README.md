@@ -2,6 +2,10 @@
 
 Simplify overcomplicated code with high-confidence refactors.
 
+## How it works
+
+Scans the codebase for overcomplicated patterns: deep nesting, redundant conditionals, dead code, and manual re-implementations of standard library functions. Only opens a PR for changes that are **provably** behavior-preserving and obvious at a glance — a reviewer should not have to think hard to approve it. Most runs end with `noop`.
+
 ## Quick Install
 
 ```bash

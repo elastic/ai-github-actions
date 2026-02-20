@@ -2,6 +2,10 @@
 
 Identify hot paths, profile code, and propose meaningful performance improvements.
 
+## How it works
+
+Detects the build system and benchmark infrastructure, runs existing benchmarks or instruments likely hot paths, and reports findings with concrete before/after measurements. The bar is high — files only when measurable profiling data supports the claim. Most runs end with `noop`.
+
 ## Quick Install
 
 ```bash

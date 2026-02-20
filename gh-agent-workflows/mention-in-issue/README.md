@@ -1,6 +1,10 @@
 # Mention in Issue
 
-AI assistant for issues — answer questions, debug, and create PRs via `/ai`.
+AI assistant for issues — answer questions, debug, and create PRs on demand.
+
+## How it works
+
+Activated by a comment on an issue (the example trigger uses `/ai`, but the prefix is configurable). Reads the issue context and codebase, then answers questions, debugs problems, suggests solutions, or opens a PR with a proposed fix.
 
 ## Quick Install
 
@@ -16,7 +20,7 @@ See [example.yml](example.yml) for the full workflow file.
 
 | Event | Types | Condition |
 | --- | --- | --- |
-| `issue_comment` | `created` | Comment starts with `/ai` and is on an issue (not a PR) |
+| `issue_comment` | `created` | Comment on an issue (not a PR); the example trigger filters on `/ai` prefix |
 
 ## Inputs
 
