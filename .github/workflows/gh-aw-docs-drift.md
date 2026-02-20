@@ -50,6 +50,14 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
+mcp-servers:
+  elastic-docs:
+    url: "https://www.elastic.co/docs/_mcp/"
+    allowed:
+      - "SemanticSearch"
+      - "GetDocumentByUrl"
+      - "FindRelatedDocs"
+      - "FindInconsistencies"
 network:
   allowed:
     - defaults
@@ -58,6 +66,7 @@ network:
     - node
     - python
     - ruby
+    - "www.elastic.co"
 strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
@@ -81,50 +90,80 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-Detect documentation drift — code changes that require corresponding documentation updates.
+Detect documentation drift — code changes that require corresponding documentation updates, including updates to published Elastic documentation, `applies_to` tags, and potential backport needs.
 
 ### Data Gathering
 
 Use a lookback window of `--since="${{ inputs.lookback-window }}"` for all runs (scheduled and manual).
 
-Run `git log --since="${{ inputs.lookback-window }}" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
+1. Run `git log --since="${{ inputs.lookback-window }}" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
+2. Discover documentation files dynamically — scan the repository for common doc locations: `README.md`, `CONTRIBUTING.md`, `DEVELOPING.md`, `docs/`, `documentation/`, and any `.md` files in the repository root. Do not assume a fixed directory structure.
 
 ### What to Look For
 
 For each commit (or group of related commits), determine whether the changes could require documentation updates. Focus on:
 
-1. **Public API changes** — new, renamed, or removed functions, endpoints, CLI flags, configuration options, or workflow inputs/outputs
-2. **Behavioral changes** — altered defaults, changed error messages, modified control flow that affects user-facing behavior
-3. **New features or workflows** — anything a user or contributor would need to know about
-4. **Dependency or tooling changes** — version bumps, new dependencies, changed build/test commands
-5. **Structural changes** — moved, renamed, or deleted files that are referenced in documentation
-6. **Configuration changes** — new environment variables, changed file formats, altered directory structures
+1. **Public API changes** — new, renamed, or removed functions, endpoints, CLI flags, configuration options, or workflow inputs/outputs.
+2. **Behavioral changes** — altered defaults, changed error messages, modified control flow that affects user-facing behavior.
+3. **New features or workflows** — anything a user or contributor would need to know about.
+4. **Dependency or tooling changes** — version bumps, new dependencies, changed build/test commands.
+5. **Structural changes** — moved, renamed, or deleted files that are referenced in documentation.
+6. **Configuration changes** — new environment variables, changed file formats, altered directory structures.
+7. **Feature lifecycle changes** — features moving between lifecycle states (preview, beta, GA, deprecated, removed) that require `applies_to` tag updates.
 
 ### How to Analyze
 
 For each potentially impactful change:
-- Read the full diff to understand what changed
-- Read the current documentation files (README, DEVELOPING, CONTRIBUTING, docs/, etc.) to understand what's documented
-- Check whether the relevant documentation was already updated in the same commit or a subsequent commit within the lookback window
-- Check whether an open issue or PR already tracks the documentation update
+- Read the full diff to understand what changed.
+- Read the current documentation files to understand what's documented.
+- Check whether the relevant documentation was already updated in the same commit or a subsequent commit within the lookback window.
+- Check whether an open issue or PR already tracks the documentation update.
+
+#### Check published Elastic documentation
+
+Use the `elastic-docs` MCP server to check whether the change also affects published documentation on `elastic.co/docs`:
+- Call `SemanticSearch` or `FindRelatedDocs` with a description of the changed functionality to find published pages that document it.
+- If published pages are found, check whether the code change makes them inaccurate or incomplete.
+- Call `GetDocumentByUrl` to read specific published pages when you need to verify details.
+
+Only flag published docs drift when the code change **concretely contradicts** what's published. Do not flag pages that are merely related.
+
+#### Check `applies_to` tags
+
+When a code change affects feature availability or lifecycle:
+- Check whether documentation files in the repository use `applies_to` frontmatter metadata.
+- If they do, verify the tags still reflect reality after the code change. For example:
+  - A feature graduating from beta to GA needs its `applies_to` lifecycle updated.
+  - A feature being deprecated or removed needs corresponding tag changes.
+  - A new feature needs `applies_to` tags on its documentation page.
+- Note the specific `applies_to` changes needed in the issue.
+
+#### Check backport needs
+
+When a code change fixes a bug or changes behavior in a way that affects documentation:
+- Check if the change targets a release branch or is cherry-picked from one.
+- If the fix applies to earlier versions, note whether the documentation update needs to be backported (e.g., the fix applies to both 9.x and 8.x, so docs for both versions may need updating).
+- If the repository uses `applies_to` version ranges, note whether the version range needs adjusting.
 
 ### What to Skip
 
-- Purely internal refactors with no user-facing impact
-- Changes where documentation was already updated in the same or a later commit
-- Changes where an open issue or PR already tracks the documentation update
-- Test-only changes
-- Minor changes where the existing docs are still substantially correct (e.g., a new optional parameter with a sensible default)
-- Changes that only affect internal implementation details not referenced in any documentation
+- Purely internal refactors with no user-facing impact.
+- Changes where documentation was already updated in the same or a later commit.
+- Changes where an open issue or PR already tracks the documentation update.
+- Test-only changes.
+- Minor changes where the existing docs are still substantially correct (e.g., a new optional parameter with a sensible default).
+- Changes that only affect internal implementation details not referenced in any documentation.
 
 ### Quality Gate — When to Noop
 
 **Noop is the expected outcome most days.** Only file an issue when:
-- The documentation is **concretely wrong** — a user following the docs would get incorrect results or errors
-- A **new public feature** has zero documentation
-- A **removed or renamed** public interface is still referenced in docs
+- The documentation is **concretely wrong** — a user following the docs would get incorrect results or errors.
+- A **new public feature** has zero documentation.
+- A **removed or renamed** public interface is still referenced in docs.
+- An `applies_to` tag is **demonstrably incorrect** after a lifecycle change (e.g., a feature tagged as `beta` that has been promoted to `ga`).
+- Published Elastic documentation **directly contradicts** the current code behavior.
 
-Do not file for: vague "could be improved" suggestions, minor wording drift, or documentation that is slightly imprecise but still functionally correct.
+Do not file for: vague "could be improved" suggestions, minor wording drift, documentation that is slightly imprecise but still functionally correct, or speculative backport needs.
 
 ### Issue Format
 
@@ -141,6 +180,9 @@ Do not file for: vague "could be improved" suggestions, minor wording drift, or 
 > **Commit(s):** [SHA(s) with links]
 > **What changed:** [Concise description of the code change]
 > **Documentation impact:** [Which doc file(s) need updating and what specifically needs to change]
+> **`applies_to` impact:** [If applicable — which tags need updating and why]
+> **Backport needed:** [If applicable — which earlier versions are affected and why]
+> **Published docs impact:** [If applicable — which elastic.co/docs pages are affected, with URLs]
 >
 > ### 2. [Next change...]
 >

@@ -45,6 +45,13 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
+mcp-servers:
+  elastic-docs:
+    url: "https://www.elastic.co/docs/_mcp/"
+    allowed:
+      - "SemanticSearch"
+      - "GetDocumentByUrl"
+      - "FindRelatedDocs"
 network:
   allowed:
     - defaults
@@ -53,6 +60,7 @@ network:
     - node
     - python
     - ruby
+    - "www.elastic.co"
 strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
@@ -75,23 +83,27 @@ Review repository documentation from the perspective of an external contributor 
 
 ### Data Gathering
 
-1. Read the primary docs and onboarding guidance:
-   - `README.md`
-   - `gh-agent-workflows/README.md`
-   - `claude-workflows/README.md`
-   - `DEVELOPING.md`
+1. Discover documentation files dynamically — scan the repository for common doc locations and read all that exist:
+   - Repository root: `README.md`, `CONTRIBUTING.md`, `DEVELOPING.md`, `CHANGELOG.md`, `SECURITY.md`.
+   - Documentation directories: `docs/`, `documentation/`, `doc/`.
+   - Any other `.md` files in the repository root that appear to be contributor-facing.
+   - Do not assume a fixed directory structure. The repository may organize docs differently.
 2. Follow the quick start or recommended install path as far as possible without secrets, elevated privileges, or write access:
-   - Prefer the **caller-based** GitHub Agent Workflow path first.
    - If a step requires secrets or admin privileges, stop and note whether the docs clearly warned about it.
 3. Check for existing open issues that already cover the same documentation gaps.
+4. Use the `elastic-docs` MCP server to cross-reference the repo's documentation against published Elastic documentation:
+   - Call `SemanticSearch` or `FindRelatedDocs` with the project name and key concepts to find the published getting-started guide, if one exists.
+   - Call `GetDocumentByUrl` to read any published pages that describe this project's setup or usage.
+   - Check whether the repo's onboarding docs are consistent with what's published. Contradictions between the repo and `elastic.co/docs` are blockers for new contributors.
 
 ### What to Look For
 
 - Missing prerequisites or setup steps that would block a new contributor.
-- Inconsistent instructions between README, gh-agent-workflows, and claude-workflows docs.
+- Inconsistent instructions between the repo's own documentation files.
+- Contradictions between the repo's docs and published Elastic documentation on `elastic.co/docs`.
 - Commands or file paths that do not exist in a fresh checkout.
 - Required secrets, permissions, or roles that are not documented where the step appears.
-- Ambiguous choices between workflow types (gh-aw vs Claude) that leave a new contributor stuck.
+- Getting-started paths that are unclear or force the contributor to guess between undocumented alternatives.
 
 ### Reporting Bar
 
