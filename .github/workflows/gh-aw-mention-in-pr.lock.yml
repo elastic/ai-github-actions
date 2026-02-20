@@ -39,7 +39,7 @@
 #     - gh-aw-fragments/safe-output-submit-review.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"06dba397de2cef945e17f24f70ac38cd650b82579890a2374c1488319a1d263d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f06699f32ffc9b642f555e78a9dc44b1ffd0bebd155024289b395ef0bd98479e"}
 
 name: "PR Assistant"
 "on":
@@ -659,8 +659,12 @@ jobs:
           chmod +x "$install_dir/uv"
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
-      - name: Ensure origin refs for PR patch generation
-        run: git fetch --no-tags --prune origin '+refs/heads/*:refs/remotes/origin/*'
+      - env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPO_NAME: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+        name: Ensure origin refs for PR patch generation
+        run: "SERVER_URL_STRIPPED=\"${SERVER_URL#https://}\"\ngit remote set-url origin \"https://x-access-token:${GITHUB_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git\"\ngit fetch --no-tags --prune origin '+refs/heads/*:refs/remotes/origin/*'\n"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
