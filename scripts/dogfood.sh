@@ -35,6 +35,7 @@ for f in gh-agent-workflows/*/example.yml; do
     [[ "$dir" == "$excluded" ]] && skip=true && break
   done
   if [[ "$skip" == "true" ]]; then
+    rm -f ".github/workflows/trigger-$dir.yml"
     echo "  ✗ gh-agent-workflows/$dir/example.yml (excluded)"
     continue
   fi
