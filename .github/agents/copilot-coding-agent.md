@@ -59,3 +59,12 @@ For this repository:
 make compile          # sync triggers + compile to lock files
 make lint             # run all linters
 ```
+
+### Step 4: Final Review
+
+Before finishing, take a step back and critically review your work:
+
+1. **Re-read the original issue** — confirm every requirement and acceptance criterion is addressed. If the issue has multiple parts, verify each one individually.
+2. **Double-check your changes** — review each modified file. Look for typos, missed edge cases, inconsistencies, and unintended side effects.
+3. **Verify completeness** — ask yourself: "If I were the issue author, would I consider this done?" If not, identify what's missing and address it.
+4. **Run verification commands one final time** — ensure `make compile` and `make lint` still pass after all changes.
