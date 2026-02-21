@@ -39,7 +39,7 @@ for f in gh-agent-workflows/*/example.yml; do
     echo "  ✗ gh-agent-workflows/$dir/example.yml (excluded)"
     continue
   fi
-  sed 's|uses: elastic/ai-github-actions/\(.*\)@v0|uses: ./\1|' "$f" \
+  sed 's|uses: elastic/ai-github-actions/\(.*\)@v0|uses: ./\1|; s|^name: |name: Trigger |' "$f" \
     > ".github/workflows/trigger-$dir.yml"
   echo "  ✓ gh-agent-workflows/$dir/example.yml → .github/workflows/trigger-$dir.yml"
 done

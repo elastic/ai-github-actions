@@ -1,4 +1,4 @@
-name: Stale Issues
+name: Trigger Stale Issues
 on:
   schedule:
     - cron: "0 15 * * 1-5"

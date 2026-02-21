@@ -1,4 +1,4 @@
-name: Code Simplifier
+name: Trigger Code Simplifier
 on:
   schedule:
     - cron: "0 13 * * 1-5"

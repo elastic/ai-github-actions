@@ -88,132 +88,77 @@ Lookback 3 days.
 
 1. **List recent agentic workflow runs**
 
-   Use `bash` to call the GitHub API and list recent workflow runs for each agentic workflow in this repository:
-   ```bash
+   Use `bash` + `gh api` with `--jq` to list runs efficiently. Filter server-side to avoid large payloads:
+   ````bash
    gh api repos/{owner}/{repo}/actions/runs \
-     --jq '.workflow_runs[] | select(.created_at >= "DATE") | {id: .id, name: .name, conclusion: .conclusion, created_at: .created_at, html_url: .html_url}'
-   ```
+     --paginate \
+     --jq '[.workflow_runs[] | select(.created_at >= "CUTOFF_DATE") | select(.path | test("trigger-|gh-aw-")) | {id: .id, name: .name, conclusion: .conclusion, created_at: .created_at, html_url: .html_url, path: .path}]'
+   ````
 
-   Filter to agentic workflow runs only (pr-review, issue-triage, mention-in-pr, mention-in-issue, docs-drift, docs-new-contributor-review, downstream-health, stale-issues, agent-efficiency). Exclude non-agentic workflows (ci, release, agentics-maintenance).
+   This captures all agentic workflow runs (trigger files and internal gh-aw workflows). Exclude non-agentic workflows (ci, release, agentics-maintenance) by the path filter.
 
-2. **Download and analyze job logs**
+2. **Understand run conclusions before fetching logs**
 
-   For each workflow run, download the logs:
-   ```bash
-   gh api repos/{owner}/{repo}/actions/runs/{run_id}/logs -H "Accept: application/vnd.github+json" > /tmp/logs-{run_id}.zip
-   unzip -o /tmp/logs-{run_id}.zip -d /tmp/logs-{run_id}/
-   ```
+   Not all non-success conclusions indicate agent problems:
+   - `success` — no issues, skip unless you want a sample
+   - `failure` — fetch logs and analyze
+   - `cancelled` — usually user-initiated, skip
+   - `action_required` — the run was blocked by an approval gate (e.g., first-time contributor). This is NOT an agent failure; skip it
+   - `skipped` — pre-conditions not met (e.g., no PR associated). Skip
+
+   Only fetch logs for runs with `failure` conclusion.
+
+3. **Download and analyze job logs**
+
+   Use `gh api` to download logs efficiently:
+   ````bash
+   gh api repos/{owner}/{repo}/actions/runs/{run_id}/logs \
+     -H "Accept: application/vnd.github+json" \
+     > /tmp/gh-aw/agent/logs-{run_id}.zip
+   unzip -o /tmp/gh-aw/agent/logs-{run_id}.zip -d /tmp/gh-aw/agent/logs-{run_id}/
+   ````
 
    Read the log files to find the agent job's output. Look for the copilot/agent step logs specifically — these contain the tool calls, responses, and agent reasoning.
 
-3. **Also check for downstream repositories**
+4. **Check downstream repositories (metadata only)**
 
    Search for elastic-owned repositories using these workflows:
-   ```
-   github-search_code: query="org:elastic elastic/ai-github-actions language:yaml"
-   ```
+   ````bash
+   gh api search/code -X GET -f q="org:elastic elastic/ai-github-actions language:yaml" --jq '.items[].repository.full_name' | sort -u
+   ````
 
-   For each discovered downstream repository, repeat steps 1-2 to gather their agentic workflow logs as well.
+   For each discovered downstream repository, list their agentic workflow runs using the same `gh api` approach from step 1. Collect run metadata (counts, conclusions, pass/fail rates) to include in the report. **Do NOT download or analyze logs from downstream repositories** — your token may not have access, and the logs are too large to process cross-repo. Only fetch and analyze logs for THIS repository.
 
-### What to Look For
+5. **Use `gh api` with `--jq`, not MCP `actions_list`, for bulk queries**
 
-Analyze each agent run's logs for these categories of problems:
+   The MCP `actions_list` and `actions_get` tools return full JSON objects that frequently exceed the 25,000 token MCP response limit, causing payloads to be dumped to disk. For listing and filtering runs, always prefer `gh api` with `--jq` to extract only the fields you need. Reserve MCP tools for targeted single-item lookups where the response will be small.
 
-#### 1. Hallucinated or Imaginary Tool Calls
-- Calling tools that don't exist (tool names not in the workflow's tool list)
-- Using wrong method names or parameters on real tools
-- Inventing API endpoints or MCP tool methods
-- **Pattern**: Look for tool call errors like "tool not found", "unknown method", or "invalid parameter"
+### Analysis
 
-#### 2. Safe-Output Misunderstanding
-- Attempting actions the workflow doesn't have permission for (e.g., trying to push in a read-only workflow)
-- Calling safe-output tools with invalid parameters
-- Exceeding safe-output limits (max comments, max review submissions)
-- Trying to modify `.github/workflows/` files and getting rejected
-- **Pattern**: Look for safe-output validation errors, permission denials, or "max exceeded" messages
+Your goal is to find things we can improve — prompt wording, fragment content, tool usage guidance, missing instructions, or confusing constraints — that would make agents perform better on the next run.
 
-#### 3. Excessive Retries and Wasted Turns
-- Repeating the same failed tool call multiple times without changing approach
-- Pagination failures — hitting the 25,000 token limit and retrying without reducing `per_page`
-- Making the same API call with identical parameters expecting different results
-- **Pattern**: Look for identical consecutive tool calls, or the same error appearing 3+ times
+For each failed run's logs, read the agent's tool calls, responses, errors, and reasoning. Ask yourself:
+- **What went wrong?** — Did the agent fail, waste turns, produce low-quality output, or get confused?
+- **Why?** — Trace back to the root cause. Is it a prompt gap, a misleading instruction, a missing example, a tooling limitation?
+- **What would fix it?** — Identify the specific file and change that would prevent this from happening again.
 
-#### 4. Context Window Waste
-- Reading entire large files when only a small section was needed
-- Fetching all pages of results when only the first page was needed
-- Requesting data that was already available from a previous call
-- **Pattern**: Look for very large tool responses followed by the agent using only a small portion
+Look across runs for **recurring patterns**. A single odd failure is noise. The same mistake in 3+ runs across different triggers is a signal.
 
-#### 5. Misunderstanding Workflow Role
-- A review agent trying to push code
-- A triage agent trying to create PRs
-- An agent generating output in a format the safe-outputs don't support
-- **Pattern**: Look for the agent attempting actions outside its declared CAN/CANNOT constraints
+Skip successful runs, cancelled runs, infrastructure failures (runner issues, network outages), and `action_required` runs (approval gates, not agent problems).
 
-#### 6. Error Recovery Failures
-- Agent hitting an error and giving up without trying alternatives
-- Agent producing empty or placeholder output after encountering an error
-- Agent apologizing for limitations instead of working within them
-- **Pattern**: Look for error messages followed by no further tool calls, or responses that mention being "unable to" do something the workflow supports
+### Reporting
 
-### What to Skip
+File an issue with `create_issue`. Structure your findings however makes sense for what you discovered — there's no rigid template.
 
-- Successful runs with no errors or inefficiencies
-- Runs that were cancelled (user-initiated, not agent failure)
-- Infrastructure failures unrelated to the agent (runner issues, network outages, GitHub API downtime)
-- Minor inefficiencies that don't meaningfully impact cost or quality (e.g., one extra API call)
-- Known limitations that are already documented (e.g., fork PR push restriction)
+Include a **per-repository summary** of the metadata you collected — run counts, conclusions, pass/fail rates — for both this repository and any downstream repositories discovered in step 4. This gives visibility into how the workflows are performing across the org.
 
-### Issue Format
+Each finding should include:
+- What happened (with a log excerpt or run link)
+- Why it happened (root cause in the prompt, fragment, or tooling)
+- How to fix it (specific file and change)
 
-**Issue title:** Agent efficiency report — [date range]
+Prioritize by impact: problems that affect multiple workflows or waste the most turns come first.
 
-**Issue body:**
-
-> ## Agent Efficiency Report
->
-> Analysis of agentic workflow run logs for [date range]. This report identifies recurring errors, inefficiencies, and patterns that could be addressed through prompt improvements.
->
-> ### Runs Analyzed
->
-> | Repository | Workflow | Runs | Failures | Issues Found |
-> | --- | --- | --- | --- | --- |
-> | [repo] | [workflow] | [count] | [count] | [count] |
->
-> ### Findings
->
-> #### 1. [Category] — [Brief description]
->
-> **Frequency:** [How often this occurred across runs]
-> **Workflow(s):** [Which workflow(s) are affected]
-> **Example:** [Link to a specific run showing the problem]
-> **Log excerpt:**
-> ```
-> [Relevant log lines showing the issue]
-> ```
-> **Root cause:** [Why the agent is doing this — what in the prompt or tooling causes it]
-> **Suggested fix:** [Specific prompt change, fragment update, or tooling adjustment]
->
-> #### 2. [Next finding...]
->
-> ### Summary
->
-> - Total runs analyzed: [count]
-> - Runs with issues: [count]
-> - Most common problem category: [category]
-> - Estimated wasted tokens/turns: [rough estimate if possible]
->
-> ### Suggested Actions
->
-> - [ ] [Specific, actionable improvement with file reference]
-> - [ ] [Next action...]
-
-**Guidelines:**
-- Focus on **recurring patterns**, not one-off errors
-- Always include a specific log excerpt demonstrating the problem
-- Suggest concrete prompt or fragment changes — reference specific files (e.g., "Update `gh-aw-fragments/review-process.md` to clarify X")
-- Group related findings (e.g., all pagination issues together)
-- Prioritize by frequency and impact — most common problems first
-- If no significant issues found, call `noop` with message "Agent efficiency check complete — no significant issues found in recent runs"
+If no significant issues are found, still file the issue with the per-repository summary so we have a record. If there are also no downstream repositories using these workflows, call `noop` instead.
 
 ${{ inputs.additional-instructions }}

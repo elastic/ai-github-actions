@@ -1,4 +1,4 @@
-name: Project Summary
+name: Trigger Project Summary
 on:
   schedule:
     - cron: "0 9 * * *"
