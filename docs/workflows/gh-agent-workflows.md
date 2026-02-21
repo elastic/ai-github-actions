@@ -35,7 +35,6 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 | [PR Buildkite Detective](gh-agent-workflows/pr-buildkite-detective.md) | Failed PR checks | Diagnose Buildkite failures and recommend fixes |
 | [PR CI Detective](gh-agent-workflows/pr-ci-detective.md) | Failed PR checks | Diagnose failures and recommend fixes |
 | [PR CI Fixer](gh-agent-workflows/pr-ci-fixer.md) | Manual (workflow_dispatch) | Opt-in fixes for failed PR checks |
-| [PR Checks Fix](gh-agent-workflows/pr-checks-fix.md) | Failed PR checks | Analyze and push fixes for failed PR checks |
 | [PR Review](gh-agent-workflows/pr-review.md) | PR opened/updated | AI code review with inline comments |
 
 ### Continuous improvement / agent factory workflows
