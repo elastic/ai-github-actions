@@ -68,7 +68,7 @@ These workflows require a Copilot PAT stored as `COPILOT_GITHUB_TOKEN`.
 2. Store it as a repository secret:
 
 ````bash
-gh aw secrets set COPILOT_GITHUB_TOKEN --value "(pat)"
+printf '%s' "(pat)" | gh secret set COPILOT_GITHUB_TOKEN --repo OWNER/REPO
 ````
 
 UI path: Settings → Secrets and variables → Actions → New repository secret.
