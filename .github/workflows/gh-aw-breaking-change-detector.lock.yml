@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"22df547af32383f53da002138574bc81eff5ad0d0577ae3a9acc6ef7c722b8b8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"61665e67b232f5e537f4eb58797bf33896905f7410a14544062247fbe70095c5"}
 
 name: "Breaking Change Detector"
 "on":
@@ -55,7 +55,7 @@ name: "Breaking Change Detector"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

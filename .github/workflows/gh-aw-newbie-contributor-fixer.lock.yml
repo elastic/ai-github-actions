@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"fb03c3b3f43b42d3647d94112c5e6ca701ab925d7b6fa0bcca4b3e1de1ba7d22"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4de06b4d2a2ff9f08d18c142dedc824833e4eb3f483d84bdcc1640a37c673f81"}
 
 name: "Newbie Contributor Fixer"
 "on":
@@ -55,7 +55,7 @@ name: "Newbie Contributor Fixer"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

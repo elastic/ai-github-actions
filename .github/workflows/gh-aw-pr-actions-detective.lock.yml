@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3491842c78cd1749735380219596fa2c1800e770c820eed2e55e557114c161f1"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"670a6d79d2773553057c6f27193681e8cf6f1c4ab5d191492ca71aa59e6d6fbc"}
 
 name: "PR Actions Detective"
 "on":
@@ -54,7 +54,7 @@ name: "PR Actions Detective"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

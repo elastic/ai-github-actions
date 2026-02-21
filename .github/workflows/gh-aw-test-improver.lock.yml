@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6e8c6352c4284b69e65980b61aa6948e60197008092c45ed8b4b5fc56ed7828e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4515a125b3da623029b2749a546b3a1624b3968467ab9f29f8cfa1e1cf3ed22b"}
 
 name: "Test Improver"
 "on":
@@ -54,7 +54,7 @@ name: "Test Improver"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

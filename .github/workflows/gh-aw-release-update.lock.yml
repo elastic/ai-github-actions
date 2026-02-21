@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9e5fe3af81611101f034e2b52a136df3111d423ddeccd3d436f3b9d4beca10e2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"987369d91569996fd3972c8eea7643e2a8db4cb2d7525a364064745fcb80c3e3"}
 
 name: "Release Update Check"
 "on":
@@ -53,7 +53,7 @@ name: "Release Update Check"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

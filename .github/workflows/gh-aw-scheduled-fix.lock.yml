@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ca331cc0cbfd4f7020f1e617c8987b0a2baba7dbe08c0a1487ea2e2d990a1c15"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"49d3d5c2b803d20faead918ac000b23dc06f3998624510e0ba23d38608625dc6"}
 
 name: "Scheduled Fix"
 "on":
@@ -54,7 +54,7 @@ name: "Scheduled Fix"
         required: true
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"adc8666f7a8122b5859ea948c1a670084580fb8940ac949850e7d763ed73671a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ae3e336acccdcf0fcc65a9baaa481fcc4a509486b7d7a1223602670452c90d84"}
 
 name: "Mention in Issue"
 "on":
@@ -56,7 +56,7 @@ name: "Mention in Issue"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

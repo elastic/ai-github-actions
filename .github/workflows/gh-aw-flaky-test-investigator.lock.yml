@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8a410085b0e56f95be9f623ce2081c9711ae334b3f631d69ed76771ac20fbb11"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"211fdcc3cdd3637e9dba7815c2528671f15685f6720e6a88bdf91687dfc4161c"}
 
 name: "Flaky Test Investigator"
 "on":
@@ -55,7 +55,7 @@ name: "Flaky Test Investigator"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

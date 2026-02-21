@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4b5b45be8840fc2a49044c89ce8fd1cb682ffe48c4f8a868c787b26a499e49ef"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f3b25d938596492c161161033fd4167b410b5aaffff25b4fbdebdcff21f393b4"}
 
 name: "Text Beautifier"
 "on":
@@ -55,7 +55,7 @@ name: "Text Beautifier"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

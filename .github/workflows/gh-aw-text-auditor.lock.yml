@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b67b78be99fcd94171b67636dec31318e33b4cebb9240b62ac2917fcf17b06fb"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"246dae1bb2ddce712432e0db43fc03264fce47046075f10390d84a60130f1126"}
 
 name: "Text Auditor"
 "on":
@@ -54,7 +54,7 @@ name: "Text Auditor"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

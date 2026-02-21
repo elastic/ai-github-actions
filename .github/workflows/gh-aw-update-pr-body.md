@@ -36,7 +36,7 @@ on:
         description: "Allowlisted bot actor usernames (comma-separated)"
         type: string
         required: false
-        default: "github-actions[bot],copilot[bot]"
+        default: "github-actions[bot],copilot"
       edit-accuracy:
         description: "How aggressively to fix factual inaccuracies in the PR body. 'high' = fix everything that could mislead, 'low' = fix only clear-cut inaccuracies, 'none' = do not change accuracy-related content"
         type: string

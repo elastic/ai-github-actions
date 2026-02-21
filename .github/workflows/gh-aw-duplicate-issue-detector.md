@@ -30,7 +30,7 @@ on:
         description: "Allowlisted bot actor usernames (comma-separated)"
         type: string
         required: false
-        default: "github-actions[bot],copilot[bot]"
+        default: "github-actions[bot],copilot"
       detect-related-issues:
         description: "Detect highly related (but not duplicate) issues in addition to exact duplicates (default: true)"
         type: string

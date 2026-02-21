@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"61106791feaf162a515eeb17f7e9eefef00d5d78e4b187ab98a46bcf6faec42e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"587e557a7d06c7fcea8cefda07fd3910b2baec4fbba262a23d135154462e5345"}
 
 name: "Downstream Health"
 "on":
@@ -54,7 +54,7 @@ name: "Downstream Health"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

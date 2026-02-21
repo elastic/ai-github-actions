@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a46675995703ac3a5e4c53f780b3ca445739cc92f9ba4024aeaf91f6379a8636"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f9a4e09edb670df6118ff1b9f9bd7ea347f74ab646344a7aff1c0f1ec98a8549"}
 
 name: "Performance Profiler"
 "on":
@@ -56,7 +56,7 @@ name: "Performance Profiler"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

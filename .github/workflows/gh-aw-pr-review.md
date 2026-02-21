@@ -40,7 +40,7 @@ on:
         description: "Allowlisted bot actor usernames (comma-separated)"
         type: string
         required: false
-        default: "github-actions[bot],copilot[bot]"
+        default: "github-actions[bot],copilot"
       intensity:
         description: "Review intensity: conservative, balanced, or aggressive"
         type: string

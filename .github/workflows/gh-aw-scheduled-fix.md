@@ -45,7 +45,7 @@ on:
         description: "Allowlisted bot actor usernames (comma-separated)"
         type: string
         required: false
-        default: "github-actions[bot],copilot[bot]"
+        default: "github-actions[bot],copilot"
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string

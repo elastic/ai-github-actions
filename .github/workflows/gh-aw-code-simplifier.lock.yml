@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"72814e30605ed4b097aff65a4feb39e8d0ff866734b82cf7547d7a5243eec16d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"84ebbd7aa440914ec4ff1457feeffca5f27fd49f983a9f576f9199cb842456f5"}
 
 name: "Code Simplifier"
 "on":
@@ -54,7 +54,7 @@ name: "Code Simplifier"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot],copilot[bot]
+        default: github-actions[bot],copilot
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
