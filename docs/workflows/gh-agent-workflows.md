@@ -42,6 +42,7 @@ These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves 
 | [Duplicate Issue Detector](gh-agent-workflows/duplicate-issue-detector.md) | New issues | Detect duplicate issues and comment with links |
 | [Issue Triage](gh-agent-workflows/issue-triage.md) | New issues | Investigate and provide implementation plans |
 | [Issue Fixer](gh-agent-workflows/issue-fixer.md) | New issues | Triage plus automatic draft PR for straightforward fixes |
+| [Plan](gh-agent-workflows/plan.md) | `/plan` in issues | Triage-style planning from comments with optional issue/sub-issue creation |
 | [Mention in Issue](gh-agent-workflows/mention-in-issue.md) | `/ai` in issues | Answer questions, debug, create PRs |
 | [Mention in PR](gh-agent-workflows/mention-in-pr.md) | `/ai` in PRs | Review, fix code, push changes |
 | [PR Actions Detective](gh-agent-workflows/pr-actions-detective.md) | Failed PR checks | Diagnose failures and recommend fixes |
