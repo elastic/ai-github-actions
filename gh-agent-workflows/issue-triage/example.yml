@@ -8,7 +8,7 @@ permissions:
   contents: read
   discussions: write
   issues: write
-  pull-requests: write  # required by gh-aw compiler for add-comment (github/gh-aw#16673)
+  pull-requests: read
 
 jobs:
   run:
