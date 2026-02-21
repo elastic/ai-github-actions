@@ -229,7 +229,8 @@ if [ "$skip_secret" = false ]; then
         echo "Visit: $token_url"
       fi
       printf "Paste the token here: "
-      read -r token
+      read -r -s token
+      echo
       if [ -z "$token" ]; then
         echo "No token provided. Use --skip-secret to set it manually later." >&2
         exit 1
