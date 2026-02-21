@@ -25,6 +25,20 @@ See [example.yml](example.yml) for the full workflow file.
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `edit-accuracy` | How aggressively to fix factual inaccuracies (`high`/`low`/`none`) | No | `low` |
+| `edit-completeness` | How aggressively to add missing information about significant changes (`high`/`low`/`none`) | No | `low` |
+| `edit-format` | How aggressively to improve markdown formatting and structure (`high`/`low`/`none`) | No | `none` |
+| `edit-style` | How aggressively to improve writing style and clarity (`high`/`low`/`none`) | No | `none` |
+
+### Edit Levels
+
+Each edit dimension accepts one of three levels:
+
+| Level | Meaning |
+| --- | --- |
+| `high` | Apply the agent's best judgment; proactively improve this dimension throughout the body |
+| `low` | Make only conservative fixes for clear problems; do not restructure or rewrite |
+| `none` | Do not touch this dimension at all; leave it exactly as the author wrote it |
 
 ## Safe Outputs
 
