@@ -1,5 +1,5 @@
 ---
-description: "Track downstream public repo usage of elastic/ai-github-actions and update data"
+description: "Track downstream public repo usage of elastic/ai-github-actions and preserve refs"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
@@ -75,7 +75,7 @@ steps:
 
 # Downstream Users Tracking
 
-Maintain a canonical list of public downstream repositories using elastic/ai-github-actions, including which workflows they consume.
+Maintain a canonical list of public downstream repositories using elastic/ai-github-actions, including workflow file paths and refs so downstream update checks are deterministic.
 
 ## Context
 
@@ -106,8 +106,11 @@ Maintain a canonical list of public downstream repositories using elastic/ai-git
 
 2. For each unique repo + path pair returned:
    - Fetch the workflow file using `github-get_file_contents`.
-   - Extract every `uses: elastic/ai-github-actions/...` line.
-   - Normalize each entry by removing the leading `elastic/ai-github-actions/` and any `@version` suffix.
+   - Extract every `uses: elastic/ai-github-actions/...@...` line.
+   - For each match, keep:
+     - `workflow_file`: relative path of the workflow file where the `uses:` entry was found.
+     - `uses_target`: text between `elastic/ai-github-actions/` and `@`.
+     - `ref`: text after `@` (tag, branch, or SHA).
 
 ## Step 3: Build the Data File
 
@@ -124,7 +127,13 @@ Write `data/downstream-users.json` with this structure:
   "repos": [
     {
       "repo": "owner/repo",
-      "workflows": ["workflows/mention-in-issue/rwxp", "..."]
+      "workflows": [
+        {
+          "workflow_file": ".github/workflows/example.yml",
+          "uses_target": "workflows/pr-review/rwx",
+          "ref": "v0"
+        }
+      ]
     }
   ]
 }
@@ -133,7 +142,8 @@ Write `data/downstream-users.json` with this structure:
 
 Guidelines:
 - Sort `repos` by `repo`.
-- Sort each `workflows` list alphabetically.
+- Sort each `workflows` list by `workflow_file`, then `uses_target`, then `ref`.
+- Deduplicate exact duplicate workflow objects per repo.
 - Use UTC timestamps with a `Z` suffix.
 
 ## Step 4: Create the PR
