@@ -22,7 +22,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          GOBIN="$HOME/.local/bin" go install github.com/github/gh-aw/cmd/gh-aw@${GH_AW_VERSION}
+          GOBIN="$HOME/.local/bin" go install "github.com/github/gh-aw/cmd/gh-aw@${GH_AW_VERSION}"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           "$HOME/.local/bin/gh-aw" version
 

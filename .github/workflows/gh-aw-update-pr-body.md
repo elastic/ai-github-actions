@@ -8,7 +8,6 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
-  - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-update-pr.md
 engine:
   id: copilot
@@ -38,11 +37,6 @@ on:
         type: string
         required: false
         default: "github-actions[bot]"
-      messages-footer:
-        description: "Footer appended to all agent comments and reviews"
-        type: string
-        required: false
-        default: ""
       edit-accuracy:
         description: "How aggressively to fix factual inaccuracies in the PR body. 'high' = fix everything that could mislead, 'low' = fix only clear-cut inaccuracies, 'none' = do not change accuracy-related content"
         type: string
@@ -90,6 +84,9 @@ network:
     - python
     - ruby
 strict: false
+safe-outputs:
+  messages:
+    footer: ""
 timeout-minutes: 30
 steps:
   - name: Repo-specific setup
@@ -184,6 +181,13 @@ Do **not** propose changes when:
 - The level is `low` and the issue is minor (style preference, slight improvement, optional detail)
 - An update would erase useful context (motivation, design decisions, issue links) the author provided
 - The body is a reasonable high-level summary even if some details differ
+
+**Never willingly add any of the following to the PR body** (even in `high` mode):
+- Commit counts, file counts, or insertion/deletion statistics (e.g., "2 commits, 143 files changed, 12,613 insertions")
+- Scope or size summaries — the reviewer can see these in the GitHub UI
+- Lists of every file changed — link to relevant code instead
+- Boilerplate sections with no substantive content (e.g., empty "Testing" or "Screenshots" headers)
+- Agent attribution or footers — the runtime handles this
 
 ### Step 5: Update or Noop
 
