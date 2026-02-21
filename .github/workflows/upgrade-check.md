@@ -38,8 +38,6 @@ network:
     - github
 strict: false
 safe-outputs:
-  messages:
-    footer: "---\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\n\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not."
   noop:
   create-issue:
     max: 1

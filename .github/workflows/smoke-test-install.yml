@@ -9,6 +9,8 @@ jobs:
   smoke-test:
     name: Install and compile all workflows
     runs-on: ubuntu-latest
+    env:
+      GH_AW_VERSION: "v0.48.1"
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -16,12 +18,13 @@ jobs:
           go-version: "1.25"
           cache: false
 
-      - name: Install gh-aw extension
+      - name: Install pinned gh-aw CLI
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh extension install github/gh-aw
-          gh aw version
+          GOBIN="$HOME/.local/bin" go install github.com/github/gh-aw/cmd/gh-aw@${GH_AW_VERSION}
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/gh-aw" version
 
       - name: Create a fresh repo
         run: |
@@ -65,7 +68,6 @@ jobs:
             pr-actions-fixer
             pr-buildkite-detective
             pr-review
-            pr-review-fork
             project-summary
             release-update
             scheduled-audit
@@ -82,7 +84,7 @@ jobs:
 
           for wf in "${WORKFLOWS[@]}"; do
             echo "::group::Installing ${wf}"
-            if gh aw add "elastic/ai-github-actions/gh-agent-workflows/${wf}.md" --non-interactive; then
+            if gh-aw add "elastic/ai-github-actions/.github/workflows/gh-aw-${wf}.md" --non-interactive; then
               echo "::endgroup::"
             else
               echo "::endgroup::"

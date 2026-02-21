@@ -48,7 +48,8 @@ These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves 
 | [PR Actions Fixer](gh-agent-workflows/pr-actions-fixer.md) | Manual (workflow_dispatch) | Opt-in fixes for failed PR checks |
 | [PR Buildkite Detective](gh-agent-workflows/pr-buildkite-detective.md) | Failed PR checks | Diagnose Buildkite failures and recommend fixes |
 | [PR Review](gh-agent-workflows/pr-review.md) | PR opened/updated | AI code review with inline comments |
-| [Update PR Body](gh-agent-workflows/update-pr-body.md) | PR opened | Auto-populate PR description from diff and linked issues |
+| [PR Review (Fork)](gh-agent-workflows/pr-review-fork.md) | PR opened/updated (`pull_request_target`) | AI code review for fork PRs — **private repos or trusted contributors only** |
+| [Update PR Body](gh-agent-workflows/update-pr-body.md) | PR opened / updated / ready for review | Auto-populate PR description from diff and linked issues |
 
 ### Detector / fixer pairs
 

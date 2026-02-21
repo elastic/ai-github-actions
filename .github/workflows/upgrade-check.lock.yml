@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"fd5c1688b6702e5011cec9231f04e1c2cb1b6bd05fa24a120892064debdaf839"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d85bf62cf7a9ed448e8c9f549210273fe939479eef73873eed65cdcc9a669735"}
 
 name: "Upgrade Check"
 "on":
@@ -1218,7 +1218,6 @@ jobs:
           GH_AW_WORKFLOW_ID: "upgrade-check"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
-          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.\"}"
           GH_AW_GROUP_REPORTS: "false"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1359,7 +1358,6 @@ jobs:
     env:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
-      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.\"}"
       GH_AW_WORKFLOW_ID: "upgrade-check"
       GH_AW_WORKFLOW_NAME: "Upgrade Check"
     outputs:

@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3124ee554a168ec3e28a364f6b3a3d81eca16c1f74ad911dbc49cd884bf0bdbf"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"997287a3ecffdf06b7320ba081d4a5d6eca7a2490106dd11cee7284b2960ff5b"}
 
 name: "Release Update Check"
 "on":
@@ -63,7 +63,7 @@ name: "Release Update Check"
         required: false
         type: string
       model:
-        default: gpt-5.2-codex
+        default: gpt-5.3-codex
         description: AI model to use
         required: false
         type: string

@@ -19,7 +19,7 @@ on:
         description: "AI model to use"
         type: string
         required: false
-        default: "gpt-5.2-codex"
+        default: "gpt-5.3-codex"
       additional-instructions:
         description: "Repo-specific instructions appended to the agent prompt"
         type: string

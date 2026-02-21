@@ -43,7 +43,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts — **do not run fork code here** | No | `""` |
 | `intensity` | Review intensity (`conservative`, `balanced`, `aggressive`) | No | `balanced` |
-| `minimum-severity` | Minimum severity for inline comments (`critical`, `high`, `medium`, `low`, `nitpick`) | No | `low` |
+| `minimum_severity` | Minimum severity for inline comments (`critical`, `high`, `medium`, `low`, `nitpick`) | No | `low` |
 
 ## Safe Outputs
 

@@ -27,6 +27,7 @@ nav:
               - PR Actions Fixer: workflows/gh-agent-workflows/pr-actions-fixer.md
               - PR Buildkite Detective: workflows/gh-agent-workflows/pr-buildkite-detective.md
               - PR Review: workflows/gh-agent-workflows/pr-review.md
+              - PR Review (Fork): workflows/gh-agent-workflows/pr-review-fork.md
               - Update PR Body: workflows/gh-agent-workflows/update-pr-body.md
           - Detector / Fixer Pairs:
               - Bug Hunting: workflows/gh-agent-workflows/bugs.md

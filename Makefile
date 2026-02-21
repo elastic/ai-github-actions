@@ -150,7 +150,14 @@ setup-actionlint:
 lint-workflows: setup-actionlint
 	@echo "Validating GitHub Actions workflow files..."
 	@ACTIONLINT="bin/actionlint"; \
-	find claude-workflows .github/workflows -name "example.yml" -o -name "example.yaml" 2>/dev/null | while read -r file; do \
+	( \
+		find claude-workflows -name "example.yml" -o -name "example.yaml"; \
+		find .github/workflows -maxdepth 1 \( \
+			-name "trigger-*.yml" -o -name "trigger-*.yaml" -o \
+			-name "agentics-maintenance.yml" -o -name "ci.yml" -o \
+			-name "release.yml" -o -name "smoke-test-install.yml" \
+		\); \
+	) 2>/dev/null | while read -r file; do \
 		echo "Checking $$file..."; \
 		$$ACTIONLINT "$$file" || exit 1; \
 	done
