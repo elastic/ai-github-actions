@@ -80,11 +80,16 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-Analyze recent agent workflow run logs for inefficiencies, recurring errors, and patterns that indicate prompt improvements are needed.
+Analyze recent agent workflow run logs for excessive tool calls, errors, failures, and bad agent behavior. Focus on understanding what is happening and when — not on recommending fixes.
 
 ### Data Gathering
 
-Lookback 3 days.
+Lookback period: last 3 days. Compute the exact cutoff date using bash before any queries:
+````bash
+CUTOFF=$(date -u -d '3 days ago' '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -v-3d '+%Y-%m-%dT%H:%M:%SZ')
+echo "Lookback cutoff: $CUTOFF"
+````
+Always include the computed date range (`$CUTOFF` to now) in the report so readers know exactly which period the data covers.
 
 1. **List recent agentic workflow runs**
 
@@ -92,7 +97,7 @@ Lookback 3 days.
    ````bash
    gh api repos/{owner}/{repo}/actions/runs \
      --paginate \
-     --jq '[.workflow_runs[] | select(.created_at >= "CUTOFF_DATE") | select(.path | test("trigger-|gh-aw-")) | {id: .id, name: .name, conclusion: .conclusion, created_at: .created_at, html_url: .html_url, path: .path}]'
+     --jq --arg cutoff "$CUTOFF" '[.workflow_runs[] | select(.created_at >= $cutoff) | select(.path | test("trigger-|gh-aw-")) | {id: .id, name: .name, conclusion: .conclusion, created_at: .created_at, html_url: .html_url, path: .path}]'
    ````
 
    This captures all agentic workflow runs (trigger files and internal gh-aw workflows). Exclude non-agentic workflows (ci, release, agentics-maintenance) by the path filter.
@@ -100,7 +105,7 @@ Lookback 3 days.
 2. **Understand run conclusions before fetching logs**
 
    Not all non-success conclusions indicate agent problems:
-   - `success` — no issues, skip unless you want a sample
+   - `success` — agent ran to completion
    - `failure` — fetch logs and analyze
    - `cancelled` — usually user-initiated, skip
    - `action_required` — the run was blocked by an approval gate (e.g., first-time contributor). This is NOT an agent failure; skip it
@@ -135,29 +140,40 @@ Lookback 3 days.
 
 ### Analysis
 
-Your goal is to find things we can improve — prompt wording, fragment content, tool usage guidance, missing instructions, or confusing constraints — that would make agents perform better on the next run.
+Your goal is to accurately describe what is happening across agent runs — not to prescribe fixes. Focus on observable behavior.
 
-For each failed run's logs, read the agent's tool calls, responses, errors, and reasoning. Ask yourself:
-- **What went wrong?** — Did the agent fail, waste turns, produce low-quality output, or get confused?
-- **Why?** — Trace back to the root cause. Is it a prompt gap, a misleading instruction, a missing example, a tooling limitation?
-- **What would fix it?** — Identify the specific file and change that would prevent this from happening again.
+For each failed run's logs, read the agent's tool calls, responses, errors, and reasoning. Document:
+- **What happened** — Be specific: exact error messages, exact timestamps, exact run URLs. State whether this is a recent failure (today/yesterday) or older.
+- **How often** — Is this a one-off or recurring? Count occurrences across the lookback window.
+- **Which workflows are affected** — List the workflow names and run URLs.
+
+Look for these specific behavior patterns:
+- **Excessive tool calls** — agent making far more calls than necessary to complete a task (e.g., 50+ tool calls for a simple review)
+- **Repeated identical tool calls** — agent calling the same tool with the same arguments multiple times in one run
+- **Tool call errors** — MCP tool failures, timeouts, API errors; note exact error messages
+- **Early failures** — runs failing before the agent step executes (infra/checkout/setup failures)
+- **Bad output quality** — truncated responses, hallucinated content, generic non-contextual output
+- **Runaway loops** — agent stuck in a loop, exhausting context or turn limits
 
 Look across runs for **recurring patterns**. A single odd failure is noise. The same mistake in 3+ runs across different triggers is a signal.
 
-Skip successful runs, cancelled runs, infrastructure failures (runner issues, network outages), and `action_required` runs (approval gates, not agent problems).
+Skip cancelled runs, infrastructure failures (runner issues, network outages), and `action_required` runs (approval gates, not agent problems).
 
 ### Reporting
 
-File an issue with `create_issue`. Structure your findings however makes sense for what you discovered — there's no rigid template.
+File an issue with `create_issue`. Always include the exact date range covered at the top of the report.
 
 Include a **per-repository summary** of the metadata you collected — run counts, conclusions, pass/fail rates — for both this repository and any downstream repositories discovered in step 4. This gives visibility into how the workflows are performing across the org.
 
-Each finding should include:
-- What happened (with a log excerpt or run link)
-- Why it happened (root cause in the prompt, fragment, or tooling)
-- How to fix it (specific file and change)
+Each finding must include:
+- **What happened** — with exact error messages, log excerpts, and run links
+- **When** — timestamps or date range, not just "recently"
+- **How often** — count of occurrences in the lookback window
+- **Affected workflows** — list of workflow names and run URLs
 
-Prioritize by impact: problems that affect multiple workflows or waste the most turns come first.
+Do NOT include suggested fixes or impact assessments — this report is for situational awareness only.
+
+Prioritize by frequency: the most recurring problems come first.
 
 If no significant issues are found, still file the issue with the per-repository summary so we have a record. If there are also no downstream repositories using these workflows, call `noop` instead.
 

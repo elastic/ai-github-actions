@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"94e0ef170b5dcfb1db15ea8c5d82f50384a1a9bd9bef1a34975791473b4eeb49"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b4e73508d526fd7823221b633db9182021421e8b1283fccf746ccd1946b1b226"}
 
 name: "Text Beautifier"
 "on":
@@ -54,6 +54,31 @@ name: "Text Beautifier"
       allowed-bot-users:
         default: github-actions[bot]
         description: Allowlisted bot actor usernames (comma-separated)
+        required: false
+        type: string
+      edit-clarity:
+        default: low
+        description: How aggressively to flag unclear user-facing text, especially error/help messages. 'high' = proactively suggest clearer phrasing, 'low' = flag only clearly ambiguous text, 'none' = skip clarity checks
+        required: false
+        type: string
+      edit-grammar:
+        default: low
+        description: How aggressively to flag grammar and sentence construction problems. 'high' = improve awkward sentence structure, 'low' = flag only clear grammatical errors, 'none' = skip grammar checks
+        required: false
+        type: string
+      edit-misleading-text:
+        default: low
+        description: How aggressively to flag text that conflicts with current behavior. 'high' = proactively flag likely drift, 'low' = flag only direct contradictions, 'none' = skip behavior-alignment checks
+        required: false
+        type: string
+      edit-terminology:
+        default: low
+        description: How aggressively to flag inconsistent terminology for the same concept. 'high' = proactively normalize wording, 'low' = flag only unambiguous inconsistencies, 'none' = skip terminology checks
+        required: false
+        type: string
+      edit-typos:
+        default: low
+        description: How aggressively to flag typos and misspellings. 'high' = suggest broad consistency fixes, 'low' = flag only clear spelling errors, 'none' = skip typo checks
         required: false
         type: string
       messages-footer:
@@ -123,7 +148,12 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GH_AW_EXPR_118A0B98: ${{ inputs.edit-terminology }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_7193CB58: ${{ inputs.edit-typos }}
+          GH_AW_EXPR_A0224D4D: ${{ inputs.edit-misleading-text }}
+          GH_AW_EXPR_CFC1B138: ${{ inputs.edit-grammar }}
+          GH_AW_EXPR_FEB6148B: ${{ inputs.edit-clarity }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -358,6 +388,23 @@ jobs:
           
           **The bar is high: only report concrete, unambiguous text problems.** Most runs should end with `noop` — that means user-facing text is clean.
           
+          ## Edit Level Configuration
+          
+          The following edit levels are configured for this run. Each dimension is independent.
+          
+          | Dimension | Level | Meaning |
+          | --- | --- | --- |
+          | **typos** | `__GH_AW_EXPR_7193CB58__` | How aggressively to flag typos and misspellings |
+          | **grammar** | `__GH_AW_EXPR_CFC1B138__` | How aggressively to flag grammar and sentence construction issues |
+          | **clarity** | `__GH_AW_EXPR_FEB6148B__` | How aggressively to flag unclear user-facing text |
+          | **terminology** | `__GH_AW_EXPR_118A0B98__` | How aggressively to flag inconsistent naming for the same concept |
+          | **misleading-text** | `__GH_AW_EXPR_A0224D4D__` | How aggressively to flag text that no longer matches behavior |
+          
+          Level semantics:
+          - **`high`** — apply best judgment proactively within this dimension
+          - **`low`** — report only concrete, unambiguous issues
+          - **`none`** — skip this dimension entirely
+          
           ### Data Gathering
           
           1. Call `generate_agents_md` to get repository conventions. If it fails, continue.
@@ -369,16 +416,39 @@ jobs:
              - Code comments in public APIs that appear in generated documentation
           3. Read the identified files and search for text issues.
           
-          ### What to Look For
+          ### What to Look For by Dimension
           
-          Focus on **concrete, unambiguous problems** in user-facing text:
+          Use each dimension's configured level to determine whether to report findings.
           
-          1. **Typos and misspellings** — real spelling errors, not style preferences (e.g., `recieve` → `receive`, `occurence` → `occurrence`)
-          2. **Grammatical errors** — subject-verb disagreement, missing articles, broken sentences
-          3. **Unclear error messages** — errors that do not tell the user what went wrong or what to do next (e.g., `"Error: failed"` with no context)
-          4. **Inconsistent terminology** — the same concept referred to by different names in different places (e.g., `workspace` vs `project` vs `repo` for the same thing)
-          5. **Broken or incomplete sentences** — truncated messages, dangling phrases, copy-paste artifacts
-          6. **Misleading text** — messages that describe behavior that no longer matches the code
+          #### Typos (`__GH_AW_EXPR_7193CB58__`)
+          
+          - **`high`**: Flag typos/misspellings proactively and include nearby consistency fixes when they are obviously beneficial.
+          - **`low`**: Flag only clear spelling errors (for example, `recieve` → `receive`), not style variants.
+          - **`none`**: Skip typo checks.
+          
+          #### Grammar (`__GH_AW_EXPR_CFC1B138__`)
+          
+          - **`high`**: Flag grammar and sentence construction issues that reduce readability, including awkward or fragmented sentences.
+          - **`low`**: Flag only clear grammatical errors (subject-verb disagreement, missing articles, broken sentence structure).
+          - **`none`**: Skip grammar checks.
+          
+          #### Clarity (`__GH_AW_EXPR_FEB6148B__`)
+          
+          - **`high`**: Proactively flag unclear user-facing text and suggest concrete rewrites, especially for errors/help text.
+          - **`low`**: Flag only clearly ambiguous or incomplete user-facing text (for example, `"Error: failed"` with no actionable context).
+          - **`none`**: Skip clarity checks.
+          
+          #### Terminology (`__GH_AW_EXPR_118A0B98__`)
+          
+          - **`high`**: Proactively flag inconsistent naming for the same concept across user-facing surfaces.
+          - **`low`**: Flag only unambiguous inconsistencies where the same concept is clearly referred to by different terms.
+          - **`none`**: Skip terminology checks.
+          
+          #### Misleading Text (`__GH_AW_EXPR_A0224D4D__`)
+          
+          - **`high`**: Proactively flag text likely to have drifted from behavior.
+          - **`low`**: Flag only direct, verifiable contradictions between text and current code behavior.
+          - **`none`**: Skip behavior-alignment checks.
           
           ### What to Skip
           
@@ -392,6 +462,7 @@ jobs:
           ### Quality Gate — When to Noop
           
           Call `noop` if any of these are true:
+          - All edit dimensions are set to `none`
           - No concrete text problems were found
           - All findings are style preferences rather than clear errors
           - The problems found are in generated or vendored files
@@ -434,6 +505,11 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_FEB6148B: ${{ inputs.edit-clarity }}
+          GH_AW_EXPR_CFC1B138: ${{ inputs.edit-grammar }}
+          GH_AW_EXPR_A0224D4D: ${{ inputs.edit-misleading-text }}
+          GH_AW_EXPR_118A0B98: ${{ inputs.edit-terminology }}
+          GH_AW_EXPR_7193CB58: ${{ inputs.edit-typos }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -444,7 +520,12 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_EXPR_118A0B98: ${{ inputs.edit-terminology }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_7193CB58: ${{ inputs.edit-typos }}
+          GH_AW_EXPR_A0224D4D: ${{ inputs.edit-misleading-text }}
+          GH_AW_EXPR_CFC1B138: ${{ inputs.edit-grammar }}
+          GH_AW_EXPR_FEB6148B: ${{ inputs.edit-clarity }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -466,7 +547,12 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
+                GH_AW_EXPR_118A0B98: process.env.GH_AW_EXPR_118A0B98,
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_EXPR_7193CB58: process.env.GH_AW_EXPR_7193CB58,
+                GH_AW_EXPR_A0224D4D: process.env.GH_AW_EXPR_A0224D4D,
+                GH_AW_EXPR_CFC1B138: process.env.GH_AW_EXPR_CFC1B138,
+                GH_AW_EXPR_FEB6148B: process.env.GH_AW_EXPR_FEB6148B,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,

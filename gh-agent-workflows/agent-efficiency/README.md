@@ -1,10 +1,10 @@
 # Agent Efficiency
 
-Analyze agent workflow logs for inefficiencies, errors, and prompt improvement opportunities.
+Analyze agent workflow logs for excessive tool calls, errors, failures, and bad agent behavior.
 
 ## How it works
 
-Reviews the last 3 days of agent workflow run logs, looking for recurring errors, tool call failures, and prompt patterns that lead to poor outcomes. Files an issue only when there is actionable evidence of systemic inefficiency.
+Reviews the last 3 days of agent workflow run logs, documenting recurring errors, excessive tool calls, early failures, and bad agent behavior patterns. Includes a per-repository summary with exact date ranges and run counts. Reports on what is happening and when — not on suggested fixes or impact assessments.
 
 ## Quick Install
 
