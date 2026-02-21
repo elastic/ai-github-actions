@@ -35,7 +35,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"85aeadc91a83723b5599e12d5118cdd9376e927626e68a088e4b7bdb72a3ef82"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ec91de2a401bd261317a7e46a1da0840d9af34df49c1df9b47caad45cecafe0d"}
 
 name: "Docs Drift"
 "on":

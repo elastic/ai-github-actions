@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e9ce52bf6f3c8e3ba1498112a44c6936f15e163ef06ddf7bfff16ea6e5e7ae73"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cd94e39458afefa85e1384a6a852a0160f06272a94e7d279a0fb457661d8885f"}
 
 name: "Downstream Users"
 "on":

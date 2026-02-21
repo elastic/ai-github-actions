@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"01b1d2d43fbd08ccae377509563be6b41e0f3d4d37e7935384e9b7475ffaa026"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"aab6ee673263c7a7c0a34ee2666bbb3520614b781cbce51078f724070e19996f"}
 
 name: "Downstream Health"
 "on":

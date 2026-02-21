@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"07e828894de25d4344b858bb0cceaacc2a3b27f1b671a7c65c1373d9b862bd07"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1e269a49ecfc3701a0a79d6ffa2f339591c3121f55bfcbef222b4312e3153608"}
 
 name: "Upgrade Check"
 "on":

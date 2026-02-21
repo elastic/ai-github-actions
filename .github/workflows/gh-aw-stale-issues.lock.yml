@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8474390ffffb2aa4b156e3bddf9f8dd06af35ca1cb45360c8395823245ba39ec"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1ce8d8e548b56188f9ee61deab959528492e8f8bca69b39134668d0403613afe"}
 
 name: "Stale Issues"
 "on":

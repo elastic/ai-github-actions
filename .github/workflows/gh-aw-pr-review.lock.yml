@@ -36,7 +36,7 @@
 #     - gh-aw-fragments/safe-output-review-comment.md
 #     - gh-aw-fragments/safe-output-submit-review.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7de3606c3cf3f583533fc0b6b69a3cd126267c053bffcda7b734b790e5b5ee32"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"acd461b0089ef5c9beb4e8a04c8b222617f91b91bb662d57c578d723a15a3ec2"}
 
 name: "PR Review"
 "on":

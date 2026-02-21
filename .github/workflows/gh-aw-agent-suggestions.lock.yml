@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"98ef6b4ef3cf9e68d5dc6995bcc5ec370132e76eb1fa9a2b059d2802cd61d096"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"22d036923781edbda7b143495f0551d25c4efffaaeb593a638e534b96365eda4"}
 
 name: "Agent Suggestions"
 "on":

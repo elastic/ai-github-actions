@@ -39,7 +39,7 @@
 #     - gh-aw-fragments/safe-output-submit-review.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f5ef36b3a50ba4b6b6ee1e53893e9e33ea5b9d7f04c17b61f837c1f6dbae1f21"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5b3e245e5facdc6dffd46b9743163cac46825dfd6b17c0ec9732dc56efae216c"}
 
 name: "Mention in PR"
 "on":

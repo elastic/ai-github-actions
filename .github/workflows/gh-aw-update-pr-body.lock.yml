@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-update-pr.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8832e5e3d7cfc7d875f5b7ef41bf62f1e12f36bdd0c55e1788086b6140e0faf0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"614d43935c217f6ec4f45f608e472e7df8ee41a9acd89932c80e02c9666b4f55"}
 
 name: "Update PR Body"
 "on":

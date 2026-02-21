@@ -1,4 +1,5 @@
 ---
+name: "PR Review"
 description: "AI code review with inline comments on pull requests"
 imports:
   - gh-aw-fragments/elastic-tools.md

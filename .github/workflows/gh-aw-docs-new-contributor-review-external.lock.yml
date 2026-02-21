@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f677a1355b67dcd8d6f94287515662715e79ae33280e91406ce6c7976c6c97f7"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6fc129b697dfc73906743f61523bbdd62c9e5fb17290422f0ce461272078c160"}
 
 name: "Docs New Contributor Review External"
 "on":

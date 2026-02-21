@@ -1,4 +1,5 @@
 ---
+name: "Flaky Test Triage"
 description: "Investigate flaky tests from issues and failed CI runs; file triage reports"
 imports:
   - gh-aw-fragments/elastic-tools.md

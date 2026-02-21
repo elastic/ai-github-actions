@@ -1,4 +1,5 @@
 ---
+name: "Performance Profiler"
 description: "Identify hot paths, profile code, and propose meaningful performance improvements"
 imports:
   - gh-aw-fragments/elastic-tools.md

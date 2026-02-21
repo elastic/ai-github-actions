@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3209f313fbbeeaed646c8b3444202b3a8fb26d9541009e826f48d158a763527e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e94459147270a05efe43bf03a24d4045e6ef4ff49e86e34a686ba5d9fbc0d043"}
 
 name: "Issue Triage"
 "on":

@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"028a797da1f8a35af3948d0d27a23e40eedc2acb6aff71c11f7b9db5e09cfb56"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c0996131bb2124751616641d9e670037633a0e4aa7c93c25a90f02bc03cdc2fe"}
 
 name: "Agent Efficiency"
 "on":

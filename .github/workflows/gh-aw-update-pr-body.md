@@ -1,4 +1,5 @@
 ---
+name: "Update PR Body"
 description: "Keep pull request bodies in sync with the code changes on every commit"
 imports:
   - gh-aw-fragments/elastic-tools.md

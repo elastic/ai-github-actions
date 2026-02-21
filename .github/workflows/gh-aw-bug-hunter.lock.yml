@@ -35,7 +35,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e533fe17fbb50698bcc608f61942f52470d41af8ab0fefe16e7345ab81fb5ea5"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"da3abb18e40902637ff4d97029bf023b146300fc5448d33ccf3cc51eb13a978d"}
 
 name: "Bug Hunter"
 "on":

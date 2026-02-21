@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6a3e1351d210844f6a71366eb5a056d4a645a28f18c0de3417d685a5e1173745"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ba4518c74cf7b7fc624b500f2a88170acf0643d39754c3b3d5419854f1028b5f"}
 
 name: "Semantic Function Clustering"
 "on":

@@ -34,7 +34,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"51869d3bef543f2b9d58f037350d2d3d2c57b8a762fe3e7eeb052b8131d1dca9"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c771f91238f21abf0f1589dcbe5a460c4af08df2f1f8792b4f7ae47ee8b2439a"}
 
 name: "Test Improvement"
 "on":

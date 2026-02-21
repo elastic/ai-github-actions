@@ -1,4 +1,5 @@
 ---
+name: "Downstream Users"
 description: "Track downstream public repo usage of elastic/ai-github-actions and update data"
 imports:
   - gh-aw-fragments/elastic-tools.md

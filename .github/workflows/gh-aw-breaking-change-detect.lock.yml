@@ -35,7 +35,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a57a60deaa0167e41dbef34465b9ce06b440e38526dd91d0856cdfecb84485db"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3edb9530565a9b30a6134be1cf366c862a1cf980db072dc2d6ece5814830bfb0"}
 
 name: "Breaking Change Detect"
 "on":

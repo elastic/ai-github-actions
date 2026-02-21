@@ -35,7 +35,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"177dd6c8b24f3d1cf539c2cc058fa1bb22250b4703380db77180828721c28352"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a3928174a4a6b2312b977e3f47a9d731dcd99dec9b8ad9b311a7c8928159c70c"}
 
 name: "Issue Triage (with PR)"
 "on":

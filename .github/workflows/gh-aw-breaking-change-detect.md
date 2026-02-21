@@ -1,4 +1,5 @@
 ---
+name: "Breaking Change Detect"
 description: "Detect undocumented breaking changes in public interfaces"
 imports:
   - gh-aw-fragments/elastic-tools.md

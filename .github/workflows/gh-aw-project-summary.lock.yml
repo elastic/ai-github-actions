@@ -35,7 +35,7 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b151dc9399092090c7af174abb3d037c93662d90c245d427e8594bd19a6ef57e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"40abe98423339c8528d909aaec65d6dea2f1b3203bdb4ca675386d3a6d9b5ca0"}
 
 name: "Project Summary"
 "on":

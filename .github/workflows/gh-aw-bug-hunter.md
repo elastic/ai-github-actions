@@ -1,4 +1,5 @@
 ---
+name: "Bug Hunter"
 description: "Find a reproducible, user-impacting bug and file a report issue"
 imports:
   - gh-aw-fragments/elastic-tools.md

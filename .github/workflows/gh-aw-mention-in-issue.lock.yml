@@ -36,7 +36,7 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5684985492be2f322bb3824f14c6a3ffea770ff34c916e8ef1d8b86bf885c8b2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4d5dbf51f8e12caa1ab17cef6e4b13c9c130c531b9324032c38e1e743264b462"}
 
 name: "Mention in Issue"
 "on":

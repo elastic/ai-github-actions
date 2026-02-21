@@ -36,7 +36,7 @@
 #     - gh-aw-fragments/scheduled-report.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9685b8338703dfe934055d6a84802118dc54945beab768ca1ddd96a843a0377d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"10d210d6a35a6c8a1eda5f2020752e020b7eb7dc903a8630e91e899473c41875"}
 
 name: "Performance Profiler"
 "on":
