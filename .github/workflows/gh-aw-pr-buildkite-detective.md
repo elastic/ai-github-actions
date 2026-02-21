@@ -86,19 +86,39 @@ steps:
 
 # PR Buildkite Detective
 
-Assist with failed Buildkite checks for pull requests in ${{ github.repository }}. Analyze Buildkite build logs, explain failures, and recommend fixes. This workflow is read-only.
+Analyze failed Buildkite CI builds for pull requests in ${{ github.repository }}. Identify root causes from build logs, trace failures to source code, and provide actionable fix recommendations via PR comments. This workflow is read-only.
 
 ## Context
 
 - **Repository**: ${{ github.repository }}
 - **Workflow Run ID**: ${{ github.event.workflow_run.id }}
 - **Conclusion**: ${{ github.event.workflow_run.conclusion }}
+- **Commit SHA**: ${{ github.event.workflow_run.head_sha }}
 - **Buildkite Organization**: ${{ inputs.buildkite-org }}
 
 ## Constraints
 
 - **CAN**: Read files, search code, run tests and commands, query Buildkite via MCP, comment on PRs
 - **CANNOT**: Push changes, merge PRs, or modify `.github/workflows/`
+
+## Investigation Tools
+
+Use the right tool for each task:
+
+- **Buildkite MCP** (`list_pipelines`, `list_builds`, `get_build`, `get_job_logs`, `search_logs`, `tail_logs`, `list_annotations`): Query build information, job logs, and annotations
+- **`search_code`**: Search code in *other* public GitHub repositories — use for finding upstream API changes, reference implementations, or migration guides. Use `grep` and file reading for the local codebase.
+- **`web-fetch`**: Fetch documentation pages, changelogs, or API references for libraries and tools involved in the failure
+- **`bash`**: Run tests locally to verify your analysis, reproduce failures, or check dependency versions
+
+## Failure Categories
+
+Classify each failure to guide your investigation:
+
+- **Code bug**: Logic error, syntax error, type mismatch, nil/null dereference — trace to the specific source file and line
+- **Test failure**: Assertion mismatch, test timeout, flaky test — check if the test itself is wrong or if the code under test changed
+- **Dependency issue**: Missing package, version conflict, lockfile drift, network fetch failure — check dependency files and lockfiles
+- **Infrastructure**: Resource exhaustion, service unavailability, timeout, Docker pull failure — often transient; recommend retry if so
+- **Configuration**: Invalid settings, missing secrets/env vars, incorrect paths — check CI config, environment setup, and workflow definitions
 
 ## Instructions
 
@@ -108,28 +128,43 @@ Assist with failed Buildkite checks for pull requests in ${{ github.repository }
 2. Identify the PRs associated with the workflow run using `github.event.workflow_run.pull_requests`. If there are none, call `noop` with message "No pull request associated with workflow run; nothing to do" and stop.
 3. For each PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status.
 
-### Step 1b: Find the Buildkite Build
+### Step 2: Find the Buildkite Build
 
-1. **Resolve the pipeline**: If `${{ inputs.buildkite-pipeline }}` is provided, use it. Otherwise, call Buildkite MCP `list_pipelines` for organization `${{ inputs.buildkite-org }}` and select the pipeline whose slug matches the repository name (extract from `${{ github.repository }}`).
-2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by commit SHA `${{ github.event.workflow_run.head_sha }}`. If no match, select the latest failed build for the pipeline.
-3. **Fetch failure evidence**:
-   - Call `get_build` for the selected build.
-   - For each failed job, call `get_job_logs`, `search_logs` (`error|Error|ERROR|failed|Failed|FAILED|panic|exception`), and `tail_logs`.
-   - Call `list_annotations` to capture warnings/errors attached to the build.
+1. **Resolve the pipeline**: If `${{ inputs.buildkite-pipeline }}` is provided, use it. Otherwise, call `list_pipelines` for organization `${{ inputs.buildkite-org }}` and find the pipeline whose slug matches the repository name (extract the repo name from `${{ github.repository }}`). If multiple pipelines match, prefer an exact slug match.
+2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by commit SHA `${{ github.event.workflow_run.head_sha }}`. If no match by SHA, use the PR's head branch (from the `pull_request_read` response in Step 1) to filter builds and select the most recent failed one.
+3. **Collect failure evidence**:
+   - Call `get_build` for the matched build to get overall status and job list.
+   - For each **failed** job:
+     - `get_job_logs` — retrieve the full log
+     - `search_logs` with patterns: `error|Error|ERROR`, `failed|Failed|FAILED`, `panic|exception|traceback`
+     - `tail_logs` — get the last 100 lines (often contains the final error and exit code)
+   - Call `list_annotations` to capture any warnings, errors, or context the pipeline attached to the build.
 
-### Step 2: Analyze
+### Step 3: Analyze
 
-- Identify the failing job/step and summarize the root cause.
-- Propose a concrete, minimal fix or remediation plan.
-- If logs are inconclusive, state what additional data is needed.
+1. **Identify the failure**: Which job(s) and step(s) failed? What is the specific error message or stack trace?
+2. **Trace to source code**: Use `grep` and file reading to find the relevant source files. Check recent changes in the PR diff that may have introduced the failure.
+3. **Classify the failure**: Use the failure categories above to determine the type. This guides your fix recommendation.
+4. **Research if needed**: If the error involves an external library, API, or tool, use `web-fetch` to check documentation or changelogs for known issues, breaking changes, or migration guides.
+5. **Propose a fix**: Provide a concrete, minimal fix or remediation plan. If you can run tests locally to verify your theory, do so.
+6. **Handle inconclusive cases**: If logs are insufficient to determine root cause, state exactly what additional data is needed and suggest next steps the author can take.
 
-### Step 3: Respond
+### Step 4: Respond
 
-Call `add_comment` on the PR with:
-- A concise summary of the failure and root cause
-- The Buildkite build URL and failing job names
-- The recommended fix or remediation plan
-- Tests run and their results (if any)
-- Any follow-up steps required
+Call `add_comment` on the PR with the following structure:
+
+**Build**: Link to the Buildkite build
+
+**What failed**: Which job(s) and step(s) failed
+
+**Error**: The key error message(s) or stack trace
+
+**Root cause**: What caused the failure and why (with file paths and line numbers where applicable)
+
+**Recommended fix**: Specific steps to resolve, with code snippets if applicable
+
+**Verification**: Tests you ran locally (if any) and their results
+
+Use `<details>` blocks for long log excerpts or stack traces to keep the comment scannable.
 
 ${{ inputs.additional-instructions }}
