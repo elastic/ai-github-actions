@@ -21,7 +21,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# AI assistant for issues — answer questions, debug, and create PRs via /ai
+# AI assistant for issues — answer questions, debug, and create PRs on demand
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -36,9 +36,9 @@
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5684985492be2f322bb3824f14c6a3ffea770ff34c916e8ef1d8b86bf885c8b2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4d5dbf51f8e12caa1ab17cef6e4b13c9c130c531b9324032c38e1e743264b462"}
 
-name: "Issue Assistant"
+name: "Mention in Issue"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -83,7 +83,7 @@ concurrency:
   cancel-in-progress: true
   group: mention-issue-${{ github.event.issue.number }}
 
-run-name: "Issue Assistant"
+run-name: "Mention in Issue"
 
 jobs:
   activation:
@@ -579,7 +579,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Issue Assistant",
+              workflow_name: "Mention in Issue",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1343,7 +1343,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Issue Assistant"
+          GH_AW_WORKFLOW_NAME: "Mention in Issue"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1356,7 +1356,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Issue Assistant"
+          GH_AW_WORKFLOW_NAME: "Mention in Issue"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1369,7 +1369,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Issue Assistant"
+          GH_AW_WORKFLOW_NAME: "Mention in Issue"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-mention-in-issue"
@@ -1389,7 +1389,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Issue Assistant"
+          GH_AW_WORKFLOW_NAME: "Mention in Issue"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1406,7 +1406,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Issue Assistant"
+          GH_AW_WORKFLOW_NAME: "Mention in Issue"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1451,8 +1451,8 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Issue Assistant"
-          WORKFLOW_DESCRIPTION: "AI assistant for issues — answer questions, debug, and create PRs via /ai"
+          WORKFLOW_NAME: "Mention in Issue"
+          WORKFLOW_DESCRIPTION: "AI assistant for issues — answer questions, debug, and create PRs on demand"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1573,7 +1573,7 @@ jobs:
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-mention-in-issue"
-      GH_AW_WORKFLOW_NAME: "Issue Assistant"
+      GH_AW_WORKFLOW_NAME: "Mention in Issue"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}

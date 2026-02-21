@@ -1,4 +1,5 @@
 ---
+name: "Workflow Drift"
 description: "Detect workflow drift — where one or more workflows have fallen behind a pattern adopted by most others"
 imports:
   - gh-aw-fragments/elastic-tools.md

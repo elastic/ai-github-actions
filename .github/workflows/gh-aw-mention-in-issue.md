@@ -1,5 +1,6 @@
 ---
-description: "AI assistant for issues — answer questions, debug, and create PRs via /ai"
+name: "Mention in Issue"
+description: "AI assistant for issues — answer questions, debug, and create PRs on demand"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

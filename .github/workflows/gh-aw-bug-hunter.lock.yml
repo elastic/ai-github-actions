@@ -35,9 +35,9 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e533fe17fbb50698bcc608f61942f52470d41af8ab0fefe16e7345ab81fb5ea5"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"da3abb18e40902637ff4d97029bf023b146300fc5448d33ccf3cc51eb13a978d"}
 
-name: "Gh Aw Bug Hunter"
+name: "Bug Hunter"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -77,7 +77,7 @@ concurrency:
   cancel-in-progress: true
   group: bug-hunter
 
-run-name: "Gh Aw Bug Hunter"
+run-name: "Bug Hunter"
 
 jobs:
   activation:
@@ -628,7 +628,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Gh Aw Bug Hunter",
+              workflow_name: "Bug Hunter",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1186,7 +1186,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Gh Aw Bug Hunter"
+          GH_AW_WORKFLOW_NAME: "Bug Hunter"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1199,7 +1199,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Bug Hunter"
+          GH_AW_WORKFLOW_NAME: "Bug Hunter"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1212,7 +1212,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Bug Hunter"
+          GH_AW_WORKFLOW_NAME: "Bug Hunter"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-bug-hunter"
@@ -1232,7 +1232,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Bug Hunter"
+          GH_AW_WORKFLOW_NAME: "Bug Hunter"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1280,7 +1280,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Gh Aw Bug Hunter"
+          WORKFLOW_NAME: "Bug Hunter"
           WORKFLOW_DESCRIPTION: "Find a reproducible, user-impacting bug and file a report issue"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1383,7 +1383,7 @@ jobs:
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-bug-hunter"
-      GH_AW_WORKFLOW_NAME: "Gh Aw Bug Hunter"
+      GH_AW_WORKFLOW_NAME: "Bug Hunter"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}

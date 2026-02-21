@@ -1,4 +1,5 @@
 ---
+name: "Docs Drift"
 description: "Detect code changes that require documentation updates and file issues"
 imports:
   - gh-aw-fragments/elastic-tools.md

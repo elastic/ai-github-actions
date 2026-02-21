@@ -1,5 +1,6 @@
 ---
-description: "AI assistant for PRs — review, fix code, and push changes via /ai"
+name: "Mention in PR"
+description: "AI assistant for PRs — review, fix code, and push changes on demand"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

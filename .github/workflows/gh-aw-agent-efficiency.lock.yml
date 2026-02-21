@@ -34,9 +34,9 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"028a797da1f8a35af3948d0d27a23e40eedc2acb6aff71c11f7b9db5e09cfb56"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c0996131bb2124751616641d9e670037633a0e4aa7c93c25a90f02bc03cdc2fe"}
 
-name: "Gh Aw Agent Efficiency"
+name: "Agent Efficiency"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -76,7 +76,7 @@ concurrency:
   cancel-in-progress: true
   group: agent-efficiency
 
-run-name: "Gh Aw Agent Efficiency"
+run-name: "Agent Efficiency"
 
 jobs:
   activation:
@@ -686,7 +686,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Gh Aw Agent Efficiency",
+              workflow_name: "Agent Efficiency",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1244,7 +1244,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Gh Aw Agent Efficiency"
+          GH_AW_WORKFLOW_NAME: "Agent Efficiency"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1257,7 +1257,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Agent Efficiency"
+          GH_AW_WORKFLOW_NAME: "Agent Efficiency"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1270,7 +1270,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Agent Efficiency"
+          GH_AW_WORKFLOW_NAME: "Agent Efficiency"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-agent-efficiency"
@@ -1290,7 +1290,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Agent Efficiency"
+          GH_AW_WORKFLOW_NAME: "Agent Efficiency"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1338,7 +1338,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Gh Aw Agent Efficiency"
+          WORKFLOW_NAME: "Agent Efficiency"
           WORKFLOW_DESCRIPTION: "Analyze agent workflow logs for inefficiencies, errors, and prompt improvement opportunities"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1441,7 +1441,7 @@ jobs:
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-agent-efficiency"
-      GH_AW_WORKFLOW_NAME: "Gh Aw Agent Efficiency"
+      GH_AW_WORKFLOW_NAME: "Agent Efficiency"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}

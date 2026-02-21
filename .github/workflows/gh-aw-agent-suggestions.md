@@ -1,4 +1,5 @@
 ---
+name: "Agent Suggestions"
 description: "Suggest new agent workflows based on repo needs and downstream activity"
 imports:
   - gh-aw-fragments/elastic-tools.md

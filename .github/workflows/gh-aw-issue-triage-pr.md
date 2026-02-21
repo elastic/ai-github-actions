@@ -1,4 +1,5 @@
 ---
+name: "Issue Triage (with PR)"
 description: "Investigate new issues and provide actionable triage analysis with optional PR creation"
 imports:
   - gh-aw-fragments/elastic-tools.md

@@ -33,9 +33,9 @@
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3209f313fbbeeaed646c8b3444202b3a8fb26d9541009e826f48d158a763527e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e94459147270a05efe43bf03a24d4045e6ef4ff49e86e34a686ba5d9fbc0d043"}
 
-name: "Issue Triage Agent"
+name: "Issue Triage"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -75,7 +75,7 @@ concurrency:
   cancel-in-progress: true
   group: issue-triage-${{ github.event.issue.number }}
 
-run-name: "Issue Triage Agent"
+run-name: "Issue Triage"
 
 jobs:
   activation:
@@ -579,7 +579,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Issue Triage Agent",
+              workflow_name: "Issue Triage",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1098,7 +1098,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Issue Triage Agent"
+          GH_AW_WORKFLOW_NAME: "Issue Triage"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1111,7 +1111,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Issue Triage Agent"
+          GH_AW_WORKFLOW_NAME: "Issue Triage"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1124,7 +1124,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Issue Triage Agent"
+          GH_AW_WORKFLOW_NAME: "Issue Triage"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-issue-triage"
@@ -1144,7 +1144,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Issue Triage Agent"
+          GH_AW_WORKFLOW_NAME: "Issue Triage"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1192,7 +1192,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Issue Triage Agent"
+          WORKFLOW_NAME: "Issue Triage"
           WORKFLOW_DESCRIPTION: "Investigate new issues and provide actionable triage analysis"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1312,7 +1312,7 @@ jobs:
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-issue-triage"
-      GH_AW_WORKFLOW_NAME: "Issue Triage Agent"
+      GH_AW_WORKFLOW_NAME: "Issue Triage"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}

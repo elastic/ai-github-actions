@@ -1,4 +1,5 @@
 ---
+name: "Stale Issues"
 description: "Find open issues that appear to already be resolved and recommend closing them"
 imports:
   - gh-aw-fragments/elastic-tools.md

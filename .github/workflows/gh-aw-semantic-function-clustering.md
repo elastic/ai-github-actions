@@ -1,4 +1,5 @@
 ---
+name: "Semantic Function Clustering"
 description: "Analyze source code for semantic function clustering and refactoring opportunities"
 imports:
   - gh-aw-fragments/elastic-tools.md

@@ -1,4 +1,5 @@
 ---
+name: "Agent Efficiency"
 description: "Analyze agent workflow logs for inefficiencies, errors, and prompt improvement opportunities"
 imports:
   - gh-aw-fragments/elastic-tools.md

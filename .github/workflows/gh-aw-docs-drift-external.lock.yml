@@ -35,9 +35,9 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8ef375c6e85b41a82b1758bffb9df2bd3871b319dc1349a840b28c6ac99e47cc"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"20a2133a748d0addc832cccd3a36e88841e16b8ace85c470dfacc009283f5279"}
 
-name: "Gh Aw Docs Drift External"
+name: "Docs Drift External"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -82,7 +82,7 @@ concurrency:
   cancel-in-progress: true
   group: docs-drift-external
 
-run-name: "Gh Aw Docs Drift External"
+run-name: "Docs Drift External"
 
 jobs:
   activation:
@@ -661,7 +661,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Gh Aw Docs Drift External",
+              workflow_name: "Docs Drift External",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1229,7 +1229,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Gh Aw Docs Drift External"
+          GH_AW_WORKFLOW_NAME: "Docs Drift External"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1242,7 +1242,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Docs Drift External"
+          GH_AW_WORKFLOW_NAME: "Docs Drift External"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1255,7 +1255,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Docs Drift External"
+          GH_AW_WORKFLOW_NAME: "Docs Drift External"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-docs-drift-external"
@@ -1275,7 +1275,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Docs Drift External"
+          GH_AW_WORKFLOW_NAME: "Docs Drift External"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1323,7 +1323,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Gh Aw Docs Drift External"
+          WORKFLOW_NAME: "Docs Drift External"
           WORKFLOW_DESCRIPTION: "Detect code changes that require updates to published Elastic documentation"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1426,7 +1426,7 @@ jobs:
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-docs-drift-external"
-      GH_AW_WORKFLOW_NAME: "Gh Aw Docs Drift External"
+      GH_AW_WORKFLOW_NAME: "Docs Drift External"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}

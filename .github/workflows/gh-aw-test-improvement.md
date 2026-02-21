@@ -1,4 +1,5 @@
 ---
+name: "Test Improvement"
 description: "Add focused tests for under-tested code and clean up redundant tests"
 imports:
   - gh-aw-fragments/elastic-tools.md
