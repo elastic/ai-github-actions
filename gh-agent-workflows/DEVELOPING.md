@@ -62,7 +62,7 @@ workflow (gh-aw-docs-drift.md)
  └── ...
 ```
 
-`gh-aw-upgrade-check` is an **internal-only** workflow — its shim lives directly in `.github/workflows/` (not in `gh-agent-workflows/`) so it is not installable via `gh aw add`. It runs on weekdays to check for new `gh-aw` releases and files issues tagged `[gh-aw-upgrade]`.
+`gh-aw-upgrade-check` and `gh-aw-downstream-users` are **internal-only** workflows — their shims live directly in `.github/workflows/` (not in `gh-agent-workflows/`) so they are not installable via `gh aw add`. `gh-aw-upgrade-check` runs on weekdays to check for new `gh-aw` releases and files issues tagged `[gh-aw-upgrade]`; `gh-aw-downstream-users` updates `data/downstream-users.json` for this repository.
 
 ### Shared fragments
 
@@ -179,6 +179,6 @@ Consumer repos call the compiled `.lock.yml` via `uses:` in a plain YAML workflo
 
 ### Trigger files
 
-Each workflow has a corresponding `example.yml` in `gh-agent-workflows/<name>/` that defines the actual event triggers and calls the compiled `.lock.yml`. These are plain YAML (not compiled by gh-aw) and are copied to `.github/workflows/trigger-<name>.yml` by `scripts/dogfood.sh` for dogfooding when the workflow is not listed in `EXCLUDED_WORKFLOWS`.
+Each non-internal workflow has a corresponding `example.yml` in `gh-agent-workflows/<name>/` that defines the actual event triggers and calls the compiled `.lock.yml`. These are plain YAML (not compiled by gh-aw) and are copied to `.github/workflows/trigger-<name>.yml` by `scripts/dogfood.sh` for dogfooding when the workflow is not listed in `EXCLUDED_WORKFLOWS`.
 
 Consumer repos copy a workflow's `example.yml` into their `.github/workflows/` directory and customize the `with:` inputs. The `uses:` path already points to the remote compiled workflow.
