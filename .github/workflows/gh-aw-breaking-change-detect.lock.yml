@@ -37,7 +37,7 @@
 #
 # gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a57a60deaa0167e41dbef34465b9ce06b440e38526dd91d0856cdfecb84485db"}
 
-name: "Gh Aw Breaking Change Detect"
+name: "Breaking Change Detect"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -77,7 +77,7 @@ concurrency:
   cancel-in-progress: true
   group: breaking-change-detect
 
-run-name: "Gh Aw Breaking Change Detect"
+run-name: "Breaking Change Detect"
 
 jobs:
   activation:
@@ -630,7 +630,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Gh Aw Breaking Change Detect",
+              workflow_name: "Breaking Change Detect",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1188,7 +1188,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Gh Aw Breaking Change Detect"
+          GH_AW_WORKFLOW_NAME: "Breaking Change Detect"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1201,7 +1201,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Breaking Change Detect"
+          GH_AW_WORKFLOW_NAME: "Breaking Change Detect"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1214,7 +1214,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Breaking Change Detect"
+          GH_AW_WORKFLOW_NAME: "Breaking Change Detect"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-breaking-change-detect"
@@ -1234,7 +1234,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Breaking Change Detect"
+          GH_AW_WORKFLOW_NAME: "Breaking Change Detect"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1282,7 +1282,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Gh Aw Breaking Change Detect"
+          WORKFLOW_NAME: "Breaking Change Detect"
           WORKFLOW_DESCRIPTION: "Detect undocumented breaking changes in public interfaces"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1385,7 +1385,7 @@ jobs:
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-breaking-change-detect"
-      GH_AW_WORKFLOW_NAME: "Gh Aw Breaking Change Detect"
+      GH_AW_WORKFLOW_NAME: "Breaking Change Detect"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}

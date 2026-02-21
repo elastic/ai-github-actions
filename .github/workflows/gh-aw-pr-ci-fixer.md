@@ -1,5 +1,5 @@
 ---
-description: "Analyze failed PR checks and optionally push fixes (opt-in)"
+description: "Opt-in fixer for failed PR checks that can push safe, targeted changes"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

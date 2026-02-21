@@ -36,7 +36,7 @@
 #
 # gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f677a1355b67dcd8d6f94287515662715e79ae33280e91406ce6c7976c6c97f7"}
 
-name: "Gh Aw Docs New Contributor Review External"
+name: "Docs New Contributor Review External"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -76,7 +76,7 @@ concurrency:
   cancel-in-progress: true
   group: docs-new-contributor-review-external
 
-run-name: "Gh Aw Docs New Contributor Review External"
+run-name: "Docs New Contributor Review External"
 
 jobs:
   activation:
@@ -604,7 +604,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Gh Aw Docs New Contributor Review External",
+              workflow_name: "Docs New Contributor Review External",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1171,7 +1171,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Gh Aw Docs New Contributor Review External"
+          GH_AW_WORKFLOW_NAME: "Docs New Contributor Review External"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1184,7 +1184,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Docs New Contributor Review External"
+          GH_AW_WORKFLOW_NAME: "Docs New Contributor Review External"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1197,7 +1197,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Docs New Contributor Review External"
+          GH_AW_WORKFLOW_NAME: "Docs New Contributor Review External"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-docs-new-contributor-review-external"
@@ -1217,7 +1217,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Docs New Contributor Review External"
+          GH_AW_WORKFLOW_NAME: "Docs New Contributor Review External"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1265,7 +1265,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Gh Aw Docs New Contributor Review External"
+          WORKFLOW_NAME: "Docs New Contributor Review External"
           WORKFLOW_DESCRIPTION: "Review docs from a new contributor perspective, cross-referencing published Elastic documentation"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1368,7 +1368,7 @@ jobs:
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-docs-new-contributor-review-external"
-      GH_AW_WORKFLOW_NAME: "Gh Aw Docs New Contributor Review External"
+      GH_AW_WORKFLOW_NAME: "Docs New Contributor Review External"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
