@@ -1,1 +1,1 @@
-allowed-bot-users: "github-actions[bot],copilot[bot]"
+allowed-bot-users: "github-actions[bot],copilot"

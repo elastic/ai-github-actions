@@ -14,6 +14,6 @@ jobs:
   run:
     uses: ./.github/workflows/gh-aw-issue-triage.lock.yml
     with:
-      allowed-bot-users: "github-actions[bot],copilot[bot]"
+      allowed-bot-users: "github-actions[bot],copilot"
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
