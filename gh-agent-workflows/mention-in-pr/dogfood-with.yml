@@ -1,3 +1,1 @@
 allowed-bot-users: "github-actions[bot],copilot[bot]"
-intensity: aggressive
-minimum_severity: nitpick

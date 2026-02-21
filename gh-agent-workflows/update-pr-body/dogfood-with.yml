@@ -1,3 +1,4 @@
+allowed-bot-users: "github-actions[bot],copilot[bot]"
 edit-accuracy: high
 edit-completeness: high
 edit-format: high

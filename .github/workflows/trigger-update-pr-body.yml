@@ -13,6 +13,7 @@ jobs:
     if: github.event.pull_request.draft == false && !contains(github.event.pull_request.labels.*.name, 'skip-pr-body-update')
     uses: ./.github/workflows/gh-aw-update-pr-body.lock.yml
     with:
+      allowed-bot-users: "github-actions[bot],copilot[bot]"
       edit-accuracy: high
       edit-completeness: high
       edit-format: high
