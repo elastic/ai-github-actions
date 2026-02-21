@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e1596fb0ff104ce90843c131835190adbd09adf41291c87b51c11fd34ba00b13"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"718adb5066fb5767b9fefa4ed55532b93466ddf9b68a35d3a546ef84cf95dd4f"}
 
 name: "PR Actions Fixer"
 "on":
@@ -55,7 +55,7 @@ name: "PR Actions Fixer"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

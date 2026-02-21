@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"76677a5c276b3ec7f97560d70294dd7af17de8154f29a52198de9d8cede0dbaf"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"10f624cc7c822b0e4725b7040976d667a91237640aac72d77cfa472c3f21e8bb"}
 
 name: "Code Duplication Fixer"
 "on":
@@ -55,7 +55,7 @@ name: "Code Duplication Fixer"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

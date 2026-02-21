@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"760d2c65f08ce2e248d5f20032748d9db3aab3a37b206d946ab1d8f24e5601f3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"698a75674310876fea1d037b9d2d921b4697776e55e5e72277c14f8fb2c7e45a"}
 
 name: "Bug Hunter"
 "on":
@@ -55,7 +55,7 @@ name: "Bug Hunter"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

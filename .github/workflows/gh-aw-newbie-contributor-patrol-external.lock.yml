@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"fc58e605bfa7ecfb4131d8ac36c2476337519dab3c704d204dc3c54d3f106d49"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c70f7ec8e47e6808a83fe48b0526deaca5fd10a81389018c004e91345c4c646d"}
 
 name: "Newbie Contributor Patrol External"
 "on":
@@ -54,7 +54,7 @@ name: "Newbie Contributor Patrol External"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

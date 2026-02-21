@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"524d010a9afdffa2c7634092afdd9b76b933b1ee3b52d83a4ac6db581758b009"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"fbf8411cfeb47d35611bcacfaf53d8b83a8eda88c3d0ebd5ab2d0f7d0c4da565"}
 
 name: "Docs Patrol External"
 "on":
@@ -55,7 +55,7 @@ name: "Docs Patrol External"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

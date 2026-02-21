@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bc00a8c8f1d0772fb7dd159091be4a348d113116528c926eae3b8731916a57c3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"73a5c94c925e709fa197ec306d6769d5d5c825b80ce839352df3063a4d146a37"}
 
 name: "Gh Aw Bug Exterminator"
 "on":
@@ -55,7 +55,7 @@ name: "Gh Aw Bug Exterminator"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

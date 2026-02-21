@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5407be51afed9319bcbdd8da718762d79b3ddb6c28bc2ed7edf261cd01714d58"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"79e117e52eef719f704b99af7dae97963f89da77aa7258210fef01ba9c4240ae"}
 
 name: "Scheduled Audit"
 "on":
@@ -53,7 +53,7 @@ name: "Scheduled Audit"
         required: true
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

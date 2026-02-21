@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cc7c14a7433b79cbd13c3d506db174c7b72c0bb7d8684847e702cd9608ec71c4"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"831f5682acbc3c1d4b8a0f38ee88aec6b0787bbfc5534b3b26df0f515c198560"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -53,7 +53,7 @@ name: "PR Buildkite Detective"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

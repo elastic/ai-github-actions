@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a42e6db2bc4a150c439e71c44d24fe9ca2e3ff4bed1b9ec5e4c9ecdd2ee278d0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2fefb85de7028246ed046eb6acb69447dcc8a0be45b4e78e7124664306350e63"}
 
 name: "Duplicate Issue Detector"
 "on":
@@ -52,7 +52,7 @@ name: "Duplicate Issue Detector"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

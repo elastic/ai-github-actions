@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"98bd99c723dfc9296e6756c3d30a0dc5e0ac3b4cf2c71f79281d8e011c201cc8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a8ce5db213611ccdd6e1437e442e68d81d5299e7dd6a6dcb023f311e468d73d7"}
 
 name: "Agent Efficiency"
 "on":
@@ -54,7 +54,7 @@ name: "Agent Efficiency"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

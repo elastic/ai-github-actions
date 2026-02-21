@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"05a8222ed64c0e2d7bdadf1a38c9d5810bdc5c3cc558ddb2c333f8650ee7c6a4"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"af0af5e3ca894180cdb7fcd4cecda5ffb18b713ee555da471120024064666dd5"}
 
 name: "Agent Suggestions"
 "on":
@@ -54,7 +54,7 @@ name: "Agent Suggestions"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

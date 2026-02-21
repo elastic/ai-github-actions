@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7cb47f202abb49164bc3816b120f1cf4f37344a351b5ee2a42b5217ae1f4b407"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"220819dd6c295567e5f7f3b7fa49adb7b30c19dada1112746ab93b4d5a370e18"}
 
 name: "Issue Fixer"
 "on":
@@ -55,7 +55,7 @@ name: "Issue Fixer"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

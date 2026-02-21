@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"460f3a2c367e1e10e8572c37fe53c27f9386073e3df4cd327b20a50affc7259f"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f30d38ae52f01f717ad4d5cff2680732378da5f172774a7fec2e09cd8dcbdb88"}
 
 name: "PR Review"
 "on":
@@ -56,7 +56,7 @@ name: "PR Review"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string

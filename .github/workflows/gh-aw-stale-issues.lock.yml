@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cb0ac749cfef989a2813f1b15b3a6104ecb4a68760a9f56c33c811bc0c48f61a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5e0fd07fe6ba2335c27b44f268764b1e410d1a308ac60307c84831efb0d79b78"}
 
 name: "Stale Issues"
 "on":
@@ -54,7 +54,7 @@ name: "Stale Issues"
         required: false
         type: string
       allowed-bot-users:
-        default: github-actions[bot]
+        default: github-actions[bot],copilot[bot]
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
