@@ -108,33 +108,21 @@ Classify each promising candidate into one of three categories:
 
 Post **exactly one** `add_comment` call total (or `noop` if nothing is found). Do not call `add_comment` more than once.
 
-Select the single most relevant match across all candidates:
-- A **clear duplicate** takes priority over a highly related issue.
-- Among candidates of the same tier, prefer the most relevant open issue over a closed one.
+**If any duplicates or highly related issues were found:**
 
-**If the best match is a clear duplicate:**
+Call `add_comment` with a single comment combining all findings. Include up to **3 duplicate issues** and up to **3 highly related issues**, each ranked from most to least relevant to the current issue. Use this format:
 
-Call `add_comment` with a concise comment in this format:
+```
+**Possible duplicates** (issues that appear to describe the same problem):
+- #{number} — {title}: {one concise sentence explaining the overlap}
+- #{number} — {title}: {one concise sentence explaining the overlap}
 
-> This issue appears to be a duplicate of #{number} — {title}.
->
-> {One sentence explaining the similarity.}
->
-> Linking to the existing issue for tracking. If this is actually a different problem, please add more details to distinguish it.
+**Highly related** (separate issues that significantly overlap or share scope):
+- #{number} — {title}: {one concise sentence explaining how they are related and how they differ}
+- #{number} — {title}: {one concise sentence explaining how they are related and how they differ}
+```
 
-**If the best match is a highly related (but not duplicate) issue:**
-
-Call `add_comment` with a concise comment in this format:
-
-> This issue is highly related to #{number} — {title}.
->
-> {One sentence explaining how they are related and how they differ.}
->
-> Linking for visibility — these are separate issues but may benefit from coordination.
-
-**In all cases:**
-- Use neutral, helpful language — the reporter may not be familiar with the existing issue.
-- Do NOT use `fixes`, `closes`, or `resolves` keywords.
+Omit a section entirely if no issues qualify for it. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
 
 **If no duplicate or highly related issue is found:**
 
