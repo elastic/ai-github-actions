@@ -32,7 +32,7 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-add-comment.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"04c28a50a4e2dba5ec574366af23f5736afb47c2ed520b94ced6c09d347344f9"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c14d5ea27f52a523ddc4d08e3258d8232fada7f0cb88b66449d99e5539a75d47"}
 
 name: "Duplicate Issue Detector"
 "on":
@@ -1057,7 +1057,7 @@ jobs:
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
-          GH_AW_NOOP_REPORT_AS_ISSUE: "true"
+          GH_AW_NOOP_REPORT_AS_ISSUE: "false"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
