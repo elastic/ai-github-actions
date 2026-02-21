@@ -40,3 +40,9 @@ jobs:
           # additional-instructions: "Pay special attention to security patterns"
           # Note: All Bash commands (Bash(*)) are allowed by default
           # Use extra-allowed-tools to add additional tools if needed
+
+      - name: Minimize resolved review threads
+        if: always()
+        uses: strawgate/minimize-resolved-pr-reviews@v0
+        with:
+          github-token: ${{ github.token }}

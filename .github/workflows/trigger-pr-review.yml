@@ -17,3 +17,14 @@ jobs:
     uses: ./.github/workflows/gh-aw-pr-review.lock.yml
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+  minimize:
+    needs: run
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: strawgate/minimize-resolved-pr-reviews@v0
+        with:
+          github-token: ${{ github.token }}
