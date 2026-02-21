@@ -153,7 +153,7 @@ make compile          # sync + compile
 ### Adding a new workflow
 
 1. Create the workflow `.github/workflows/gh-aw-<name>.md` with imports (fragments), tools, network, safe-outputs, and the full prompt
-2. Create `gh-agent-workflows/<name>/example.yml` with event triggers and `uses: elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@v0`
+2. Create `gh-agent-workflows/<name>/example.yml` with event triggers and `uses: elastic/ai-github-actions/.github/workflows/gh-aw-<name>.lock.yml@e1d1b3475a1318f42c9f46c597f9b0eb0972bd74` (`v0.2.5`)
 3. Create `gh-agent-workflows/<name>/README.md` with trigger details, inputs, and safe outputs
 4. Run `make compile`
 5. Verify and commit

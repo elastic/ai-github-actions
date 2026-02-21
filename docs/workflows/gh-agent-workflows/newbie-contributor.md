@@ -76,7 +76,7 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-newbie-contributor-patrol.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-newbie-contributor-patrol.lock.yml@e1d1b3475a1318f42c9f46c597f9b0eb0972bd74 # v0.2.5
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
@@ -121,7 +121,7 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-newbie-contributor-patrol-external.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-newbie-contributor-patrol-external.lock.yml@e1d1b3475a1318f42c9f46c597f9b0eb0972bd74 # v0.2.5
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
@@ -166,7 +166,7 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-newbie-contributor-fixer.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-newbie-contributor-fixer.lock.yml@e1d1b3475a1318f42c9f46c597f9b0eb0972bd74 # v0.2.5
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

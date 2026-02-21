@@ -16,7 +16,7 @@ jobs:
     if: >-
       github.event.workflow_run.conclusion == 'failure' &&
       toJSON(github.event.workflow_run.pull_requests) != '[]'
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-buildkite-detective.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-buildkite-detective.lock.yml@e1d1b3475a1318f42c9f46c597f9b0eb0972bd74 # v0.2.5
     with:
       buildkite-org: "elastic"
       # buildkite-pipeline: "your-pipeline"  # auto-discovered if omitted

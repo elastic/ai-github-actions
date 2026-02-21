@@ -69,7 +69,7 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-text-auditor.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-text-auditor.lock.yml@e1d1b3475a1318f42c9f46c597f9b0eb0972bd74 # v0.2.5
     with:
       # edit-typos: low
       # edit-grammar: low
@@ -120,7 +120,7 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-text-beautifier.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-text-beautifier.lock.yml@e1d1b3475a1318f42c9f46c597f9b0eb0972bd74 # v0.2.5
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

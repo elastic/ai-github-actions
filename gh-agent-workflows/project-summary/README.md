@@ -38,7 +38,7 @@ Use `additional-instructions` to switch from a neutral status report to a narrat
 ````yaml
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-project-summary.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-project-summary.lock.yml@e1d1b3475a1318f42c9f46c597f9b0eb0972bd74 # v0.2.5
     with:
       additional-instructions: |
         Write the summary as a project chronicler.

@@ -22,10 +22,10 @@ The following workflows have been renamed. Consumers referencing the old `uses:`
 
 ```yaml
 # Before
-uses: elastic/ai-github-actions/.github/workflows/gh-aw-docs-drift.lock.yml@v0
+uses: elastic/ai-github-actions/.github/workflows/gh-aw-docs-drift.lock.yml@e1d1b3475a1318f42c9f46c597f9b0eb0972bd74 # v0.2.5
 
 # After
-uses: elastic/ai-github-actions/.github/workflows/gh-aw-docs-patrol.lock.yml@v0
+uses: elastic/ai-github-actions/.github/workflows/gh-aw-docs-patrol.lock.yml@e1d1b3475a1318f42c9f46c597f9b0eb0972bd74 # v0.2.5
 ```
 
 ### Breaking changes — removed workflows
