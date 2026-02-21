@@ -30,6 +30,21 @@ See [example.yml](example.yml) for the full workflow file.
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `edit-typos` | How aggressively to flag typos and misspellings (`high`/`low`/`none`) | No | `low` |
+| `edit-grammar` | How aggressively to flag grammar and sentence construction problems (`high`/`low`/`none`) | No | `low` |
+| `edit-clarity` | How aggressively to flag unclear user-facing text (`high`/`low`/`none`) | No | `low` |
+| `edit-terminology` | How aggressively to flag inconsistent terminology (`high`/`low`/`none`) | No | `low` |
+| `edit-misleading-text` | How aggressively to flag text that conflicts with behavior (`high`/`low`/`none`) | No | `low` |
+
+### Edit Levels
+
+Each edit dimension accepts one of three levels:
+
+| Level | Meaning |
+| --- | --- |
+| `high` | Apply best judgment proactively within this dimension |
+| `low` | Report only concrete, unambiguous problems in this dimension |
+| `none` | Skip this dimension entirely |
 
 ## Safe Outputs
 
