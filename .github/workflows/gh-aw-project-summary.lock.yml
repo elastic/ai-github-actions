@@ -98,7 +98,7 @@ jobs:
       comment_repo: ""
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
+        uses: github/gh-aw/actions/setup@50ab5443c80cab030b39f7c9e43445b4a254c8a9 # v0.48.2
         with:
           destination: /opt/gh-aw/actions
       - name: Validate context variables
@@ -470,7 +470,6 @@ jobs:
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
-          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: ${{ needs.pre_activation.outputs.matched_command }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -491,8 +490,7 @@ jobs:
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
               }
             });
       - name: Validate prompt placeholders
@@ -539,7 +537,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
+        uses: github/gh-aw/actions/setup@50ab5443c80cab030b39f7c9e43445b4a254c8a9 # v0.48.2
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -641,7 +639,7 @@ jobs:
               engine_name: "GitHub Copilot CLI",
               model: "${{ inputs.model }}",
               version: "",
-              agent_version: "0.0.412",
+              agent_version: "0.0.414",
               workflow_name: "Project Summary",
               experimental: false,
               supports_tools_allowlist: true,
@@ -678,7 +676,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       - name: Install GitHub Copilot CLI
-        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.412
+        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.414
       - name: Install awf binary
         run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.20.2
       - name: Determine automatic lockdown mode for GitHub MCP Server
@@ -1206,7 +1204,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
+        uses: github/gh-aw/actions/setup@50ab5443c80cab030b39f7c9e43445b4a254c8a9 # v0.48.2
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1297,7 +1295,7 @@ jobs:
       success: ${{ steps.parse_results.outputs.success }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
+        uses: github/gh-aw/actions/setup@50ab5443c80cab030b39f7c9e43445b4a254c8a9 # v0.48.2
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent artifacts
@@ -1339,7 +1337,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       - name: Install GitHub Copilot CLI
-        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.412
+        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.414
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
@@ -1390,9 +1388,10 @@ jobs:
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
+      matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
+        uses: github/gh-aw/actions/setup@50ab5443c80cab030b39f7c9e43445b4a254c8a9 # v0.48.2
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1432,7 +1431,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
+        uses: github/gh-aw/actions/setup@50ab5443c80cab030b39f7c9e43445b4a254c8a9 # v0.48.2
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
