@@ -121,23 +121,23 @@ Call `add_comment` with a single comment combining all findings. Include up to *
 
 ```
 **Possible duplicates** (issues that appear to describe the same problem):
-- <details><summary>#{number}</summary>
+- <details><summary>#{number}: {candidate issue title}</summary>
   {one concise sentence explaining why this issue overlaps with the candidate issue}
   </details>
-- <details><summary>#{number}</summary>
+- <details><summary>#{number}: {candidate issue title}</summary>
   {one concise sentence explaining why this issue overlaps with the candidate issue}
   </details>
 
 **Highly related** (separate issues that significantly overlap or share scope):
-- <details><summary>#{number}</summary>
+- <details><summary>#{number}: {candidate issue title}</summary>
   {one concise sentence explaining the shared scope and the key difference from this issue}
   </details>
-- <details><summary>#{number}</summary>
+- <details><summary>#{number}: {candidate issue title}</summary>
   {one concise sentence explaining the shared scope and the key difference from this issue}
   </details>
 ```
 
-Omit the **Highly related** section entirely when related issues detection is disabled or when no issues qualify for it. Omit a section entirely if no issues qualify for it. In justifications, refer to the current report as **"this issue"** (not by number), and do not repeat candidate issue titles because GitHub already expands linked issue references with titles. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
+Omit the **Highly related** section entirely when related issues detection is disabled or when no issues qualify for it. Omit a section entirely if no issues qualify for it. In justifications, refer to the current report as **"this issue"** (not by number). Include candidate issue titles in `<summary>` because GitHub may not auto-expand `#{number}` references inside HTML summary tags. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
 
 **If no duplicate (or highly related issue, when detection is enabled) is found:**
 
