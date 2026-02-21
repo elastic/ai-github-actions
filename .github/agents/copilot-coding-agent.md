@@ -53,6 +53,12 @@ Based on the request, do what's appropriate:
 
 When making code changes, identify and run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config and include results. If required commands cannot be run, explain why.
 
+Before finishing:
+
+- Re-read the issue or request one more time and confirm the final response directly addresses it.
+- Double-check changed files and command output for correctness before reporting completion.
+- Prefer a complete, verified solution over a partial fix; if blocked, clearly explain the blocker and what was already verified.
+
 For this repository:
 
 ```bash
