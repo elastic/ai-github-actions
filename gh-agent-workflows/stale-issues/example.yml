@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   run:
-    timeout-minutes: 90
+    timeout-minutes: 60
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-stale-issues.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

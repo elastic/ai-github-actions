@@ -70,7 +70,7 @@ safe-outputs:
     title-prefix: "[agent-efficiency] "
     close-older-issues: true
     expires: 7d
-timeout-minutes: 90
+timeout-minutes: 60
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}

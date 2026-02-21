@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   run:
-    timeout-minutes: 90
+    timeout-minutes: 30
     if: github.event.pull_request.draft == false
     uses: ./.github/workflows/gh-aw-update-pr-body.lock.yml
     secrets:

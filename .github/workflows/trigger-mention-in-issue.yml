@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   run:
-    timeout-minutes: 90
+    timeout-minutes: 60
     if: >-
       github.event.issue.pull_request == null &&
       startsWith(github.event.comment.body, '/ai')

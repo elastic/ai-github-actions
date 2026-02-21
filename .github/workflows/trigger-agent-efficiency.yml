@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   run:
-    timeout-minutes: 90
+    timeout-minutes: 60
     uses: ./.github/workflows/gh-aw-agent-efficiency.lock.yml
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
