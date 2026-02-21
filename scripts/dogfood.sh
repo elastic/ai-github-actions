@@ -20,6 +20,7 @@ cd "$REPO_ROOT"
 EXCLUDED_WORKFLOWS=(
   "flaky-test-triage"
   "issue-triage-pr"
+  "pr-review-fork"
 )
 
 echo "Syncing workflow files..."
@@ -36,7 +37,7 @@ for f in gh-agent-workflows/*/example.yml; do
   done
   if [[ "$skip" == "true" ]]; then
     rm -f ".github/workflows/trigger-$dir.yml"
-    echo "  ✗ gh-agent-workflows/$dir/example.yml (excluded)"
+    echo "  ✗ gh-agent-workflows/$dir/example.yml (excluded — manual sync required)"
     continue
   fi
   sed 's|uses: elastic/ai-github-actions/\(.*\)@v0|uses: ./\1|; s|^name: |name: Trigger |' "$f" \
