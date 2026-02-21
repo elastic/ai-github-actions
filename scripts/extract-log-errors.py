@@ -143,6 +143,11 @@ def main() -> None:
 
     if not log_files:
         print("No log files found.", file=sys.stderr)
+        # Always write an empty result to --output so downstream steps have a consistent file
+        if args.output:
+            empty = {"total_files_scanned": 0, "total_matches": 0, "matches": []}
+            with open(args.output, "w") as f:
+                json.dump(empty, f, indent=2)
         sys.exit(0)
 
     print(f"Scanning {len(log_files)} log file(s)...", file=sys.stderr)
