@@ -25,6 +25,11 @@ on:
         type: string
         required: false
         default: "github-actions[bot]"
+      detect-related-issues:
+        description: "Detect highly related (but not duplicate) issues in addition to exact duplicates (default: true)"
+        type: string
+        required: false
+        default: "true"
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string
@@ -87,14 +92,16 @@ For each candidate result, read the title and (if promising) the body to assess 
 
 ### Step 3: Evaluate Candidates
 
-Classify each promising candidate into one of three categories:
+**Related issues detection setting**: ${{ inputs.detect-related-issues }}
+
+Classify each promising candidate using the categories below. If related issues detection is disabled (setting is `"false"`), only use the **Clear duplicate** and **Not related** categories — skip the **Highly related** category entirely.
 
 **Clear duplicate** — the candidate describes **the same underlying problem or request**:
 - Reports the same bug or requests the exact same feature
 - The affected component, behavior, and scope are the same
 - A fix for the candidate would fully resolve this issue too
 
-**Highly related** — the candidate is closely related but **not** the same issue:
+**Highly related** *(only when related issues detection is enabled)* — the candidate is closely related but **not** the same issue:
 - Covers a very similar area, component, or failure mode
 - One issue is a subset or superset of the other
 - Both issues overlap significantly but each has distinct scope or nuance
@@ -102,15 +109,15 @@ Classify each promising candidate into one of three categories:
 **Not related** — skip it if:
 - The candidate only shares the same general topic area
 - The candidate is closed as "wont fix" or "invalid" with no resolution of the underlying issue
-- You are uncertain — when in doubt, prefer "not related" over "highly related", and "highly related" over "duplicate"
+- You are uncertain — when in doubt, err on the side of "not related"; if related issues detection is enabled, prefer "highly related" over "duplicate" for borderline overlapping cases
 
 ### Step 4: Post Result
 
 Post **exactly one** `add_comment` call total (or `noop` if nothing is found). Do not call `add_comment` more than once.
 
-**If any duplicates or highly related issues were found:**
+**If any duplicates (or highly related issues, when detection is enabled) were found:**
 
-Call `add_comment` with a single comment combining all findings. Include up to **3 duplicate issues** and up to **3 highly related issues**, each ranked from most to least relevant to the current issue. Use this format:
+Call `add_comment` with a single comment combining all findings. Include up to **3 duplicate issues** and, when related issues detection is enabled, up to **3 highly related issues**, each ranked from most to least relevant to the current issue. Use this format:
 
 ```
 **Possible duplicates** (issues that appear to describe the same problem):
@@ -122,9 +129,9 @@ Call `add_comment` with a single comment combining all findings. Include up to *
 - #{number} — {title}: {one concise sentence explaining how they are related and how they differ}
 ```
 
-Omit a section entirely if no issues qualify for it. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
+Omit the **Highly related** section entirely when related issues detection is disabled or when no issues qualify for it. Omit a section entirely if no issues qualify for it. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
 
-**If no duplicate or highly related issue is found:**
+**If no duplicate (or highly related issue, when detection is enabled) is found:**
 
 Call `noop` with message "No duplicate found for issue #${{ github.event.issue.number }}".
 

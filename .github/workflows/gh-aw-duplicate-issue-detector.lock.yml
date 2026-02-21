@@ -32,7 +32,7 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/safe-output-add-comment.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c14d5ea27f52a523ddc4d08e3258d8232fada7f0cb88b66449d99e5539a75d47"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f5abc3ea0dd624459275726bbbdad68705d7273e78bd85f59bc77568174b5762"}
 
 name: "Duplicate Issue Detector"
 "on":
@@ -52,6 +52,11 @@ name: "Duplicate Issue Detector"
       allowed-bot-users:
         default: github-actions[bot]
         description: Allowlisted bot actor usernames (comma-separated)
+        required: false
+        type: string
+      detect-related-issues:
+        default: "true"
+        description: "Detect highly related (but not duplicate) issues in addition to exact duplicates (default: true)"
         required: false
         type: string
       messages-footer:
@@ -79,8 +84,11 @@ jobs:
     permissions:
       contents: read
     outputs:
+      body: ${{ steps.sanitized.outputs.body }}
       comment_id: ""
       comment_repo: ""
+      text: ${{ steps.sanitized.outputs.text }}
+      title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
         uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
@@ -112,11 +120,21 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/check_workflow_timestamp_api.cjs');
             await main();
+      - name: Compute current body text
+        id: sanitized
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('/opt/gh-aw/actions/compute_text.cjs');
+            await main();
       - name: Create prompt with built-in context
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_7ADFD0BD: ${{ inputs.detect-related-issues }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -309,14 +327,16 @@ jobs:
           
           ### Step 3: Evaluate Candidates
           
-          Classify each promising candidate into one of three categories:
+          **Related issues detection setting**: __GH_AW_EXPR_7ADFD0BD__
+          
+          Classify each promising candidate using the categories below. If related issues detection is disabled (setting is `"false"`), only use the **Clear duplicate** and **Not related** categories — skip the **Highly related** category entirely.
           
           **Clear duplicate** — the candidate describes **the same underlying problem or request**:
           - Reports the same bug or requests the exact same feature
           - The affected component, behavior, and scope are the same
           - A fix for the candidate would fully resolve this issue too
           
-          **Highly related** — the candidate is closely related but **not** the same issue:
+          **Highly related** *(only when related issues detection is enabled)* — the candidate is closely related but **not** the same issue:
           - Covers a very similar area, component, or failure mode
           - One issue is a subset or superset of the other
           - Both issues overlap significantly but each has distinct scope or nuance
@@ -324,15 +344,15 @@ jobs:
           **Not related** — skip it if:
           - The candidate only shares the same general topic area
           - The candidate is closed as "wont fix" or "invalid" with no resolution of the underlying issue
-          - You are uncertain — when in doubt, prefer "not related" over "highly related", and "highly related" over "duplicate"
+          - You are uncertain — when in doubt, err on the side of "not related"; if related issues detection is enabled, prefer "highly related" over "duplicate" for borderline overlapping cases
           
           ### Step 4: Post Result
           
           Post **exactly one** `add_comment` call total (or `noop` if nothing is found). Do not call `add_comment` more than once.
           
-          **If any duplicates or highly related issues were found:**
+          **If any duplicates (or highly related issues, when detection is enabled) were found:**
           
-          Call `add_comment` with a single comment combining all findings. Include up to **3 duplicate issues** and up to **3 highly related issues**, each ranked from most to least relevant to the current issue. Use this format:
+          Call `add_comment` with a single comment combining all findings. Include up to **3 duplicate issues** and, when related issues detection is enabled, up to **3 highly related issues**, each ranked from most to least relevant to the current issue. Use this format:
           
           ```
           **Possible duplicates** (issues that appear to describe the same problem):
@@ -344,9 +364,9 @@ jobs:
           - #{number} — {title}: {one concise sentence explaining how they are related and how they differ}
           ```
           
-          Omit a section entirely if no issues qualify for it. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
+          Omit the **Highly related** section entirely when related issues detection is disabled or when no issues qualify for it. Omit a section entirely if no issues qualify for it. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
           
-          **If no duplicate or highly related issue is found:**
+          **If no duplicate (or highly related issue, when detection is enabled) is found:**
           
           Call `noop` with message "No duplicate found for issue #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__".
           
@@ -361,6 +381,7 @@ jobs:
           GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_7ADFD0BD: ${{ inputs.detect-related-issues }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -372,6 +393,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_7ADFD0BD: ${{ inputs.detect-related-issues }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -395,6 +417,7 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_EXPR_7ADFD0BD: process.env.GH_AW_EXPR_7ADFD0BD,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
