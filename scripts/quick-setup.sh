@@ -162,6 +162,16 @@ if [ "${#workflows[@]}" -eq 0 ]; then
   exit 1
 fi
 
+if [ "$dry_run" = true ]; then
+  echo "dry-run: git checkout -b $branch"
+else
+  if git show-ref --verify --quiet "refs/heads/$branch"; then
+    git checkout "$branch"
+  else
+    git checkout -b "$branch"
+  fi
+fi
+
 workflow_dir=".github/workflows"
 created_files=()
 
@@ -195,36 +205,38 @@ fi
 if [ "$skip_secret" = false ]; then
   token="${COPILOT_GITHUB_TOKEN:-}"
   if [ -z "$token" ]; then
+    token_url="https://github.com/settings/tokens/new?scopes=copilot&description=COPILOT_GITHUB_TOKEN+for+${repo//\//%2F}"
     if [ "$dry_run" = true ]; then
-      echo "dry-run: gh auth refresh -h github.com -s copilot-requests"
-      echo "dry-run: gh auth token"
+      echo "dry-run: open $token_url"
+      echo "dry-run: prompt for token"
+      echo "dry-run: gh secret set COPILOT_GITHUB_TOKEN --repo $repo --body (token)"
+    elif [ -t 0 ]; then
+      echo "A personal access token with only the 'copilot' scope is needed."
+      echo "Opening browser to create one..."
+      if command -v open >/dev/null 2>&1; then
+        open "$token_url"
+      elif command -v xdg-open >/dev/null 2>&1; then
+        xdg-open "$token_url"
+      else
+        echo "Visit: $token_url"
+      fi
+      printf "Paste the token here: "
+      read -r token
+      if [ -z "$token" ]; then
+        echo "No token provided. Use --skip-secret to set it manually later." >&2
+        exit 1
+      fi
     else
-      gh auth refresh -h github.com -s copilot-requests >/dev/null
-      token="$(gh auth token)"
+      echo "No COPILOT_GITHUB_TOKEN set and stdin is not a terminal." >&2
+      echo "Set COPILOT_GITHUB_TOKEN in your environment, or use --skip-secret." >&2
+      exit 1
     fi
   fi
 
-  if [ -z "$token" ] && [ "$dry_run" = false ]; then
-    echo "Unable to read token. Set COPILOT_GITHUB_TOKEN and rerun, or use --skip-secret." >&2
-    exit 1
-  fi
-
-  if [ "$dry_run" = true ]; then
-    echo "dry-run: gh secret set COPILOT_GITHUB_TOKEN --repo $repo --body (token)"
-  else
+  if [ "$dry_run" != true ]; then
     gh secret set COPILOT_GITHUB_TOKEN --repo "$repo" --body "$token"
   fi
   unset token
-fi
-
-if [ "$dry_run" = true ]; then
-  echo "dry-run: git checkout -b $branch"
-else
-  if git show-ref --verify --quiet "refs/heads/$branch"; then
-    git checkout "$branch"
-  else
-    git checkout -b "$branch"
-  fi
 fi
 
 if [ "$dry_run" = true ]; then

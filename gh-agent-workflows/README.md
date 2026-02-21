@@ -16,7 +16,7 @@ curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/script
   | bash -s --
 ````
 
-This installs a recommended set of triggers, adds `agentics-maintenance.yml`, sets
+This installs a recommended set of triggers, adds `agentics-maintenance.yml`, sets up
 `COPILOT_GITHUB_TOKEN`, creates a setup branch, and opens a PR.
 
 Default workflows:
@@ -41,3 +41,4 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 - `test-improvement`
 - `breaking-change-detect`
 - `semantic-function-clustering`
+- `update-pr-body`
