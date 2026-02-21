@@ -58,6 +58,7 @@ Before finishing:
 - Re-read the issue or request one more time and confirm the final response directly addresses it.
 - Double-check changed files and command output for correctness before reporting completion.
 - Prefer a complete, verified solution over a partial fix; if blocked, clearly explain the blocker and what was already verified.
+- When opening a pull request, read `.github/PULL_REQUEST_TEMPLATE.md` and use it as the PR description template, filling in each section.
 
 For this repository:
 
