@@ -36,6 +36,31 @@ on:
         type: string
         required: false
         default: ""
+      edit-typos:
+        description: "How aggressively to flag typos and misspellings. 'high' = suggest broad consistency fixes, 'low' = flag only clear spelling errors, 'none' = skip typo checks"
+        type: string
+        required: false
+        default: "low"
+      edit-grammar:
+        description: "How aggressively to flag grammar and sentence construction problems. 'high' = improve awkward sentence structure, 'low' = flag only clear grammatical errors, 'none' = skip grammar checks"
+        type: string
+        required: false
+        default: "low"
+      edit-clarity:
+        description: "How aggressively to flag unclear user-facing text, especially error/help messages. 'high' = proactively suggest clearer phrasing, 'low' = flag only clearly ambiguous text, 'none' = skip clarity checks"
+        type: string
+        required: false
+        default: "low"
+      edit-terminology:
+        description: "How aggressively to flag inconsistent terminology for the same concept. 'high' = proactively normalize wording, 'low' = flag only unambiguous inconsistencies, 'none' = skip terminology checks"
+        type: string
+        required: false
+        default: "low"
+      edit-misleading-text:
+        description: "How aggressively to flag text that conflicts with current behavior. 'high' = proactively flag likely drift, 'low' = flag only direct contradictions, 'none' = skip behavior-alignment checks"
+        type: string
+        required: false
+        default: "low"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -83,6 +108,23 @@ Find typos, unclear error messages, and awkward user-facing text that are low-ef
 
 **The bar is high: only report concrete, unambiguous text problems.** Most runs should end with `noop` — that means user-facing text is clean.
 
+## Edit Level Configuration
+
+The following edit levels are configured for this run. Each dimension is independent.
+
+| Dimension | Level | Meaning |
+| --- | --- | --- |
+| **typos** | `${{ inputs.edit-typos }}` | How aggressively to flag typos and misspellings |
+| **grammar** | `${{ inputs.edit-grammar }}` | How aggressively to flag grammar and sentence construction issues |
+| **clarity** | `${{ inputs.edit-clarity }}` | How aggressively to flag unclear user-facing text |
+| **terminology** | `${{ inputs.edit-terminology }}` | How aggressively to flag inconsistent naming for the same concept |
+| **misleading-text** | `${{ inputs.edit-misleading-text }}` | How aggressively to flag text that no longer matches behavior |
+
+Level semantics:
+- **`high`** — apply best judgment proactively within this dimension
+- **`low`** — report only concrete, unambiguous issues
+- **`none`** — skip this dimension entirely
+
 ### Data Gathering
 
 1. Call `generate_agents_md` to get repository conventions. If it fails, continue.
@@ -94,16 +136,39 @@ Find typos, unclear error messages, and awkward user-facing text that are low-ef
    - Code comments in public APIs that appear in generated documentation
 3. Read the identified files and search for text issues.
 
-### What to Look For
+### What to Look For by Dimension
 
-Focus on **concrete, unambiguous problems** in user-facing text:
+Use each dimension's configured level to determine whether to report findings.
 
-1. **Typos and misspellings** — real spelling errors, not style preferences (e.g., `recieve` → `receive`, `occurence` → `occurrence`)
-2. **Grammatical errors** — subject-verb disagreement, missing articles, broken sentences
-3. **Unclear error messages** — errors that do not tell the user what went wrong or what to do next (e.g., `"Error: failed"` with no context)
-4. **Inconsistent terminology** — the same concept referred to by different names in different places (e.g., `workspace` vs `project` vs `repo` for the same thing)
-5. **Broken or incomplete sentences** — truncated messages, dangling phrases, copy-paste artifacts
-6. **Misleading text** — messages that describe behavior that no longer matches the code
+#### Typos (`${{ inputs.edit-typos }}`)
+
+- **`high`**: Flag typos/misspellings proactively and include nearby consistency fixes when they are obviously beneficial.
+- **`low`**: Flag only clear spelling errors (for example, `recieve` → `receive`), not style variants.
+- **`none`**: Skip typo checks.
+
+#### Grammar (`${{ inputs.edit-grammar }}`)
+
+- **`high`**: Flag grammar and sentence construction issues that reduce readability, including awkward or fragmented sentences.
+- **`low`**: Flag only clear grammatical errors (subject-verb disagreement, missing articles, broken sentence structure).
+- **`none`**: Skip grammar checks.
+
+#### Clarity (`${{ inputs.edit-clarity }}`)
+
+- **`high`**: Proactively flag unclear user-facing text and suggest concrete rewrites, especially for errors/help text.
+- **`low`**: Flag only clearly ambiguous or incomplete user-facing text (for example, `"Error: failed"` with no actionable context).
+- **`none`**: Skip clarity checks.
+
+#### Terminology (`${{ inputs.edit-terminology }}`)
+
+- **`high`**: Proactively flag inconsistent naming for the same concept across user-facing surfaces.
+- **`low`**: Flag only unambiguous inconsistencies where the same concept is clearly referred to by different terms.
+- **`none`**: Skip terminology checks.
+
+#### Misleading Text (`${{ inputs.edit-misleading-text }}`)
+
+- **`high`**: Proactively flag text likely to have drifted from behavior.
+- **`low`**: Flag only direct, verifiable contradictions between text and current code behavior.
+- **`none`**: Skip behavior-alignment checks.
 
 ### What to Skip
 
@@ -117,6 +182,7 @@ Focus on **concrete, unambiguous problems** in user-facing text:
 ### Quality Gate — When to Noop
 
 Call `noop` if any of these are true:
+- All edit dimensions are set to `none`
 - No concrete text problems were found
 - All findings are style preferences rather than clear errors
 - The problems found are in generated or vendored files
