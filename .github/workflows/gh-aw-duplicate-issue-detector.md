@@ -100,70 +100,79 @@ For each candidate result, read the title and (if promising) the body to assess 
 
 **Related issues detection setting**: ${{ inputs.detect-related-issues }}
 
-Classify each promising candidate using the categories below. If related issues detection is disabled (setting is `"false"`), only use the **Clear duplicate** and **Not related** categories — skip the **Highly related** category entirely.
+Classify each promising candidate into one of the categories below. If related issues detection is disabled (setting is `"false"`), skip the **Related** category entirely.
 
-**Clear duplicate** — the candidate describes **the same underlying problem or request**:
-- Reports the same bug or requests the exact same feature
-- The affected component, behavior, and scope are the same
-- A fix for the candidate would fully resolve this issue too
+**Duplicate** — a fix or resolution for the candidate would **fully resolve this issue too**:
+- Reports the same bug with the same root cause, or requests the exact same feature
+- The affected component, behavior, and scope match
+- One being closed as "done" means the other is also done
 
-**Highly related** *(only when related issues detection is enabled)* — the candidate is closely related but **not** the same issue:
-- Covers a very similar area, component, or failure mode
+**Related** *(only when detection is enabled)* — **not** the same issue, but may provide useful context or a partial answer:
+- Covers a similar area, component, or failure mode but has distinct scope
+- Contains discussion, workarounds, or decisions that would help the reporter
 - One issue is a subset or superset of the other
-- Both issues overlap significantly but each has distinct scope or nuance
 
-**Not related** — skip it if:
-- The candidate only shares the same general topic area
-- The candidate is closed as "wont fix" or "invalid" with no resolution of the underlying issue
-- You are uncertain — when in doubt, err on the side of "not related"; if related issues detection is enabled, prefer "highly related" over "duplicate" for borderline overlapping cases
+**Skip** a candidate if:
+- It only shares the same general topic area
+- It is closed as "won't fix" or "invalid" with no useful discussion
+- You are uncertain — when in doubt, skip it; prefer **Related** over **Duplicate** for borderline cases
 
 ### Step 4: Post Result
 
-Post **exactly one** `add_comment` call total (or `noop` if nothing is found). Do not call `add_comment` more than once.
+Post **exactly one** `add_comment` call (or `noop` if nothing is found). Do not call `add_comment` more than once.
 
-**If any duplicates (or highly related issues, when detection is enabled) were found:**
+**If any duplicates or related issues were found:**
 
-Call `add_comment` with a single comment combining all findings. Include up to **3 duplicate issues** and, when related issues detection is enabled, up to **3 highly related issues**, each ranked from most to least relevant to the current issue.
+Call `add_comment` with a single comment. Include up to **3 duplicates** and up to **3 related issues**, ranked most-to-least relevant.
 
-If both duplicates and highly related issues were found, use this format:
+When there are duplicates, start with a recommendation line telling the maintainer whether this issue looks safe to close — for example: *"This issue looks like a duplicate of #123 and may be safe to close."* If there are multiple duplicate candidates, recommend the single best one.
+
+Example with both duplicates and related issues:
 
 ```
-**Possible duplicates** (issues that appear to describe the same problem):
-- #{number} — {one concise sentence explaining why this issue overlaps with the candidate}
-- #{number} — {one concise sentence explaining why this issue overlaps with the candidate}
+This issue looks like a duplicate of #101 and may be safe to close.
 
-<details><summary>{N} related issues found</summary>
+**Possible duplicates:**
+- #101 — {why this is the same problem, e.g. "same crash in the auth module when tokens expire"}
+- #88 — {why this is the same problem}
 
-**Highly related** (separate issues that significantly overlap or share scope):
-- #{number} — {one concise sentence explaining the shared scope and the key difference}
-- #{number} — {one concise sentence explaining the shared scope and the key difference}
+<details><summary>{N} related issues</summary>
+
+- #204 — {how this could help, e.g. "documents a workaround for the same timeout behavior"}
+- #190 — {how this could help}
 
 </details>
 ```
 
-If only duplicates were found (no highly related issues, or related issues detection is disabled), use this format:
+Example with only duplicates:
 
 ```
-**Possible duplicates** (issues that appear to describe the same problem):
-- #{number} — {one concise sentence explaining why this issue overlaps with the candidate}
-- #{number} — {one concise sentence explaining why this issue overlaps with the candidate}
+This issue looks like a duplicate of #101 and may be safe to close.
+
+**Possible duplicates:**
+- #101 — {why this is the same problem}
 ```
 
-If only highly related issues were found (no duplicates), use this format:
+Example with only related issues:
 
 ```
-<details><summary>{N} related issues found</summary>
+<details><summary>{N} related issues</summary>
 
-**Highly related** (separate issues that significantly overlap or share scope):
-- #{number} — {one concise sentence explaining the shared scope and the key difference}
-- #{number} — {one concise sentence explaining the shared scope and the key difference}
+- #204 — {how this could help}
+- #190 — {how this could help}
 
 </details>
 ```
 
-Put issue references on the main list line so GitHub renders issue status badges. Do NOT repeat issue titles or numbers in justification text. Refer to the current report as **"this issue"** (not by number) and refer to the candidate by "it" or a short description. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
+Formatting rules:
+- Put `#{number}` on the list line so GitHub renders status badges
+- Do NOT repeat issue titles or numbers in justification text
+- Refer to the current report as "this issue" and to candidates by "it" or a short description
+- Do NOT use `fixes`, `closes`, or `resolves` keywords (they auto-close issues)
+- For duplicates, explain **why it is the same problem**
+- For related issues, explain **how it could help the reporter**
 
-**If no duplicate (or highly related issue, when detection is enabled) is found:**
+**If nothing is found:**
 
 Call `noop` with message "No duplicate found for issue #${{ github.event.issue.number }}".
 
