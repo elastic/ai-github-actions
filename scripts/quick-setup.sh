@@ -211,7 +211,8 @@ if [ "$skip_secret" = false ]; then
       echo "dry-run: prompt for token"
       echo "dry-run: gh secret set COPILOT_GITHUB_TOKEN --repo $repo --body (token)"
     elif [ -t 0 ]; then
-      echo "A personal access token with only the 'copilot' scope is needed."
+      echo "A classic PAT with only the 'copilot' scope is needed."
+      echo "(Fine-grained PATs do not support the copilot scope.)"
       echo "Opening browser to create one..."
       if command -v open >/dev/null 2>&1; then
         open "$token_url"
