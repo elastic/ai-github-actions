@@ -30,6 +30,8 @@ nav:
               - Breaking Change Detect: workflows/gh-agent-workflows/breaking-change-detect.md
               - Bug Exterminator: workflows/gh-agent-workflows/bug-exterminator.md
               - Bug Hunter: workflows/gh-agent-workflows/bug-hunter.md
+              - CI Doctor: workflows/gh-agent-workflows/ci-doctor.md
+              - CLI Consistency Checker: workflows/gh-agent-workflows/cli-consistency-checker.md
               - Code Simplifier: workflows/gh-agent-workflows/code-simplifier.md
               - Docs Drift: workflows/gh-agent-workflows/docs-drift.md
               - Docs Drift External: workflows/gh-agent-workflows/docs-drift-external.md
@@ -43,6 +45,7 @@ nav:
               - Semantic Function Clustering: workflows/gh-agent-workflows/semantic-function-clustering.md
               - Small Problem Fixer: workflows/gh-agent-workflows/small-problem-fixer.md
               - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
+              - Terminal Stylist: workflows/gh-agent-workflows/terminal-stylist.md
               - Test Improvement: workflows/gh-agent-workflows/test-improvement.md
       - Legacy:
           - Claude Composite Actions: workflows/claude-workflows.md

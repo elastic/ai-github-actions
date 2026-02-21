@@ -31,6 +31,8 @@ secret manually, `--continuous-improvement` to also install selected continuous 
 workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 
 `--continuous-improvement` adds:
+- `cli-consistency-checker`
+- `ci-doctor`
 - `bug-hunter`
 - `bug-exterminator`
 - `code-simplifier`
@@ -41,4 +43,5 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 - `test-improvement`
 - `breaking-change-detect`
 - `semantic-function-clustering`
+- `terminal-stylist`
 - `update-pr-body`

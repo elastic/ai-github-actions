@@ -126,6 +126,8 @@ default_workflows=(
   pr-ci-detective
 )
 continuous_improvement_workflows=(
+  cli-consistency-checker
+  ci-doctor
   bug-hunter
   bug-exterminator
   code-simplifier
@@ -136,6 +138,7 @@ continuous_improvement_workflows=(
   test-improvement
   breaking-change-detect
   semantic-function-clustering
+  terminal-stylist
   update-pr-body
 )
 

@@ -46,6 +46,8 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 | [Breaking Change Detect](gh-agent-workflows/breaking-change-detect.md) | Weekday schedule | Detect undocumented public breaking changes |
 | [Bug Exterminator](gh-agent-workflows/bug-exterminator.md) | Weekday schedule | Fix bug-hunter issues and open a focused PR |
 | [Bug Hunter](gh-agent-workflows/bug-hunter.md) | Weekday schedule | Find reproducible bugs and file reports |
+| [CI Doctor](gh-agent-workflows/ci-doctor.md) | Failed `CI` workflow runs + manual dispatch | Diagnose CI failures and file root-cause-first reports |
+| [CLI Consistency Checker](gh-agent-workflows/cli-consistency-checker.md) | Weekday schedule | Detect CLI help/output inconsistencies and documentation drift |
 | [Code Simplifier](gh-agent-workflows/code-simplifier.md) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | [Docs Drift](gh-agent-workflows/docs-drift.md) | Weekday schedule | Detect code changes needing doc updates |
 | [Docs Drift External](gh-agent-workflows/docs-drift-external.md) | Weekday schedule | Detect code changes needing published Elastic doc updates |
@@ -58,6 +60,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 | [Semantic Function Clustering](gh-agent-workflows/semantic-function-clustering.md) | Weekday schedule | Identify function clustering refactor opportunities |
 | [Small Problem Fixer](gh-agent-workflows/small-problem-fixer.md) | Weekday schedule | Fix small, related issues and open a focused PR |
 | [Stale Issues](gh-agent-workflows/stale-issues.md) | Weekday schedule | Find resolved issues that can be closed |
+| [Terminal Stylist](gh-agent-workflows/terminal-stylist.md) | Weekday schedule | Find low-risk user-facing text and terminal UX improvements |
 | [Test Improvement](gh-agent-workflows/test-improvement.md) | Weekly schedule | Add targeted tests and clean up redundant coverage |
 
 ## Secrets
