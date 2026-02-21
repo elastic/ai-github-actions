@@ -35,9 +35,9 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d85bf62cf7a9ed448e8c9f549210273fe939479eef73873eed65cdcc9a669735"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d9f8c428fbb9cd161ca9b444266cd33a65f35f6b3af867b7af7426d20dc7bc36"}
 
-name: "Upgrade Check"
+name: "Internal: Upgrade Check"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - github-actions[bot] # Bots processed as bot check in pre-activation job
@@ -56,7 +56,7 @@ concurrency:
   cancel-in-progress: true
   group: upgrade-check
 
-run-name: "Upgrade Check"
+run-name: "Internal: Upgrade Check"
 
 jobs:
   activation:
@@ -602,7 +602,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Upgrade Check",
+              workflow_name: "Internal: Upgrade Check",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1186,7 +1186,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Upgrade Check"
+          GH_AW_WORKFLOW_NAME: "Internal: Upgrade Check"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1199,7 +1199,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Upgrade Check"
+          GH_AW_WORKFLOW_NAME: "Internal: Upgrade Check"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1212,7 +1212,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Upgrade Check"
+          GH_AW_WORKFLOW_NAME: "Internal: Upgrade Check"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "upgrade-check"
@@ -1231,7 +1231,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Upgrade Check"
+          GH_AW_WORKFLOW_NAME: "Internal: Upgrade Check"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1279,7 +1279,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Upgrade Check"
+          WORKFLOW_NAME: "Internal: Upgrade Check"
           WORKFLOW_DESCRIPTION: "Check for gh-aw releases and assess whether our workflows need upgrading"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1359,7 +1359,7 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_WORKFLOW_ID: "upgrade-check"
-      GH_AW_WORKFLOW_NAME: "Upgrade Check"
+      GH_AW_WORKFLOW_NAME: "Internal: Upgrade Check"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}

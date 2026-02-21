@@ -1,6 +1,6 @@
 ---
 inlined-imports: true
-name: "Agent Deep Dive"
+name: "Internal: Agent Deep Dive"
 description: "Deep dive a specific agent workflow's recent runs to understand behavior and surface detailed recommendations"
 imports:
   - gh-aw-fragments/elastic-tools.md

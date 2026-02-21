@@ -1,6 +1,6 @@
 ---
 inlined-imports: true
-name: "Upgrade Check"
+name: "Internal: Upgrade Check"
 description: "Check for gh-aw releases and assess whether our workflows need upgrading"
 imports:
   - gh-aw-fragments/elastic-tools.md
