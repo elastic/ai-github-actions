@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4cd8a4292feebe31c44c6cb72120ce3a415ba581c7a1764b1496f36061d76b7b"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"398a351de59b419aac5f84062790495146a0e9356f24c9c9e1f3406ef7f2df3e"}
 
 name: "Small Problem Fixer"
 "on":
@@ -59,7 +59,7 @@ name: "Small Problem Fixer"
         required: false
         type: string
       draft-prs:
-        default: false
+        default: true
         description: Whether to create pull requests as drafts
         required: false
         type: boolean
@@ -1565,7 +1565,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":false,\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

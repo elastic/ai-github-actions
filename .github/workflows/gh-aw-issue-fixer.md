@@ -49,10 +49,7 @@ on:
         description: "Whether to create pull requests as drafts"
         type: boolean
         required: false
-        default: false
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+        default: true
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:
@@ -78,9 +75,6 @@ network:
     - python
     - ruby
 strict: false
-safe-outputs:
-  create-pull-request:
-    draft: false
 timeout-minutes: 60
 steps:
   - name: Repo-specific setup

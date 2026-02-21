@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0c07e46f46fab0f61000470323ef10cc942d021ed93f2531d0c747aa4a22d063"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"767f6f3243f887d127374b3a5669d92ec0526373f9bae848e5d7ee8a2cf25dad"}
 
 name: "Gh Aw Bug Exterminator"
 "on":
@@ -60,7 +60,7 @@ name: "Gh Aw Bug Exterminator"
         required: false
         type: string
       draft-prs:
-        default: false
+        default: true
         description: Whether to create pull requests as drafts
         required: false
         type: boolean
@@ -1568,7 +1568,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":false,\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

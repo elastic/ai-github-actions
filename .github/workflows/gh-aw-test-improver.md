@@ -46,7 +46,7 @@ on:
         description: "Whether to create pull requests as drafts"
         type: boolean
         required: false
-        default: false
+        default: true
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -75,8 +75,6 @@ network:
     - ruby
 strict: false
 safe-outputs:
-  create-pull-request:
-    draft: false
   noop:
 timeout-minutes: 90
 steps:

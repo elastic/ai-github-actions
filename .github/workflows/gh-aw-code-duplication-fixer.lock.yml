@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a0deddf78776d300d7f7a59752d0b6b5c9c175d86926619a3cc6c4a2866f8f13"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"830bd8d92a4b98f6eeb4d157f133446f26586b8e4b88581bb0a588c3340a77d3"}
 
 name: "Code Duplication Fixer"
 "on":
@@ -60,7 +60,7 @@ name: "Code Duplication Fixer"
         required: false
         type: string
       draft-prs:
-        default: false
+        default: true
         description: Whether to create pull requests as drafts
         required: false
         type: boolean
@@ -1578,7 +1578,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":false,\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

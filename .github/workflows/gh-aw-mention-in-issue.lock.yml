@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"819bca6230831d623fd3cd7f5a8794c0bc527cb480a0eff3f77be15687f415b6"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cf97b5a0544ea57ada7d359d2d54f155cfcc821c6161113235d67480f49617c9"}
 
 name: "Mention in Issue"
 "on":
@@ -61,7 +61,7 @@ name: "Mention in Issue"
         required: false
         type: string
       draft-prs:
-        default: false
+        default: true
         description: Whether to create pull requests as drafts
         required: false
         type: boolean
@@ -1708,7 +1708,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"create_issue\":{\"max\":1},\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":false,\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"create_issue\":{\"max\":1},\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
