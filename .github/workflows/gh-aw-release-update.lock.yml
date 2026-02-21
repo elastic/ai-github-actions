@@ -33,15 +33,26 @@
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-pr.md
 #
-# frontmatter-hash: 0b47c4005c19bb12ce8c616d498cd54d4163bddb9297a5629554ca33811bc883
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c6b977b399ce114f6cc7a6d07f42349057d5be5055f591a1bf0cc58e583fe87a"}
 
 name: "Release Update Check"
 "on":
+  # bots: # Bots processed as bot check in pre-activation job
+  # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
+  # roles: # Roles processed as role check in pre-activation job
+  # - admin # Roles processed as role check in pre-activation job
+  # - maintainer # Roles processed as role check in pre-activation job
+  # - write # Roles processed as role check in pre-activation job
   workflow_call:
     inputs:
       additional-instructions:
         default: ""
         description: Repo-specific instructions appended to the agent prompt
+        required: false
+        type: string
+      allowed-bot-users:
+        default: github-actions[bot]
+        description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:
@@ -77,16 +88,26 @@ jobs:
       comment_id: ""
       comment_repo: ""
     steps:
-      - name: Checkout actions folder
+      - name: Setup Scripts
+        uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
+        with:
+          destination: /opt/gh-aw/actions
+      - name: Validate context variables
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('/opt/gh-aw/actions/validate_context_variables.cjs');
+            await main();
+      - name: Checkout .github and .agents folders
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           sparse-checkout: |
-            actions
+            .github
+            .agents
+          fetch-depth: 1
           persist-credentials: false
-      - name: Setup Scripts
-        uses: ./actions/setup
-        with:
-          destination: /opt/gh-aw/actions
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
@@ -97,6 +118,292 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/check_workflow_timestamp_api.cjs');
             await main();
+      - name: Create prompt with built-in context
+        env:
+          GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_GITHUB_ACTOR: ${{ github.actor }}
+          GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
+          GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
+          GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+          GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
+          GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+        run: |
+          bash /opt/gh-aw/actions/create_prompt_first.sh
+          cat << 'GH_AW_PROMPT_EOF' > "$GH_AW_PROMPT"
+          <system>
+          GH_AW_PROMPT_EOF
+          cat "/opt/gh-aw/prompts/xpia.md" >> "$GH_AW_PROMPT"
+          cat "/opt/gh-aw/prompts/temp_folder_prompt.md" >> "$GH_AW_PROMPT"
+          cat "/opt/gh-aw/prompts/markdown.md" >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          <safe-outputs>
+          <description>GitHub API Access Instructions</description>
+          <important>
+          The gh CLI is NOT authenticated. Do NOT use gh commands for GitHub operations.
+          </important>
+          <instructions>
+          To create or modify GitHub resources (issues, discussions, pull requests, etc.), you MUST call the appropriate safe output tool. Simply writing content will NOT work - the workflow requires actual tool calls.
+          
+          Temporary IDs: Some safe output tools support a temporary ID field (usually named temporary_id) so you can reference newly-created items elsewhere in the SAME agent output (for example, using #aw_abc1 in a later body). 
+          
+          **IMPORTANT - temporary_id format rules:**
+          - If you DON'T need to reference the item later, OMIT the temporary_id field entirely (it will be auto-generated if needed)
+          - If you DO need cross-references/chaining, you MUST match this EXACT validation regex: /^aw_[A-Za-z0-9]{3,8}$/i
+          - Format: aw_ prefix followed by 3 to 8 alphanumeric characters (A-Z, a-z, 0-9, case-insensitive)
+          - Valid alphanumeric characters: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
+          - INVALID examples: aw_ab (too short), aw_123456789 (too long), aw_test-id (contains hyphen), aw_id_123 (contains underscore)
+          - VALID examples: aw_abc, aw_abc1, aw_Test123, aw_A1B2C3D4, aw_12345678
+          - To generate valid IDs: use 3-8 random alphanumeric characters or omit the field to let the system auto-generate
+          
+          Do NOT invent other aw_* formats — downstream steps will reject them with validation errors matching against /^aw_[A-Za-z0-9]{3,8}$/i.
+          
+          Discover available tools from the safeoutputs MCP server.
+          
+          **Critical**: Tool calls write structured data that downstream jobs process. Without tool calls, follow-up actions will be skipped.
+          
+          **Note**: If you made no other safe output tool calls during this workflow execution, call the "noop" tool to provide a status message indicating completion or that no actions were needed.
+          </instructions>
+          </safe-outputs>
+          <github-context>
+          The following GitHub context information is available for this workflow:
+          {{#if __GH_AW_GITHUB_ACTOR__ }}
+          - **actor**: __GH_AW_GITHUB_ACTOR__
+          {{/if}}
+          {{#if __GH_AW_GITHUB_REPOSITORY__ }}
+          - **repository**: __GH_AW_GITHUB_REPOSITORY__
+          {{/if}}
+          {{#if __GH_AW_GITHUB_WORKSPACE__ }}
+          - **workspace**: __GH_AW_GITHUB_WORKSPACE__
+          {{/if}}
+          {{#if __GH_AW_GITHUB_EVENT_ISSUE_NUMBER__ }}
+          - **issue-number**: #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__
+          {{/if}}
+          {{#if __GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER__ }}
+          - **discussion-number**: #__GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER__
+          {{/if}}
+          {{#if __GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__ }}
+          - **pull-request-number**: #__GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__
+          {{/if}}
+          {{#if __GH_AW_GITHUB_EVENT_COMMENT_ID__ }}
+          - **comment-id**: __GH_AW_GITHUB_EVENT_COMMENT_ID__
+          {{/if}}
+          {{#if __GH_AW_GITHUB_RUN_ID__ }}
+          - **workflow-run-id**: __GH_AW_GITHUB_RUN_ID__
+          {{/if}}
+          </github-context>
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          </system>
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          ## MCP Servers
+          
+          - **`generate_agents_md`** — generates a summary of the repository's structure, conventions, and coding guidelines from AGENTS.md and related files. Call at the start of every workflow to get repo context.
+          - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          ## Formatting Guidelines
+          
+          - Lead with the most important information — your first sentence should be the key takeaway
+          - Be concise and actionable — no filler or praise
+          - Use `<details>` and `<summary>` tags for long sections to keep responses scannable
+          - Wrap branch names and @-references in backticks to avoid pinging users
+          - Include code snippets with file paths and line numbers when referencing the codebase
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          ## Rigor
+          
+          **Silence is better than noise. A false positive wastes a human's time and erodes trust in every future report.**
+          
+          - If you claim something is missing or broken, show the exact evidence in the code — file path, line number, and what you observed.
+          - If a conclusion depends on assumptions you haven't confirmed, do not assert it. Verify first; if you cannot verify, do not report.
+          - "I don't know" is better than a wrong answer. `noop` is better than a speculative finding.
+          - It's worth the time to verify now versus guessing and forcing someone else to verify later.
+          - Before filing any issue or opening any PR, re-read your own output as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
+          - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          ## MCP Pagination
+          
+          MCP tool responses have a **25,000 token limit**. When responses exceed this limit, the call fails and you must retry with pagination — wasting turns and tokens. Use proactive pagination to stay under the limit.
+          
+          ### Recommended `perPage` Values
+          
+          - **5-10**: For detailed items (PR diffs, files with patches, issues with comments)
+          - **20-30**: For medium-detail lists (commits, review comments, issue lists)
+          - **50-100**: For simple list operations (branches, labels, tags)
+          
+          ### Pagination Pattern
+          
+          When you need all results from a paginated API:
+          
+          1. Fetch the first page with a conservative `perPage` value
+          2. Process the results before fetching the next page
+          3. Continue fetching pages until you receive fewer results than `perPage` (indicating the last page)
+          
+          ### Error Recovery
+          
+          If you see an error like:
+          - `MCP tool response exceeds maximum allowed tokens (25000)`
+          - `Response too large for tool [tool_name]`
+          
+          Retry the same call with a smaller `perPage` value (halve it).
+          
+          ### Tips
+          
+          - **Start small**: It's better to make multiple small requests than one that fails
+          - **Fetch incrementally**: Get an overview first, then details for specific items
+          - **Use filters**: Combine `perPage` with state, label, or date filters to reduce result size
+          - **Process as you go**: Don't accumulate all pages before acting — process each batch immediately
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          ## Message Footer
+          
+          A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist.
+          
+          ## create-pull-request Limitations
+          
+          - **Patch files**: Max 100 files per PR. If changes span more files, split into multiple focused PRs.
+          - **Patch size**: Max 1,024 KB by default. Keep changes focused.
+          - **Title**: Max 128 characters. Sanitized.
+          - **Body**: No explicit mention/link limits, but bot triggers (`fixes #123`, `closes #456`) are neutralized.
+          - **Committed changes required**: You must have locally committed changes before creating a PR (unless `allow_empty` is configured).
+          - **Base branch**: Must be configured in the safe-output config. The PR targets this branch.
+          - **Max per run**: Typically 1 PR creation per workflow run.
+          - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          # Release Update Check
+          
+          Check for new releases of `elastic/ai-github-actions` and open a PR that updates pinned workflow SHAs in this repository.
+          
+          ## Context
+          
+          - **Repository**: __GH_AW_GITHUB_REPOSITORY__
+          
+          ## Constraints
+          
+          - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request.
+          - **CANNOT**: Push directly to the repository — use `create_pull_request`.
+          - **Only one PR per run.**
+          - Only update workflow references to `elastic/ai-github-actions/.github/workflows/gh-aw-*.lock.yml@...`.
+          - If no updates are needed, call `noop` with a brief reason.
+          
+          ## Step 1: Gather context
+          
+          1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
+          2. Use `github-get_latest_release` for `elastic/ai-github-actions` to obtain the latest tag and release notes. If no release exists, call `noop` and stop.
+          3. Resolve the tag to a commit SHA using `github-get_tag`.
+          4. Find pinned workflow references in this repository:
+          
+          ````text
+          rg -n "elastic/ai-github-actions/.github/workflows/gh-aw-.*\\.lock\\.yml@\\S+" .
+          ````
+          
+          5. Extract the current refs and identify which ones are full commit SHAs. If no references are found, call `noop`.
+          6. Check for an existing open PR that already targets the latest tag (use `github-search_pull_requests`). If one exists, call `noop`.
+          
+          ## Step 2: Update workflow references
+          
+          - For each outdated reference, update the ref to the latest release commit SHA.
+          - Preserve any trailing comments; if a comment exists for the old tag, update it to the latest tag. If no comment exists, add `# <latest tag>` after the ref.
+          - Do not touch references that already use the latest release SHA or tag.
+          
+          ## Step 3: Suggest workflow improvements
+          
+          - Review the latest release notes and identify any changes that affect workflow usage or configuration.
+          - Add a short "Suggested workflow updates" section in the PR body. If there are no relevant suggestions, state that explicitly.
+          
+          ## Step 4: Create the PR
+          
+          1. Commit the changes locally.
+          2. Call `create_pull_request` with:
+             - **Title**: `Update ai-github-actions workflows to <latest tag>`
+             - **Body**: Summary of updated refs (old → new), release note highlights that matter, suggested workflow updates, and tests run (if none, say "Not run (workflow reference updates only)").
+          
+          __GH_AW_EXPR_49B959F1__
+          
+          GH_AW_PROMPT_EOF
+      - name: Interpolate variables and render templates
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+        with:
+          script: |
+            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('/opt/gh-aw/actions/interpolate_prompt.cjs');
+            await main();
+      - name: Substitute placeholders
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_GITHUB_ACTOR: ${{ github.actor }}
+          GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
+          GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
+          GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
+          GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
+          GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
+          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: ${{ needs.pre_activation.outputs.matched_command }}
+        with:
+          script: |
+            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            
+            const substitutePlaceholders = require('/opt/gh-aw/actions/substitute_placeholders.cjs');
+            
+            // Call the substitution function
+            return await substitutePlaceholders({
+              file: process.env.GH_AW_PROMPT,
+              substitutions: {
+                GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
+                GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
+                GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
+                GH_AW_GITHUB_EVENT_ISSUE_NUMBER: process.env.GH_AW_GITHUB_EVENT_ISSUE_NUMBER,
+                GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: process.env.GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER,
+                GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
+                GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
+                GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND
+              }
+            });
+      - name: Validate prompt placeholders
+        env:
+          GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+        run: bash /opt/gh-aw/actions/validate_prompt_placeholders.sh
+      - name: Print prompt
+        env:
+          GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+        run: bash /opt/gh-aw/actions/print_prompt_summary.sh
+      - name: Upload prompt artifact
+        if: success()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: prompt
+          path: /tmp/gh-aw/aw-prompts/prompt.txt
+          retention-days: 1
 
   agent:
     needs: activation
@@ -125,14 +432,8 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
-      - name: Checkout actions folder
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          sparse-checkout: |
-            actions
-          persist-credentials: false
       - name: Setup Scripts
-        uses: ./actions/setup
+        uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -168,9 +469,23 @@ jobs:
         with:
           bundler-cache: true
           ruby-version: .ruby-version
-      - if: hashFiles('pyproject.toml', 'uv.lock') != ''
+      - id: setup-uv
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
         name: Setup uv
-        uses: astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
+      - env:
+          UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
+          WORKSPACE: ${{ github.workspace }}
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
+        name: Expose uv in workspace
+        run: |-
+          set -euo pipefail
+          install_dir="$WORKSPACE/.gh-aw-tools/bin"
+          mkdir -p "$install_dir"
+          cp "$UV_PATH" "$install_dir/uv"
+          chmod +x "$install_dir/uv"
+          echo "$install_dir" >> "$GITHUB_PATH"
+        shell: bash
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
@@ -214,7 +529,7 @@ jobs:
               engine_name: "GitHub Copilot CLI",
               model: "gpt-5.2-codex",
               version: "",
-              agent_version: "0.0.410",
+              agent_version: "0.0.412",
               workflow_name: "Release Update Check",
               experimental: false,
               supports_tools_allowlist: true,
@@ -227,9 +542,9 @@ jobs:
               actor: context.actor,
               event_name: context.eventName,
               staged: false,
-              allowed_domains: ["agents-md-generator.fastmcp.app","defaults","github","public-code-search.fastmcp.app"],
+              allowed_domains: ["agents-md-generator.fastmcp.app","artifacts.elastic.co","cloud.elastic.co","defaults","ela.st","elastic.co","github","public-code-search.fastmcp.app","www.elastic.co"],
               firewall_enabled: true,
-              awf_version: "v0.19.0",
+              awf_version: "v0.20.2",
               awmg_version: "v0.1.4",
               steps: {
                 firewall: "squid"
@@ -251,9 +566,9 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       - name: Install GitHub Copilot CLI
-        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.410
+        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.412
       - name: Install awf binary
-        run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.19.0
+        run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.20.2
       - name: Determine automatic lockdown mode for GitHub MCP Server
         id: determine-automatic-lockdown
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -265,7 +580,7 @@ jobs:
             const determineAutomaticLockdown = require('/opt/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.19.0 ghcr.io/github/gh-aw-firewall/squid:0.19.0 ghcr.io/github/gh-aw-mcpg:v0.1.4 ghcr.io/github/github-mcp-server:v0.30.3 node:lts-alpine
+        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.20.2 ghcr.io/github/gh-aw-firewall/api-proxy:0.20.2 ghcr.io/github/gh-aw-firewall/squid:0.20.2 ghcr.io/github/gh-aw-mcpg:v0.1.4 ghcr.io/github/github-mcp-server:v0.31.0 node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p /opt/gh-aw/safeoutputs
@@ -483,9 +798,99 @@ jobs:
           
           bash /opt/gh-aw/actions/start_safe_outputs_server.sh
           
+      - name: Setup Safe Inputs Config
+        run: |
+          mkdir -p /opt/gh-aw/safe-inputs/logs
+          cat > /opt/gh-aw/safe-inputs/tools.json << 'GH_AW_SAFE_INPUTS_TOOLS_EOF'
+          {
+            "serverName": "safeinputs",
+            "version": "1.0.0",
+            "logDir": "/opt/gh-aw/safe-inputs/logs",
+            "tools": [
+              {
+                "name": "ready-to-make-pr",
+                "description": "Run the PR readiness checklist before creating or updating a PR",
+                "inputSchema": {
+                  "properties": {},
+                  "type": "object"
+                },
+                "handler": "ready-to-make-pr.cjs",
+                "timeout": 60
+              }
+            ]
+          }
+          GH_AW_SAFE_INPUTS_TOOLS_EOF
+          cat > /opt/gh-aw/safe-inputs/mcp-server.cjs << 'GH_AW_SAFE_INPUTS_SERVER_EOF'
+            const path = require("path");
+            const { startHttpServer } = require("./safe_inputs_mcp_server_http.cjs");
+            const configPath = path.join(__dirname, "tools.json");
+            const port = parseInt(process.env.GH_AW_SAFE_INPUTS_PORT || "3000", 10);
+            const apiKey = process.env.GH_AW_SAFE_INPUTS_API_KEY || "";
+            startHttpServer(configPath, {
+              port: port,
+              stateless: true,
+              logDir: "/opt/gh-aw/safe-inputs/logs"
+            }).catch(error => {
+              console.error("Failed to start safe-inputs HTTP server:", error);
+              process.exit(1);
+            });
+          GH_AW_SAFE_INPUTS_SERVER_EOF
+          chmod +x /opt/gh-aw/safe-inputs/mcp-server.cjs
+          
+      - name: Setup Safe Inputs Tool Files
+        run: |
+          cat > /opt/gh-aw/safe-inputs/ready-to-make-pr.cjs << 'GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF'
+            async function execute(inputs) {
+              const fs = require('fs');
+              const find = (...paths) => paths.find(p => fs.existsSync(p)) || null;
+              const contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md');
+              const prTemplate = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md');
+              const checklist = [];
+              if (contributing) checklist.push(`Review the contributing guide (${contributing}) before opening or updating a PR.`);
+              if (prTemplate) checklist.push(`Follow the PR template (${prTemplate}) for title, description, and validation notes.`);
+              checklist.push('Confirm the requested task is fully completed and validated before creating or pushing PR changes.');
+              return { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+            }
+            module.exports = { execute };
+          GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF
+          
+      - name: Generate Safe Inputs MCP Server Config
+        id: safe-inputs-config
+        run: |
+          # Generate a secure random API key (360 bits of entropy, 40+ chars)
+          # Mask immediately to prevent timing vulnerabilities
+          API_KEY=$(openssl rand -base64 45 | tr -d '/+=')
+          echo "::add-mask::${API_KEY}"
+          
+          PORT=3000
+          
+          # Set outputs for next steps
+          {
+            echo "safe_inputs_api_key=${API_KEY}"
+            echo "safe_inputs_port=${PORT}"
+          } >> "$GITHUB_OUTPUT"
+          
+          echo "Safe Inputs MCP server will run on port ${PORT}"
+          
+      - name: Start Safe Inputs MCP HTTP Server
+        id: safe-inputs-start
+        env:
+          DEBUG: '*'
+          GH_AW_SAFE_INPUTS_PORT: ${{ steps.safe-inputs-config.outputs.safe_inputs_port }}
+          GH_AW_SAFE_INPUTS_API_KEY: ${{ steps.safe-inputs-config.outputs.safe_inputs_api_key }}
+        run: |
+          # Environment variables are set above to prevent template injection
+          export DEBUG
+          export GH_AW_SAFE_INPUTS_PORT
+          export GH_AW_SAFE_INPUTS_API_KEY
+          
+          bash /opt/gh-aw/actions/start_safe_inputs_server.sh
+          
       - name: Start MCP Gateway
         id: start-mcp-gateway
         env:
+          GH_AW_SAFE_INPUTS_API_KEY: ${{ steps.safe-inputs-start.outputs.api_key }}
+          GH_AW_SAFE_INPUTS_PORT: ${{ steps.safe-inputs-start.outputs.port }}
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_SAFE_OUTPUTS_API_KEY: ${{ steps.safe-outputs-start.outputs.api_key }}
           GH_AW_SAFE_OUTPUTS_PORT: ${{ steps.safe-outputs-start.outputs.port }}
@@ -506,7 +911,7 @@ jobs:
           export DEBUG="*"
           
           export GH_AW_ENGINE="copilot"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.4'
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_INPUTS_PORT -e GH_AW_SAFE_INPUTS_API_KEY -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.4'
           
           mkdir -p /home/runner/.copilot
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
@@ -521,7 +926,7 @@ jobs:
               },
               "github": {
                 "type": "stdio",
-                "container": "ghcr.io/github/github-mcp-server:v0.30.3",
+                "container": "ghcr.io/github/github-mcp-server:v0.31.0",
                 "env": {
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
@@ -535,6 +940,13 @@ jobs:
                 "tools": [
                   "search_code"
                 ]
+              },
+              "safeinputs": {
+                "type": "http",
+                "url": "http://host.docker.internal:$GH_AW_SAFE_INPUTS_PORT",
+                "headers": {
+                  "Authorization": "\${GH_AW_SAFE_INPUTS_API_KEY}"
+                }
               },
               "safeoutputs": {
                 "type": "http",
@@ -558,167 +970,11 @@ jobs:
           script: |
             const { generateWorkflowOverview } = require('/opt/gh-aw/actions/generate_workflow_overview.cjs');
             await generateWorkflowOverview(core);
-      - name: Create prompt with built-in context
-        env:
-          GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_GITHUB_ACTOR: ${{ github.actor }}
-          GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
-          GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
-          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
-          GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
-          GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-        run: |
-          bash /opt/gh-aw/actions/create_prompt_first.sh
-          cat << 'GH_AW_PROMPT_EOF' > "$GH_AW_PROMPT"
-          <system>
-          GH_AW_PROMPT_EOF
-          cat "/opt/gh-aw/prompts/xpia.md" >> "$GH_AW_PROMPT"
-          cat "/opt/gh-aw/prompts/temp_folder_prompt.md" >> "$GH_AW_PROMPT"
-          cat "/opt/gh-aw/prompts/markdown.md" >> "$GH_AW_PROMPT"
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          <safe-outputs>
-          <description>GitHub API Access Instructions</description>
-          <important>
-          The gh CLI is NOT authenticated. Do NOT use gh commands for GitHub operations.
-          </important>
-          <instructions>
-          To create or modify GitHub resources (issues, discussions, pull requests, etc.), you MUST call the appropriate safe output tool. Simply writing content will NOT work - the workflow requires actual tool calls.
-          
-          Temporary IDs: Some safe output tools support a temporary ID field (usually named temporary_id) so you can reference newly-created items elsewhere in the SAME agent output (for example, using #aw_abc1 in a later body). 
-          
-          **IMPORTANT - temporary_id format rules:**
-          - If you DON'T need to reference the item later, OMIT the temporary_id field entirely (it will be auto-generated if needed)
-          - If you DO need cross-references/chaining, you MUST match this EXACT validation regex: /^aw_[A-Za-z0-9]{3,8}$/i
-          - Format: aw_ prefix followed by 3 to 8 alphanumeric characters (A-Z, a-z, 0-9, case-insensitive)
-          - Valid alphanumeric characters: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
-          - INVALID examples: aw_ab (too short), aw_123456789 (too long), aw_test-id (contains hyphen), aw_id_123 (contains underscore)
-          - VALID examples: aw_abc, aw_abc1, aw_Test123, aw_A1B2C3D4, aw_12345678
-          - To generate valid IDs: use 3-8 random alphanumeric characters or omit the field to let the system auto-generate
-          
-          Do NOT invent other aw_* formats — downstream steps will reject them with validation errors matching against /^aw_[A-Za-z0-9]{3,8}$/i.
-          
-          Discover available tools from the safeoutputs MCP server.
-          
-          **Critical**: Tool calls write structured data that downstream jobs process. Without tool calls, follow-up actions will be skipped.
-          
-          **Note**: If you made no other safe output tool calls during this workflow execution, call the "noop" tool to provide a status message indicating completion or that no actions were needed.
-          </instructions>
-          </safe-outputs>
-          <github-context>
-          The following GitHub context information is available for this workflow:
-          {{#if __GH_AW_GITHUB_ACTOR__ }}
-          - **actor**: __GH_AW_GITHUB_ACTOR__
-          {{/if}}
-          {{#if __GH_AW_GITHUB_REPOSITORY__ }}
-          - **repository**: __GH_AW_GITHUB_REPOSITORY__
-          {{/if}}
-          {{#if __GH_AW_GITHUB_WORKSPACE__ }}
-          - **workspace**: __GH_AW_GITHUB_WORKSPACE__
-          {{/if}}
-          {{#if __GH_AW_GITHUB_EVENT_ISSUE_NUMBER__ }}
-          - **issue-number**: #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__
-          {{/if}}
-          {{#if __GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER__ }}
-          - **discussion-number**: #__GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER__
-          {{/if}}
-          {{#if __GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__ }}
-          - **pull-request-number**: #__GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__
-          {{/if}}
-          {{#if __GH_AW_GITHUB_EVENT_COMMENT_ID__ }}
-          - **comment-id**: __GH_AW_GITHUB_EVENT_COMMENT_ID__
-          {{/if}}
-          {{#if __GH_AW_GITHUB_RUN_ID__ }}
-          - **workflow-run-id**: __GH_AW_GITHUB_RUN_ID__
-          {{/if}}
-          </github-context>
-          
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          </system>
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/gh-aw-fragments/elastic-tools.md}}
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/gh-aw-fragments/runtime-setup.md}}
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/gh-aw-fragments/formatting.md}}
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/gh-aw-fragments/rigor.md}}
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/gh-aw-fragments/mcp-pagination.md}}
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/gh-aw-fragments/messages-footer.md}}
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/gh-aw-fragments/safe-output-create-pr.md}}
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          {{#runtime-import .github/workflows/gh-aw-release-update.md}}
-          GH_AW_PROMPT_EOF
-      - name: Interpolate variables and render templates
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
-          GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+      - name: Download prompt artifact
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/interpolate_prompt.cjs');
-            await main();
-      - name: Substitute placeholders
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_GITHUB_ACTOR: ${{ github.actor }}
-          GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
-          GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
-          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
-          GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
-          GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-        with:
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            
-            const substitutePlaceholders = require('/opt/gh-aw/actions/substitute_placeholders.cjs');
-            
-            // Call the substitution function
-            return await substitutePlaceholders({
-              file: process.env.GH_AW_PROMPT,
-              substitutions: {
-                GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
-                GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
-                GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
-                GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
-                GH_AW_GITHUB_EVENT_ISSUE_NUMBER: process.env.GH_AW_GITHUB_EVENT_ISSUE_NUMBER,
-                GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: process.env.GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER,
-                GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
-                GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
-                GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE
-              }
-            });
-      - name: Validate prompt placeholders
-        env:
-          GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-        run: bash /opt/gh-aw/actions/validate_prompt_placeholders.sh
-      - name: Print prompt
-        env:
-          GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-        run: bash /opt/gh-aw/actions/print_prompt_summary.sh
+          name: prompt
+          path: /tmp/gh-aw/aw-prompts
       - name: Clean git credentials
         run: bash /opt/gh-aw/actions/clean_git_credentials.sh
       - name: Execute GitHub Copilot CLI
@@ -727,7 +983,7 @@ jobs:
         timeout-minutes: 30
         run: |
           set -o pipefail
-          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.githubusercontent.com,agents-md-generator.fastmcp.app,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,codeload.github.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,lfs.github.com,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.19.0 --skip-pull \
+          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.githubusercontent.com,agents-md-generator.fastmcp.app,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,artifacts.elastic.co,azure.archive.ubuntu.com,cloud.elastic.co,codeload.github.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,ela.st,elastic.co,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,lfs.github.com,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.elastic.co' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.2 --skip-pull --enable-api-proxy \
             -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --model gpt-5.2-codex --allow-all-tools --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
@@ -736,6 +992,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
+          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
           GITHUB_STEP_SUMMARY: ${{ env.GITHUB_STEP_SUMMARY }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
@@ -805,7 +1062,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_ALLOWED_DOMAINS: "*.githubusercontent.com,agents-md-generator.fastmcp.app,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,azure.archive.ubuntu.com,codeload.github.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,lfs.github.com,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com"
+          GH_AW_ALLOWED_DOMAINS: "*.githubusercontent.com,agents-md-generator.fastmcp.app,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.snapcraft.io,archive.ubuntu.com,artifacts.elastic.co,azure.archive.ubuntu.com,cloud.elastic.co,codeload.github.com,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,ela.st,elastic.co,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,lfs.github.com,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,ppa.launchpad.net,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.elastic.co"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
         with:
@@ -839,6 +1096,15 @@ jobs:
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/parse_copilot_log.cjs');
+            await main();
+      - name: Parse Safe Inputs logs for step summary
+        if: always()
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('/opt/gh-aw/actions/parse_safe_inputs_logs.cjs');
             await main();
       - name: Parse MCP Gateway logs for step summary
         if: always()
@@ -874,6 +1140,7 @@ jobs:
             /tmp/gh-aw/aw-prompts/prompt.txt
             /tmp/gh-aw/aw_info.json
             /tmp/gh-aw/mcp-logs/
+            /tmp/gh-aw/safe-inputs/logs/
             /tmp/gh-aw/sandbox/firewall/logs/
             /tmp/gh-aw/agent-stdio.log
             /tmp/gh-aw/agent/
@@ -897,14 +1164,8 @@ jobs:
       tools_reported: ${{ steps.missing_tool.outputs.tools_reported }}
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
-      - name: Checkout actions folder
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          sparse-checkout: |
-            actions
-          persist-credentials: false
       - name: Setup Scripts
-        uses: ./actions/setup
+        uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -957,6 +1218,7 @@ jobs:
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
+          GH_AW_GROUP_REPORTS: "false"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1000,22 +1262,15 @@ jobs:
     needs: agent
     if: needs.agent.outputs.output_types != '' || needs.agent.outputs.has_patch == 'true'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    permissions: {}
     concurrency:
       group: "gh-aw-copilot-${{ github.workflow }}"
     timeout-minutes: 10
     outputs:
       success: ${{ steps.parse_results.outputs.success }}
     steps:
-      - name: Checkout actions folder
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          sparse-checkout: |
-            actions
-          persist-credentials: false
       - name: Setup Scripts
-        uses: ./actions/setup
+        uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent artifacts
@@ -1030,7 +1285,7 @@ jobs:
         with:
           name: agent-output
           path: /tmp/gh-aw/threat-detection/
-      - name: Echo agent output types
+      - name: Print agent output types
         env:
           AGENT_OUTPUT_TYPES: ${{ needs.agent.outputs.output_types }}
         run: |
@@ -1057,7 +1312,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       - name: Install GitHub Copilot CLI
-        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.410
+        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.412
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
@@ -1105,19 +1360,11 @@ jobs:
 
   pre_activation:
     runs-on: ubuntu-slim
-    permissions:
-      contents: read
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
     steps:
-      - name: Checkout actions folder
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          sparse-checkout: |
-            actions
-          persist-credentials: false
       - name: Setup Scripts
-        uses: ./actions/setup
+        uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1125,6 +1372,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
+          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -1157,14 +1405,8 @@ jobs:
       process_safe_outputs_processed_count: ${{ steps.process_safe_outputs.outputs.processed_count }}
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
-      - name: Checkout actions folder
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          sparse-checkout: |
-            actions
-          persist-credentials: false
       - name: Setup Scripts
-        uses: ./actions/setup
+        uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1188,7 +1430,8 @@ jobs:
         if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          token: ${{ github.token }}
+          ref: ${{ github.ref_name }}
+          token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           persist-credentials: false
           fetch-depth: 1
       - name: Configure Git credentials
@@ -1196,7 +1439,7 @@ jobs:
         env:
           REPO_NAME: ${{ github.repository }}
           SERVER_URL: ${{ github.server_url }}
-          GIT_TOKEN: ${{ github.token }}
+          GIT_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
         run: |
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
@@ -1217,4 +1460,11 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/safe_output_handler_manager.cjs');
             await main();
+      - name: Upload safe output items manifest
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: safe-output-items
+          path: /tmp/safe-output-items.jsonl
+          if-no-files-found: warn
 
