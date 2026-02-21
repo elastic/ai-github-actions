@@ -40,5 +40,3 @@ See [example.yml](example.yml) for the full workflow file.
 ## Safe Outputs
 
 - `add-comment` — post a comment explaining the failure (max 3)
-
-> Note: due workflow editing guardrails, this change adds the shim source under `github/workflows/`. A maintainer must relocate it to `.github/workflows/` before release.
