@@ -1,4 +1,4 @@
-name: Issue Triage
+name: Trigger Issue Triage
 on:
   issues:
     types: [opened]

@@ -1,4 +1,4 @@
-name: Small Problem Fixer
+name: Trigger Small Problem Fixer
 on:
   schedule:
     - cron: "0 12 * * 1-5"

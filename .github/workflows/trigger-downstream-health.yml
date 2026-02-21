@@ -1,4 +1,4 @@
-name: Downstream Health
+name: Trigger Downstream Health
 on:
   schedule:
     - cron: "0 10 * * *"

@@ -1,4 +1,4 @@
-name: Release Update Check
+name: Trigger Release Update Check
 on:
   schedule:
     - cron: "0 11 * * 1"

@@ -1,4 +1,4 @@
-name: Mention in PR
+name: Trigger Mention in PR
 on:
   issue_comment:
     types: [created]

@@ -1,4 +1,4 @@
-name: Semantic Function Clustering
+name: Trigger Semantic Function Clustering
 on:
   schedule:
     - cron: "0 12 * * 1-5"

@@ -1,4 +1,4 @@
-name: Downstream Users
+name: Trigger Downstream Users
 on:
   schedule:
     - cron: "0 9 * * 1-5"

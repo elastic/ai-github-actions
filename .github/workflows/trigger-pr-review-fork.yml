@@ -19,7 +19,7 @@
 # • Never pass `setup-commands` that check out or execute code from the PR.
 # • Prefer the standard `pull_request` trigger (pr-review/example.yml) for
 #   public repositories.
-name: PR Review (Fork)
+name: Trigger PR Review (Fork)
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
