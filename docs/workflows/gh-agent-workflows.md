@@ -52,6 +52,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 | [Docs New Contributor Review](gh-agent-workflows/docs-new-contributor-review.md) | Weekly schedule | Review docs from a new contributor perspective |
 | [Docs New Contributor Review External](gh-agent-workflows/docs-new-contributor-review-external.md) | Weekly schedule | Review docs cross-referencing published Elastic documentation |
 | [Downstream Health](gh-agent-workflows/downstream-health.md) | Daily schedule | Monitor downstream repo quality |
+| [Downstream Updates Needed](gh-agent-workflows/downstream-updates.md) | Weekly schedule | Check downstream repos for workflow configuration drift and recommend updates |
 | [Flaky Test Triage](gh-agent-workflows/flaky-test-triage.md) | Weekday schedule + failed CI runs | Identify repeated flaky failures and file root-cause-first triage reports |
 | [Project Summary](gh-agent-workflows/project-summary.md) | Daily schedule | Summarize recent activity and priorities |
 | [Release Update Check](gh-agent-workflows/release-update.md) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
