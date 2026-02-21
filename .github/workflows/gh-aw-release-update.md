@@ -48,7 +48,7 @@ network:
   allowed:
     - defaults
     - github
-  strict: false
+strict: false
 roles: [admin, maintainer, write]
 safe-outputs:
   noop:
