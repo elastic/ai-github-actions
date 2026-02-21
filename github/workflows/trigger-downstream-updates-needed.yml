@@ -1,0 +1,16 @@
+name: Downstream Updates Needed
+on:
+  schedule:
+    - cron: "0 11 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-downstream-updates-needed.lock.yml
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

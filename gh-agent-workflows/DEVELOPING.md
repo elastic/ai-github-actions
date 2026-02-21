@@ -62,7 +62,7 @@ workflow (gh-aw-docs-drift.md)
  └── ...
 ```
 
-`gh-aw-upgrade-check` is an **internal-only** workflow — its shim lives directly in `.github/workflows/` (not in `gh-agent-workflows/`) so it is not installable via `gh aw add`. It runs on weekdays to check for new `gh-aw` releases and files issues tagged `[gh-aw-upgrade]`.
+`gh-aw-upgrade-check` and `gh-aw-downstream-updates-needed` are **internal-only** workflows — their shims live directly in `.github/workflows/` (not in `gh-agent-workflows/`) so they are not installable via `gh aw add`.
 
 ### Shared fragments
 
