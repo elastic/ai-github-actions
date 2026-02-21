@@ -59,7 +59,7 @@ for f in gh-agent-workflows/*/example.yml; do
       /^    secrets:/ {
         print "    with:"
         while ((getline line < of) > 0) {
-          if (line != "") print "      " line
+          print "      " line
         }
         close(of)
       }
