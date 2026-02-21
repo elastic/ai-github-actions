@@ -62,7 +62,7 @@ workflow (gh-aw-docs-drift.md)
  └── ...
 ```
 
-`gh-aw-upgrade-check` and `gh-aw-downstream-users` are **internal-only** workflows — their shims live directly in `.github/workflows/` (not in `gh-agent-workflows/`) so they are not installable via `gh aw add`. `gh-aw-upgrade-check` runs on weekdays to check for new `gh-aw` releases and files issues tagged `[gh-aw-upgrade]`; `gh-aw-downstream-users` updates `data/downstream-users.json` for this repository.
+`gh-aw-upgrade-check` is an **internal-only** workflow — its shim lives directly in `.github/workflows/` (not in `gh-agent-workflows/`) so it is not installable via `gh aw add`. It runs on weekdays to check for new `gh-aw` releases and files issues tagged `[gh-aw-upgrade]`.
 
 ### Shared fragments
 
