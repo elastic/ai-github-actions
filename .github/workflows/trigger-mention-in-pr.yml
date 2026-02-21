@@ -18,5 +18,7 @@ jobs:
       startsWith(github.event.comment.body, '/ai') &&
       (github.event.issue.pull_request != null || github.event_name == 'pull_request_review_comment')
     uses: ./.github/workflows/gh-aw-mention-in-pr.lock.yml
+    with:
+      allowed-bot-users: "github-actions[bot],copilot"
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

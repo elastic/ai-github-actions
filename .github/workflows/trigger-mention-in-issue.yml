@@ -18,5 +18,6 @@ jobs:
     uses: ./.github/workflows/gh-aw-mention-in-issue.lock.yml
     with:
       draft-prs: false
+      allowed-bot-users: "github-actions[bot],copilot"
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

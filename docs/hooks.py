@@ -18,6 +18,25 @@ _tmp_dir: str | None = None
 
 _WORKFLOWS_DIR = "gh-agent-workflows"
 _DOCS_DEST = "workflows/gh-agent-workflows"
+_GITHUB_REPO = "https://github.com/elastic/ai-github-actions"
+
+
+def _workflow_source_link(example_content: str) -> str | None:
+    """Return a Markdown link to the source workflow .md file, or None.
+
+    Parses the ``uses:`` line in the example workflow to determine which
+    compiled ``.lock.yml`` — and therefore which source ``.md`` — the
+    workflow uses.
+    """
+    match = re.search(
+        r"uses:\s+elastic/ai-github-actions/\.github/workflows/(gh-aw-[^.]+)\.lock\.yml",
+        example_content,
+    )
+    if not match:
+        return None
+    filename = f"{match.group(1)}.md"
+    url = f"{_GITHUB_REPO}/blob/main/.github/workflows/{filename}"
+    return f"[`{filename}`]({url})"
 
 
 def _generate_page(workflow_dir: Path) -> str:
@@ -40,6 +59,19 @@ def _generate_page(workflow_dir: Path) -> str:
     # correct target is other-workflow.md (a peer file in the same directory).
     readme = re.sub(r"\.\./([a-z0-9-]+)/README\.md", r"\1.md", readme)
     readme = re.sub(r"\.\./([a-z0-9-]+)/(?!README\.md)", r"\1.md", readme)
+
+    # Insert a "Workflow source" link after the first paragraph (the short
+    # description that follows the H1 title) so readers can easily navigate
+    # to the prompt source.
+    source_link = _workflow_source_link(example)
+    if source_link:
+        readme = re.sub(
+            r"(^# [^\n]+\n\n)([^\n]+\n)",
+            rf"\1\2\n**Workflow source:** {source_link}\n",
+            readme,
+            count=1,
+            flags=re.MULTILINE,
+        )
 
     return f"{readme.rstrip()}\n\n## Example Workflow\n\n```yaml\n{example.rstrip()}\n```\n"
 
