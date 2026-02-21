@@ -1,5 +1,5 @@
 ---
-name: CI
+name: "Internal: CI"
 on:
   push:
     branches: [main]

@@ -35,9 +35,9 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6eb0305cce54e0ba0b25ec78e8b8da062c220e4905843d3db545df8303bcda5e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9877edd1f0ca6c7e3cc954e0ccdd320ff91bfb29360f89e3a606dfea23951e4d"}
 
-name: "Agent Efficiency"
+name: "Internal: Agent Efficiency"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - github-actions[bot] # Bots processed as bot check in pre-activation job
@@ -56,7 +56,7 @@ concurrency:
   cancel-in-progress: true
   group: agent-efficiency
 
-run-name: "Agent Efficiency"
+run-name: "Internal: Agent Efficiency"
 
 jobs:
   activation:
@@ -614,7 +614,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Agent Efficiency",
+              workflow_name: "Internal: Agent Efficiency",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1198,7 +1198,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Agent Efficiency"
+          GH_AW_WORKFLOW_NAME: "Internal: Agent Efficiency"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1211,7 +1211,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Agent Efficiency"
+          GH_AW_WORKFLOW_NAME: "Internal: Agent Efficiency"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1224,7 +1224,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Agent Efficiency"
+          GH_AW_WORKFLOW_NAME: "Internal: Agent Efficiency"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "agent-efficiency"
@@ -1243,7 +1243,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Agent Efficiency"
+          GH_AW_WORKFLOW_NAME: "Internal: Agent Efficiency"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1291,7 +1291,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Agent Efficiency"
+          WORKFLOW_NAME: "Internal: Agent Efficiency"
           WORKFLOW_DESCRIPTION: "Analyze agent workflow logs for inefficiencies, errors, and prompt improvement opportunities"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1371,7 +1371,7 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_WORKFLOW_ID: "agent-efficiency"
-      GH_AW_WORKFLOW_NAME: "Agent Efficiency"
+      GH_AW_WORKFLOW_NAME: "Internal: Agent Efficiency"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
