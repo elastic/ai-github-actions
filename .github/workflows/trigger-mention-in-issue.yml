@@ -1,4 +1,4 @@
-name: Mention in Issue
+name: Trigger Mention in Issue
 on:
   issue_comment:
     types: [created]

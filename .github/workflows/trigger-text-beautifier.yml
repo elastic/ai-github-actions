@@ -1,4 +1,4 @@
-name: Text Beautifier
+name: Trigger Text Beautifier
 on:
   schedule:
     - cron: "0 13 * * 1-5"

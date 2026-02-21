@@ -1,4 +1,4 @@
-name: Duplicate Issue Detector
+name: Trigger Duplicate Issue Detector
 on:
   issues:
     types: [opened]

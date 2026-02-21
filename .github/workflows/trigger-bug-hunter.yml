@@ -1,4 +1,4 @@
-name: Bug Hunter
+name: Trigger Bug Hunter
 on:
   schedule:
     - cron: "0 11 * * 1-5"

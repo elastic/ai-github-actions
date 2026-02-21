@@ -1,4 +1,4 @@
-name: Docs Drift External
+name: Trigger Docs Drift External
 on:
   schedule:
     - cron: "0 14 * * 1-5"

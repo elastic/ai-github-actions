@@ -1,4 +1,4 @@
-name: Agent Suggestions
+name: Trigger Agent Suggestions
 on:
   schedule:
     - cron: "0 12 * * 1"

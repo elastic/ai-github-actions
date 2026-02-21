@@ -1,4 +1,4 @@
-name: PR CI Fixer
+name: Trigger PR CI Fixer
 on:
   workflow_dispatch:
     inputs:
