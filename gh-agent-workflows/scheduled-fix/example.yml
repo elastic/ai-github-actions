@@ -13,7 +13,6 @@ jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-scheduled-fix.lock.yml@v0
     with:
-      draft-prs: false
       issue-title-prefix: "[my-audit]"
       issue-label: "my-audit"
       additional-instructions: |
