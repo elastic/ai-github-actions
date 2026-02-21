@@ -136,6 +136,8 @@ Call `add_comment` with a single comment combining all findings. Include up to *
   {optional extra context about shared symptoms, component, or scope}
   </details>
 
+<details><summary>{N} related issues found</summary>
+
 **Highly related** (separate issues that significantly overlap or share scope):
 - #{number} — {one concise sentence explaining the shared scope and the key difference from this issue}
   <details><summary>More detail</summary>
@@ -145,9 +147,11 @@ Call `add_comment` with a single comment combining all findings. Include up to *
   <details><summary>More detail</summary>
   {optional extra context about the overlap and distinction}
   </details>
+
+</details>
 ```
 
-Omit the **Highly related** section entirely when related issues detection is disabled or when no issues qualify for it. Omit a section entirely if no issues qualify for it. Put issue references on the main list line (outside `<summary>`) so GitHub renders issue status badges. Keep `<summary>` text generic (for example, `More detail`) and avoid repeating issue titles there. In justifications, refer to the current report as **"this issue"** (not by number). Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
+Omit the **Possible duplicates** section entirely if no issues qualify for it. Omit the `<details>` block wrapping **Highly related** entirely when related issues detection is disabled or when no issues qualify for it. Put issue references on the main list line (outside any `<summary>`) so GitHub renders issue status badges. Keep `<summary>` text generic (e.g. `More detail` or `{N} related issues found`) and do NOT repeat issue titles or numbers anywhere inside `<details>` bodies. In justifications, refer to the current report as **"this issue"** (not by number) and refer to the candidate by "it" or a short description — never by repeating the title or issue number. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
 
 **If no duplicate (or highly related issue, when detection is enabled) is found:**
 
