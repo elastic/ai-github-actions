@@ -1,6 +1,8 @@
-# Claude Composite Actions
+# Legacy: Claude Composite Actions
 
-Traditional GitHub Actions wrapping Claude Code. Consumed via `uses:` in standard workflows.
+This is the legacy workflow path. For new deployments, use [GitHub Agent Workflows](gh-agent-workflows.md).
+
+Traditional GitHub Actions wrapping Claude Code, consumed via `uses:` in standard workflows.
 
 > **Note:** This directory was renamed from `workflows/` to `claude-workflows/`. A symlink ensures backwards compatibility — existing `uses: elastic/ai-github-actions/claude-workflows/...@v0` references continue to work.
 
