@@ -21,7 +21,7 @@ Full documentation lives at https://elastic.github.io/ai-github-actions/.
 
 ## Quick setup script
 
-Run from the repository you want to configure (requires `gh`, `git`, and `curl`):
+Run from the repository you want to configure (requires `gh` [authenticated via `gh auth login`], `git`, and `curl`):
 
 ````bash
 curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/scripts/quick-setup.sh \
