@@ -1,5 +1,5 @@
 # Dogfood: @claude mentions on issues using local composite action
-name: Claude Mention (Issue)
+name: "Internal: Claude Mention (Issue)"
 
 on:
   issue_comment:

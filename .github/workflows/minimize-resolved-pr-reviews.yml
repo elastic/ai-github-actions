@@ -1,4 +1,4 @@
-name: Minimize Resolved Reviews
+name: "Internal: Minimize Resolved Reviews"
 
 on:
   pull_request_review:

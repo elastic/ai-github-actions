@@ -36,9 +36,9 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"424da7c3b2e4613c9e1d1674e728af0e179502240dd71ddce244c5db0230a946"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6c7c54eef66da79ace3f26a7c4cc39896e2319c7f86597f1a15baeb27def7f4b"}
 
-name: "Downstream Users"
+name: "Internal: Downstream Users"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - github-actions[bot] # Bots processed as bot check in pre-activation job
@@ -57,7 +57,7 @@ concurrency:
   cancel-in-progress: true
   group: downstream-users
 
-run-name: "Downstream Users"
+run-name: "Internal: Downstream Users"
 
 jobs:
   activation:
@@ -555,7 +555,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Downstream Users",
+              workflow_name: "Internal: Downstream Users",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1247,7 +1247,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Downstream Users"
+          GH_AW_WORKFLOW_NAME: "Internal: Downstream Users"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1260,7 +1260,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Downstream Users"
+          GH_AW_WORKFLOW_NAME: "Internal: Downstream Users"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1273,7 +1273,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Downstream Users"
+          GH_AW_WORKFLOW_NAME: "Internal: Downstream Users"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "downstream-users"
@@ -1293,7 +1293,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Downstream Users"
+          GH_AW_WORKFLOW_NAME: "Internal: Downstream Users"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1310,7 +1310,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Downstream Users"
+          GH_AW_WORKFLOW_NAME: "Internal: Downstream Users"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1355,7 +1355,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Downstream Users"
+          WORKFLOW_NAME: "Internal: Downstream Users"
           WORKFLOW_DESCRIPTION: "Track downstream public repo usage of elastic/ai-github-actions and update data"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1438,7 +1438,7 @@ jobs:
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "downstream-users"
-      GH_AW_WORKFLOW_NAME: "Downstream Users"
+      GH_AW_WORKFLOW_NAME: "Internal: Downstream Users"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
