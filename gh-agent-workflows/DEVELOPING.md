@@ -6,7 +6,8 @@
 gh-agent-workflows/
 ├── pr-review/
 │   ├── README.md              # Per-workflow docs (trigger, inputs, safe outputs)
-│   └── example.yml            # Trigger: event triggers + uses: .lock.yml (example + dogfood)
+│   ├── example.yml            # Trigger: event triggers + uses: .lock.yml (example + dogfood)
+│   └── dogfood-with.yml       # Optional: with: overrides applied when dogfooding
 ├── issue-triage/
 │   ├── README.md
 │   └── example.yml
@@ -34,6 +35,8 @@ gh-agent-workflows/
 **Workflows** (`.github/workflows/gh-aw-*.md`) are self-contained agent workflow definitions. Each file contains the engine, `workflow_call` trigger (with standard inputs), permissions, concurrency, roles, description, tools, network, safe-outputs, and the full agent prompt. Workflows import only shared fragments from `gh-aw-fragments/`. They trigger **only** on `workflow_call` — they do not have schedule, event, or dispatch triggers directly.
 
 **Triggers** (`gh-agent-workflows/<name>/example.yml`) are plain YAML files that define the actual event triggers (schedule, PR events, slash commands, etc.) and call the compiled `.lock.yml` via `uses:`. When copied to `.github/workflows/` by `scripts/dogfood.sh`, they become `trigger-<name>.yml` (e.g., `pr-review/example.yml` → `trigger-pr-review.yml`) for workflows not listed in `EXCLUDED_WORKFLOWS` (`flaky-test-triage`, `issue-triage-pr`). They serve two purposes: (1) dogfood for running workflows in this repo, and (2) examples for consumer repos to copy and adapt. Triggers are NOT compiled by `gh-aw` — they are plain GitHub Actions YAML.
+
+**Dogfood overrides** (`gh-agent-workflows/<name>/dogfood-with.yml`) are optional files containing `with:` input values that the dogfood script injects into the generated trigger. This lets us run workflows at different settings in this repo (e.g., `intensity: aggressive`) while keeping the examples at conservative defaults for consumers. If no `dogfood-with.yml` exists, the trigger is copied as-is from the example.
 
 Each workflow directory also contains a `README.md` with trigger details, inputs, and safe outputs.
 
@@ -96,7 +99,7 @@ Fragments live in `.github/workflows/gh-aw-fragments/`. Workflows import them us
 
 ### How compilation works
 
-The `gh-aw` compiler processes `.md` files in `.github/workflows/`. `make sync` (which runs `scripts/dogfood.sh`) copies `example.yml` files from `gh-agent-workflows/*/` to `.github/workflows/trigger-*.yml` for workflows not listed in `EXCLUDED_WORKFLOWS` (`flaky-test-triage`, `issue-triage-pr`). Workflow `.md` files and `gh-aw-fragments/` live directly in `.github/workflows/` — no symlinks. `gh-aw-fragments/` is a real directory.
+The `gh-aw` compiler processes `.md` files in `.github/workflows/`. `make sync` (which runs `scripts/dogfood.sh`) copies `example.yml` files from `gh-agent-workflows/*/` to `.github/workflows/trigger-*.yml` for workflows not listed in `EXCLUDED_WORKFLOWS` (`flaky-test-triage`, `issue-triage-pr`), injecting any `dogfood-with.yml` overrides. Workflow `.md` files and `gh-aw-fragments/` live directly in `.github/workflows/` — no symlinks. `gh-aw-fragments/` is a real directory.
 
 ```text
 .github/workflows/
@@ -118,7 +121,7 @@ The `gh-aw` compiler processes `.md` files in `.github/workflows/`. `make sync` 
 └── ...
 ```
 
-Trigger `example.yml` files are copied from `gh-agent-workflows/*/` by `scripts/dogfood.sh` (with `trigger-` prefix added) for workflows not listed in `EXCLUDED_WORKFLOWS`.
+Trigger `example.yml` files are copied from `gh-agent-workflows/*/` by `scripts/dogfood.sh` (with `trigger-` prefix added) for workflows not listed in `EXCLUDED_WORKFLOWS`. If a `dogfood-with.yml` exists alongside the example, its contents replace any existing `with:` block in the generated trigger.
 
 ### Editing workflows
 
@@ -182,3 +185,15 @@ Consumer repos call the compiled `.lock.yml` via `uses:` in a plain YAML workflo
 Each non-internal workflow has a corresponding `example.yml` in `gh-agent-workflows/<name>/` that defines the actual event triggers and calls the compiled `.lock.yml`. These are plain YAML (not compiled by gh-aw) and are copied to `.github/workflows/trigger-<name>.yml` by `scripts/dogfood.sh` for dogfooding when the workflow is not listed in `EXCLUDED_WORKFLOWS`.
 
 Consumer repos copy a workflow's `example.yml` into their `.github/workflows/` directory and customize the `with:` inputs. The `uses:` path already points to the remote compiled workflow.
+
+### Dogfood overrides
+
+To run a workflow at different settings in this repo without changing the consumer-facing example, create a `dogfood-with.yml` alongside the `example.yml`:
+
+```yaml
+# gh-agent-workflows/pr-review/dogfood-with.yml
+intensity: aggressive
+minimum_severity: nitpick
+```
+
+The dogfood script injects these as a `with:` block in the generated trigger, replacing any existing `with:` block (including commented-out defaults). The file contains only the key-value pairs — no `with:` key, no indentation.

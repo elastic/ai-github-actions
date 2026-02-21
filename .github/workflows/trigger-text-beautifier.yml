@@ -12,5 +12,11 @@ permissions:
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-text-beautifier.lock.yml
+    with:
+      edit-typos: high
+      edit-grammar: high
+      edit-clarity: high
+      edit-terminology: high
+      edit-misleading-text: high
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

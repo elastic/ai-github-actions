@@ -5,7 +5,7 @@
 | Directory | What | Docs |
 | --- | --- | --- |
 | `.github/workflows/` | Workflow `gh-aw-*.md` sources, compiled `gh-aw-*.lock.yml` files, trigger copies, fragments | https://github.com/elastic/ai-github-actions/blob/main/gh-agent-workflows/DEVELOPING.md |
-| `gh-agent-workflows/` | Per-workflow READMEs and `example.yml` triggers (examples + dogfood), consumer docs | https://github.com/elastic/ai-github-actions/blob/main/gh-agent-workflows/DEVELOPING.md |
+| `gh-agent-workflows/` | Per-workflow READMEs, `example.yml` triggers, and optional `dogfood-with.yml` overrides | https://github.com/elastic/ai-github-actions/blob/main/gh-agent-workflows/DEVELOPING.md |
 | `claude-workflows/` | Composite actions wrapping Claude Code | https://github.com/elastic/ai-github-actions/blob/main/claude-workflows/DEVELOPING.md |
 
 Internal-only workflows (e.g., `gh-aw-upgrade-check.md`, `ci.yml`, `release.yml`) also live in `.github/workflows/`.

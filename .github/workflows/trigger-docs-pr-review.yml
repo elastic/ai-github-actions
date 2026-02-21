@@ -16,5 +16,8 @@ jobs:
       github.event.issue.pull_request != null &&
       startsWith(github.event.comment.body, '/docs-review')
     uses: ./.github/workflows/gh-aw-docs-pr-review.lock.yml
+    with:
+      intensity: aggressive
+      minimum_severity: nitpick
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

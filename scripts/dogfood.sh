@@ -40,9 +40,30 @@ for f in gh-agent-workflows/*/example.yml; do
     echo "  ✗ gh-agent-workflows/$dir/example.yml (excluded — manual sync required)"
     continue
   fi
+  target=".github/workflows/trigger-$dir.yml"
   sed 's|uses: elastic/ai-github-actions/\(.*\)@v0|uses: ./\1|; s|^name: |name: Trigger |' "$f" \
-    > ".github/workflows/trigger-$dir.yml"
-  echo "  ✓ gh-agent-workflows/$dir/example.yml → .github/workflows/trigger-$dir.yml"
+    > "$target"
+
+  # Inject dogfood-with.yml overrides into the generated trigger.
+  overrides="gh-agent-workflows/$dir/dogfood-with.yml"
+  if [[ -f "$overrides" ]]; then
+    awk -v of="$overrides" '
+      /^    with:/ { in_with=1; next }
+      in_with && /^    [a-z]/ { in_with=0 }
+      in_with { next }
+      /^    secrets:/ {
+        print "    with:"
+        while ((getline line < of) > 0) {
+          if (line != "") print "      " line
+        }
+        close(of)
+      }
+      { print }
+    ' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
+    echo "  ✓ gh-agent-workflows/$dir/example.yml → $target (with dogfood overrides)"
+  else
+    echo "  ✓ gh-agent-workflows/$dir/example.yml → $target"
+  fi
 done
 
 echo "✓ Sync complete"
