@@ -186,6 +186,7 @@ Produce a thorough behavioral analysis of the target workflow. For each dimensio
 - **Run outcomes** — summary table of recent runs (date, conclusion, run link)
 - **Failure modes** — for each failed run: what step failed, exact error message, log excerpt
 - **Tool call patterns** — average and outlier turn counts; which tools are called most; any tools called redundantly
+- **Tool call efficiency** — are any tool calls excessive, redundant, or inappropriate given the task? Are there calls that return no useful information but are repeated? Could the same outcome be reached with fewer turns? Note specific examples of waste or unnecessary repetition.
 - **Prompt adherence** — does the agent follow the workflow's instructions? Where does it deviate?
 - **Output quality** — for successful runs: does the output match the expected safe-output format? Are issues/comments/PRs well-formed?
 - **Recurring patterns** — note any pattern appearing in 2+ runs
@@ -219,7 +220,11 @@ File an issue with `create_issue`. The issue title must follow the format:
 >
 > ## Recurring Patterns
 > Patterns seen in 2+ runs.
-
-Do not include suggested fixes or action items — focus on accurate description of observed behavior.
+>
+> ## Prompt Improvement Suggestions
+> Based on the observed tool call patterns and efficiency analysis, list specific, actionable suggestions for improving the workflow prompt. For each suggestion, explain:
+> - What inefficiency or problem was observed (with evidence from the logs)
+> - What change to the prompt would address it
+> - What improvement is expected (fewer tool calls, faster runtime, better output, etc.)
 
 If the workflow has no recent runs at all, call `noop` with the reason.
