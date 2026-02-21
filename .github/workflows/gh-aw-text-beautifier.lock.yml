@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a1121a70c3e10592769073ae4d7b04b6707d0edb359aaf0deaede0735374b870"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4a3c8c22298420f6cae08675bbe5b300b3a5e734147ab435e6f09500a3aa3f30"}
 
 name: "Text Beautifier"
 "on":
@@ -59,6 +59,11 @@ name: "Text Beautifier"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
+      draft-prs:
+        default: true
+        description: Whether to create pull requests as drafts
+        required: false
+        type: boolean
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews

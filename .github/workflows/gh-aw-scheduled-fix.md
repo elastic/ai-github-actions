@@ -52,10 +52,10 @@ on:
         required: false
         default: ""
       draft-prs:
-        description: "Create PRs as draft (true/false)"
-        type: string
+        description: "Whether to create pull requests as drafts"
+        type: boolean
         required: false
-        default: "true"
+        default: true
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true

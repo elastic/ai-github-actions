@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c334fb0e60093333f671503d27e5637a6aca797b4056d8292aa1201fdc385cff"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"398a351de59b419aac5f84062790495146a0e9356f24c9c9e1f3406ef7f2df3e"}
 
 name: "Small Problem Fixer"
 "on":
@@ -58,6 +58,11 @@ name: "Small Problem Fixer"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
+      draft-prs:
+        default: true
+        description: Whether to create pull requests as drafts
+        required: false
+        type: boolean
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews

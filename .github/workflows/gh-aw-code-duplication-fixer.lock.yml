@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"76677a5c276b3ec7f97560d70294dd7af17de8154f29a52198de9d8cede0dbaf"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"830bd8d92a4b98f6eeb4d157f133446f26586b8e4b88581bb0a588c3340a77d3"}
 
 name: "Code Duplication Fixer"
 "on":
@@ -59,6 +59,11 @@ name: "Code Duplication Fixer"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
+      draft-prs:
+        default: true
+        description: Whether to create pull requests as drafts
+        required: false
+        type: boolean
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews

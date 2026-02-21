@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4baa7d5cf4b9f13fad6ee198ebc939209bbae3becc62bd261b65b063c4013491"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"424da7c3b2e4613c9e1d1674e728af0e179502240dd71ddce244c5db0230a946"}
 
 name: "Downstream Users"
 "on":
@@ -1492,7 +1492,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":false,\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

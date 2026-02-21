@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c465c6dad1086f101ec331fa349f22b48f43a2c883e2fd6cfca8fafe013356f6"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a2c811372816d42f48ad771f4dd113997162bbf5695ad2043e98d74952b41656"}
 
 name: "Scheduled Fix"
 "on":
@@ -59,10 +59,10 @@ name: "Scheduled Fix"
         required: false
         type: string
       draft-prs:
-        default: "true"
-        description: Create PRs as draft (true/false)
+        default: true
+        description: Whether to create pull requests as drafts
         required: false
-        type: string
+        type: boolean
       issue-label:
         default: ""
         description: Label to search for in open issues

@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bc00a8c8f1d0772fb7dd159091be4a348d113116528c926eae3b8731916a57c3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"767f6f3243f887d127374b3a5669d92ec0526373f9bae848e5d7ee8a2cf25dad"}
 
 name: "Gh Aw Bug Exterminator"
 "on":
@@ -59,6 +59,11 @@ name: "Gh Aw Bug Exterminator"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
+      draft-prs:
+        default: true
+        description: Whether to create pull requests as drafts
+        required: false
+        type: boolean
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews

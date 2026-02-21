@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b356afe8c7cfbac9e0142d64737f066f1e5d30554a3a17d37bb2fac72797cbb1"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"29fef0a5ea1c6c519a83ba36ae92bf9f7995b20665e39ca2e8e230d06035c525"}
 
 name: "Code Simplifier"
 "on":
@@ -58,6 +58,11 @@ name: "Code Simplifier"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
+      draft-prs:
+        default: true
+        description: Whether to create pull requests as drafts
+        required: false
+        type: boolean
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews

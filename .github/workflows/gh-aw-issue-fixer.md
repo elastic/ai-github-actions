@@ -45,9 +45,11 @@ on:
         type: string
         required: false
         default: ""
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+      draft-prs:
+        description: "Whether to create pull requests as drafts"
+        type: boolean
+        required: false
+        default: true
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:

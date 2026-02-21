@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"997287a3ecffdf06b7320ba081d4a5d6eca7a2490106dd11cee7284b2960ff5b"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1444b5c95cf4969503231cdf8406c90cfa06e317d91d7d822978889a8e3b1076"}
 
 name: "Release Update Check"
 "on":
@@ -57,6 +57,11 @@ name: "Release Update Check"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
+      draft-prs:
+        default: true
+        description: Whether to create pull requests as drafts
+        required: false
+        type: boolean
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews

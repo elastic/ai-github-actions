@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c1429c3c1b7b155be7afa26dd65308b3a995c2ef7a32a88f999213c273cc962e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c3c9561137a623f18dcf8b8a85eabd3d8e1984655eb1a47f8ff08f67bdb170a8"}
 
 name: "Test Improver"
 "on":
@@ -58,6 +58,11 @@ name: "Test Improver"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
+      draft-prs:
+        default: true
+        description: Whether to create pull requests as drafts
+        required: false
+        type: boolean
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews

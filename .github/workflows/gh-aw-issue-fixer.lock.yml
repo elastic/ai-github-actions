@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7cb47f202abb49164bc3816b120f1cf4f37344a351b5ee2a42b5217ae1f4b407"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cb6943743e04d4378db52e4e358193cee5b9c1f028cd8cfa476c470b155ba9fe"}
 
 name: "Issue Fixer"
 "on":
@@ -59,6 +59,11 @@ name: "Issue Fixer"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
+      draft-prs:
+        default: true
+        description: Whether to create pull requests as drafts
+        required: false
+        type: boolean
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -74,9 +79,6 @@ name: "Issue Fixer"
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
         required: false
         type: string
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
 
 permissions: {}
 
