@@ -16,7 +16,6 @@ permissions:
 
 jobs:
   run:
-    timeout-minutes: 90
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-ci-fixer.lock.yml@v0
     with:
       workflow-run-id: ${{ inputs.workflow-run-id }}
