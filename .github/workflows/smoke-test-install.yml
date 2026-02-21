@@ -39,19 +39,43 @@ jobs:
           set -euo pipefail
 
           WORKFLOWS=(
-            pr-review
+            agent-efficiency
+            agent-suggestions
+            breaking-change-detector
+            bug-exterminator
+            bug-hunter
+            code-duplication-detector
+            code-duplication-fixer
+            code-simplifier
+            docs-patrol
+            docs-patrol-external
+            docs-pr-review
+            downstream-health
+            duplicate-issue-detector
+            flaky-test-investigator
+            issue-fixer
             issue-triage
             mention-in-issue
             mention-in-pr
-            docs-patrol
-            docs-patrol-external
-            newbie-contributor-patrol
             newbie-contributor-fixer
-            docs-pr-review
+            newbie-contributor-patrol
             newbie-contributor-patrol-external
-            downstream-health
+            performance-profiler
+            pr-actions-detective
+            pr-actions-fixer
+            pr-buildkite-detective
+            pr-review
+            pr-review-fork
+            project-summary
+            release-update
+            scheduled-audit
+            scheduled-fix
+            small-problem-fixer
             stale-issues
-            agent-efficiency
+            test-improver
+            text-auditor
+            text-beautifier
+            update-pr-body
           )
 
           FAILED=0

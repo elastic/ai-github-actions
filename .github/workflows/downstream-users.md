@@ -13,17 +13,11 @@ imports:
   - gh-aw-fragments/safe-output-create-pr.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+  model: gpt-5.3-codex
 on:
   schedule:
     - cron: "weekly on Monday around 10:00"
   workflow_dispatch:
-    inputs:
-      model:
-        description: "AI model to use"
-        type: string
-        required: false
-        default: "gpt-5.3-codex"
   roles: [admin, maintainer, write]
   bots:
     - "github-actions[bot]"

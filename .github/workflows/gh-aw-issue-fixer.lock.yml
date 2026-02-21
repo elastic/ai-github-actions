@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"aa80ec4c1016ca6c3bf09af15d6800d53482db6edf97fdb3713934e3eaf6cf4c"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7cb47f202abb49164bc3816b120f1cf4f37344a351b5ee2a42b5217ae1f4b407"}
 
 name: "Issue Fixer"
 "on":
@@ -347,9 +347,9 @@ jobs:
           - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          # Issue Triage Agent (with PR)
+          # Issue Fixer
           
-          Triage new issues in __GH_AW_GITHUB_REPOSITORY__ and provide actionable analysis with implementation plans. For straightforward fixes, implement and open a draft PR.
+          Investigate and fix issues in __GH_AW_GITHUB_REPOSITORY__. Provide actionable analysis with implementation plans. For straightforward fixes, implement and open a draft PR.
           
           ## Context
           

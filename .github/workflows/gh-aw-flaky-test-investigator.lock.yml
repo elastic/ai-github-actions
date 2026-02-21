@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6b9d557fd144304fe7f492a0256200787652d958efc8c40b5a1d9fcda8c9d519"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c57800689f45c5797e4b8d101c9679d53ff1ac7492df7d02953e959811459a7f"}
 
 name: "Flaky Test Investigator"
 "on":
@@ -429,11 +429,11 @@ jobs:
           
           ### Issue Format
           
-          **Issue title:** Brief flaky-test triage summary for the window
+          **Issue title:** Brief flaky-test investigation summary for the window
           
           **Issue body:**
           
-          > ## Flaky Test Triage Report
+          > ## Flaky Test Investigation Report
           >
           > **Window:** [date range analyzed]
           >

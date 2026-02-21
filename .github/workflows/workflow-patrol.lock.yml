@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3dd7ea9334c313979c67a6232a75c40f02028cd4a4418ee809b58dc729effd2d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ff3b4fa6a9f032dad1d041ca1bca6427e8d38ad5d8003805214e53d82a7fed71"}
 
 name: "Workflow Patrol"
 "on":
@@ -49,12 +49,6 @@ name: "Workflow Patrol"
   - cron: "45 14 * * 1-5"
     # Friendly format: daily around 14:00 on weekdays (scattered)
   workflow_dispatch:
-    inputs:
-      model:
-        default: claude-opus-4.6
-        description: AI model to use
-        required: false
-        type: string
 
 permissions: {}
 
@@ -593,7 +587,7 @@ jobs:
             const awInfo = {
               engine_id: "copilot",
               engine_name: "GitHub Copilot CLI",
-              model: "${{ inputs.model }}",
+              model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
               workflow_name: "Workflow Patrol",
@@ -994,7 +988,7 @@ jobs:
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          COPILOT_MODEL: ${{ inputs.model }}
+          COPILOT_MODEL: gpt-5.3-codex
           GH_AW_MCP_CONFIG: /home/runner/.copilot/mcp-config.json
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
@@ -1316,7 +1310,7 @@ jobs:
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          COPILOT_MODEL: ${{ inputs.model }}
+          COPILOT_MODEL: gpt-5.3-codex
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
@@ -1352,7 +1346,7 @@ jobs:
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
-      GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
+      GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.\"}"
       GH_AW_WORKFLOW_ID: "workflow-patrol"
       GH_AW_WORKFLOW_NAME: "Workflow Patrol"

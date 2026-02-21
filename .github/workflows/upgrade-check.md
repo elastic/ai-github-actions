@@ -12,17 +12,11 @@ imports:
   - gh-aw-fragments/scheduled-audit.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+  model: gpt-5.3-codex
 on:
   schedule:
     - cron: "daily around 14:00 on weekdays"
   workflow_dispatch:
-    inputs:
-      model:
-        description: "AI model to use"
-        type: string
-        required: false
-        default: "claude-opus-4.6"
   roles: [admin, maintainer, write]
   bots:
     - "github-actions[bot]"

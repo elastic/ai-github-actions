@@ -82,9 +82,9 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-# Issue Triage Agent (with PR)
+# Issue Fixer
 
-Triage new issues in ${{ github.repository }} and provide actionable analysis with implementation plans. For straightforward fixes, implement and open a draft PR.
+Investigate and fix issues in ${{ github.repository }}. Provide actionable analysis with implementation plans. For straightforward fixes, implement and open a draft PR.
 
 ## Context
 

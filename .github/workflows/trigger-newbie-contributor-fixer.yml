@@ -5,8 +5,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  issues: read
+  contents: write
+  issues: write
   pull-requests: write
 
 jobs:

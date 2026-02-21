@@ -126,11 +126,11 @@ Call `noop` when:
 
 ### Issue Format
 
-**Issue title:** Brief flaky-test triage summary for the window
+**Issue title:** Brief flaky-test investigation summary for the window
 
 **Issue body:**
 
-> ## Flaky Test Triage Report
+> ## Flaky Test Investigation Report
 >
 > **Window:** [date range analyzed]
 >
