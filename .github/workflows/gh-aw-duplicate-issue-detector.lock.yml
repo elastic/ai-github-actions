@@ -279,7 +279,7 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # Duplicate Issue Detector
           
-          Check whether newly opened issue #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__ in __GH_AW_GITHUB_REPOSITORY__ is a duplicate of an existing open or previously closed/resolved issue. Do **not** triage or make an action plan — only determine whether a duplicate exists.
+          Check whether newly opened issue #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__ in __GH_AW_GITHUB_REPOSITORY__ is a duplicate of, or highly related to, an existing open or previously closed/resolved issue. Do **not** triage or make an action plan — only determine whether a duplicate or highly related issue exists.
           
           ## Context
           
@@ -309,32 +309,44 @@ jobs:
           
           ### Step 3: Evaluate Candidates
           
-          A duplicate must describe **the same underlying problem or request**, not merely the same topic area. Ask:
-          - Does the candidate report the same bug, error, or request the same feature?
-          - Are the affected component, behavior, and scope the same?
+          Classify each promising candidate into one of three categories:
           
-          **Do not mark as duplicate if:**
-          - The candidate covers only a related but distinct problem
+          **Clear duplicate** — the candidate describes **the same underlying problem or request**:
+          - Reports the same bug or requests the exact same feature
+          - The affected component, behavior, and scope are the same
+          - A fix for the candidate would fully resolve this issue too
+          
+          **Highly related** — the candidate is closely related but **not** the same issue:
+          - Covers a very similar area, component, or failure mode
+          - One issue is a subset or superset of the other
+          - Both issues overlap significantly but each has distinct scope or nuance
+          
+          **Not related** — skip it if:
+          - The candidate only shares the same general topic area
           - The candidate is closed as "wont fix" or "invalid" with no resolution of the underlying issue
-          - You are uncertain — only flag clear duplicates
+          - You are uncertain — when in doubt, prefer "not related" over "highly related", and "highly related" over "duplicate"
           
           ### Step 4: Post Result
           
-          **If a clear duplicate is found:**
+          Post **exactly one** `add_comment` call total (or `noop` if nothing is found). Do not call `add_comment` more than once.
           
-          Call `add_comment` with a concise comment in this format:
+          **If any duplicates or highly related issues were found:**
           
-          > This issue appears to be a duplicate of #{number} — {title}.
-          >
-          > {One sentence explaining the similarity.}
-          >
-          > Linking to the existing issue for tracking. If this is actually a different problem, please add more details to distinguish it.
+          Call `add_comment` with a single comment combining all findings. Include up to **3 duplicate issues** and up to **3 highly related issues**, each ranked from most to least relevant to the current issue. Use this format:
           
-          - Reference at most **one** best-matching duplicate (the most relevant open issue takes priority over a closed one).
-          - Use neutral, helpful language — the reporter may not be familiar with the existing issue.
-          - Do NOT use `fixes`, `closes`, or `resolves` keywords.
+          ```
+          **Possible duplicates** (issues that appear to describe the same problem):
+          - #{number} — {title}: {one concise sentence explaining the overlap}
+          - #{number} — {title}: {one concise sentence explaining the overlap}
           
-          **If no duplicate is found:**
+          **Highly related** (separate issues that significantly overlap or share scope):
+          - #{number} — {title}: {one concise sentence explaining how they are related and how they differ}
+          - #{number} — {title}: {one concise sentence explaining how they are related and how they differ}
+          ```
+          
+          Omit a section entirely if no issues qualify for it. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
+          
+          **If no duplicate or highly related issue is found:**
           
           Call `noop` with message "No duplicate found for issue #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__".
           
