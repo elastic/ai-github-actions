@@ -81,6 +81,8 @@ jobs:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
+View the workflow file: [`gh-aw-newbie-contributor-patrol.md`](https://github.com/elastic/ai-github-actions/blob/main/.github/workflows/gh-aw-newbie-contributor-patrol.md)
+
 ---
 
 ## Newbie Contributor Patrol External (detector variant)
@@ -126,6 +128,8 @@ jobs:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
+View the workflow file: [`gh-aw-newbie-contributor-patrol-external.md`](https://github.com/elastic/ai-github-actions/blob/main/.github/workflows/gh-aw-newbie-contributor-patrol-external.md)
+
 ---
 
 ## Newbie Contributor Fixer
@@ -170,3 +174,5 @@ jobs:
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
+
+View the workflow file: [`gh-aw-newbie-contributor-fixer.md`](https://github.com/elastic/ai-github-actions/blob/main/.github/workflows/gh-aw-newbie-contributor-fixer.md)

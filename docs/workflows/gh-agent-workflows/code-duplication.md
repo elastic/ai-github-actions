@@ -77,6 +77,8 @@ jobs:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
+View the workflow file: [`gh-aw-code-duplication-detector.md`](https://github.com/elastic/ai-github-actions/blob/main/.github/workflows/gh-aw-code-duplication-detector.md)
+
 ---
 
 ## Code Duplication Fixer
@@ -121,3 +123,5 @@ jobs:
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
+
+View the workflow file: [`gh-aw-code-duplication-fixer.md`](https://github.com/elastic/ai-github-actions/blob/main/.github/workflows/gh-aw-code-duplication-fixer.md)

@@ -70,6 +70,8 @@ jobs:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
+View the workflow file: [`gh-aw-docs-patrol.md`](https://github.com/elastic/ai-github-actions/blob/main/.github/workflows/gh-aw-docs-patrol.md)
+
 ---
 
 ## Docs Patrol External
@@ -115,3 +117,5 @@ jobs:
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
+
+View the workflow file: [`gh-aw-docs-patrol-external.md`](https://github.com/elastic/ai-github-actions/blob/main/.github/workflows/gh-aw-docs-patrol-external.md)

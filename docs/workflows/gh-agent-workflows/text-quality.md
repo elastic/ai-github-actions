@@ -80,6 +80,8 @@ jobs:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
+View the workflow file: [`gh-aw-text-auditor.md`](https://github.com/elastic/ai-github-actions/blob/main/.github/workflows/gh-aw-text-auditor.md)
+
 ---
 
 ## Text Beautifier (fixer)
@@ -124,3 +126,5 @@ jobs:
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
+
+View the workflow file: [`gh-aw-text-beautifier.md`](https://github.com/elastic/ai-github-actions/blob/main/.github/workflows/gh-aw-text-beautifier.md)

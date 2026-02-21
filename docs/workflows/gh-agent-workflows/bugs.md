@@ -73,6 +73,8 @@ jobs:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
+View the workflow file: [`gh-aw-bug-hunter.md`](https://github.com/elastic/ai-github-actions/blob/main/.github/workflows/gh-aw-bug-hunter.md)
+
 ---
 
 ## Bug Exterminator (fixer)
@@ -117,3 +119,5 @@ jobs:
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
+
+View the workflow file: [`gh-aw-bug-exterminator.md`](https://github.com/elastic/ai-github-actions/blob/main/.github/workflows/gh-aw-bug-exterminator.md)

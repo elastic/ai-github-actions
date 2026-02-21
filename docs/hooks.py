@@ -18,6 +18,16 @@ _tmp_dir: str | None = None
 
 _WORKFLOWS_DIR = "gh-agent-workflows"
 _DOCS_DEST = "workflows/gh-agent-workflows"
+_REPO_URL = "https://github.com/elastic/ai-github-actions"
+
+
+def _get_workflow_name(example_content: str) -> str | None:
+    """Extract the reusable workflow name (e.g. 'gh-aw-issue-fixer') from example.yml."""
+    match = re.search(
+        r"uses:\s+elastic/ai-github-actions/.github/workflows/(gh-aw-[^.]+)\.lock\.yml",
+        example_content,
+    )
+    return match.group(1) if match else None
 
 
 def _generate_page(workflow_dir: Path) -> str:
@@ -34,7 +44,13 @@ def _generate_page(workflow_dir: Path) -> str:
         readme,
     )
 
-    return f"{readme.rstrip()}\n\n## Example Workflow\n\n```yaml\n{example.rstrip()}\n```\n"
+    workflow_name = _get_workflow_name(example)
+    prompt_section = ""
+    if workflow_name:
+        url = f"{_REPO_URL}/blob/main/.github/workflows/{workflow_name}.md"
+        prompt_section = f"\n\n## Workflow File\n\nView the workflow file: [`{workflow_name}.md`]({url})"
+
+    return f"{readme.rstrip()}{prompt_section}\n\n## Example Workflow\n\n```yaml\n{example.rstrip()}\n```\n"
 
 
 def on_pre_build(config):
