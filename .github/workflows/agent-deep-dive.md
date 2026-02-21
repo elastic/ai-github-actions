@@ -8,56 +8,27 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
-  - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/scheduled-audit.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+  model: gpt-5.3-codex
 on:
-  workflow_call:
+  schedule:
+    - cron: "daily around 14:00 on weekdays"
+  workflow_dispatch:
     inputs:
-      model:
-        description: "AI model to use"
-        type: string
-        required: false
-        default: "gpt-5.3-codex"
       target-workflow:
         description: "Workflow file name to deep dive (e.g. trigger-pr-review.yml). If empty, one is chosen automatically."
-        type: string
         required: false
         default: ""
       run-count:
         description: "Number of recent runs to analyze (default: 20)"
-        type: string
         required: false
         default: "20"
-      additional-instructions:
-        description: "Repo-specific instructions appended to the agent prompt"
-        type: string
-        required: false
-        default: ""
-      setup-commands:
-        description: "Shell commands to run before the agent starts (dependency install, build, etc.)"
-        type: string
-        required: false
-        default: ""
-      allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
-        type: string
-        required: false
-        default: "github-actions[bot]"
-      messages-footer:
-        description: "Footer appended to all agent comments and reviews"
-        type: string
-        required: false
-        default: ""
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
   roles: [admin, maintainer, write]
   bots:
-    - "${{ inputs.allowed-bot-users }}"
+    - "github-actions[bot]"
 concurrency:
   group: agent-deep-dive
   cancel-in-progress: true
@@ -89,11 +60,6 @@ safe-outputs:
     expires: 14d
 timeout-minutes: 60
 steps:
-  - name: Repo-specific setup
-    if: ${{ inputs.setup-commands != '' }}
-    env:
-      SETUP_COMMANDS: ${{ inputs.setup-commands }}
-    run: eval "$SETUP_COMMANDS"
   - name: Select and download workflow logs
     env:
       GH_TOKEN: ${{ github.token }}
@@ -257,5 +223,3 @@ File an issue with `create_issue`. The issue title must follow the format:
 Do not include suggested fixes or action items — focus on accurate description of observed behavior.
 
 If the workflow has no recent runs at all, call `noop` with the reason.
-
-${{ inputs.additional-instructions }}

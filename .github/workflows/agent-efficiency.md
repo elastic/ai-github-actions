@@ -8,46 +8,18 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
-  - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/scheduled-audit.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+  model: gpt-5.3-codex
 on:
-  workflow_call:
-    inputs:
-      model:
-        description: "AI model to use"
-        type: string
-        required: false
-        default: "gpt-5.3-codex"
-      additional-instructions:
-        description: "Repo-specific instructions appended to the agent prompt"
-        type: string
-        required: false
-        default: ""
-      setup-commands:
-        description: "Shell commands to run before the agent starts (dependency install, build, etc.)"
-        type: string
-        required: false
-        default: ""
-      allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
-        type: string
-        required: false
-        default: "github-actions[bot]"
-      messages-footer:
-        description: "Footer appended to all agent comments and reviews"
-        type: string
-        required: false
-        default: ""
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+  schedule:
+    - cron: "daily around 16:00 on weekdays"
+  workflow_dispatch:
   roles: [admin, maintainer, write]
   bots:
-    - "${{ inputs.allowed-bot-users }}"
+    - "github-actions[bot]"
 concurrency:
   group: agent-efficiency
   cancel-in-progress: true
@@ -79,11 +51,6 @@ safe-outputs:
     expires: 7d
 timeout-minutes: 60
 steps:
-  - name: Repo-specific setup
-    if: ${{ inputs.setup-commands != '' }}
-    env:
-      SETUP_COMMANDS: ${{ inputs.setup-commands }}
-    run: eval "$SETUP_COMMANDS"
   - name: Download failed run logs
     env:
       GH_TOKEN: ${{ github.token }}
@@ -219,5 +186,3 @@ For each behavioral pattern found, include:
 Do not include suggested fixes or impact assessments — focus on accurate description of observed behavior.
 
 If no significant patterns are found, still file the issue with the run summary table. If there are also no downstream repositories, call `noop` instead.
-
-${{ inputs.additional-instructions }}
