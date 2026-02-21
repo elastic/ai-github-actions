@@ -22,7 +22,6 @@ nav:
               - Mention in PR: workflows/gh-agent-workflows/mention-in-pr.md
               - PR CI Detective: workflows/gh-agent-workflows/pr-ci-detective.md
               - PR CI Fixer: workflows/gh-agent-workflows/pr-ci-fixer.md
-              - PR Checks Fix: workflows/gh-agent-workflows/pr-checks-fix.md
               - PR Review: workflows/gh-agent-workflows/pr-review.md
               - Update PR Body: workflows/gh-agent-workflows/update-pr-body.md
           - Scheduled / Agent Factory:
