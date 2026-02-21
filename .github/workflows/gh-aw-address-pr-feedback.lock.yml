@@ -33,12 +33,13 @@
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
 #     - gh-aw-fragments/safe-output-push-to-pr.md
+#     - gh-aw-fragments/safe-output-reply-to-review-comment.md
 #     - gh-aw-fragments/safe-output-resolve-thread.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5d329ba82e9944633dae37107f43565dba25e647267a4df049c4b16dd7382506"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"dab90f0af7a94894345ff3c9807e1cea2f1ea7a7ad1c2c5cdf37c66c159f2aa3"}
 
 name: "Address PR Feedback"
 "on":
@@ -181,13 +182,17 @@ jobs:
           
           ---
           
-          ## Adding a Comment to an Issue or Pull Request, Resolving a Pull Request Review Thread, Pushing Changes to Branch, Reporting Missing Tools or Functionality, Reporting Missing Data
+          ## Adding a Comment to an Issue or Pull Request, Replying to a Pull Request Review Comment, Resolving a Pull Request Review Thread, Pushing Changes to Branch, Reporting Missing Tools or Functionality, Reporting Missing Data
           
           **IMPORTANT**: To perform the actions listed above, use the **safeoutputs** tools. Do NOT use `gh`, do NOT call the GitHub API directly. You do not have write access to the GitHub repository.
           
           **Adding a Comment to an Issue or Pull Request**
           
           To add a comment to an issue or pull request, use the add_comment tool from safeoutputs.
+          
+          **Replying to a Pull Request Review Comment**
+          
+          To reply to an existing review comment on a pull request, use the reply_to_pull_request_review_comment tool from safeoutputs.
           
           **Resolving a Pull Request Review Thread**
           
@@ -358,6 +363,14 @@ jobs:
           - **Max per run**: 10 thread resolutions per workflow run.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          ## reply-to-pull-request-review-comment Limitations
+          
+          - **Required field**: `comment_id` — the ID of the review comment to reply to. This is the numeric REST comment ID from `get_review_comments`.
+          - **Body**: Max 65,536 characters. Keep well under this limit.
+          - **Purpose**: Reply directly to a specific review comment thread to explain your reasoning when you disagree with or skip feedback. Do NOT use `add_comment` for this — use this tool to keep replies in context.
+          - **Max per run**: 10 replies per workflow run.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # Address PR Feedback
           
           Automatically address review feedback on pull requests in __GH_AW_GITHUB_REPOSITORY__ — fix code issues, resolve review threads, and push changes.
@@ -370,7 +383,7 @@ jobs:
           
           ## Constraints
           
-          - **CAN**: Read files, search code, modify files locally, run tests and commands, leave comments, push to the PR branch (same-repo only), resolve review threads
+          - **CAN**: Read files, search code, modify files locally, run tests and commands, reply to review comments, push to the PR branch (same-repo only), resolve review threads
           - **CANNOT**: Push to fork PR branches, merge PRs, delete branches, modify `.github/workflows/` files
           
           When pushing changes, the workspace already has the PR branch checked out. Make your changes, commit them locally, then use `push_to_pull_request_branch`.
@@ -394,7 +407,7 @@ jobs:
           1. **Read and understand** the reviewer's feedback carefully.
           2. **Decide**: Is the feedback actionable? Use your judgment — don't blindly accept every suggestion.
              - **If actionable**: Make the code change. Be surgical — change only what's needed to address the specific feedback.
-             - **If you disagree or it's unclear**: Reply to the thread explaining your reasoning. Do NOT resolve the thread — let the reviewer decide.
+             - **If you disagree or it's unclear**: Call `reply_to_pull_request_review_comment` on the specific review comment to explain your reasoning inline. Do NOT resolve the thread — let the reviewer decide.
           3. **Track** which threads you addressed with code changes vs. which you replied to.
           
           ### Step 3: Validate and Push
@@ -411,12 +424,15 @@ jobs:
           
           Call `add_comment` on the PR with a brief summary of:
           - Which review threads were addressed with code changes
-          - Which threads you replied to instead of fixing (and why)
+          - Which threads you replied to instead of fixing
           - Tests run and their results
+          
+          Do NOT duplicate thread-specific explanations in the summary comment — those belong in the inline replies you already posted via `reply_to_pull_request_review_comment`.
           
           **Additional tools:**
           - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
           - `resolve_pull_request_review_thread` — resolve a review thread after addressing the feedback (pass the thread's node ID)
+          - `reply_to_pull_request_review_comment` — reply inline to a specific review comment thread to explain your reasoning
           
           __GH_AW_EXPR_49B959F1__
           
@@ -707,6 +723,38 @@ jobs:
                 "type": "object"
               },
               "name": "add_comment"
+            },
+            {
+              "description": "Reply to an existing review comment on a pull request. Use this to respond to feedback, answer questions, or acknowledge review comments. The comment_id must be the numeric ID of an existing review comment. CONSTRAINTS: Maximum 10 reply/replies can be created.",
+              "inputSchema": {
+                "additionalProperties": false,
+                "properties": {
+                  "body": {
+                    "description": "The reply text in Markdown format. Provide a clear response to the review comment.",
+                    "type": "string"
+                  },
+                  "comment_id": {
+                    "description": "The numeric ID of the review comment to reply to (e.g., 42853901 from the comment URL or API response).",
+                    "type": [
+                      "number",
+                      "string"
+                    ]
+                  },
+                  "pull_request_number": {
+                    "description": "Pull request number to reply on. This is the numeric ID from the GitHub URL (e.g., 876 in github.com/owner/repo/pull/876). If omitted, replies on the PR that triggered this workflow.",
+                    "type": [
+                      "number",
+                      "string"
+                    ]
+                  }
+                },
+                "required": [
+                  "comment_id",
+                  "body"
+                ],
+                "type": "object"
+              },
+              "name": "reply_to_pull_request_review_comment"
             },
             {
               "description": "Resolve a review thread on a pull request. Use this to mark a review conversation as resolved after addressing the feedback. The thread_id must be the node ID of the review thread (e.g., PRRT_kwDO...). CONSTRAINTS: Maximum 10 review thread(s) can be resolved.",
@@ -1612,7 +1660,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"missing_data\":{},\"missing_tool\":{},\"push_to_pull_request_branch\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"if_no_changes\":\"warn\",\"max_patch_size\":1024},\"resolve_pull_request_review_thread\":{\"max\":10}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"missing_data\":{},\"missing_tool\":{},\"push_to_pull_request_branch\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"if_no_changes\":\"warn\",\"max_patch_size\":1024},\"reply_to_pull_request_review_comment\":{\"max\":10},\"resolve_pull_request_review_thread\":{\"max\":10}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

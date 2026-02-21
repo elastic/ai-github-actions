@@ -13,6 +13,7 @@ imports:
   - gh-aw-fragments/safe-output-add-comment.md
   - gh-aw-fragments/safe-output-push-to-pr.md
   - gh-aw-fragments/safe-output-resolve-thread.md
+  - gh-aw-fragments/safe-output-reply-to-review-comment.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -103,7 +104,7 @@ Automatically address review feedback on pull requests in ${{ github.repository 
 
 ## Constraints
 
-- **CAN**: Read files, search code, modify files locally, run tests and commands, leave comments, push to the PR branch (same-repo only), resolve review threads
+- **CAN**: Read files, search code, modify files locally, run tests and commands, reply to review comments, push to the PR branch (same-repo only), resolve review threads
 - **CANNOT**: Push to fork PR branches, merge PRs, delete branches, modify `.github/workflows/` files
 
 When pushing changes, the workspace already has the PR branch checked out. Make your changes, commit them locally, then use `push_to_pull_request_branch`.
@@ -127,7 +128,7 @@ For each unresolved review thread:
 1. **Read and understand** the reviewer's feedback carefully.
 2. **Decide**: Is the feedback actionable? Use your judgment — don't blindly accept every suggestion.
    - **If actionable**: Make the code change. Be surgical — change only what's needed to address the specific feedback.
-   - **If you disagree or it's unclear**: Reply to the thread explaining your reasoning. Do NOT resolve the thread — let the reviewer decide.
+   - **If you disagree or it's unclear**: Call `reply_to_pull_request_review_comment` on the specific review comment to explain your reasoning inline. Do NOT resolve the thread — let the reviewer decide.
 3. **Track** which threads you addressed with code changes vs. which you replied to.
 
 ### Step 3: Validate and Push
@@ -144,11 +145,14 @@ After pushing, resolve each review thread you addressed with code changes by cal
 
 Call `add_comment` on the PR with a brief summary of:
 - Which review threads were addressed with code changes
-- Which threads you replied to instead of fixing (and why)
+- Which threads you replied to instead of fixing
 - Tests run and their results
+
+Do NOT duplicate thread-specific explanations in the summary comment — those belong in the inline replies you already posted via `reply_to_pull_request_review_comment`.
 
 **Additional tools:**
 - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
 - `resolve_pull_request_review_thread` — resolve a review thread after addressing the feedback (pass the thread's node ID)
+- `reply_to_pull_request_review_comment` — reply inline to a specific review comment thread to explain your reasoning
 
 ${{ inputs.additional-instructions }}

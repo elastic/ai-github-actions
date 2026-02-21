@@ -35,3 +35,4 @@ See [example.yml](example.yml) for the full workflow file.
 - `add-comment` — reply to the PR conversation
 - `push-to-pull-request-branch` — push code changes to the PR branch
 - `resolve-pull-request-review-thread` — resolve review threads after addressing feedback
+- `reply-to-pull-request-review-comment` — reply inline to specific review comment threads
