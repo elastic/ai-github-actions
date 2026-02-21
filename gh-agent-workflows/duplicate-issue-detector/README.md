@@ -1,10 +1,10 @@
 # Duplicate Issue Detector
 
-Check whether a newly opened issue is a duplicate of an existing open or previously closed issue, and notify the reporter.
+Check whether a newly opened issue is a duplicate of, or highly related to, an existing open or previously closed issue, and notify the reporter.
 
 ## How it works
 
-When a new issue is opened, searches both open and closed issues using multiple targeted queries derived from the issue title and body. Posts a notice on the issue only when a strong duplicate match is found.
+When a new issue is opened, searches both open and closed issues using multiple targeted queries derived from the issue title and body. Posts a notice on the issue when a strong duplicate match is found, or a lighter "highly related" notice when issues are closely related but distinct.
 
 ## Quick Install
 
@@ -31,4 +31,4 @@ See [example.yml](example.yml) for the full workflow file.
 
 ## Safe Outputs
 
-- `add-comment` — post a duplicate notice on the issue when a matching issue is found
+- `add-comment` — post a duplicate or highly-related notice on the issue when a matching issue is found
