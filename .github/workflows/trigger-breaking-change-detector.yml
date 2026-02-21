@@ -1,0 +1,16 @@
+name: Trigger Breaking Change Detector
+on:
+  schedule:
+    - cron: "0 13 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-breaking-change-detector.lock.yml
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

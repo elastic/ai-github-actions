@@ -1,10 +1,10 @@
 # Text Beautifier
 
-Find typos, unclear error messages, and awkward user-facing text, then file an improvement issue.
+Fix text-auditor issues by opening a focused PR with text improvements.
 
 ## How it works
 
-Scans user-facing text sources — CLI output, error messages, documentation, and help text — for typos, grammatical errors, unclear error messages, and inconsistent terminology. Files a single issue with concrete, low-effort fixes. Most runs end with `noop`.
+Picks up open issues filed by the Text Auditor (labeled `text-auditor` or with `[text-auditor]` in the title), applies the suggested text fixes, and opens a PR. Only acts on concrete, unambiguous fixes — skips anything requiring design decisions. Most runs end with `noop`.
 
 ## Quick Install
 
@@ -30,22 +30,11 @@ See [example.yml](example.yml) for the full workflow file.
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
-| `edit-typos` | How aggressively to flag typos and misspellings (`high`/`low`/`none`) | No | `low` |
-| `edit-grammar` | How aggressively to flag grammar and sentence construction problems (`high`/`low`/`none`) | No | `low` |
-| `edit-clarity` | How aggressively to flag unclear user-facing text (`high`/`low`/`none`) | No | `low` |
-| `edit-terminology` | How aggressively to flag inconsistent terminology (`high`/`low`/`none`) | No | `low` |
-| `edit-misleading-text` | How aggressively to flag text that conflicts with behavior (`high`/`low`/`none`) | No | `low` |
-
-### Edit Levels
-
-Each edit dimension accepts one of three levels:
-
-| Level | Meaning |
-| --- | --- |
-| `high` | Apply best judgment proactively within this dimension |
-| `low` | Report only concrete, unambiguous problems in this dimension |
-| `none` | Skip this dimension entirely |
 
 ## Safe Outputs
 
-- `create-issue` — file a text improvement report (max 1, auto-closes older reports)
+- `create-pull-request` — open a PR with text fixes (max 1)
+
+## Pairing
+
+This workflow is the read-write companion to [Text Auditor](../text-auditor/). The auditor finds issues; the beautifier fixes them.

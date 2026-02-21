@@ -1,4 +1,5 @@
 ---
+inlined-imports: true
 description: "Detect duplicate issues and notify reporters when a matching open or closed issue exists"
 imports:
   - gh-aw-fragments/elastic-tools.md
@@ -9,12 +10,17 @@ imports:
   - gh-aw-fragments/safe-output-add-comment.md
 engine:
   id: copilot
-  model: gpt-5.3-codex
+  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-duplicate-issue-detector-${{ github.event.issue.number }}"
 on:
   workflow_call:
     inputs:
+      model:
+        description: "AI model to use"
+        type: string
+        required: false
+        default: "gpt-5.3-codex"
       additional-instructions:
         description: "Repo-specific instructions appended to the agent prompt"
         type: string

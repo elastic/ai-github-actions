@@ -1,0 +1,30 @@
+name: Scheduled Audit
+on:
+  schedule:
+    - cron: "0 11 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-scheduled-audit.lock.yml@v0
+    with:
+      issue-title-prefix: "[my-audit]"
+      issue-label: "my-audit"
+      additional-instructions: |
+        Describe what the audit agent should investigate here.
+
+        ### Data Gathering
+        - What to examine (recent commits, open PRs, config files, etc.)
+
+        ### What to Look For
+        - What constitutes a finding worth reporting
+
+        ### What to Skip
+        - What to ignore
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

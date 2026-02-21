@@ -7,6 +7,34 @@ https://elastic.github.io/ai-github-actions/workflows/gh-agent-workflows/
 
 Each workflow folder includes an `example.yml` trigger and a README covering inputs and safe outputs.
 
+## Base Workflows
+
+Two generic base workflows let you build custom detectors and fixers without writing a full workflow from scratch. Provide your domain-specific instructions via `additional-instructions`:
+
+| Workflow | Role | Output |
+| --- | --- | --- |
+| [Scheduled Audit](scheduled-audit/) | Detect issues and file reports | `create-issue` |
+| [Scheduled Fix](scheduled-fix/) | Fix reported issues | `create-pull-request` |
+
+These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves them.
+
+## Specialized Workflows
+
+Pre-built workflows with domain-specific prompts. These import the same base fragments (`scheduled-audit.md` / `scheduled-fix.md`) and layer specialized instructions on top.
+
+**Detectors** (file issues):
+- [Bug Hunter](bug-hunter/) — find reproducible bugs
+- [Text Auditor](text-auditor/) — find text quality issues
+- [Code Duplication Detector](code-duplication-detector/) — find duplicate code
+- [Breaking Change Detector](breaking-change-detector/) — find breaking changes
+- [Docs Patrol](docs-patrol/) — detect stale documentation
+- [Stale Issues](stale-issues/) — detect stale issues
+
+**Fixers** (create PRs):
+- [Bug Exterminator](bug-exterminator/) — fix bug-hunter issues
+- [Text Beautifier](text-beautifier/) — fix text-auditor issues
+- [Code Duplication Fixer](code-duplication-fixer/) — fix code-duplication-detector issues
+
 ## Quick setup script
 
 Run from the repository you want to configure:
@@ -24,7 +52,7 @@ Default workflows:
 - `issue-triage`
 - `mention-in-issue`
 - `mention-in-pr`
-- `pr-ci-detective`
+- `pr-actions-detective`
 
 Use `--workflows` (comma-separated) to override the defaults, `--skip-secret` to set the
 secret manually, `--continuous-improvement` to also install selected continuous improvement
@@ -34,11 +62,11 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 - `bug-hunter`
 - `bug-exterminator`
 - `code-simplifier`
-- `docs-drift`
-- `docs-new-contributor-review`
+- `docs-patrol`
+- `newbie-contributor-patrol`
 - `small-problem-fixer`
 - `stale-issues`
-- `test-improvement`
-- `breaking-change-detect`
-- `semantic-function-clustering`
+- `test-improver`
+- `breaking-change-detector`
+- `code-duplication-detector`
 - `update-pr-body`

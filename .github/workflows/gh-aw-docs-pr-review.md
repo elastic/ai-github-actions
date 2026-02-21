@@ -1,4 +1,5 @@
 ---
+inlined-imports: true
 name: "Docs PR Review"
 description: "Docs PR review from an Elastic technical writer perspective"
 imports:
@@ -12,12 +13,17 @@ imports:
   - gh-aw-fragments/safe-output-submit-review.md
 engine:
   id: copilot
-  model: gpt-5.3-codex
+  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-docs-pr-review-${{ github.event.pull_request.number }}"
 on:
   workflow_call:
     inputs:
+      model:
+        description: "AI model to use"
+        type: string
+        required: false
+        default: "gpt-5.3-codex"
       additional-instructions:
         description: "Repo-specific instructions appended to the agent prompt"
         type: string

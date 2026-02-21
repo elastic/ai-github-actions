@@ -1,22 +1,16 @@
 name: Trigger Text Beautifier
 on:
   schedule:
-    - cron: "0 13 * * 1-5"
+    - cron: "0 14 * * 1-5"
   workflow_dispatch:
 
 permissions:
   contents: read
-  issues: write
-  pull-requests: read
+  issues: read
+  pull-requests: write
 
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-text-beautifier.lock.yml
-    with:
-      edit-typos: high
-      edit-grammar: high
-      edit-clarity: high
-      edit-terminology: high
-      edit-misleading-text: high
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

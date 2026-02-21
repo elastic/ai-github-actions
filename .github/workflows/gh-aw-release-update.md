@@ -1,4 +1,5 @@
 ---
+inlined-imports: true
 description: "Check for new ai-github-actions releases and open PRs to update pinned workflow SHAs"
 imports:
   - gh-aw-fragments/elastic-tools.md
@@ -10,10 +11,15 @@ imports:
   - gh-aw-fragments/safe-output-create-pr.md
 engine:
   id: copilot
-  model: gpt-5.2-codex
+  model: ${{ inputs.model }}
 on:
   workflow_call:
     inputs:
+      model:
+        description: "AI model to use"
+        type: string
+        required: false
+        default: "gpt-5.2-codex"
       additional-instructions:
         description: "Repo-specific instructions appended to the agent prompt"
         type: string

@@ -1,0 +1,24 @@
+name: Flaky Test Investigator
+on:
+  schedule:
+    - cron: "0 14 * * 1-5"
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["CI", "Build", "Test"]
+    types: [completed]
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'failure' &&
+      toJSON(github.event.workflow_run.pull_requests) != '[]')
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-flaky-test-investigator.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

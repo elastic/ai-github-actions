@@ -1,4 +1,5 @@
 ---
+inlined-imports: true
 name: "Mention in PR"
 description: "AI assistant for PRs — review, fix code, and push changes on demand"
 imports:
@@ -17,12 +18,17 @@ imports:
   - gh-aw-fragments/safe-output-resolve-thread.md
 engine:
   id: copilot
-  model: gpt-5.3-codex
+  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-mention-pr-${{ github.event.issue.number }}"
 on:
   workflow_call:
     inputs:
+      model:
+        description: "AI model to use"
+        type: string
+        required: false
+        default: "gpt-5.3-codex"
       additional-instructions:
         description: "Repo-specific instructions appended to the agent prompt"
         type: string

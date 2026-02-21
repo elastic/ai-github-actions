@@ -1,4 +1,5 @@
 ---
+inlined-imports: true
 name: "Update PR Body"
 description: "Keep pull request bodies in sync with the code changes on every commit"
 imports:
@@ -11,12 +12,17 @@ imports:
   - gh-aw-fragments/safe-output-update-pr.md
 engine:
   id: copilot
-  model: gpt-5.3-codex
+  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-update-pr-body-${{ github.event.pull_request.number }}"
 on:
   workflow_call:
     inputs:
+      model:
+        description: "AI model to use"
+        type: string
+        required: false
+        default: "gpt-5.3-codex"
       additional-instructions:
         description: "Repo-specific instructions appended to the agent prompt"
         type: string

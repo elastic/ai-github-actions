@@ -123,19 +123,19 @@ default_workflows=(
   issue-triage
   mention-in-issue
   mention-in-pr
-  pr-ci-detective
+  pr-actions-detective
 )
 continuous_improvement_workflows=(
   bug-hunter
   bug-exterminator
   code-simplifier
-  docs-drift
-  docs-new-contributor-review
+  docs-patrol
+  newbie-contributor-patrol
   small-problem-fixer
   stale-issues
-  test-improvement
-  breaking-change-detect
-  semantic-function-clustering
+  test-improver
+  breaking-change-detector
+  code-duplication-detector
   update-pr-body
 )
 

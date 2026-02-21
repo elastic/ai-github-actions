@@ -1,0 +1,33 @@
+name: Scheduled Fix
+on:
+  schedule:
+    - cron: "0 14 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: write
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-scheduled-fix.lock.yml@v0
+    with:
+      issue-title-prefix: "[my-audit]"
+      issue-label: "my-audit"
+      additional-instructions: |
+        Describe domain-specific fix instructions here.
+
+        ### Candidate Search
+        Search for open issues matching your detector:
+        ```
+        github-search_issues: query="repo:{owner}/{repo} is:issue is:open label:my-audit sort:updated-asc"
+        ```
+
+        ### Implementation
+        1. Read the affected files
+        2. Apply the fix described in the issue
+        3. Run tests
+        4. Commit locally
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
