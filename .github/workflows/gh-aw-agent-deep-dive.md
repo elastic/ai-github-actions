@@ -112,6 +112,7 @@ steps:
         )
         COUNT=${#WORKFLOWS[@]}
         if [ "$COUNT" -eq 0 ]; then
+          echo "NO_WORKFLOWS=true" >> "$GITHUB_ENV"
           echo "No agentic workflows found." >&2
           exit 0
         fi
@@ -169,6 +170,10 @@ steps:
 ---
 
 Perform a deep dive on a single agent workflow to understand how it is behaving across recent runs and surface specific, actionable recommendations.
+
+### Pre-flight check
+
+If `${{ env.NO_WORKFLOWS }}` is `true`, call `noop` with reason "No agentic workflows found in this repository" and stop.
 
 ### Context
 

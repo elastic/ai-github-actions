@@ -38,9 +38,21 @@ def github_api(path: str, token: str, accept: str = "application/vnd.github+json
         return resp.read()
 
 
+def _normalize_until(until: str | None) -> str | None:
+    """Normalize --until to an inclusive end-of-day timestamp when a date-only value is given."""
+    if until is None:
+        return None
+    # If already a full datetime (contains 'T'), use as-is
+    if "T" in until:
+        return until
+    # Date-only input (e.g. "2025-01-01"): treat as end of that UTC day
+    return until + "T23:59:59Z"
+
+
 def list_workflow_runs(repo: str, workflow: str, token: str, since: str | None, until: str | None,
                        conclusion: str | None, last: int) -> list[dict]:
     """Return up to `last` workflow runs matching the filters."""
+    until_normalized = _normalize_until(until)
     runs = []
     page = 1
     per_page = 100
@@ -57,7 +69,7 @@ def list_workflow_runs(repo: str, workflow: str, token: str, since: str | None, 
             if since and created < since:
                 # Runs are sorted newest-first; once we go past since, stop paging
                 return runs
-            if until and created > until:
+            if until_normalized and created > until_normalized:
                 continue
             runs.append(run)
             if len(runs) >= last:

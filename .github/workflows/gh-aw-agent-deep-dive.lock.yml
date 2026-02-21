@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"91de28fe702d16c8a71751400432b077a676f6e7c123933307205aeacbdf6741"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"368665ec9a711e7723101ea67e12e00fb48843abfb8436638b01b23e8885cb40"}
 
 name: "Agent Deep Dive"
 "on":
@@ -140,6 +140,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GH_AW_ENV_NO_WORKFLOWS: ${{ env.NO_WORKFLOWS }}
           GH_AW_ENV_TARGET_WORKFLOW: ${{ env.TARGET_WORKFLOW }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_F453B69E: ${{ inputs.run-count }}
@@ -392,6 +393,10 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           Perform a deep dive on a single agent workflow to understand how it is behaving across recent runs and surface specific, actionable recommendations.
           
+          ### Pre-flight check
+          
+          If `__GH_AW_ENV_NO_WORKFLOWS__` is `true`, call `noop` with reason "No agentic workflows found in this repository" and stop.
+          
           ### Context
           
           - **Target workflow:** `__GH_AW_ENV_TARGET_WORKFLOW__`
@@ -483,6 +488,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_AW_ENV_NO_WORKFLOWS: ${{ env.NO_WORKFLOWS }}
           GH_AW_ENV_TARGET_WORKFLOW: ${{ env.TARGET_WORKFLOW }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_F453B69E: ${{ inputs.run-count }}
@@ -496,6 +502,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_ENV_NO_WORKFLOWS: ${{ env.NO_WORKFLOWS }}
           GH_AW_ENV_TARGET_WORKFLOW: ${{ env.TARGET_WORKFLOW }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_F453B69E: ${{ inputs.run-count }}
@@ -520,6 +527,7 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
+                GH_AW_ENV_NO_WORKFLOWS: process.env.GH_AW_ENV_NO_WORKFLOWS,
                 GH_AW_ENV_TARGET_WORKFLOW: process.env.GH_AW_ENV_TARGET_WORKFLOW,
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
                 GH_AW_EXPR_F453B69E: process.env.GH_AW_EXPR_F453B69E,
@@ -643,7 +651,7 @@ jobs:
           RUN_COUNT: ${{ inputs.run-count }}
           TARGET_WORKFLOW: ${{ inputs.target-workflow }}
         name: Select and download workflow logs
-        run: "set -euo pipefail\nmkdir -p /tmp/gh-aw/deep-dive\n\n# If no target workflow is specified, pick one automatically by rotating\n# through agentic workflows based on the current day-of-week\nif [ -z \"$TARGET_WORKFLOW\" ]; then\n  mapfile -t WORKFLOWS < <(\n    gh api \"repos/$GITHUB_REPOSITORY/actions/workflows\" \\\n      --jq '[.workflows[] | select(.path | test(\"trigger-|gh-aw-\")) | .path | ltrimstr(\".github/workflows/\")] | sort[]'\n  )\n  COUNT=${#WORKFLOWS[@]}\n  if [ \"$COUNT\" -eq 0 ]; then\n    echo \"No agentic workflows found.\" >&2\n    exit 0\n  fi\n  DAY=$(date +%u)   # 1=Mon … 7=Sun\n  IDX=$(( (DAY - 1) % COUNT ))\n  TARGET_WORKFLOW=\"${WORKFLOWS[$IDX]}\"\nfi\n\necho \"TARGET_WORKFLOW=$TARGET_WORKFLOW\" >> \"$GITHUB_ENV\"\necho \"Analyzing workflow: $TARGET_WORKFLOW\" >&2\n\n# Fetch the last N runs for this workflow (all conclusions)\ngh api \"repos/$GITHUB_REPOSITORY/actions/workflows/$TARGET_WORKFLOW/runs\" \\\n  --jq \"[.workflow_runs[:$RUN_COUNT] | .[] | {id:.id, name:.name, conclusion:.conclusion, created_at:.created_at, html_url:.html_url}]\" \\\n  > /tmp/gh-aw/deep-dive/runs.json\n\necho \"Runs fetched: $(jq length /tmp/gh-aw/deep-dive/runs.json)\" >&2\n\n# Download logs for failed runs only (up to 10)\njq -r '[.[] | select(.conclusion == \"failure\")] | .[:10] | .[].id' \\\n  /tmp/gh-aw/deep-dive/runs.json | while read -r run_id; do\n  mkdir -p \"/tmp/gh-aw/deep-dive/logs/$run_id\"\n  gh api \"repos/$GITHUB_REPOSITORY/actions/runs/$run_id/logs\" \\\n    -H \"Accept: application/vnd.github+json\" \\\n    > \"/tmp/gh-aw/deep-dive/logs/$run_id/logs.zip\" 2>/dev/null || continue\n  unzip -q -o \"/tmp/gh-aw/deep-dive/logs/$run_id/logs.zip\" \\\n    -d \"/tmp/gh-aw/deep-dive/logs/$run_id/\" 2>/dev/null || true\n  rm -f \"/tmp/gh-aw/deep-dive/logs/$run_id/logs.zip\"\ndone\n\n# Build manifest for error extractor\njq '[.[] | select(.conclusion == \"failure\")] | .[:10] | map({run_id:.id, conclusion:.conclusion, created_at:.created_at, html_url:.html_url, log_files:[]})' \\\n  /tmp/gh-aw/deep-dive/runs.json > /tmp/gh-aw/deep-dive/manifest.json\n\n# Populate log_files paths\npython3 - <<'EOF'\nimport json, pathlib\nwith open(\"/tmp/gh-aw/deep-dive/manifest.json\") as f:\n    manifest = json.load(f)\nfor entry in manifest:\n    run_dir = pathlib.Path(f\"/tmp/gh-aw/deep-dive/logs/{entry['run_id']}\")\n    entry[\"log_files\"] = [str(p) for p in sorted(run_dir.rglob(\"*.txt\"))]\nwith open(\"/tmp/gh-aw/deep-dive/manifest.json\", \"w\") as f:\n    json.dump(manifest, f, indent=2)\nEOF\n\n# Extract errors with context\npython3 scripts/extract-log-errors.py \\\n  --manifest /tmp/gh-aw/deep-dive/manifest.json \\\n  --context 10 \\\n  --output /tmp/gh-aw/deep-dive/errors.json \\\n  || true\n\necho \"Errors extracted: $(jq '.total_matches // 0' /tmp/gh-aw/deep-dive/errors.json 2>/dev/null || echo 0)\" >&2"
+        run: "set -euo pipefail\nmkdir -p /tmp/gh-aw/deep-dive\n\n# If no target workflow is specified, pick one automatically by rotating\n# through agentic workflows based on the current day-of-week\nif [ -z \"$TARGET_WORKFLOW\" ]; then\n  mapfile -t WORKFLOWS < <(\n    gh api \"repos/$GITHUB_REPOSITORY/actions/workflows\" \\\n      --jq '[.workflows[] | select(.path | test(\"trigger-|gh-aw-\")) | .path | ltrimstr(\".github/workflows/\")] | sort[]'\n  )\n  COUNT=${#WORKFLOWS[@]}\n  if [ \"$COUNT\" -eq 0 ]; then\n    echo \"NO_WORKFLOWS=true\" >> \"$GITHUB_ENV\"\n    echo \"No agentic workflows found.\" >&2\n    exit 0\n  fi\n  DAY=$(date +%u)   # 1=Mon … 7=Sun\n  IDX=$(( (DAY - 1) % COUNT ))\n  TARGET_WORKFLOW=\"${WORKFLOWS[$IDX]}\"\nfi\n\necho \"TARGET_WORKFLOW=$TARGET_WORKFLOW\" >> \"$GITHUB_ENV\"\necho \"Analyzing workflow: $TARGET_WORKFLOW\" >&2\n\n# Fetch the last N runs for this workflow (all conclusions)\ngh api \"repos/$GITHUB_REPOSITORY/actions/workflows/$TARGET_WORKFLOW/runs\" \\\n  --jq \"[.workflow_runs[:$RUN_COUNT] | .[] | {id:.id, name:.name, conclusion:.conclusion, created_at:.created_at, html_url:.html_url}]\" \\\n  > /tmp/gh-aw/deep-dive/runs.json\n\necho \"Runs fetched: $(jq length /tmp/gh-aw/deep-dive/runs.json)\" >&2\n\n# Download logs for failed runs only (up to 10)\njq -r '[.[] | select(.conclusion == \"failure\")] | .[:10] | .[].id' \\\n  /tmp/gh-aw/deep-dive/runs.json | while read -r run_id; do\n  mkdir -p \"/tmp/gh-aw/deep-dive/logs/$run_id\"\n  gh api \"repos/$GITHUB_REPOSITORY/actions/runs/$run_id/logs\" \\\n    -H \"Accept: application/vnd.github+json\" \\\n    > \"/tmp/gh-aw/deep-dive/logs/$run_id/logs.zip\" 2>/dev/null || continue\n  unzip -q -o \"/tmp/gh-aw/deep-dive/logs/$run_id/logs.zip\" \\\n    -d \"/tmp/gh-aw/deep-dive/logs/$run_id/\" 2>/dev/null || true\n  rm -f \"/tmp/gh-aw/deep-dive/logs/$run_id/logs.zip\"\ndone\n\n# Build manifest for error extractor\njq '[.[] | select(.conclusion == \"failure\")] | .[:10] | map({run_id:.id, conclusion:.conclusion, created_at:.created_at, html_url:.html_url, log_files:[]})' \\\n  /tmp/gh-aw/deep-dive/runs.json > /tmp/gh-aw/deep-dive/manifest.json\n\n# Populate log_files paths\npython3 - <<'EOF'\nimport json, pathlib\nwith open(\"/tmp/gh-aw/deep-dive/manifest.json\") as f:\n    manifest = json.load(f)\nfor entry in manifest:\n    run_dir = pathlib.Path(f\"/tmp/gh-aw/deep-dive/logs/{entry['run_id']}\")\n    entry[\"log_files\"] = [str(p) for p in sorted(run_dir.rglob(\"*.txt\"))]\nwith open(\"/tmp/gh-aw/deep-dive/manifest.json\", \"w\") as f:\n    json.dump(manifest, f, indent=2)\nEOF\n\n# Extract errors with context\npython3 scripts/extract-log-errors.py \\\n  --manifest /tmp/gh-aw/deep-dive/manifest.json \\\n  --context 10 \\\n  --output /tmp/gh-aw/deep-dive/errors.json \\\n  || true\n\necho \"Errors extracted: $(jq '.total_matches // 0' /tmp/gh-aw/deep-dive/errors.json 2>/dev/null || echo 0)\" >&2"
 
       - name: Configure Git credentials
         env:
