@@ -12,7 +12,7 @@
 #   - elastic/ai-github-actions/...@v0       (latest v0.x.x)
 #   - elastic/ai-github-actions/...@v0.1.0   (exact version)
 
-name: Release
+name: "Internal: Release"
 
 on:
   push:

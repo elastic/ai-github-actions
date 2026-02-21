@@ -35,9 +35,9 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cac5e5e56bd76c75bbef8a404987dcbe19236cc93426f5a14a31fb6ea357517b"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cbf06275f586ad92c59410329f258dce96a232caa6c22ce93a46bca8ba7a51e4"}
 
-name: "Agent Deep Dive"
+name: "Internal: Agent Deep Dive"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - github-actions[bot] # Bots processed as bot check in pre-activation job
@@ -65,7 +65,7 @@ concurrency:
   cancel-in-progress: true
   group: agent-deep-dive
 
-run-name: "Agent Deep Dive"
+run-name: "Internal: Agent Deep Dive"
 
 jobs:
   activation:
@@ -650,7 +650,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Agent Deep Dive",
+              workflow_name: "Internal: Agent Deep Dive",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1234,7 +1234,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Agent Deep Dive"
+          GH_AW_WORKFLOW_NAME: "Internal: Agent Deep Dive"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1247,7 +1247,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Agent Deep Dive"
+          GH_AW_WORKFLOW_NAME: "Internal: Agent Deep Dive"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1260,7 +1260,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Agent Deep Dive"
+          GH_AW_WORKFLOW_NAME: "Internal: Agent Deep Dive"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "agent-deep-dive"
@@ -1279,7 +1279,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Agent Deep Dive"
+          GH_AW_WORKFLOW_NAME: "Internal: Agent Deep Dive"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1327,7 +1327,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Agent Deep Dive"
+          WORKFLOW_NAME: "Internal: Agent Deep Dive"
           WORKFLOW_DESCRIPTION: "Deep dive a specific agent workflow's recent runs to understand behavior and surface detailed recommendations"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1407,7 +1407,7 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_WORKFLOW_ID: "agent-deep-dive"
-      GH_AW_WORKFLOW_NAME: "Agent Deep Dive"
+      GH_AW_WORKFLOW_NAME: "Internal: Agent Deep Dive"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}

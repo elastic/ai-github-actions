@@ -35,9 +35,9 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f9c1b3b00c0a586f3a7c4c72d9cfb13ffc496fc7665b012c2c5699108bb28a86"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"64ad835a05ab43c92b7b73efc91fd88e46066031bab4044ec3c927026d814d7b"}
 
-name: "Workflow Patrol"
+name: "Internal: Workflow Patrol"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - github-actions[bot] # Bots processed as bot check in pre-activation job
@@ -56,7 +56,7 @@ concurrency:
   cancel-in-progress: true
   group: workflow-patrol
 
-run-name: "Workflow Patrol"
+run-name: "Internal: Workflow Patrol"
 
 jobs:
   activation:
@@ -590,7 +590,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Workflow Patrol",
+              workflow_name: "Internal: Workflow Patrol",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1174,7 +1174,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Workflow Patrol"
+          GH_AW_WORKFLOW_NAME: "Internal: Workflow Patrol"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1187,7 +1187,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Workflow Patrol"
+          GH_AW_WORKFLOW_NAME: "Internal: Workflow Patrol"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1200,7 +1200,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Workflow Patrol"
+          GH_AW_WORKFLOW_NAME: "Internal: Workflow Patrol"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "workflow-patrol"
@@ -1219,7 +1219,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Workflow Patrol"
+          GH_AW_WORKFLOW_NAME: "Internal: Workflow Patrol"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1267,7 +1267,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Workflow Patrol"
+          WORKFLOW_NAME: "Internal: Workflow Patrol"
           WORKFLOW_DESCRIPTION: "Detect workflow drift — where one or more workflows have fallen behind a pattern adopted by most others"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1347,7 +1347,7 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_WORKFLOW_ID: "workflow-patrol"
-      GH_AW_WORKFLOW_NAME: "Workflow Patrol"
+      GH_AW_WORKFLOW_NAME: "Internal: Workflow Patrol"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
