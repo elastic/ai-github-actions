@@ -50,6 +50,7 @@ strict: false
 timeout-minutes: 30
 safe-outputs:
   noop:
+    report-as-issue: false
   add-comment:
     max: 1
 ---

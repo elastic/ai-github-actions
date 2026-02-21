@@ -16,7 +16,6 @@ permissions:
 
 jobs:
   run:
-    timeout-minutes: 90
     uses: ./.github/workflows/gh-aw-pr-ci-fixer.lock.yml
     with:
       workflow-run-id: ${{ inputs.workflow-run-id }}

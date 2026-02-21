@@ -12,7 +12,6 @@ permissions:
 
 jobs:
   run:
-    timeout-minutes: 60
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-agent-efficiency.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
