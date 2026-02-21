@@ -67,7 +67,7 @@ safe-outputs:
     title-prefix: "[flaky-test-triage] "
     close-older-issues: true
     expires: 7d
-timeout-minutes: 30
+timeout-minutes: 90
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
