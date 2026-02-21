@@ -121,15 +121,27 @@ Call `add_comment` with a single comment combining all findings. Include up to *
 
 ```
 **Possible duplicates** (issues that appear to describe the same problem):
-- #{number} — {title}: {one concise sentence explaining the overlap}
-- #{number} — {title}: {one concise sentence explaining the overlap}
+- #{number} — {one concise sentence explaining why this issue overlaps with the candidate issue}
+  <details><summary>More detail</summary>
+  {optional extra context about shared symptoms, component, or scope}
+  </details>
+- #{number} — {one concise sentence explaining why this issue overlaps with the candidate issue}
+  <details><summary>More detail</summary>
+  {optional extra context about shared symptoms, component, or scope}
+  </details>
 
 **Highly related** (separate issues that significantly overlap or share scope):
-- #{number} — {title}: {one concise sentence explaining how they are related and how they differ}
-- #{number} — {title}: {one concise sentence explaining how they are related and how they differ}
+- #{number} — {one concise sentence explaining the shared scope and the key difference from this issue}
+  <details><summary>More detail</summary>
+  {optional extra context about the overlap and distinction}
+  </details>
+- #{number} — {one concise sentence explaining the shared scope and the key difference from this issue}
+  <details><summary>More detail</summary>
+  {optional extra context about the overlap and distinction}
+  </details>
 ```
 
-Omit the **Highly related** section entirely when related issues detection is disabled or when no issues qualify for it. Omit a section entirely if no issues qualify for it. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
+Omit the **Highly related** section entirely when related issues detection is disabled or when no issues qualify for it. Omit a section entirely if no issues qualify for it. Put issue references on the main list line (outside `<summary>`) so GitHub renders issue status badges. Keep `<summary>` text generic (for example, `More detail`) and avoid repeating issue titles there. In justifications, refer to the current report as **"this issue"** (not by number). Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
 
 **If no duplicate (or highly related issue, when detection is enabled) is found:**
 
