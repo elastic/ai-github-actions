@@ -7,7 +7,7 @@ AI-powered GitHub workflows for Elastic repositories.
 Full documentation lives at https://elastic.github.io/ai-github-actions/.
 
 - GitHub Agent Workflows (recommended): https://elastic.github.io/ai-github-actions/workflows/gh-agent-workflows/
-- Claude Composite Actions: https://elastic.github.io/ai-github-actions/workflows/claude-workflows/
+- Legacy Claude Composite Actions: https://elastic.github.io/ai-github-actions/workflows/claude-workflows/
 - Developing: https://elastic.github.io/ai-github-actions/developing/
 - Security: https://elastic.github.io/ai-github-actions/security/
 - Release process: https://elastic.github.io/ai-github-actions/release/
@@ -15,8 +15,8 @@ Full documentation lives at https://elastic.github.io/ai-github-actions/.
 
 ## Overview
 
-- GitHub Agent Workflows provide safe-output guardrails with configurable engines (Copilot or Claude).
-- Claude Composite Actions provide direct Claude Code actions with RO/RWX/RWXP permission variants.
+- GitHub Agent Workflows are the primary/recommended path and provide safe-output guardrails with configurable engines.
+- Claude Composite Actions remain supported as a legacy option with RO/RWX/RWXP permission variants.
 
 ## Quick setup script
 

@@ -16,7 +16,7 @@ See [example.yml](example.yml) for the full workflow file.
 
 | Event | Types | Condition |
 | --- | --- | --- |
-| `pull_request` | `opened`, `synchronize`, `reopened`, `ready_for_review` | PR is not a draft |
+| `pull_request` | `opened`, `synchronize`, `reopened`, `ready_for_review` | PR is not a draft and does not have `skip-pr-body-update` label |
 
 ## Inputs
 

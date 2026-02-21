@@ -1,4 +1,5 @@
 ---
+name: "Issue Triage"
 description: "Investigate new issues and provide actionable triage analysis"
 imports:
   - gh-aw-fragments/elastic-tools.md

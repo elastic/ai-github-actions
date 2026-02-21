@@ -33,9 +33,9 @@
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/scheduled-report.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f360f10e231275141173e3958b2ccd4527b700582288c708c6abfc98ab9d27a1"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a5f7daa503d97c2ce3d73b0b516d96b56afe7e1122dcbe141fc6d0d854d346d9"}
 
-name: "Gh Aw Workflow Drift"
+name: "Workflow Drift"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - github-actions[bot] # Bots processed as bot check in pre-activation job
@@ -54,7 +54,7 @@ concurrency:
   cancel-in-progress: true
   group: gh-aw-workflow-drift
 
-run-name: "Gh Aw Workflow Drift"
+run-name: "Workflow Drift"
 
 jobs:
   activation:
@@ -571,7 +571,7 @@ jobs:
               model: "claude-opus-4.6",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Gh Aw Workflow Drift",
+              workflow_name: "Workflow Drift",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1129,7 +1129,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Gh Aw Workflow Drift"
+          GH_AW_WORKFLOW_NAME: "Workflow Drift"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1142,7 +1142,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Workflow Drift"
+          GH_AW_WORKFLOW_NAME: "Workflow Drift"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1155,7 +1155,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Workflow Drift"
+          GH_AW_WORKFLOW_NAME: "Workflow Drift"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-workflow-drift"
@@ -1175,7 +1175,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Gh Aw Workflow Drift"
+          GH_AW_WORKFLOW_NAME: "Workflow Drift"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1223,7 +1223,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Gh Aw Workflow Drift"
+          WORKFLOW_NAME: "Workflow Drift"
           WORKFLOW_DESCRIPTION: "Detect workflow drift — where one or more workflows have fallen behind a pattern adopted by most others"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1303,7 +1303,7 @@ jobs:
       GH_AW_ENGINE_MODEL: "claude-opus-4.6"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-workflow-drift"
-      GH_AW_WORKFLOW_NAME: "Gh Aw Workflow Drift"
+      GH_AW_WORKFLOW_NAME: "Workflow Drift"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}

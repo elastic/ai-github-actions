@@ -1,5 +1,6 @@
 ---
-description: "Update PR body when code changes cause it to drift from the current state"
+name: "Update PR Body"
+description: "Keep pull request bodies in sync with the code changes on every commit"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md

@@ -21,7 +21,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Update PR body when code changes cause it to drift from the current state
+# Keep pull request bodies in sync with the code changes on every commit
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -33,9 +33,9 @@
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-update-pr.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8832e5e3d7cfc7d875f5b7ef41bf62f1e12f36bdd0c55e1788086b6140e0faf0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"614d43935c217f6ec4f45f608e472e7df8ee41a9acd89932c80e02c9666b4f55"}
 
-name: "PR Body Update Agent"
+name: "Update PR Body"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -75,7 +75,7 @@ concurrency:
   cancel-in-progress: true
   group: update-pr-body-${{ github.event.pull_request.number }}
 
-run-name: "PR Body Update Agent"
+run-name: "Update PR Body"
 
 jobs:
   activation:
@@ -554,7 +554,7 @@ jobs:
               model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "PR Body Update Agent",
+              workflow_name: "Update PR Body",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1099,7 +1099,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "PR Body Update Agent"
+          GH_AW_WORKFLOW_NAME: "Update PR Body"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1112,7 +1112,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "PR Body Update Agent"
+          GH_AW_WORKFLOW_NAME: "Update PR Body"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1125,7 +1125,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "PR Body Update Agent"
+          GH_AW_WORKFLOW_NAME: "Update PR Body"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-update-pr-body"
@@ -1145,7 +1145,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "PR Body Update Agent"
+          GH_AW_WORKFLOW_NAME: "Update PR Body"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1193,8 +1193,8 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "PR Body Update Agent"
-          WORKFLOW_DESCRIPTION: "Update PR body when code changes cause it to drift from the current state"
+          WORKFLOW_NAME: "Update PR Body"
+          WORKFLOW_DESCRIPTION: "Keep pull request bodies in sync with the code changes on every commit"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1296,7 +1296,7 @@ jobs:
       GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-update-pr-body"
-      GH_AW_WORKFLOW_NAME: "PR Body Update Agent"
+      GH_AW_WORKFLOW_NAME: "Update PR Body"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}

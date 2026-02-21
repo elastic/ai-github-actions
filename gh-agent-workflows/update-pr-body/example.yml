@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   run:
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false && !contains(github.event.pull_request.labels.*.name, 'skip-pr-body-update')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-update-pr-body.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

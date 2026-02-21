@@ -1,4 +1,5 @@
 ---
+name: "Docs New Contributor Review"
 description: "Review docs from a new contributor perspective and file high-impact issues"
 imports:
   - gh-aw-fragments/elastic-tools.md

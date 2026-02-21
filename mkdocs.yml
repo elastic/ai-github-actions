@@ -45,7 +45,8 @@ nav:
               - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
               - Test Improvement: workflows/gh-agent-workflows/test-improvement.md
               - Text Beautifier: workflows/gh-agent-workflows/text-beautifier.md
-      - Claude Composite Actions: workflows/claude-workflows.md
+      - Legacy:
+          - Claude Composite Actions: workflows/claude-workflows.md
   - Developing: developing.md
   - Security: security.md
   - Release: release.md

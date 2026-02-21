@@ -1,4 +1,5 @@
 ---
+name: "Project Summary"
 description: "Create periodic project summary issues covering recent activity and priorities"
 imports:
   - gh-aw-fragments/elastic-tools.md

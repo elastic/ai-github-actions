@@ -1,4 +1,5 @@
 ---
+name: "Docs New Contributor Review External"
 description: "Review docs from a new contributor perspective, cross-referencing published Elastic documentation"
 imports:
   - gh-aw-fragments/elastic-tools.md
