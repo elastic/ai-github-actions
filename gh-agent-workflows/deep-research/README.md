@@ -4,7 +4,7 @@ Deep research assistant for issue comments with web search/fetch and optional PR
 
 ## How it works
 
-Activated by a comment on an issue (the example trigger uses `/ai research`). The workflow investigates local code and external sources, then posts an evidence-backed response and can open a PR when implementation is requested.
+Activated by a comment on an issue (the example trigger uses `/research`). The workflow investigates local code and external sources, then posts an evidence-backed response and can open a PR when implementation is requested.
 
 ## Quick Install
 
@@ -20,7 +20,7 @@ See [example.yml](example.yml) for the full workflow file.
 
 | Event | Types | Condition |
 | --- | --- | --- |
-| `issue_comment` | `created` | Comment on an issue (not a PR); the example trigger filters on `/ai research` prefix |
+| `issue_comment` | `created` | Comment on an issue (not a PR); the example trigger filters on `/research` prefix |
 
 ## Inputs
 
