@@ -1,4 +1,5 @@
 ---
+inlined-imports: true
 name: "Issue Triage"
 description: "Investigate new issues and provide actionable triage analysis"
 imports:
@@ -11,12 +12,17 @@ imports:
   - gh-aw-fragments/safe-output-add-comment.md
 engine:
   id: copilot
-  model: gpt-5.3-codex
+  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-issue-triage-${{ github.event.issue.number }}"
 on:
   workflow_call:
     inputs:
+      model:
+        description: "AI model to use"
+        type: string
+        required: false
+        default: "gpt-5.3-codex"
       additional-instructions:
         description: "Repo-specific instructions appended to the agent prompt"
         type: string

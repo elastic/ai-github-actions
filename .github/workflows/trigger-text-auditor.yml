@@ -1,0 +1,22 @@
+name: Trigger Text Auditor
+on:
+  schedule:
+    - cron: "0 13 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-text-auditor.lock.yml
+    with:
+      edit-typos: high
+      edit-grammar: high
+      edit-clarity: high
+      edit-terminology: high
+      edit-misleading-text: high
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

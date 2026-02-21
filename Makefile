@@ -1,7 +1,7 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.47.4
+GH_AW_VERSION := v0.48.1
 
 # Helper: Detect OS and architecture (sets OS and ARCH variables)
 # Usage: $(DETECT_OS_ARCH)
@@ -111,30 +111,25 @@ setup-gh-debian:
 
 setup-gh-aw:
 	@echo "Setting up gh-aw compiler..."
-	@if command -v go >/dev/null 2>&1; then \
-		mkdir -p .bin && \
-		if [ -f .bin/gh-aw ]; then \
-			echo "✓ gh-aw already installed"; \
-		else \
-			echo "Cloning strawgate/gh-aw@feature/inline-prompt..."; \
-			TMPDIR=$$(mktemp -d) && \
-			git clone --depth 1 --branch feature/inline-prompt https://github.com/strawgate/gh-aw.git "$$TMPDIR/gh-aw" && \
-			cd "$$TMPDIR/gh-aw" && \
-			GOBIN="$(CURDIR)/.bin" go install ./cmd/gh-aw && \
-			rm -rf "$$TMPDIR" && \
-			echo "✓ gh-aw installed to .bin/gh-aw"; \
-		fi; \
-	else \
-		echo "⚠ Go not found. Install Go first: https://go.dev/dl/"; \
+	@mkdir -p .bin
+	@if ! command -v go >/dev/null 2>&1; then \
+		echo "Error: Go is required to install gh-aw compiler."; \
+		echo "Install Go: https://go.dev/dl/"; \
 		exit 1; \
+	elif [ -x ".bin/gh-aw" ] && .bin/gh-aw version 2>/dev/null | grep -q "$(GH_AW_VERSION)"; then \
+		echo "✓ gh-aw compiler already installed: $(GH_AW_VERSION)"; \
+	else \
+		echo "Installing gh-aw compiler $(GH_AW_VERSION) from github/gh-aw..."; \
+		GOBIN="$(CURDIR)/.bin" go install github.com/github/gh-aw/cmd/gh-aw@$(GH_AW_VERSION) && \
+		echo "✓ gh-aw compiler installed: $$(.bin/gh-aw version)"; \
 	fi
 
 sync:
 	@./scripts/dogfood.sh
 
-compile: setup-gh-aw
+compile: setup-gh-aw sync
 	@echo "Compiling agentic workflows..."
-	@.bin/gh-aw compile --inline-prompt --action-mode release --action-tag $(GH_AW_VERSION)
+	@.bin/gh-aw compile --action-mode release --action-tag $(GH_AW_VERSION)
 
 setup-actionlint:
 	@echo "Setting up actionlint..."
@@ -155,7 +150,14 @@ setup-actionlint:
 lint-workflows: setup-actionlint
 	@echo "Validating GitHub Actions workflow files..."
 	@ACTIONLINT="bin/actionlint"; \
-	find claude-workflows .github/workflows -name "example.yml" -o -name "example.yaml" 2>/dev/null | while read -r file; do \
+	( \
+		find claude-workflows -name "example.yml" -o -name "example.yaml"; \
+		find .github/workflows -maxdepth 1 \( \
+			-name "trigger-*.yml" -o -name "trigger-*.yaml" -o \
+			-name "agentics-maintenance.yml" -o -name "ci.yml" -o \
+			-name "release.yml" -o -name "smoke-test-install.yml" \
+		\); \
+	) 2>/dev/null | while read -r file; do \
 		echo "Checking $$file..."; \
 		$$ACTIONLINT "$$file" || exit 1; \
 	done

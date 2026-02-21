@@ -2,6 +2,7 @@
 
 @README.md
 @DEVELOPING.md
+@docs/upgrading.md
 
 ## Automation Runtime
 

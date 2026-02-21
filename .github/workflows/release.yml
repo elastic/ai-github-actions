@@ -34,15 +34,15 @@ jobs:
         run: |
           # Get the tag name (e.g., v1.2.3)
           TAG="${GITHUB_REF#refs/tags/}"
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           
           # Extract major version (e.g., v1)
           MAJOR=$(echo "$TAG" | grep -oE '^v[0-9]+')
-          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "major=$MAJOR" >> "$GITHUB_OUTPUT"
           
           # Get the full commit SHA
           SHA="${GITHUB_SHA}"
-          echo "sha=$SHA" >> $GITHUB_OUTPUT
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
           
           echo "Creating release for $TAG (major: $MAJOR, sha: $SHA)"
 

@@ -32,11 +32,14 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-pr.md
+#     - gh-aw-fragments/scheduled-fix.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0fed8fc6b7cb7f03afac4c55f82e077038c1623c7467d1bdf32bc8c12b363f79"}
+# inlined-imports: true
+#
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bc00a8c8f1d0772fb7dd159091be4a348d113116528c926eae3b8731916a57c3"}
 
-name: "Bug Exterminator"
+name: "Gh Aw Bug Exterminator"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -61,6 +64,11 @@ name: "Bug Exterminator"
         description: Footer appended to all agent comments and reviews
         required: false
         type: string
+      model:
+        default: gpt-5.3-codex
+        description: AI model to use
+        required: false
+        type: string
       setup-commands:
         default: ""
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
@@ -76,7 +84,7 @@ concurrency:
   cancel-in-progress: true
   group: bug-exterminator
 
-run-name: "Bug Exterminator"
+run-name: "Gh Aw Bug Exterminator"
 
 jobs:
   activation:
@@ -90,7 +98,7 @@ jobs:
       comment_repo: ""
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
+        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
         with:
           destination: /opt/gh-aw/actions
       - name: Validate context variables
@@ -167,6 +175,30 @@ jobs:
           **Critical**: Tool calls write structured data that downstream jobs process. Without tool calls, follow-up actions will be skipped.
           
           **Note**: If you made no other safe output tool calls during this workflow execution, call the "noop" tool to provide a status message indicating completion or that no actions were needed.
+          
+          ---
+          
+          ## Creating a Pull Request, Reporting Missing Tools or Functionality, Reporting Missing Data
+          
+          **IMPORTANT**: To perform the actions listed above, use the **safeoutputs** tools. Do NOT use `gh`, do NOT call the GitHub API directly. You do not have write access to the GitHub repository.
+          
+          **Creating a Pull Request**
+          
+          To create a pull request:
+          1. Make any file changes directly in the working directory.
+          2. If you haven't done so already, create a local branch using an appropriate unique name.
+          3. Add and commit your changes to the branch. Be careful to add exactly the files you intend, and check there are no extra files left un-added. Verify you haven't deleted or changed any files you didn't intend to.
+          4. Do not push your changes. That will be done by the tool.
+          5. Create the pull request with the create_pull_request tool from safeoutputs.
+          
+          **Reporting Missing Tools or Functionality**
+          
+          To report a missing tool or capability, use the missing_tool tool from safeoutputs.
+          
+          **Reporting Missing Data**
+          
+          To report missing data required to achieve a goal, use the missing_data tool from safeoutputs.
+          
           </instructions>
           </safe-outputs>
           <github-context>
@@ -295,9 +327,7 @@ jobs:
           - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          # Bug Exterminator
-          
-          Fix a reproducible `bug-hunter` issue by opening a single focused PR.
+          You are an agent for __GH_AW_GITHUB_REPOSITORY__. You run on a schedule to pick up an open issue and create a focused pull request that addresses it. Your specific assignment is described in the **Fix Assignment** section below.
           
           ## Context
           
@@ -308,53 +338,75 @@ jobs:
           - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request.
           - **CANNOT**: Directly push to the repository — use `create_pull_request`.
           - **Only one PR per run.**
-          - Only consider issues labeled `bug-hunter` or with `[bug-hunter]` in the title.
-          - You must reproduce the issue locally before proposing a fix.
-          - If no suitable issue is found or reproduction fails, call `noop` with a brief reason.
+          - If no suitable issue is found, call `noop` with a brief reason.
           - **Most runs should end with `noop`.** Only open a PR when the fix is clearly correct, tested, and small enough for quick review.
           
-          ## Step 1: Gather candidates
+          ## Process
           
-          1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-          2. Search for open Bug Hunter issues:
+          Follow these steps in order.
+          
+          ### Step 1: Gather Candidates
+          
+          1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
+          2. Follow the candidate gathering instructions in the **Fix Assignment** section.
+          3. For each candidate, read the full issue and comments using `issue_read` (methods `get` and `get_comments`).
+          
+          ### Step 2: Select a Target
+          
+          Choose one issue with:
+          
+          - Concrete, actionable instructions (file paths, function names, suggested changes)
+          - A well-scoped fix that doesn't require design decisions
+          - No active discussion suggesting the fix should go a different direction
+          
+          Skip any issue where the suggested fix is ambiguous, controversial, or too large for a single PR.
+          
+          ### Step 3: Implement
+          
+          Follow the implementation instructions in the **Fix Assignment** section. The Fix Assignment defines:
+          - What kind of changes to make
+          - What tools to use
+          - Any domain-specific constraints
+          
+          ### Step 4: Quality Gate — Self-Review
+          
+          Before creating the PR, verify:
+          
+          1. **Fix is correct** — the change directly addresses the issue.
+          2. **Tests pass** — you ran the most relevant tests and they pass.
+          3. **Scope is minimal** — only changes needed for the fix, no scope creep.
+          4. **No regressions** — linters pass, no formatting broken, no new warnings.
+          
+          If any check fails, call `noop` with a brief reason.
+          
+          ### Step 5: Create the PR
+          
+          Call `create_pull_request` with:
+          - A concise summary of the changes
+          - A link to the source issue (e.g., "Fixes #123")
+          - The specific tests that were run and passed
+          - A note on any items from the issue that were skipped (if any)
+          
+          **Fix Assignment:**
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          ### Candidate Search
+          
+          Search for open Bug Hunter issues:
           
           ````text
           github-search_issues: query="repo:{owner}/{repo} is:issue is:open (label:bug-hunter OR in:title \"[bug-hunter]\") sort:updated-asc"
           ````
           
-          3. For each candidate, read the full issue and comments using `issue_read` (methods `get` and `get_comments`).
+          ### Implementation
           
-          ## Step 2: Select a target
-          
-          Choose one issue with:
-          
-          - Clear reproduction steps
-          - A small, well-scoped fix
-          - No active discussion pointing to a larger design change
-          
-          Skip any issue that cannot be reproduced locally.
-          
-          ## Step 3: Reproduce and fix
+          You must reproduce the issue locally before proposing a fix.
           
           1. Reproduce the bug locally with the exact steps from the issue.
           2. Make the smallest safe change that fixes the issue.
           3. Run the most relevant targeted tests. **Tests must pass.**
           4. Commit the changes locally.
-          
-          ## Step 4: Quality Gate — Self-Review
-          
-          Before creating the PR, verify:
-          
-          - **Reproduction**: You reproduced the bug before fixing it.
-          - **Fix correctness**: The change directly addresses the issue.
-          - **Tests pass**: List the tests and results in the PR body.
-          - **Scope**: The change is minimal and focused.
-          
-          If any check fails, call `noop`.
-          
-          ## Step 5: Create the PR
-          
-          Call `create_pull_request` with a concise summary, a link to the issue, and the exact tests run.
           
           __GH_AW_EXPR_49B959F1__
           
@@ -454,7 +506,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
+        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -548,10 +600,10 @@ jobs:
             const awInfo = {
               engine_id: "copilot",
               engine_name: "GitHub Copilot CLI",
-              model: "gpt-5.3-codex",
+              model: "${{ inputs.model }}",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Bug Exterminator",
+              workflow_name: "Gh Aw Bug Exterminator",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -608,7 +660,7 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"create_pull_request":{},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
+          {"create_pull_request":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
@@ -624,6 +676,10 @@ jobs:
                   "branch": {
                     "description": "Source branch name containing the changes. If omitted, uses the current working branch.",
                     "type": "string"
+                  },
+                  "draft": {
+                    "description": "Whether to create the PR as a draft. Draft PRs cannot be merged until marked as ready for review. Use mark_pull_request_as_ready_for_review to convert a draft PR. Default: true.",
+                    "type": "boolean"
                   },
                   "labels": {
                     "description": "Labels to categorize the PR (e.g., 'enhancement', 'bugfix'). Labels must exist in the repository.",
@@ -733,17 +789,49 @@ jobs:
                   "sanitize": true,
                   "maxLength": 256
                 },
+                "draft": {
+                  "type": "boolean"
+                },
                 "labels": {
                   "type": "array",
                   "itemType": "string",
                   "itemSanitize": true,
                   "itemMaxLength": 128
                 },
+                "repo": {
+                  "type": "string",
+                  "maxLength": 256
+                },
                 "title": {
                   "required": true,
                   "type": "string",
                   "sanitize": true,
                   "maxLength": 128
+                }
+              }
+            },
+            "missing_data": {
+              "defaultMax": 20,
+              "fields": {
+                "alternatives": {
+                  "type": "string",
+                  "sanitize": true,
+                  "maxLength": 256
+                },
+                "context": {
+                  "type": "string",
+                  "sanitize": true,
+                  "maxLength": 256
+                },
+                "data_type": {
+                  "type": "string",
+                  "sanitize": true,
+                  "maxLength": 128
+                },
+                "reason": {
+                  "type": "string",
+                  "sanitize": true,
+                  "maxLength": 256
                 }
               }
             },
@@ -1005,10 +1093,11 @@ jobs:
         run: |
           set -o pipefail
           sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.githubusercontent.com,*.jsr.io,*.pythonhosted.org,*.rvm.io,agents-md-generator.fastmcp.app,anaconda.org,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.rubygems.org,api.snapcraft.io,archive.ubuntu.com,artifacts.elastic.co,azure.archive.ubuntu.com,binstar.org,bootstrap.pypa.io,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.jsdelivr.net,cloud.elastic.co,codeload.github.com,conda.anaconda.org,conda.binstar.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,deb.nodesource.com,deno.land,ela.st,elastic.co,esm.sh,files.pythonhosted.org,gems.rubyforge.org,gems.rubyonrails.org,get.pnpm.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,host.docker.internal,index.crates.io,index.rubygems.org,json-schema.org,json.schemastore.org,jsr.io,keyserver.ubuntu.com,lfs.github.com,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pip.pypa.io,pkg.go.dev,ppa.launchpad.net,proxy.golang.org,public-code-search.fastmcp.app,pypi.org,pypi.python.org,raw.githubusercontent.com,registry.bower.io,registry.npmjs.com,registry.npmjs.org,registry.yarnpkg.com,repo.anaconda.com,repo.continuum.io,repo.yarnpkg.com,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,security.ubuntu.com,skimdb.npmjs.com,static.crates.io,storage.googleapis.com,sum.golang.org,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.elastic.co,www.npmjs.com,www.npmjs.org,yarnpkg.com' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.2 --skip-pull --enable-api-proxy \
-            -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --model gpt-5.3-codex --allow-all-tools --allow-all-paths --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
+            -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --allow-all-tools --allow-all-paths --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          COPILOT_MODEL: ${{ inputs.model }}
           GH_AW_MCP_CONFIG: /home/runner/.copilot/mcp-config.json
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
@@ -1165,7 +1254,7 @@ jobs:
             /tmp/gh-aw/sandbox/firewall/logs/
             /tmp/gh-aw/agent-stdio.log
             /tmp/gh-aw/agent/
-            /tmp/gh-aw/aw.patch
+            /tmp/gh-aw/aw-*.patch
           if-no-files-found: ignore
 
   conclusion:
@@ -1186,7 +1275,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
+        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1206,7 +1295,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Bug Exterminator"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Bug Exterminator"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1219,7 +1308,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Bug Exterminator"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Bug Exterminator"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1232,7 +1321,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Bug Exterminator"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Bug Exterminator"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-bug-exterminator"
@@ -1252,7 +1341,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Bug Exterminator"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Bug Exterminator"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1269,7 +1358,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Bug Exterminator"
+          GH_AW_WORKFLOW_NAME: "Gh Aw Bug Exterminator"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1291,7 +1380,7 @@ jobs:
       success: ${{ steps.parse_results.outputs.success }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
+        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent artifacts
@@ -1314,7 +1403,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Bug Exterminator"
+          WORKFLOW_NAME: "Gh Aw Bug Exterminator"
           WORKFLOW_DESCRIPTION: "Fix bug-hunter issues and open a focused PR"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1352,10 +1441,11 @@ jobs:
           mkdir -p /tmp/gh-aw/
           mkdir -p /tmp/gh-aw/agent/
           mkdir -p /tmp/gh-aw/sandbox/agent/logs/
-          copilot --add-dir /tmp/ --add-dir /tmp/gh-aw/ --add-dir /tmp/gh-aw/agent/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --model gpt-5.3-codex --allow-tool 'shell(cat)' --allow-tool 'shell(grep)' --allow-tool 'shell(head)' --allow-tool 'shell(jq)' --allow-tool 'shell(ls)' --allow-tool 'shell(tail)' --allow-tool 'shell(wc)' --share /tmp/gh-aw/sandbox/agent/logs/conversation.md --prompt "$COPILOT_CLI_INSTRUCTION" 2>&1 | tee /tmp/gh-aw/threat-detection/detection.log
+          copilot --add-dir /tmp/ --add-dir /tmp/gh-aw/ --add-dir /tmp/gh-aw/agent/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --disable-builtin-mcps --allow-tool 'shell(cat)' --allow-tool 'shell(grep)' --allow-tool 'shell(head)' --allow-tool 'shell(jq)' --allow-tool 'shell(ls)' --allow-tool 'shell(tail)' --allow-tool 'shell(wc)' --prompt "$COPILOT_CLI_INSTRUCTION" 2>&1 | tee /tmp/gh-aw/threat-detection/detection.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          COPILOT_MODEL: ${{ inputs.model }}
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
@@ -1385,7 +1475,7 @@ jobs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
+        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1416,10 +1506,10 @@ jobs:
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
-      GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
+      GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-bug-exterminator"
-      GH_AW_WORKFLOW_NAME: "Bug Exterminator"
+      GH_AW_WORKFLOW_NAME: "Gh Aw Bug Exterminator"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
@@ -1427,7 +1517,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@da463a765059a5eed4cc345a003ecfc71c45ec49 # v0.47.4
+        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1451,7 +1541,7 @@ jobs:
         if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ github.base_ref || github.ref_name }}
           token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           persist-credentials: false
           fetch-depth: 1
@@ -1473,7 +1563,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

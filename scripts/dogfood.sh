@@ -18,9 +18,14 @@ cd "$REPO_ROOT"
 
 # Workflows that are not dogfooded in this repository.
 EXCLUDED_WORKFLOWS=(
-  "flaky-test-triage"
-  "issue-triage-pr"
+  "docs-patrol-external"
+  "newbie-contributor-patrol-external"
+  "flaky-test-investigator"
+  "issue-fixer"
+  "performance-profiler"
   "pr-review-fork"
+  "scheduled-audit"
+  "scheduled-fix"
 )
 
 echo "Syncing workflow files..."

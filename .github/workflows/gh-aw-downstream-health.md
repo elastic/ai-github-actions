@@ -1,4 +1,5 @@
 ---
+inlined-imports: true
 name: "Downstream Health"
 description: "Monitor downstream repositories using AI workflows and report quality issues"
 imports:
@@ -9,13 +10,18 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
-  - gh-aw-fragments/scheduled-report.md
+  - gh-aw-fragments/scheduled-audit.md
 engine:
   id: copilot
-  model: gpt-5.3-codex
+  model: ${{ inputs.model }}
 on:
   workflow_call:
     inputs:
+      model:
+        description: "AI model to use"
+        type: string
+        required: false
+        default: "gpt-5.3-codex"
       additional-instructions:
         description: "Repo-specific instructions appended to the agent prompt"
         type: string

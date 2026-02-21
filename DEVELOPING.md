@@ -8,7 +8,7 @@
 | `gh-agent-workflows/` | Per-workflow READMEs, `example.yml` triggers, and optional `dogfood-with.yml` overrides | [DEVELOPING.md](gh-agent-workflows/DEVELOPING.md) |
 | `claude-workflows/` | Composite actions wrapping Claude Code | [DEVELOPING.md](claude-workflows/DEVELOPING.md) |
 
-Internal-only workflows (e.g., `gh-aw-upgrade-check.md`, `ci.yml`, `release.yml`) also live in `.github/workflows/`. See [gh-agent-workflows/DEVELOPING.md](gh-agent-workflows/DEVELOPING.md) for the full architecture.
+Internal-only workflows (e.g., `upgrade-check.md`, `workflow-patrol.md`, `ci.yml`, `release.yml`) also live in `.github/workflows/`. Published workflows use the `gh-aw-` prefix; internal-only ones omit it. See [gh-agent-workflows/DEVELOPING.md](gh-agent-workflows/DEVELOPING.md) for the full architecture.
 
 ## Quick Start
 

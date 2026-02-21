@@ -1,4 +1,5 @@
 ---
+inlined-imports: true
 description: "Find small, related issues and open a focused PR"
 imports:
   - gh-aw-fragments/elastic-tools.md
@@ -11,10 +12,15 @@ imports:
   - gh-aw-fragments/safe-output-create-pr.md
 engine:
   id: copilot
-  model: gpt-5.3-codex
+  model: ${{ inputs.model }}
 on:
   workflow_call:
     inputs:
+      model:
+        description: "AI model to use"
+        type: string
+        required: false
+        default: "gpt-5.3-codex"
       additional-instructions:
         description: "Repo-specific instructions appended to the agent prompt"
         type: string
