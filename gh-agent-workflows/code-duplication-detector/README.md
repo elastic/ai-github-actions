@@ -32,6 +32,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `close-older-issues` | Whether to close older issues with the same title prefix when a new one is created | No | `true` |
 
 ## Safe Outputs
 

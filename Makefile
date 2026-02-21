@@ -131,6 +131,7 @@ compile: setup-gh-aw sync
 	@echo "Compiling agentic workflows..."
 	@.bin/gh-aw compile --action-mode release --action-tag $(GH_AW_VERSION)
 	@./scripts/backwards-compat.sh
+	@./scripts/inject-configurable-close.sh
 
 setup-actionlint:
 	@echo "Setting up actionlint..."

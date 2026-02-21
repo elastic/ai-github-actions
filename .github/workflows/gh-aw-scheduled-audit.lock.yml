@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5407be51afed9319bcbdd8da718762d79b3ddb6c28bc2ed7edf261cd01714d58"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e078499e0ccd40d078e6b253300e8506458e7458c09fec372b1377bfff7779ab"}
 
 name: "Scheduled Audit"
 "on":
@@ -57,6 +57,11 @@ name: "Scheduled Audit"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
+      close-older-issues:
+        default: true
+        description: Whether to close older issues with the same title prefix when a new one is created
+        required: false
+        type: boolean
       issue-label:
         default: ""
         description: Label to apply to created issues (must already exist in the target repo)
@@ -101,8 +106,11 @@ jobs:
     permissions:
       contents: read
     outputs:
+      body: ${{ steps.sanitized.outputs.body }}
       comment_id: ""
       comment_repo: ""
+      text: ${{ steps.sanitized.outputs.text }}
+      title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
         uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
@@ -133,6 +141,15 @@ jobs:
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/check_workflow_timestamp_api.cjs');
+            await main();
+      - name: Compute current body text
+        id: sanitized
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('/opt/gh-aw/actions/compute_text.cjs');
             await main();
       - name: Create prompt with built-in context
         env:
@@ -1394,7 +1411,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"${{ inputs.issue-title-prefix }} \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":${{ inputs.close-older-issues }},\"expires\":168,\"max\":1,\"title_prefix\":\"${{ inputs.issue-title-prefix }} \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

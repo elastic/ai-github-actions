@@ -67,6 +67,11 @@ on:
         type: string
         required: false
         default: "low"
+      close-older-issues:
+        description: "Whether to close older issues with the same title prefix when a new one is created"
+        type: boolean
+        required: false
+        default: true
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true

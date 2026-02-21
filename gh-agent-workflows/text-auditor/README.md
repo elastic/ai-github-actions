@@ -35,6 +35,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `edit-clarity` | How aggressively to flag unclear user-facing text (`high`/`low`/`none`) | No | `low` |
 | `edit-terminology` | How aggressively to flag inconsistent terminology (`high`/`low`/`none`) | No | `low` |
 | `edit-misleading-text` | How aggressively to flag text that conflicts with behavior (`high`/`low`/`none`) | No | `low` |
+| `close-older-issues` | Whether to close older issues with the same title prefix when a new one is created | No | `true` |
 
 ### Edit Levels
 
