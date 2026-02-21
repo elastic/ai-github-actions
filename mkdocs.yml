@@ -21,6 +21,7 @@ nav:
               - Duplicate Issue Detector: workflows/gh-agent-workflows/duplicate-issue-detector.md
               - Issue Triage: workflows/gh-agent-workflows/issue-triage.md
               - Issue Fixer: workflows/gh-agent-workflows/issue-fixer.md
+              - Plan: workflows/gh-agent-workflows/plan.md
               - Mention in Issue: workflows/gh-agent-workflows/mention-in-issue.md
               - Mention in PR: workflows/gh-agent-workflows/mention-in-pr.md
               - PR Actions Detective: workflows/gh-agent-workflows/pr-actions-detective.md

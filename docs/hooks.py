@@ -34,6 +34,13 @@ def _generate_page(workflow_dir: Path) -> str:
         readme,
     )
 
+    # Rewrite sibling-workflow links so they resolve on the docs site.
+    # In the source tree READMEs use ../other-workflow/README.md or
+    # ../other-workflow/ to link to neighbours; on the generated docs site the
+    # correct target is other-workflow.md (a peer file in the same directory).
+    readme = re.sub(r"\.\./([a-z0-9-]+)/README\.md", r"\1.md", readme)
+    readme = re.sub(r"\.\./([a-z0-9-]+)/(?!README\.md)", r"\1.md", readme)
+
     return f"{readme.rstrip()}\n\n## Example Workflow\n\n```yaml\n{example.rstrip()}\n```\n"
 
 
