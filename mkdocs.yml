@@ -51,6 +51,7 @@ nav:
       - Legacy:
           - Claude Composite Actions: workflows/claude-workflows.md
   - Developing: developing.md
+  - Upgrading: upgrading.md
   - Security: security.md
   - Release: release.md
 markdown_extensions:

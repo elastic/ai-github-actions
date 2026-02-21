@@ -10,6 +10,7 @@ Full documentation lives at https://elastic.github.io/ai-github-actions/.
 - Legacy Claude Composite Actions: https://elastic.github.io/ai-github-actions/workflows/claude-workflows/
 - Developing: https://elastic.github.io/ai-github-actions/developing/
 - Security: https://elastic.github.io/ai-github-actions/security/
+- Upgrading: https://elastic.github.io/ai-github-actions/upgrading/
 - Release process: https://elastic.github.io/ai-github-actions/release/
 - Contributing: [CONTRIBUTING.md](CONTRIBUTING.md)
 
