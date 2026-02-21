@@ -31,6 +31,23 @@ See [example.yml](example.yml) for the full workflow file.
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 
+## Storyteller / chronicler example
+
+Use `additional-instructions` to switch from a neutral status report to a narrative "project chronicler" style without creating a separate workflow:
+
+````yaml
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-project-summary.lock.yml@v0
+    with:
+      additional-instructions: |
+        Write the summary as a project chronicler.
+        Keep all factual details accurate and link-backed, but present sections in a story-like narrative voice.
+        End with "Chronicle Next Steps" as a checklist of concrete actions.
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+````
+
 ## Safe Outputs
 
 - `create-issue` — file a project summary report (max 1, auto-closes older reports)
