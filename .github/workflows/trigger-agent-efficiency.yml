@@ -1,4 +1,4 @@
-name: Agent Efficiency
+name: Trigger Agent Efficiency
 on:
   schedule:
     - cron: "0 16 * * 1-5"

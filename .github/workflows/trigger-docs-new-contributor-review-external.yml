@@ -1,4 +1,4 @@
-name: Docs New Contributor Review External
+name: Trigger Docs New Contributor Review External
 on:
   schedule:
     - cron: "0 14 * * 1"

@@ -1,16 +1,15 @@
-name: Update PR Body
+name: Trigger Update PR Body
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
-  issues: read
   pull-requests: write
 
 jobs:
   run:
-    if: github.event.pull_request.draft == false
+    if: github.event.pull_request.draft == false && !contains(github.event.pull_request.labels.*.name, 'skip-pr-body-update')
     uses: ./.github/workflows/gh-aw-update-pr-body.lock.yml
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

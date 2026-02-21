@@ -1,4 +1,4 @@
-name: Docs PR Review
+name: Trigger Docs PR Review
 on:
   issue_comment:
     types: [created]
