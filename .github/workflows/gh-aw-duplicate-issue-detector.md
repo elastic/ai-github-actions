@@ -106,7 +106,13 @@ Classify each promising candidate into one of three categories:
 
 ### Step 4: Post Result
 
-**If a clear duplicate is found:**
+Post **exactly one** `add_comment` call total (or `noop` if nothing is found). Do not call `add_comment` more than once.
+
+Select the single most relevant match across all candidates:
+- A **clear duplicate** takes priority over a highly related issue.
+- Among candidates of the same tier, prefer the most relevant open issue over a closed one.
+
+**If the best match is a clear duplicate:**
 
 Call `add_comment` with a concise comment in this format:
 
@@ -116,11 +122,7 @@ Call `add_comment` with a concise comment in this format:
 >
 > Linking to the existing issue for tracking. If this is actually a different problem, please add more details to distinguish it.
 
-- Reference at most **one** best-matching duplicate (the most relevant open issue takes priority over a closed one).
-- Use neutral, helpful language — the reporter may not be familiar with the existing issue.
-- Do NOT use `fixes`, `closes`, or `resolves` keywords.
-
-**If a highly related (but not duplicate) issue is found:**
+**If the best match is a highly related (but not duplicate) issue:**
 
 Call `add_comment` with a concise comment in this format:
 
@@ -130,7 +132,7 @@ Call `add_comment` with a concise comment in this format:
 >
 > Linking for visibility — these are separate issues but may benefit from coordination.
 
-- Reference at most **one** best-matching related issue.
+**In all cases:**
 - Use neutral, helpful language — the reporter may not be familiar with the existing issue.
 - Do NOT use `fixes`, `closes`, or `resolves` keywords.
 
