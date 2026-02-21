@@ -1,0 +1,51 @@
+name: On Failure — Issue Triage
+
+on:
+  workflow_run:
+    workflows: ["Issue Triage"]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  create-issue:
+    if: github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Create failure issue
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const label = 'issue-triage-failure';
+
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: label,
+            });
+
+            if (existing.data.length > 0) {
+              core.info(`Open failure issue already exists: ${existing.data[0].html_url} — skipping`);
+              return;
+            }
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Issue Triage workflow failed (run #${run.run_number})`,
+              body: [
+                `The **Issue Triage** workflow failed and requires investigation.`,
+                ``,
+                `| Field | Value |`,
+                `| --- | --- |`,
+                `| Run | [#${run.run_number}](${run.html_url}) |`,
+                `| Branch | \`${run.head_branch}\` |`,
+                `| Commit | ${run.head_sha} |`,
+                `| Triggered by | ${run.triggering_actor?.login ?? 'unknown'} |`,
+              ].join('\n'),
+              labels: ['bug', label],
+            });
