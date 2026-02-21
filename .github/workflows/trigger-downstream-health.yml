@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   run:
+    timeout-minutes: 90
     uses: ./.github/workflows/gh-aw-downstream-health.lock.yml
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

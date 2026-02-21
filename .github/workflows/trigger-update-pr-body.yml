@@ -5,11 +5,11 @@ on:
 
 permissions:
   contents: read
-  issues: read
   pull-requests: write
 
 jobs:
   run:
+    timeout-minutes: 90
     if: github.event.pull_request.draft == false
     uses: ./.github/workflows/gh-aw-update-pr-body.lock.yml
     secrets:

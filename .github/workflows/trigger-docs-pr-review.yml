@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   run:
+    timeout-minutes: 90
     if: >-
       github.event.issue.pull_request != null &&
       startsWith(github.event.comment.body, '/docs-review')

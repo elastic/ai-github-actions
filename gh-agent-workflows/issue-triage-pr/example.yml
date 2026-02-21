@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   run:
+    timeout-minutes: 90
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-triage-pr.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
