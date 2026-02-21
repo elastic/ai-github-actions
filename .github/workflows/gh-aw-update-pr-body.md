@@ -37,6 +37,26 @@ on:
         type: string
         required: false
         default: ""
+      edit-accuracy:
+        description: "How aggressively to fix factual inaccuracies in the PR body. 'high' = fix everything that could mislead, 'low' = fix only clear-cut inaccuracies, 'none' = do not change accuracy-related content"
+        type: string
+        required: false
+        default: "low"
+      edit-completeness:
+        description: "How aggressively to add missing information about significant changes. 'high' = proactively add any notable missing detail, 'low' = add only major omissions that would block reviewer understanding, 'none' = do not add content"
+        type: string
+        required: false
+        default: "low"
+      edit-format:
+        description: "How aggressively to improve markdown formatting and structure. 'high' = apply best-practice formatting throughout, 'low' = fix broken or unreadable formatting only, 'none' = do not touch formatting"
+        type: string
+        required: false
+        default: "none"
+      edit-style:
+        description: "How aggressively to improve writing style and clarity. 'high' = rewrite for clarity, conciseness, and professionalism, 'low' = fix only confusing or misleading phrasing, 'none' = do not touch style"
+        type: string
+        required: false
+        default: "none"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -82,9 +102,25 @@ Keep the pull request body in sync with the actual state of the code changes in 
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
 
+## Edit Level Configuration
+
+The following edit levels are configured for this run. Each dimension is independent.
+
+| Dimension | Level | Meaning |
+| --- | --- | --- |
+| **accuracy** | `${{ inputs.edit-accuracy }}` | How aggressively to fix content that misrepresents the code changes |
+| **completeness** | `${{ inputs.edit-completeness }}` | How aggressively to add information about significant changes not yet mentioned |
+| **format** | `${{ inputs.edit-format }}` | How aggressively to improve markdown formatting and structure |
+| **style** | `${{ inputs.edit-style }}` | How aggressively to improve writing clarity, conciseness, and tone |
+
+Level semantics:
+- **`high`** — apply the agent's best judgment; proactively improve this dimension throughout the body
+- **`low`** — make only conservative fixes for clear problems; do not restructure or rewrite
+- **`none`** — do not touch this dimension at all; leave it exactly as the author wrote it
+
 ## Objective
 
-Determine whether the current PR body accurately reflects the code changes in this PR. If the body contains inaccuracies — information that would actively mislead a reviewer — fix only those inaccuracies with the **minimal edit** needed. Do not rewrite, reformat, or improve the body beyond what is required to correct the specific inaccuracy.
+Evaluate the PR body against all configured edit dimensions. Apply changes only where a dimension's level permits action. Always make the minimal edit needed within what each level allows.
 
 ## Instructions
 
@@ -105,35 +141,56 @@ git diff --stat ${{ github.event.pull_request.base.sha }}..${{ github.event.pull
 
 For key changed files, read relevant sections to understand the scope and nature of the changes.
 
-### Step 3: Evaluate Drift
+### Step 3: Evaluate Each Dimension
 
-Compare the current PR body to what the diff actually contains. The body has **significant drift** if:
+Assess the PR body across each configured dimension. Use the level to determine how much action is warranted.
 
-1. **Missing major features or changes** — a new public API, endpoint, configuration option, or workflow was added/removed/renamed that the body doesn't mention
-2. **Incorrect description** — the body describes behavior that the code no longer implements, or describes files/functions that were subsequently renamed or removed
-3. **Empty or placeholder body** — the PR body is blank, a template stub, or says something like "TODO" or "add description"
-4. **Scope mismatch** — the body describes a narrow fix but the diff shows broad refactoring (or vice versa), leaving reviewers without an accurate picture
+#### Accuracy (`${{ inputs.edit-accuracy }}`)
 
-Do **not** update when:
+- **`high`**: Fix anything that could mislead a reviewer — incorrect behavior descriptions, wrong file/function names, outdated scope, or wrong details about what the change does.
+- **`low`**: Fix only clear-cut inaccuracies — statements that are plainly wrong and would directly confuse a reviewer. Leave ambiguous or incomplete-but-not-wrong content alone.
+- **`none`**: Do not change accuracy-related content. Skip this dimension entirely.
+
+#### Completeness (`${{ inputs.edit-completeness }}`)
+
+- **`high`**: Proactively add any notable missing detail — new APIs, config options, renamed symbols, important side effects, or anything a reviewer would want to know.
+- **`low`**: Add content only for major omissions — a new public API, endpoint, configuration option, or workflow that was added/removed/renamed and is entirely absent from the body. Do not add minor details.
+- **`none`**: Do not add any content, even if significant changes are undocumented. Skip this dimension entirely.
+
+#### Format (`${{ inputs.edit-format }}`)
+
+- **`high`**: Apply best-practice markdown formatting throughout — consistent headers, lists, code blocks, and structure that improves readability.
+- **`low`**: Fix only broken or unreadable formatting — malformed markdown that renders incorrectly or makes the body hard to parse. Do not restructure content that is already readable.
+- **`none`**: Do not touch formatting. Leave the body structure exactly as the author wrote it. Skip this dimension entirely.
+
+#### Style (`${{ inputs.edit-style }}`)
+
+- **`high`**: Rewrite for clarity, conciseness, and professionalism — remove filler, tighten sentences, and improve tone throughout.
+- **`low`**: Fix only confusing or misleading phrasing — sentences that are so unclear a reviewer would misunderstand the intent. Do not rewrite clear prose.
+- **`none`**: Do not touch writing style or phrasing. Skip this dimension entirely.
+
+### Step 4: Identify Changes Needed
+
+Based on your analysis, compile the full list of changes warranted across all non-`none` dimensions. Group them by dimension.
+
+Do **not** propose changes when:
+- The dimension level is `none`
+- The level is `low` and the issue is minor (style preference, slight improvement, optional detail)
+- An update would erase useful context (motivation, design decisions, issue links) the author provided
 - The body is a reasonable high-level summary even if some details differ
-- Only minor wording or phrasing could be improved
-- The change is purely cosmetic or test-only and the body already captures the intent
-- An update would erase useful context (motivation, design decisions, issue links) that the author provided
-- The body could benefit from better formatting or structure but is not inaccurate
-- The body omits optional detail but nothing it says is wrong
 
-### Step 4: Update or Noop
+### Step 5: Update or Noop
 
-**If there is significant drift:**
+**If any changes are warranted:**
 
-Call `update_pull_request` with a `replace` operation to write a body that:
-- Makes the **minimal targeted edit** — change only the specific sentences or sections that are inaccurate, leaving the rest of the body untouched
-- Preserves the original structure, formatting, and wording of unchanged sections exactly as written by the author
-- Preserves the original motivation and context (including issue links like `Fixes #N`)
-- Does not improve style, add new sections, or reformat content that is not inaccurate
+Call `update_pull_request` with a `replace` operation to write a body that applies all warranted changes. The updated body must:
+- Apply only the changes identified in Step 4 — do not make unplanned edits
+- Preserve the original structure, formatting, and wording of sections untouched by warranted changes
+- Preserve the original motivation and context (including issue links like `Fixes #N`)
+- Respect the level boundaries — a `low`-level edit must not silently expand into a `high`-level rewrite
 
-**If the body is accurate enough:**
+**If no changes are warranted:**
 
-Call `noop` with a brief message like "PR body accurately reflects the current diff — no update needed."
+Call `noop` with a brief message summarising why each dimension required no update.
 
 ${{ inputs.additional-instructions }}
