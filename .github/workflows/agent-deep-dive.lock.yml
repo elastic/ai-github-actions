@@ -21,14 +21,13 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Analyze agent workflow logs for inefficiencies, errors, and prompt improvement opportunities
+# Deep dive a specific agent workflow's recent runs to understand behavior and surface detailed recommendations
 #
 # Resolved workflow manifest:
 #   Imports:
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
-#     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-issue.md
@@ -36,59 +35,40 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"98bd99c723dfc9296e6756c3d30a0dc5e0ac3b4cf2c71f79281d8e011c201cc8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"486d2646969e238e840acbca0d3d95fd24b523eff497c32236edb0db10b24393"}
 
-name: "Agent Efficiency"
+name: "Agent Deep Dive"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
-  # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
+  # - github-actions[bot] # Bots processed as bot check in pre-activation job
   # roles: # Roles processed as role check in pre-activation job
   # - admin # Roles processed as role check in pre-activation job
   # - maintainer # Roles processed as role check in pre-activation job
   # - write # Roles processed as role check in pre-activation job
-  workflow_call:
+  schedule:
+  - cron: "58 13 * * 1-5"
+    # Friendly format: daily around 14:00 on weekdays (scattered)
+  workflow_dispatch:
     inputs:
-      additional-instructions:
+      run-count:
+        default: "20"
+        description: "Number of recent runs to analyze (default: 20)"
+        required: false
+      target-workflow:
         default: ""
-        description: Repo-specific instructions appended to the agent prompt
+        description: Workflow file name to deep dive (e.g. trigger-pr-review.yml). If empty, one is chosen automatically.
         required: false
-        type: string
-      allowed-bot-users:
-        default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
-        required: false
-        type: string
-      messages-footer:
-        default: ""
-        description: Footer appended to all agent comments and reviews
-        required: false
-        type: string
-      model:
-        default: gpt-5.3-codex
-        description: AI model to use
-        required: false
-        type: string
-      setup-commands:
-        default: ""
-        description: Shell commands to run before the agent starts (dependency install, build, etc.)
-        required: false
-        type: string
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
 
 permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: agent-efficiency
+  group: agent-deep-dive
 
-run-name: "Agent Efficiency"
+run-name: "Agent Deep Dive"
 
 jobs:
   activation:
-    needs: pre_activation
-    if: needs.pre_activation.outputs.activated == 'true'
     runs-on: ubuntu-slim
     permissions:
       contents: read
@@ -119,7 +99,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-agent-efficiency.lock.yml"
+          GH_AW_WORKFLOW_FILE: "agent-deep-dive.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -130,7 +110,9 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_ENV_NO_WORKFLOWS: ${{ env.NO_WORKFLOWS }}
+          GH_AW_ENV_TARGET_WORKFLOW: ${{ env.TARGET_WORKFLOW }}
+          GH_AW_EXPR_F453B69E: ${{ inputs.run-count }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -295,11 +277,6 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          ## Message Footer
-          
-          A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           ## create-issue Limitations
           
           - **Title**: Max 128 characters. Sanitized (special characters escaped).
@@ -378,88 +355,94 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          Analyze recent agent workflow run logs for inefficiencies, recurring errors, and patterns that indicate prompt improvements are needed.
+          Perform a deep dive on a single agent workflow to understand how it is behaving across recent runs and surface specific, actionable recommendations.
+          
+          ### Pre-flight check
+          
+          If `__GH_AW_ENV_NO_WORKFLOWS__` is `true`, call `noop` with reason "No agentic workflows found in this repository" and stop.
+          
+          ### Context
+          
+          - **Target workflow:** `__GH_AW_ENV_TARGET_WORKFLOW__`
+          - **Runs analyzed:** up to `__GH_AW_EXPR_F453B69E__` most recent runs
+          - **Pre-downloaded data:**
+            - `/tmp/gh-aw/deep-dive/runs.json` — run list with conclusions and links
+            - `/tmp/gh-aw/deep-dive/errors.json` — error snippets from failed runs with surrounding context
+            - `/tmp/gh-aw/deep-dive/logs/<run_id>/` — raw log files for each failed run
           
           ### Data Gathering
           
-          Lookback 3 days.
+          1. **Read the pre-loaded data**
           
-          1. **List recent agentic workflow runs**
+             Start with:
+             - `/tmp/gh-aw/deep-dive/runs.json` for the full run list and conclusions
+             - `/tmp/gh-aw/deep-dive/errors.json` for structured error snippets
+             - `/tmp/gh-aw/deep-dive/logs/<run_id>/` for raw agent step logs
           
-             Use `bash` + `gh api` with `--jq` to list runs efficiently. Filter server-side to avoid large payloads:
-             ````bash
-             gh api repos/{owner}/{repo}/actions/runs \
-               --paginate \
-               --jq '[.workflow_runs[] | select(.created_at >= "CUTOFF_DATE") | select(.path | test("trigger-|gh-aw-")) | {id: .id, name: .name, conclusion: .conclusion, created_at: .created_at, html_url: .html_url, path: .path}]'
-             ````
+          2. **Read the workflow definition**
           
-             This captures all agentic workflow runs (trigger files and internal gh-aw workflows). Exclude non-agentic workflows (ci, release, agentics-maintenance) by the path filter.
+             Read the workflow's source `.md` file from `.github/workflows/` (e.g., if target is `trigger-pr-review.yml`, read `gh-aw-pr-review.md`). This gives you the prompt text, fragments imported, safe outputs configured, and tool permissions — necessary context for understanding why the agent behaved as it did.
           
-          2. **Understand run conclusions before fetching logs**
+          3. **Trace agent tool calls in successful runs**
           
-             Not all non-success conclusions indicate agent problems:
-             - `success` — no issues, skip unless you want a sample
-             - `failure` — fetch logs and analyze
-             - `cancelled` — usually user-initiated, skip
-             - `action_required` — the run was blocked by an approval gate (e.g., first-time contributor). This is NOT an agent failure; skip it
-             - `skipped` — pre-conditions not met (e.g., no PR associated). Skip
+             For a sample of successful runs (up to 3), read the agent step logs to understand the normal tool call sequence: how many turns, which tools are used, how the agent reaches its output. This establishes a baseline.
           
-             Only fetch logs for runs with `failure` conclusion.
+          4. **Trace tool calls in failed runs**
           
-          3. **Download and analyze job logs**
+             For each failed run, trace the sequence of tool calls and agent responses from the agent step logs. Note:
+             - Total number of tool calls
+             - Repeated/redundant calls (same tool, same arguments)
+             - Calls that produced errors or empty results
+             - Where in the sequence the failure occurred
           
-             Use `gh api` to download logs efficiently:
-             ````bash
-             gh api repos/{owner}/{repo}/actions/runs/{run_id}/logs \
-               -H "Accept: application/vnd.github+json" \
-               > /tmp/gh-aw/agent/logs-{run_id}.zip
-             unzip -o /tmp/gh-aw/agent/logs-{run_id}.zip -d /tmp/gh-aw/agent/logs-{run_id}/
-             ````
+          5. **Read the workflow's README for stated purpose and trigger**
           
-             Read the log files to find the agent job's output. Look for the copilot/agent step logs specifically — these contain the tool calls, responses, and agent reasoning.
-          
-          4. **Check downstream repositories (metadata only)**
-          
-             Search for elastic-owned repositories using these workflows:
-             ````bash
-             gh api search/code -X GET -f q="org:elastic elastic/ai-github-actions language:yaml" --jq '.items[].repository.full_name' | sort -u
-             ````
-          
-             For each discovered downstream repository, list their agentic workflow runs using the same `gh api` approach from step 1. Collect run metadata (counts, conclusions, pass/fail rates) to include in the report. **Do NOT download or analyze logs from downstream repositories** — your token may not have access, and the logs are too large to process cross-repo. Only fetch and analyze logs for THIS repository.
-          
-          5. **Use `gh api` with `--jq`, not MCP `actions_list`, for bulk queries**
-          
-             The MCP `actions_list` and `actions_get` tools return full JSON objects that frequently exceed the 25,000 token MCP response limit, causing payloads to be dumped to disk. For listing and filtering runs, always prefer `gh api` with `--jq` to extract only the fields you need. Reserve MCP tools for targeted single-item lookups where the response will be small.
+             Find the workflow's directory under `gh-agent-workflows/` and read `README.md` to understand the intended scope and outputs. Compare against what you see in the logs.
           
           ### Analysis
           
-          Your goal is to find things we can improve — prompt wording, fragment content, tool usage guidance, missing instructions, or confusing constraints — that would make agents perform better on the next run.
+          Produce a thorough behavioral analysis of the target workflow. For each dimension below, describe what you actually observed in the logs:
           
-          For each failed run's logs, read the agent's tool calls, responses, errors, and reasoning. Ask yourself:
-          - **What went wrong?** — Did the agent fail, waste turns, produce low-quality output, or get confused?
-          - **Why?** — Trace back to the root cause. Is it a prompt gap, a misleading instruction, a missing example, a tooling limitation?
-          - **What would fix it?** — Identify the specific file and change that would prevent this from happening again.
-          
-          Look across runs for **recurring patterns**. A single odd failure is noise. The same mistake in 3+ runs across different triggers is a signal.
-          
-          Skip successful runs, cancelled runs, infrastructure failures (runner issues, network outages), and `action_required` runs (approval gates, not agent problems).
+          - **Run outcomes** — summary table of recent runs (date, conclusion, run link)
+          - **Failure modes** — for each failed run: what step failed, exact error message, log excerpt
+          - **Tool call patterns** — average and outlier turn counts; which tools are called most; any tools called redundantly
+          - **Prompt adherence** — does the agent follow the workflow's instructions? Where does it deviate?
+          - **Output quality** — for successful runs: does the output match the expected safe-output format? Are issues/comments/PRs well-formed?
+          - **Recurring patterns** — note any pattern appearing in 2+ runs
           
           ### Reporting
           
-          File an issue with `create_issue`. Structure your findings however makes sense for what you discovered — there's no rigid template.
+          File an issue with `create_issue`. The issue title must follow the format:
+          `Agent deep dive: <workflow-name> - YYYY-MM-DD`
           
-          Include a **per-repository summary** of the metadata you collected — run counts, conclusions, pass/fail rates — for both this repository and any downstream repositories discovered in step 4. This gives visibility into how the workflows are performing across the org.
+          **Issue body format:**
           
-          Each finding should include:
-          - What happened (with a log excerpt or run link)
-          - Why it happened (root cause in the prompt, fragment, or tooling)
-          - How to fix it (specific file and change)
+          > ## Agent Deep Dive: `<workflow-name>`
+          > **Date:** YYYY-MM-DD
+          > **Runs analyzed:** N total (X success, Y failure, Z other)
+          >
+          > ## Run Outcomes
+          > | Run | Date | Conclusion |
+          > |-----|------|------------|
+          > | [link](url) | date | conclusion |
+          >
+          > ## Failure Analysis
+          > For each failed run: step name, error excerpt, likely cause.
+          >
+          > ## Tool Call Patterns
+          > - Average turns per run: N
+          > - Most-called tools: tool1 (N times), tool2 (N times)
+          > - Anomalies: [any outliers or redundant calls]
+          >
+          > ## Behavioral Observations
+          > What the agent does well and where it struggles, with log evidence.
+          >
+          > ## Recurring Patterns
+          > Patterns seen in 2+ runs.
           
-          Prioritize by impact: problems that affect multiple workflows or waste the most turns come first.
+          Do not include suggested fixes or action items — focus on accurate description of observed behavior.
           
-          If no significant issues are found, still file the issue with the per-repository summary so we have a record. If there are also no downstream repositories using these workflows, call `noop` instead.
-          
-          __GH_AW_EXPR_49B959F1__
+          If the workflow has no recent runs at all, call `noop` with the reason.
           
           GH_AW_PROMPT_EOF
       - name: Interpolate variables and render templates
@@ -467,7 +450,9 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
-          GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_ENV_NO_WORKFLOWS: ${{ env.NO_WORKFLOWS }}
+          GH_AW_ENV_TARGET_WORKFLOW: ${{ env.TARGET_WORKFLOW }}
+          GH_AW_EXPR_F453B69E: ${{ inputs.run-count }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -478,7 +463,9 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_ENV_NO_WORKFLOWS: ${{ env.NO_WORKFLOWS }}
+          GH_AW_ENV_TARGET_WORKFLOW: ${{ env.TARGET_WORKFLOW }}
+          GH_AW_EXPR_F453B69E: ${{ inputs.run-count }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -500,7 +487,9 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
-                GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_ENV_NO_WORKFLOWS: process.env.GH_AW_ENV_NO_WORKFLOWS,
+                GH_AW_ENV_TARGET_WORKFLOW: process.env.GH_AW_ENV_TARGET_WORKFLOW,
+                GH_AW_EXPR_F453B69E: process.env.GH_AW_EXPR_F453B69E,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -548,7 +537,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawagentefficiency
+      GH_AW_WORKFLOW_ID_SANITIZED: agentdeepdive
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
@@ -612,10 +601,11 @@ jobs:
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
       - env:
-          SETUP_COMMANDS: ${{ inputs.setup-commands }}
-        if: ${{ inputs.setup-commands != '' }}
-        name: Repo-specific setup
-        run: eval "$SETUP_COMMANDS"
+          GH_TOKEN: ${{ github.token }}
+          RUN_COUNT: ${{ inputs.run-count }}
+          TARGET_WORKFLOW: ${{ inputs.target-workflow }}
+        name: Select and download workflow logs
+        run: "set -euo pipefail\nmkdir -p /tmp/gh-aw/deep-dive\n\n# If no target workflow is specified, pick one automatically by rotating\n# through agentic workflows based on the current day-of-week\nif [ -z \"$TARGET_WORKFLOW\" ]; then\n  mapfile -t WORKFLOWS < <(\n    gh api \"repos/$GITHUB_REPOSITORY/actions/workflows\" \\\n      --jq '[.workflows[] | select(.path | test(\"trigger-|gh-aw-\")) | .path | ltrimstr(\".github/workflows/\")] | sort[]'\n  )\n  COUNT=${#WORKFLOWS[@]}\n  if [ \"$COUNT\" -eq 0 ]; then\n    echo \"NO_WORKFLOWS=true\" >> \"$GITHUB_ENV\"\n    echo \"No agentic workflows found.\" >&2\n    exit 0\n  fi\n  DAY=$(date +%u)   # 1=Mon … 7=Sun\n  IDX=$(( (DAY - 1) % COUNT ))\n  TARGET_WORKFLOW=\"${WORKFLOWS[$IDX]}\"\nfi\n\necho \"TARGET_WORKFLOW=$TARGET_WORKFLOW\" >> \"$GITHUB_ENV\"\necho \"Analyzing workflow: $TARGET_WORKFLOW\" >&2\n\n# Fetch the last N runs for this workflow (all conclusions)\ngh api \"repos/$GITHUB_REPOSITORY/actions/workflows/$TARGET_WORKFLOW/runs\" \\\n  --jq \"[.workflow_runs[:$RUN_COUNT] | .[] | {id:.id, name:.name, conclusion:.conclusion, created_at:.created_at, html_url:.html_url}]\" \\\n  > /tmp/gh-aw/deep-dive/runs.json\n\necho \"Runs fetched: $(jq length /tmp/gh-aw/deep-dive/runs.json)\" >&2\n\n# Download logs for failed runs only (up to 10)\njq -r '[.[] | select(.conclusion == \"failure\")] | .[:10] | .[].id' \\\n  /tmp/gh-aw/deep-dive/runs.json | while read -r run_id; do\n  mkdir -p \"/tmp/gh-aw/deep-dive/logs/$run_id\"\n  gh api \"repos/$GITHUB_REPOSITORY/actions/runs/$run_id/logs\" \\\n    -H \"Accept: application/vnd.github+json\" \\\n    > \"/tmp/gh-aw/deep-dive/logs/$run_id/logs.zip\" 2>/dev/null || continue\n  unzip -q -o \"/tmp/gh-aw/deep-dive/logs/$run_id/logs.zip\" \\\n    -d \"/tmp/gh-aw/deep-dive/logs/$run_id/\" 2>/dev/null || true\n  rm -f \"/tmp/gh-aw/deep-dive/logs/$run_id/logs.zip\"\ndone\n\n# Build manifest for error extractor\njq '[.[] | select(.conclusion == \"failure\")] | .[:10] | map({run_id:.id, conclusion:.conclusion, created_at:.created_at, html_url:.html_url, log_files:[]})' \\\n  /tmp/gh-aw/deep-dive/runs.json > /tmp/gh-aw/deep-dive/manifest.json\n\n# Populate log_files paths\npython3 - <<'EOF'\nimport json, pathlib\nwith open(\"/tmp/gh-aw/deep-dive/manifest.json\") as f:\n    manifest = json.load(f)\nfor entry in manifest:\n    run_dir = pathlib.Path(f\"/tmp/gh-aw/deep-dive/logs/{entry['run_id']}\")\n    entry[\"log_files\"] = [str(p) for p in sorted(run_dir.rglob(\"*.txt\"))]\nwith open(\"/tmp/gh-aw/deep-dive/manifest.json\", \"w\") as f:\n    json.dump(manifest, f, indent=2)\nEOF\n\n# Extract errors with context\npython3 scripts/extract-log-errors.py \\\n  --manifest /tmp/gh-aw/deep-dive/manifest.json \\\n  --context 10 \\\n  --output /tmp/gh-aw/deep-dive/errors.json \\\n  || true\n\necho \"Errors extracted: $(jq '.total_matches // 0' /tmp/gh-aw/deep-dive/errors.json 2>/dev/null || echo 0)\" >&2"
 
       - name: Configure Git credentials
         env:
@@ -652,10 +642,10 @@ jobs:
             const awInfo = {
               engine_id: "copilot",
               engine_name: "GitHub Copilot CLI",
-              model: "${{ inputs.model }}",
+              model: "gpt-5.3-codex",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Agent Efficiency",
+              workflow_name: "Agent Deep Dive",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -712,12 +702,12 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"create_issue":{"expires":168,"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
+          {"create_issue":{"expires":336,"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[agent-efficiency] \".",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[agent-deep-dive] \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -1053,7 +1043,7 @@ jobs:
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          COPILOT_MODEL: ${{ inputs.model }}
+          COPILOT_MODEL: gpt-5.3-codex
           GH_AW_MCP_CONFIG: /home/runner/.copilot/mcp-config.json
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
@@ -1239,7 +1229,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Agent Efficiency"
+          GH_AW_WORKFLOW_NAME: "Agent Deep Dive"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1252,7 +1242,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Agent Efficiency"
+          GH_AW_WORKFLOW_NAME: "Agent Deep Dive"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1265,13 +1255,12 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Agent Efficiency"
+          GH_AW_WORKFLOW_NAME: "Agent Deep Dive"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-agent-efficiency"
+          GH_AW_WORKFLOW_ID: "agent-deep-dive"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
-          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
           GH_AW_GROUP_REPORTS: "false"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1285,7 +1274,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Agent Efficiency"
+          GH_AW_WORKFLOW_NAME: "Agent Deep Dive"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1333,8 +1322,8 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Agent Efficiency"
-          WORKFLOW_DESCRIPTION: "Analyze agent workflow logs for inefficiencies, errors, and prompt improvement opportunities"
+          WORKFLOW_NAME: "Agent Deep Dive"
+          WORKFLOW_DESCRIPTION: "Deep dive a specific agent workflow's recent runs to understand behavior and surface detailed recommendations"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1375,7 +1364,7 @@ jobs:
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-          COPILOT_MODEL: ${{ inputs.model }}
+          COPILOT_MODEL: gpt-5.3-codex
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
@@ -1399,29 +1388,6 @@ jobs:
           path: /tmp/gh-aw/threat-detection/detection.log
           if-no-files-found: ignore
 
-  pre_activation:
-    runs-on: ubuntu-slim
-    outputs:
-      activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
-    steps:
-      - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
-        with:
-          destination: /opt/gh-aw/actions
-      - name: Check team membership for workflow
-        id: check_membership
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_REQUIRED_ROLES: admin,maintainer,write
-          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/check_membership.cjs');
-            await main();
-
   safe_outputs:
     needs:
       - agent
@@ -1434,10 +1400,9 @@ jobs:
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
-      GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
-      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-agent-efficiency"
-      GH_AW_WORKFLOW_NAME: "Agent Efficiency"
+      GH_AW_ENGINE_MODEL: "gpt-5.3-codex"
+      GH_AW_WORKFLOW_ID: "agent-deep-dive"
+      GH_AW_WORKFLOW_NAME: "Agent Deep Dive"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
@@ -1464,7 +1429,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"[agent-efficiency] \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"expires\":336,\"max\":1,\"title_prefix\":\"[agent-deep-dive] \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

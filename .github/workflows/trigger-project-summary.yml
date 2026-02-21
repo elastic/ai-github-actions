@@ -12,5 +12,10 @@ permissions:
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-project-summary.lock.yml
+    with:
+      additional-instructions: |
+        Write the summary as a project chronicler telling the story of recent project progress.
+        Keep every claim factual and grounded in repository evidence (issues, PRs, commits).
+        Preserve the normal sections, but use a narrative tone and rename "Next Steps" to "Chronicle Next Steps".
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
