@@ -209,7 +209,7 @@ if [ "$skip_secret" = false ]; then
     if [ "$dry_run" = true ]; then
       echo "dry-run: open $token_url"
       echo "dry-run: prompt for token"
-      echo "dry-run: gh secret set COPILOT_GITHUB_TOKEN --repo $repo --body (token)"
+      echo "dry-run: printf '%s' \"(token)\" | gh secret set COPILOT_GITHUB_TOKEN --repo $repo"
     elif [ -t 0 ]; then
       echo "A fine-grained PAT with the 'Copilot requests' permission is needed."
       echo "Opening browser to create one..."
@@ -234,7 +234,7 @@ if [ "$skip_secret" = false ]; then
   fi
 
   if [ "$dry_run" != true ]; then
-    gh secret set COPILOT_GITHUB_TOKEN --repo "$repo" --body "$token"
+    printf '%s' "$token" | gh secret set COPILOT_GITHUB_TOKEN --repo "$repo"
   fi
   unset token
 fi
