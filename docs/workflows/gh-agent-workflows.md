@@ -39,20 +39,27 @@ These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
 | [Docs PR Review](gh-agent-workflows/docs-pr-review.md) | `/docs-review` on PRs | Review docs for style guide, `applies_to`, and consistency |
-| [Duplicate Issue Detector](gh-agent-workflows/duplicate-issue-detector.md) | New issues | Detect duplicate issues and comment with links |
-| [Issue Triage](gh-agent-workflows/issue-triage.md) | New issues | Investigate and provide implementation plans |
-| [Issue Fixer](gh-agent-workflows/issue-fixer.md) | New issues | Triage plus automatic draft PR for straightforward fixes |
 | [Plan](gh-agent-workflows/plan.md) | `/plan` in issues | Triage-style planning from comments with optional issue/sub-issue creation |
 | [Mention in Issue](gh-agent-workflows/mention-in-issue.md) | `/ai` in issues | Answer questions, debug, create PRs |
 | [Mention in PR](gh-agent-workflows/mention-in-pr.md) | `/ai` in PRs | Review, fix code, push changes |
-| [PR Actions Detective](gh-agent-workflows/pr-actions-detective.md) | Failed PR checks | Diagnose failures and recommend fixes |
 | [PR Actions Fixer](gh-agent-workflows/pr-actions-fixer.md) | Manual (workflow_dispatch) | Opt-in fixes for failed PR checks |
+
+### Event-driven workflows
+
+| Workflow | Trigger | Description |
+| --- | --- | --- |
+| [Duplicate Issue Detector](gh-agent-workflows/duplicate-issue-detector.md) | New issues | Detect duplicate issues and comment with links |
+| [Issue Triage](gh-agent-workflows/issue-triage.md) | New issues | Investigate and provide implementation plans |
+| [Issue Fixer](gh-agent-workflows/issue-fixer.md) | New issues | Triage plus automatic draft PR for straightforward fixes |
+| [PR Actions Detective](gh-agent-workflows/pr-actions-detective.md) | Failed PR checks | Diagnose failures and recommend fixes |
 | [PR Buildkite Detective](gh-agent-workflows/pr-buildkite-detective.md) | Failed PR checks | Diagnose Buildkite failures and recommend fixes |
 | [PR Review](gh-agent-workflows/pr-review.md) | PR opened/updated | AI code review with inline comments |
 | [PR Review (Fork)](gh-agent-workflows/pr-review-fork.md) | PR opened/updated (`pull_request_target`) | AI code review for fork PRs — **private repos or trusted contributors only** |
 | [Update PR Body](gh-agent-workflows/update-pr-body.md) | PR opened / updated / ready for review | Auto-populate PR description from diff and linked issues |
 
-### Detector / fixer pairs
+### Scheduled workflows
+
+#### Detector / fixer pairs
 
 Many scheduled workflows follow a **detector / fixer** pattern: the detector finds issues and files reports, then the fixer picks up those reports and creates PRs to resolve them. Install both for a fully autonomous loop, or use the detector alone for human-in-the-loop review.
 
@@ -66,7 +73,7 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Newbie Contributor Patrol External](gh-agent-workflows/newbie-contributor-patrol-external.md) | — | Cross-referencing published docs |
 | [Text Auditor](gh-agent-workflows/text-auditor.md) | [Text Beautifier](gh-agent-workflows/text-beautifier.md) | User-facing text quality |
 
-### Standalone scheduled workflows
+#### Standalone scheduled workflows
 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
