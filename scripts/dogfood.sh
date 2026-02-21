@@ -24,6 +24,7 @@ EXCLUDED_WORKFLOWS=(
   "issue-fixer"
   "performance-profiler"
   "pr-review-fork"
+  "release-update"
   "scheduled-audit"
   "scheduled-fix"
 )
