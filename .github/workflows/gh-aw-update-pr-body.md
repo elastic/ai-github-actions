@@ -63,7 +63,7 @@ network:
     - python
     - ruby
 strict: false
-timeout-minutes: 15
+timeout-minutes: 30
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
@@ -83,7 +83,7 @@ Keep the pull request body in sync with the actual state of the code changes in 
 
 ## Objective
 
-Determine whether the current PR body accurately reflects the code changes in this PR. If the body is significantly out of date or missing key information about the current diff, update it. Minor wording differences are not significant — only update when the body would meaningfully mislead a reviewer.
+Determine whether the current PR body accurately reflects the code changes in this PR. If the body contains inaccuracies — information that would actively mislead a reviewer — fix only those inaccuracies with the **minimal edit** needed. Do not rewrite, reformat, or improve the body beyond what is required to correct the specific inaccuracy.
 
 ## Instructions
 
@@ -115,19 +115,21 @@ Compare the current PR body to what the diff actually contains. The body has **s
 
 Do **not** update when:
 - The body is a reasonable high-level summary even if some details differ
-- Only minor wording could be improved
+- Only minor wording or phrasing could be improved
 - The change is purely cosmetic or test-only and the body already captures the intent
 - An update would erase useful context (motivation, design decisions, issue links) that the author provided
+- The body could benefit from better formatting or structure but is not inaccurate
+- The body omits optional detail but nothing it says is wrong
 
 ### Step 4: Update or Noop
 
 **If there is significant drift:**
 
 Call `update_pull_request` with a `replace` operation to write a body that:
+- Makes the **minimal targeted edit** — change only the specific sentences or sections that are inaccurate, leaving the rest of the body untouched
+- Preserves the original structure, formatting, and wording of unchanged sections exactly as written by the author
 - Preserves the original motivation and context (including issue links like `Fixes #N`)
-- Accurately describes what was actually changed in the diff
-- Follows the style and format conventions of the original body (if any)
-- Is concise — one clear paragraph per major concern, no padding
+- Does not improve style, add new sections, or reformat content that is not inaccurate
 
 **If the body is accurate enough:**
 

@@ -4,6 +4,7 @@ on:
     types: [opened]
 
 permissions:
+  actions: read
   contents: read
   discussions: write
   issues: write
@@ -11,6 +12,7 @@ permissions:
 
 jobs:
   run:
+    timeout-minutes: 60
     uses: ./.github/workflows/gh-aw-issue-triage.lock.yml
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

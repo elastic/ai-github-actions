@@ -33,7 +33,7 @@
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-update-pr.md
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"56b8bdada8c5aed1fcef5c14243ea6dbc76733f3b2ea6b97332dfa5e8ccb0140"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8832e5e3d7cfc7d875f5b7ef41bf62f1e12f36bdd0c55e1788086b6140e0faf0"}
 
 name: "PR Body Update Agent"
 "on":
@@ -297,7 +297,7 @@ jobs:
           
           ## Objective
           
-          Determine whether the current PR body accurately reflects the code changes in this PR. If the body is significantly out of date or missing key information about the current diff, update it. Minor wording differences are not significant — only update when the body would meaningfully mislead a reviewer.
+          Determine whether the current PR body accurately reflects the code changes in this PR. If the body contains inaccuracies — information that would actively mislead a reviewer — fix only those inaccuracies with the **minimal edit** needed. Do not rewrite, reformat, or improve the body beyond what is required to correct the specific inaccuracy.
           
           ## Instructions
           
@@ -329,19 +329,21 @@ jobs:
           
           Do **not** update when:
           - The body is a reasonable high-level summary even if some details differ
-          - Only minor wording could be improved
+          - Only minor wording or phrasing could be improved
           - The change is purely cosmetic or test-only and the body already captures the intent
           - An update would erase useful context (motivation, design decisions, issue links) that the author provided
+          - The body could benefit from better formatting or structure but is not inaccurate
+          - The body omits optional detail but nothing it says is wrong
           
           ### Step 4: Update or Noop
           
           **If there is significant drift:**
           
           Call `update_pull_request` with a `replace` operation to write a body that:
+          - Makes the **minimal targeted edit** — change only the specific sentences or sections that are inaccurate, leaving the rest of the body untouched
+          - Preserves the original structure, formatting, and wording of unchanged sections exactly as written by the author
           - Preserves the original motivation and context (including issue links like `Fixes #N`)
-          - Accurately describes what was actually changed in the diff
-          - Follows the style and format conventions of the original body (if any)
-          - Is concise — one clear paragraph per major concern, no padding
+          - Does not improve style, add new sections, or reformat content that is not inaccurate
           
           **If the body is accurate enough:**
           
@@ -904,7 +906,7 @@ jobs:
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
-        timeout-minutes: 15
+        timeout-minutes: 30
         run: |
           set -o pipefail
           sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.githubusercontent.com,*.jsr.io,*.pythonhosted.org,*.rvm.io,agents-md-generator.fastmcp.app,anaconda.org,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.rubygems.org,api.snapcraft.io,archive.ubuntu.com,artifacts.elastic.co,azure.archive.ubuntu.com,binstar.org,bootstrap.pypa.io,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.jsdelivr.net,cloud.elastic.co,codeload.github.com,conda.anaconda.org,conda.binstar.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,deb.nodesource.com,deno.land,ela.st,elastic.co,esm.sh,files.pythonhosted.org,gems.rubyforge.org,gems.rubyonrails.org,get.pnpm.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,host.docker.internal,index.crates.io,index.rubygems.org,json-schema.org,json.schemastore.org,jsr.io,keyserver.ubuntu.com,lfs.github.com,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pip.pypa.io,pkg.go.dev,ppa.launchpad.net,proxy.golang.org,public-code-search.fastmcp.app,pypi.org,pypi.python.org,raw.githubusercontent.com,registry.bower.io,registry.npmjs.com,registry.npmjs.org,registry.yarnpkg.com,repo.anaconda.com,repo.continuum.io,repo.yarnpkg.com,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,security.ubuntu.com,skimdb.npmjs.com,static.crates.io,storage.googleapis.com,sum.golang.org,telemetry.enterprise.githubcopilot.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.elastic.co,www.npmjs.com,www.npmjs.org,yarnpkg.com' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.2 --skip-pull --enable-api-proxy \
