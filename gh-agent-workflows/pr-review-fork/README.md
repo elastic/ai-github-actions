@@ -45,10 +45,6 @@ See [example.yml](example.yml) for the full workflow file.
 | `intensity` | Review intensity (`conservative`, `balanced`, `aggressive`) | No | `balanced` |
 | `minimum-severity` | Minimum severity for inline comments (`critical`, `high`, `medium`, `low`, `nitpick`) | No | `low` |
 
-## Minimize resolved review threads
-
-The example workflow includes [minimize-resolved-pr-reviews](https://github.com/strawgate/minimize-resolved-pr-reviews) as a second job that runs after every review. It collapses resolved threads, keeping PR conversations focused. This requires `pull-requests: write` permissions (already included in the example).
-
 ## Safe Outputs
 
 - `create-pull-request-review-comment` — inline review comments with code suggestions

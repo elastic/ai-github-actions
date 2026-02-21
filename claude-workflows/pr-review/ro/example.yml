@@ -37,9 +37,3 @@ jobs:
           github-token: ${{ github.token }}
           # Optional: add custom instructions
           # additional-instructions: "Pay special attention to security patterns"
-
-      - name: Minimize resolved review threads
-        if: always()
-        uses: strawgate/minimize-resolved-pr-reviews@v0
-        with:
-          github-token: ${{ github.token }}
