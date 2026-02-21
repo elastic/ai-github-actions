@@ -12,5 +12,7 @@ permissions:
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-release-update.lock.yml
+    with:
+      draft-prs: false
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

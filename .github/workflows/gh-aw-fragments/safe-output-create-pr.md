@@ -14,7 +14,7 @@ safe-inputs:
       return { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
 safe-outputs:
   create-pull-request:
-    draft: ${{ inputs.draft-prs != 'false' }}
+    draft: ${{ inputs.draft-prs }}
 ---
 
 Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist.

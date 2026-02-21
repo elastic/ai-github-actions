@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"997287a3ecffdf06b7320ba081d4a5d6eca7a2490106dd11cee7284b2960ff5b"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"09dd7f5376d2d92010ac319054bdc24ab959a5b84dd79c45f62d06be92f257e6"}
 
 name: "Release Update Check"
 "on":
@@ -57,6 +57,11 @@ name: "Release Update Check"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
+      draft-prs:
+        default: false
+        description: Whether to create pull requests as drafts
+        required: false
+        type: boolean
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -1521,7 +1526,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":false,\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

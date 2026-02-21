@@ -40,6 +40,11 @@ on:
         type: string
         required: false
         default: ""
+      draft-prs:
+        description: "Whether to create pull requests as drafts"
+        type: boolean
+        required: false
+        default: false
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -64,6 +69,8 @@ network:
     - github
 strict: false
 safe-outputs:
+  create-pull-request:
+    draft: false
   noop:
 timeout-minutes: 30
 steps:

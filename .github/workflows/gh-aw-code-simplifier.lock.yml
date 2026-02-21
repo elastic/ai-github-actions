@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b356afe8c7cfbac9e0142d64737f066f1e5d30554a3a17d37bb2fac72797cbb1"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cc7b669c6b1a46f5905a07ff0f310ec6d037a5d4a9e1f5ac03ed98275af779bc"}
 
 name: "Code Simplifier"
 "on":
@@ -58,6 +58,11 @@ name: "Code Simplifier"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
+      draft-prs:
+        default: false
+        description: Whether to create pull requests as drafts
+        required: false
+        type: boolean
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -1547,7 +1552,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":false,\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

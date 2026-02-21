@@ -43,6 +43,8 @@ network:
     - ruby
 strict: false
 safe-outputs:
+  create-pull-request:
+    draft: false
   noop:
 timeout-minutes: 90
 ---
