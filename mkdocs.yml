@@ -29,17 +29,11 @@ nav:
               - PR Review: workflows/gh-agent-workflows/pr-review.md
               - Update PR Body: workflows/gh-agent-workflows/update-pr-body.md
           - Detector / Fixer Pairs:
-              - Bug Hunter: workflows/gh-agent-workflows/bug-hunter.md
-              - Bug Exterminator: workflows/gh-agent-workflows/bug-exterminator.md
-              - Code Duplication Detector: workflows/gh-agent-workflows/code-duplication-detector.md
-              - Code Duplication Fixer: workflows/gh-agent-workflows/code-duplication-fixer.md
-              - Docs Patrol: workflows/gh-agent-workflows/docs-patrol.md
-              - Docs Patrol External: workflows/gh-agent-workflows/docs-patrol-external.md
-              - Newbie Contributor Patrol: workflows/gh-agent-workflows/newbie-contributor-patrol.md
-              - Newbie Contributor Patrol External: workflows/gh-agent-workflows/newbie-contributor-patrol-external.md
-              - Newbie Contributor Fixer: workflows/gh-agent-workflows/newbie-contributor-fixer.md
-              - Text Auditor: workflows/gh-agent-workflows/text-auditor.md
-              - Text Beautifier: workflows/gh-agent-workflows/text-beautifier.md
+              - Bug Hunting: workflows/gh-agent-workflows/bugs.md
+              - Code Duplication: workflows/gh-agent-workflows/code-duplication.md
+              - Docs Patrol: workflows/gh-agent-workflows/docs-patrol-overview.md
+              - Newbie Contributor: workflows/gh-agent-workflows/newbie-contributor.md
+              - Text Quality: workflows/gh-agent-workflows/text-quality.md
           - Standalone Scheduled:
               - Agent Efficiency: workflows/gh-agent-workflows/agent-efficiency.md
               - Agent Suggestions: workflows/gh-agent-workflows/agent-suggestions.md
