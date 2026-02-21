@@ -45,6 +45,7 @@ nav:
               - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
               - Test Improvement: workflows/gh-agent-workflows/test-improvement.md
       - Claude Composite Actions: workflows/claude-workflows.md
+  - Agent Context: agent-context.md
   - Developing: developing.md
   - Security: security.md
   - Release: release.md
