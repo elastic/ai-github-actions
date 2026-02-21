@@ -111,6 +111,12 @@ if [ -z "$branch" ]; then
   exit 1
 fi
 
+default_branch="$(gh repo view "$repo" --json defaultBranchRef -q .defaultBranchRef.name 2>/dev/null || true)"
+if [ -z "$default_branch" ]; then
+  echo "Unable to determine default branch for $repo." >&2
+  exit 1
+fi
+
 base_url="https://raw.githubusercontent.com/elastic/ai-github-actions/v0"
 default_workflows=(
   pr-review
@@ -163,12 +169,14 @@ if [ "${#workflows[@]}" -eq 0 ]; then
 fi
 
 if [ "$dry_run" = true ]; then
-  echo "dry-run: git checkout -b $branch"
+  echo "dry-run: git fetch origin $default_branch"
+  echo "dry-run: git checkout -b $branch origin/$default_branch"
 else
+  git fetch --quiet origin "$default_branch"
   if git show-ref --verify --quiet "refs/heads/$branch"; then
     git checkout "$branch"
   else
-    git checkout -b "$branch"
+    git checkout -b "$branch" "origin/$default_branch"
   fi
 fi
 
