@@ -6,7 +6,6 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
-  - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment.md
 engine:
@@ -108,13 +107,12 @@ Assist with failed Buildkite checks for pull requests in ${{ github.repository }
 1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
 2. Identify the PRs associated with the workflow run using `github.event.workflow_run.pull_requests`. If there are none, call `noop` with message "No pull request associated with workflow run; nothing to do" and stop.
 3. For each PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status.
-4. Resolve the Buildkite pipeline:
-   - If `inputs.buildkite-pipeline` is set, use it.
-   - Otherwise call Buildkite MCP `list_pipelines` for organization `${{ inputs.buildkite-org }}` and select the pipeline matching `${{ github.event.repository.name }}` (or nearest match).
-5. Locate the failed build for this workflow run:
-   - Call Buildkite MCP `list_builds` for the resolved pipeline and match by commit SHA `${{ github.event.workflow_run.head_sha }}` first.
-   - If no SHA match is found, try branch `${{ github.event.workflow_run.head_branch }}` and select the latest failed build.
-6. Fetch failure evidence:
+
+### Step 1b: Find the Buildkite Build
+
+1. **Resolve the pipeline**: If `${{ inputs.buildkite-pipeline }}` is provided, use it. Otherwise, call Buildkite MCP `list_pipelines` for organization `${{ inputs.buildkite-org }}` and select the pipeline whose slug matches the repository name (extract from `${{ github.repository }}`).
+2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by commit SHA `${{ github.event.workflow_run.head_sha }}`. If no match, select the latest failed build for the pipeline.
+3. **Fetch failure evidence**:
    - Call `get_build` for the selected build.
    - For each failed job, call `get_job_logs`, `search_logs` (`error|Error|ERROR|failed|Failed|FAILED|panic|exception`), and `tail_logs`.
    - Call `list_annotations` to capture warnings/errors attached to the build.
