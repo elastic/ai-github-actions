@@ -84,47 +84,99 @@ steps:
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
     run: eval "$SETUP_COMMANDS"
+  - name: Download failed run logs
+    env:
+      GH_TOKEN: ${{ github.token }}
+    run: |
+      set -euo pipefail
+      SINCE=$(date -u -d '7 days ago' '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -v-7d '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || true)
+      if [ -z "$SINCE" ]; then
+        echo "Error: Failed to calculate lookback date" >&2
+        exit 1
+      fi
+      echo "SINCE=$SINCE" >> "$GITHUB_ENV"
+
+      mkdir -p /tmp/gh-aw/logs
+
+      # List all failed agentic workflow runs in the lookback window (up to 20)
+      gh api "repos/$GITHUB_REPOSITORY/actions/runs" \
+        --paginate \
+        --jq "[.workflow_runs[] | select(.created_at >= \"$SINCE\") | select(.path | test(\"trigger-|gh-aw-\")) | select(.conclusion == \"failure\") | {id:.id, name:.name, conclusion:.conclusion, created_at:.created_at, html_url:.html_url, path:.path}]" \
+        | jq -s 'add // [] | .[:20]' > /tmp/gh-aw/failed_runs.json
+
+      echo "Failed runs found: $(jq length /tmp/gh-aw/failed_runs.json)"
+
+      # Download logs for each failed run
+      jq -r '.[].id' /tmp/gh-aw/failed_runs.json | while read -r run_id; do
+        mkdir -p "/tmp/gh-aw/logs/$run_id"
+        gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/logs" \
+          -H "Accept: application/vnd.github+json" \
+          > "/tmp/gh-aw/logs/$run_id/logs.zip" 2>/dev/null || continue
+        unzip -q -o "/tmp/gh-aw/logs/$run_id/logs.zip" \
+          -d "/tmp/gh-aw/logs/$run_id/" 2>/dev/null || true
+        rm -f "/tmp/gh-aw/logs/$run_id/logs.zip"
+      done
+
+      # Build a manifest for the error extractor
+      jq '[.[] | {run_id:.id, conclusion:.conclusion, created_at:.created_at, html_url:.html_url, log_files:[]}]' \
+        /tmp/gh-aw/failed_runs.json > /tmp/gh-aw/logs/manifest.json
+
+      # Populate log_files in manifest from downloaded files
+      python3 - <<'EOF'
+      import json, os, pathlib
+      with open("/tmp/gh-aw/logs/manifest.json") as f:
+          manifest = json.load(f)
+      for entry in manifest:
+          run_dir = pathlib.Path(f"/tmp/gh-aw/logs/{entry['run_id']}")
+          entry["log_files"] = [str(p) for p in sorted(run_dir.rglob("*.txt"))]
+      with open("/tmp/gh-aw/logs/manifest.json", "w") as f:
+          json.dump(manifest, f, indent=2)
+      EOF
+
+      # Extract error lines with surrounding context
+      python3 scripts/extract-log-errors.py \
+        --manifest /tmp/gh-aw/logs/manifest.json \
+        --context 8 \
+        --output /tmp/gh-aw/errors.json \
+        || true
+
+      echo "Errors extracted: $(jq '.total_matches // 0' /tmp/gh-aw/errors.json 2>/dev/null || echo 0)"
 ---
 
-Analyze recent agent workflow run logs for inefficiencies, recurring errors, and patterns that indicate prompt improvements are needed.
+Analyze recent agent workflow run logs for bad agent behavior, excessive tool calls, recurring errors, and patterns that indicate prompt or tooling improvements are needed.
+
+### Context
+
+- **Lookback window:** runs since `${{ env.SINCE }}` (last 7 days)
+- **Pre-downloaded logs:** `/tmp/gh-aw/logs/` contains logs for up to 20 recently failed runs
+- **Pre-extracted errors:** `/tmp/gh-aw/errors.json` contains error snippets with surrounding context
+- **Run metadata:** `/tmp/gh-aw/failed_runs.json` contains all failed run metadata for the lookback window
 
 ### Data Gathering
 
-Lookback 3 days.
+1. **Read the pre-extracted error data**
 
-1. **List recent agentic workflow runs**
+   Start by reading `/tmp/gh-aw/errors.json`. This file was produced by the setup step and contains error snippets from all downloaded failed runs, each with surrounding context lines. Use this as your primary source for failure analysis.
 
-   Use `bash` + `gh api` with `--jq` to list runs efficiently. Filter server-side to avoid large payloads:
+   Also read `/tmp/gh-aw/failed_runs.json` for the list of failed runs and their metadata.
+
+2. **Read agent step logs for behavioral analysis**
+
+   For each failed run, find the agent/copilot step log files in `/tmp/gh-aw/logs/<run_id>/`. Look for files containing "copilot" or "agent" in their name. These logs contain:
+   - Tool calls made by the agent (list_issues, search_code, bash, etc.)
+   - The agent's reasoning and responses
+   - How many turns were used before the run ended
+
+3. **Collect run summary statistics**
+
+   From the metadata in `/tmp/gh-aw/failed_runs.json` and from listing runs with `gh api`:
    ````bash
-   gh api repos/{owner}/{repo}/actions/runs \
+   SINCE="${{ env.SINCE }}"
+   gh api "repos/$GITHUB_REPOSITORY/actions/runs" \
      --paginate \
-     --jq '[.workflow_runs[] | select(.created_at >= "CUTOFF_DATE") | select(.path | test("trigger-|gh-aw-")) | {id: .id, name: .name, conclusion: .conclusion, created_at: .created_at, html_url: .html_url, path: .path}]'
+     --jq "[.workflow_runs[] | select(.created_at >= \"$SINCE\") | select(.path | test(\"trigger-|gh-aw-\")) | {conclusion:.conclusion, path:.path}]" \
+     | jq -s 'add // [] | group_by(.path) | map({path: .[0].path, conclusions: (group_by(.conclusion) | map({conclusion: .[0].conclusion, count: length}))})' \
    ````
-
-   This captures all agentic workflow runs (trigger files and internal gh-aw workflows). Exclude non-agentic workflows (ci, release, agentics-maintenance) by the path filter.
-
-2. **Understand run conclusions before fetching logs**
-
-   Not all non-success conclusions indicate agent problems:
-   - `success` — no issues, skip unless you want a sample
-   - `failure` — fetch logs and analyze
-   - `cancelled` — usually user-initiated, skip
-   - `action_required` — the run was blocked by an approval gate (e.g., first-time contributor). This is NOT an agent failure; skip it
-   - `skipped` — pre-conditions not met (e.g., no PR associated). Skip
-
-   Only fetch logs for runs with `failure` conclusion.
-
-3. **Download and analyze job logs**
-
-   Use `gh api` to download logs efficiently:
-   ````bash
-   gh api repos/{owner}/{repo}/actions/runs/{run_id}/logs \
-     -H "Accept: application/vnd.github+json" \
-     > /tmp/gh-aw/agent/logs-{run_id}.zip
-   unzip -o /tmp/gh-aw/agent/logs-{run_id}.zip -d /tmp/gh-aw/agent/logs-{run_id}/
-   ````
-
-   Read the log files to find the agent job's output. Look for the copilot/agent step logs specifically — these contain the tool calls, responses, and agent reasoning.
 
 4. **Check downstream repositories (metadata only)**
 
@@ -133,38 +185,39 @@ Lookback 3 days.
    gh api search/code -X GET -f q="org:elastic elastic/ai-github-actions language:yaml" --jq '.items[].repository.full_name' | sort -u
    ````
 
-   For each discovered downstream repository, list their agentic workflow runs using the same `gh api` approach from step 1. Collect run metadata (counts, conclusions, pass/fail rates) to include in the report. **Do NOT download or analyze logs from downstream repositories** — your token may not have access, and the logs are too large to process cross-repo. Only fetch and analyze logs for THIS repository.
+   For each discovered downstream repository, list their agentic workflow runs using the same `gh api` approach. Collect run metadata (counts, conclusions, pass/fail rates) only. **Do NOT download or analyze logs from downstream repositories.**
 
 5. **Use `gh api` with `--jq`, not MCP `actions_list`, for bulk queries**
 
-   The MCP `actions_list` and `actions_get` tools return full JSON objects that frequently exceed the 25,000 token MCP response limit, causing payloads to be dumped to disk. For listing and filtering runs, always prefer `gh api` with `--jq` to extract only the fields you need. Reserve MCP tools for targeted single-item lookups where the response will be small.
+   The MCP `actions_list` and `actions_get` tools return full JSON objects that frequently exceed the 25,000 token MCP response limit. For listing and filtering runs, always prefer `gh api` with `--jq`. Reserve MCP tools for targeted single-item lookups.
 
 ### Analysis
 
-Your goal is to find things we can improve — prompt wording, fragment content, tool usage guidance, missing instructions, or confusing constraints — that would make agents perform better on the next run.
+Your goal is to identify patterns of **bad agent behavior** across all failed runs. Focus on:
 
-For each failed run's logs, read the agent's tool calls, responses, errors, and reasoning. Ask yourself:
-- **What went wrong?** — Did the agent fail, waste turns, produce low-quality output, or get confused?
-- **Why?** — Trace back to the root cause. Is it a prompt gap, a misleading instruction, a missing example, a tooling limitation?
-- **What would fix it?** — Identify the specific file and change that would prevent this from happening again.
+- **Excessive tool calls** — agent spending far more turns than needed (e.g., re-reading the same file repeatedly, running the same search multiple times). Count tool calls per run and flag outliers.
+- **Wrong tool usage** — agent using MCP tools for bulk data that cause token limit dumps, instead of `gh api` + `bash`; or fetching data it doesn't use
+- **Failure to follow instructions** — agent ignoring explicit constraints in the prompt (e.g., not calling noop when it should, not including required fields)
+- **Errors and crashes** — infrastructure errors, API rate limits, checkout failures, command not found, exit code failures
+- **Bad output quality** — agent producing reports that are vague, unactionable, hallucinated, or formatted incorrectly
 
-Look across runs for **recurring patterns**. A single odd failure is noise. The same mistake in 3+ runs across different triggers is a signal.
+For each pattern, identify how many runs exhibit it, which workflows are affected, and what the root cause is (prompt gap, missing example, confusing instruction).
 
-Skip successful runs, cancelled runs, infrastructure failures (runner issues, network outages), and `action_required` runs (approval gates, not agent problems).
+**Skip:** successful runs, cancelled runs, `action_required` runs (approval gates), `skipped` runs, and one-off infrastructure failures with no pattern.
 
 ### Reporting
 
-File an issue with `create_issue`. Structure your findings however makes sense for what you discovered — there's no rigid template.
+File an issue with `create_issue`.
 
-Include a **per-repository summary** of the metadata you collected — run counts, conclusions, pass/fail rates — for both this repository and any downstream repositories discovered in step 4. This gives visibility into how the workflows are performing across the org.
+Include a **per-repository run summary** table showing counts and pass/fail rates for this repo and any discovered downstream repos, covering the lookback window `${{ env.SINCE }}` to now. Make clear these are runs from the last 7 days, not a longer historical window.
 
-Each finding should include:
-- What happened (with a log excerpt or run link)
-- Why it happened (root cause in the prompt, fragment, or tooling)
-- How to fix it (specific file and change)
+For each behavioral pattern found, include:
+- What happened (with exact log excerpt and run link)
+- How many runs/workflows are affected
+- Root cause (specific file/fragment/instruction that caused it)
 
-Prioritize by impact: problems that affect multiple workflows or waste the most turns come first.
+Do not include suggested fixes or impact assessments — focus on accurate description of observed behavior.
 
-If no significant issues are found, still file the issue with the per-repository summary so we have a record. If there are also no downstream repositories using these workflows, call `noop` instead.
+If no significant patterns are found, still file the issue with the run summary table. If there are also no downstream repositories, call `noop` instead.
 
 ${{ inputs.additional-instructions }}

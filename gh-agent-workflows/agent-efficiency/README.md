@@ -4,7 +4,7 @@ Analyze agent workflow logs for inefficiencies, errors, and prompt improvement o
 
 ## How it works
 
-Reviews the last 3 days of agent workflow run logs, looking for recurring errors, tool call failures, and prompt patterns that lead to poor outcomes. Files an issue only when there is actionable evidence of systemic inefficiency.
+Downloads logs from the last 7 days of failed agent workflow runs, extracts error snippets, and analyzes agent behavior patterns — excessive tool calls, wrong tool usage, instruction violations, and recurring errors. Files an issue with a per-repo run summary and observations about observed behavior. Does not include suggested fixes or impact assessments.
 
 ## Quick Install
 
