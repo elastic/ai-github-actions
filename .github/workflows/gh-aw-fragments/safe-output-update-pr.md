@@ -2,6 +2,7 @@
 safe-outputs:
   update-pull-request:
     max: 1
+    footer: false
 ---
 
 ## update-pull-request Limitations

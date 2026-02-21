@@ -84,9 +84,6 @@ network:
     - python
     - ruby
 strict: false
-safe-outputs:
-  messages:
-    footer: ""
 timeout-minutes: 30
 steps:
   - name: Repo-specific setup
