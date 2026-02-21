@@ -47,7 +47,7 @@ tools:
   github:
     toolsets: [repos, issues, pull_requests, search]
 strict: false
-timeout-minutes: 15
+timeout-minutes: 30
 safe-outputs:
   noop:
   add-comment:
