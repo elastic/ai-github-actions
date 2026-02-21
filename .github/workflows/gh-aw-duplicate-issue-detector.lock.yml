@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a5f28ae255b2c7702b8099f8dc095c9ab9bac2cc978631393985417a7fb9ec25"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ce53175ccbf032dd221bb0c3e10ef7eb83e46eaca241e4a0eadd84c74af86e9f"}
 
 name: "Duplicate Issue Detector"
 "on":
@@ -378,35 +378,45 @@ jobs:
           
           **If any duplicates (or highly related issues, when detection is enabled) were found:**
           
-          Call `add_comment` with a single comment combining all findings. Include up to **3 duplicate issues** and, when related issues detection is enabled, up to **3 highly related issues**, each ranked from most to least relevant to the current issue. Use this format:
+          Call `add_comment` with a single comment combining all findings. Include up to **3 duplicate issues** and, when related issues detection is enabled, up to **3 highly related issues**, each ranked from most to least relevant to the current issue.
+          
+          If both duplicates and highly related issues were found, use this format:
           
           ```
           **Possible duplicates** (issues that appear to describe the same problem):
-          - #{number} — {one concise sentence explaining why this issue overlaps with the candidate issue}
-            <details><summary>More detail</summary>
-            {optional extra context about shared symptoms, component, or scope}
-            </details>
-          - #{number} — {one concise sentence explaining why this issue overlaps with the candidate issue}
-            <details><summary>More detail</summary>
-            {optional extra context about shared symptoms, component, or scope}
-            </details>
+          - #{number} — {one concise sentence explaining why this issue overlaps with the candidate}
+          - #{number} — {one concise sentence explaining why this issue overlaps with the candidate}
           
           <details><summary>{N} related issues found</summary>
           
           **Highly related** (separate issues that significantly overlap or share scope):
-          - #{number} — {one concise sentence explaining the shared scope and the key difference from this issue}
-            <details><summary>More detail</summary>
-            {optional extra context about the overlap and distinction}
-            </details>
-          - #{number} — {one concise sentence explaining the shared scope and the key difference from this issue}
-            <details><summary>More detail</summary>
-            {optional extra context about the overlap and distinction}
-            </details>
+          - #{number} — {one concise sentence explaining the shared scope and the key difference}
+          - #{number} — {one concise sentence explaining the shared scope and the key difference}
           
           </details>
           ```
           
-          Omit the **Possible duplicates** section entirely if no issues qualify for it. Omit the `<details>` block wrapping **Highly related** entirely when related issues detection is disabled or when no issues qualify for it. Put issue references on the main list line (outside any `<summary>`) so GitHub renders issue status badges. Keep `<summary>` text generic (e.g. `More detail` or `{N} related issues found`) and do NOT repeat issue titles or numbers anywhere inside `<details>` bodies. In justifications, refer to the current report as **"this issue"** (not by number) and refer to the candidate by "it" or a short description — never by repeating the title or issue number. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
+          If only duplicates were found (no highly related issues, or related issues detection is disabled), use this format:
+          
+          ```
+          **Possible duplicates** (issues that appear to describe the same problem):
+          - #{number} — {one concise sentence explaining why this issue overlaps with the candidate}
+          - #{number} — {one concise sentence explaining why this issue overlaps with the candidate}
+          ```
+          
+          If only highly related issues were found (no duplicates), use this format:
+          
+          ```
+          <details><summary>{N} related issues found</summary>
+          
+          **Highly related** (separate issues that significantly overlap or share scope):
+          - #{number} — {one concise sentence explaining the shared scope and the key difference}
+          - #{number} — {one concise sentence explaining the shared scope and the key difference}
+          
+          </details>
+          ```
+          
+          Put issue references on the main list line so GitHub renders issue status badges. Do NOT repeat issue titles or numbers in justification text. Refer to the current report as **"this issue"** (not by number) and refer to the candidate by "it" or a short description. Use neutral, helpful language — the reporter may not be familiar with the existing issues. Do NOT use `fixes`, `closes`, or `resolves` keywords.
           
           **If no duplicate (or highly related issue, when detection is enabled) is found:**
           
