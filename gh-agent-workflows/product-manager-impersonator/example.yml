@@ -1,7 +1,7 @@
-name: Refactor Proposal
+name: Product Manager Impersonator
 on:
   schedule:
-    - cron: "0 14 * * 1"
+    - cron: "0 10 * * 1-5"
   workflow_dispatch:
 
 permissions:
@@ -11,6 +11,6 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-refactor-proposal.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-product-manager-impersonator.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

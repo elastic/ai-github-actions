@@ -37,9 +37,9 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5e3d0b0ea9d458332a97c6fa7d9e3bc6e6e04ad345aba3d3d2ad80dd10af00a5"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f9cb8094f3906047b06fecb53304fe5eed953e8d0ea4f1fabac16eb45041a2ae"}
 
-name: "Refactor Proposal"
+name: "Refactor Opportunist"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -82,9 +82,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: refactor-proposal
+  group: refactor-opportunist
 
-run-name: "Refactor Proposal"
+run-name: "Refactor Opportunist"
 
 jobs:
   activation:
@@ -120,7 +120,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-refactor-proposal.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-refactor-opportunist.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -401,7 +401,7 @@ jobs:
           
           3. **Check for existing proposals**
              - Search open issues: `repo:{owner}/{repo} is:issue is:open (refactor OR restructure OR reorganize OR architecture)`.
-             - Search past proposals: `repo:{owner}/{repo} is:issue in:title "[refactor-proposal]"`.
+             - Search past proposals: `repo:{owner}/{repo} is:issue in:title "[refactor-opportunist]"`.
              - If your idea overlaps with an existing proposal, pick a different angle or call `noop`.
           
           ### Analysis and Partial Implementation
@@ -429,7 +429,7 @@ jobs:
           - The refactor cannot be done incrementally (it is all-or-nothing).
           - The improvement is cosmetic (renaming, reordering) rather than structural.
           
-          "Refactor proposal skipped — no high-impact, viable structural improvement found."
+          "Refactor Opportunist skipped — no high-impact, viable structural improvement found."
           
           ### Issue Format
           
@@ -473,7 +473,7 @@ jobs:
           
           ### Labeling
           
-          - If the `refactor-proposal` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[refactor-proposal]` title prefix only.
+          - If the `refactor-opportunist` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[refactor-opportunist]` title prefix only.
           
           __GH_AW_EXPR_49B959F1__
           
@@ -563,7 +563,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawrefactorproposal
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawrefactoropportunist
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
@@ -676,7 +676,7 @@ jobs:
               model: "${{ inputs.model }}",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Refactor Proposal",
+              workflow_name: "Refactor Opportunist",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -738,7 +738,7 @@ jobs:
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[refactor-proposal] \".",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[refactor-opportunist] \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -1260,7 +1260,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Refactor Proposal"
+          GH_AW_WORKFLOW_NAME: "Refactor Opportunist"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1273,7 +1273,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Refactor Proposal"
+          GH_AW_WORKFLOW_NAME: "Refactor Opportunist"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1286,10 +1286,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Refactor Proposal"
+          GH_AW_WORKFLOW_NAME: "Refactor Opportunist"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-refactor-proposal"
+          GH_AW_WORKFLOW_ID: "gh-aw-refactor-opportunist"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
@@ -1306,7 +1306,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Refactor Proposal"
+          GH_AW_WORKFLOW_NAME: "Refactor Opportunist"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1354,7 +1354,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Refactor Proposal"
+          WORKFLOW_NAME: "Refactor Opportunist"
           WORKFLOW_DESCRIPTION: "Investigate the codebase as a senior architect, partially implement a refactor to prove viability, and pitch it via an issue"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1457,8 +1457,8 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-refactor-proposal"
-      GH_AW_WORKFLOW_NAME: "Refactor Proposal"
+      GH_AW_WORKFLOW_ID: "gh-aw-refactor-opportunist"
+      GH_AW_WORKFLOW_NAME: "Refactor Opportunist"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
@@ -1485,7 +1485,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"[refactor-proposal] \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"[refactor-opportunist] \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

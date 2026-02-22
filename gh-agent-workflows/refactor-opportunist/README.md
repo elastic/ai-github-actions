@@ -1,4 +1,4 @@
-# Refactor Proposal
+# Refactor Opportunist
 
 Investigate the codebase as a senior architect, partially implement a refactor to prove viability, and pitch it via an issue.
 
@@ -10,8 +10,8 @@ Reviews the codebase architecture, identifies structural pain points (tangled de
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/refactor-proposal/example.yml \
-  -o .github/workflows/refactor-proposal.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/refactor-opportunist/example.yml \
+  -o .github/workflows/refactor-opportunist.yml
 ```
 
 See [example.yml](example.yml) for the full workflow file.

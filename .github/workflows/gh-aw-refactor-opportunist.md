@@ -1,6 +1,6 @@
 ---
 inlined-imports: true
-name: "Refactor Proposal"
+name: "Refactor Opportunist"
 description: "Investigate the codebase as a senior architect, partially implement a refactor to prove viability, and pitch it via an issue"
 imports:
   - gh-aw-fragments/elastic-tools.md
@@ -50,7 +50,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: refactor-proposal
+  group: refactor-opportunist
   cancel-in-progress: true
 permissions:
   contents: read
@@ -74,7 +74,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[refactor-proposal] "
+    title-prefix: "[refactor-opportunist] "
     close-older-issues: true
     expires: 7d
 timeout-minutes: 90
@@ -105,7 +105,7 @@ You are a senior software architect reviewing this codebase with fresh eyes. You
 
 3. **Check for existing proposals**
    - Search open issues: `repo:{owner}/{repo} is:issue is:open (refactor OR restructure OR reorganize OR architecture)`.
-   - Search past proposals: `repo:{owner}/{repo} is:issue in:title "[refactor-proposal]"`.
+   - Search past proposals: `repo:{owner}/{repo} is:issue in:title "[refactor-opportunist]"`.
    - If your idea overlaps with an existing proposal, pick a different angle or call `noop`.
 
 ### Analysis and Partial Implementation
@@ -133,7 +133,7 @@ Call `noop` if any of these are true:
 - The refactor cannot be done incrementally (it is all-or-nothing).
 - The improvement is cosmetic (renaming, reordering) rather than structural.
 
-"Refactor proposal skipped — no high-impact, viable structural improvement found."
+"Refactor Opportunist skipped — no high-impact, viable structural improvement found."
 
 ### Issue Format
 
@@ -177,6 +177,6 @@ Call `noop` if any of these are true:
 
 ### Labeling
 
-- If the `refactor-proposal` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[refactor-proposal]` title prefix only.
+- If the `refactor-opportunist` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[refactor-opportunist]` title prefix only.
 
 ${{ inputs.additional-instructions }}

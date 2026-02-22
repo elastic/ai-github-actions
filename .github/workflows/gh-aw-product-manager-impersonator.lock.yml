@@ -36,9 +36,9 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0573732b18dbf216ac46db50d9cec51bbfa9aea7c348244f3c09b6b6ca7de255"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6dc575c54b5359615c24519a1ddb737587d34b0492f39f64206e3f1a9463285e"}
 
-name: "Ideas Man"
+name: "Product Manager Impersonator"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -81,9 +81,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: ideas-man
+  group: product-manager-impersonator
 
-run-name: "Ideas Man"
+run-name: "Product Manager Impersonator"
 
 jobs:
   activation:
@@ -119,7 +119,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-ideas-man.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-product-manager-impersonator.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -378,7 +378,7 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          You are the Ideas Man — an enthusiastic product thinker who has already done research on the codebase and genuinely believes each idea "won't be that hard" to implement. You are also an expert developer who looks at a project, understands what it can currently do, and proposes new features that align with what already exists.
+          You are the Product Manager Impersonator — an enthusiastic product thinker who has already done research on the codebase and genuinely believes each idea "won't be that hard" to implement. You are also an expert developer who looks at a project, understands what it can currently do, and proposes new features that align with what already exists.
           
           Your task is to propose **one** well-researched new feature idea for this repository.
           
@@ -396,7 +396,7 @@ jobs:
           
           3. **Check for duplicates**
              - Search open issues for existing feature requests: `repo:{owner}/{repo} is:issue is:open (feature OR enhancement OR idea)`.
-             - Search past Ideas Man reports: `repo:{owner}/{repo} is:issue in:title "[ideas-man]"`.
+             - Search past reports: `repo:{owner}/{repo} is:issue in:title "[product-manager-impersonator]"`.
              - If your idea duplicates an existing request, pick a different angle.
           
           ### What to Propose
@@ -412,7 +412,7 @@ jobs:
           ### Noop
           
           If you cannot find a genuinely useful, non-duplicate idea that meets all the criteria above, call `noop` with:
-          "Ideas Man skipped — no novel, high-value feature idea found for this repository."
+          "Product Manager Impersonator skipped — no novel, high-value feature idea found for this repository."
           
           **Do not force a low-quality idea just to file something.** Noop is the correct outcome when nothing passes the bar.
           
@@ -441,7 +441,7 @@ jobs:
           
           ### Labeling
           
-          - If the `ideas-man` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[ideas-man]` title prefix only.
+          - If the `product-manager-impersonator` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[product-manager-impersonator]` title prefix only.
           
           __GH_AW_EXPR_49B959F1__
           
@@ -531,7 +531,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawideasman
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawproductmanagerimpersonator
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
@@ -638,7 +638,7 @@ jobs:
               model: "${{ inputs.model }}",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Ideas Man",
+              workflow_name: "Product Manager Impersonator",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -700,7 +700,7 @@ jobs:
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[ideas-man] \".",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[product-manager-impersonator] \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -1222,7 +1222,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Ideas Man"
+          GH_AW_WORKFLOW_NAME: "Product Manager Impersonator"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1235,7 +1235,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Ideas Man"
+          GH_AW_WORKFLOW_NAME: "Product Manager Impersonator"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1248,10 +1248,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Ideas Man"
+          GH_AW_WORKFLOW_NAME: "Product Manager Impersonator"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-ideas-man"
+          GH_AW_WORKFLOW_ID: "gh-aw-product-manager-impersonator"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
@@ -1268,7 +1268,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Ideas Man"
+          GH_AW_WORKFLOW_NAME: "Product Manager Impersonator"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1316,7 +1316,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Ideas Man"
+          WORKFLOW_NAME: "Product Manager Impersonator"
           WORKFLOW_DESCRIPTION: "Propose well-researched new feature ideas as GitHub issues"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1419,8 +1419,8 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-ideas-man"
-      GH_AW_WORKFLOW_NAME: "Ideas Man"
+      GH_AW_WORKFLOW_ID: "gh-aw-product-manager-impersonator"
+      GH_AW_WORKFLOW_NAME: "Product Manager Impersonator"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
@@ -1447,7 +1447,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"[ideas-man] \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"[product-manager-impersonator] \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

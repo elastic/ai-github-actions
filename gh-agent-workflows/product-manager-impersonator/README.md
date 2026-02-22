@@ -1,4 +1,4 @@
-# Ideas Man
+# Product Manager Impersonator
 
 Propose well-researched new feature ideas as GitHub issues.
 
@@ -10,8 +10,8 @@ Reviews the codebase, recent activity, and existing issues to propose a single n
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/ideas-man/example.yml \
-  -o .github/workflows/ideas-man.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/product-manager-impersonator/example.yml \
+  -o .github/workflows/product-manager-impersonator.yml
 ```
 
 See [example.yml](example.yml) for the full workflow file.
