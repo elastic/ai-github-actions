@@ -95,6 +95,26 @@ network:
     - ruby
     - "www.elastic.co"
     - "docs-v3-preview.elastic.dev"
+    - clojure
+    - containers
+    - dart
+    - dotnet
+    - elixir
+    - fonts
+    - github-actions
+    - haskell
+    - java
+    - kotlin
+    - linux-distros
+    - node-cdns
+    - perl
+    - php
+    - playwright
+    - rust
+    - scala
+    - swift
+    - terraform
+    - zig
 strict: false
 timeout-minutes: 90
 steps:

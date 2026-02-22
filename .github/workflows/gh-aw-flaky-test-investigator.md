@@ -66,6 +66,30 @@ network:
   allowed:
     - defaults
     - github
+    - go
+    - node
+    - python
+    - ruby
+    - clojure
+    - containers
+    - dart
+    - dotnet
+    - elixir
+    - fonts
+    - github-actions
+    - haskell
+    - java
+    - kotlin
+    - linux-distros
+    - node-cdns
+    - perl
+    - php
+    - playwright
+    - rust
+    - scala
+    - swift
+    - terraform
+    - zig
 strict: false
 safe-outputs:
   noop:

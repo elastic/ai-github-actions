@@ -71,6 +71,26 @@ network:
     - node
     - python
     - ruby
+    - clojure
+    - containers
+    - dart
+    - dotnet
+    - elixir
+    - fonts
+    - github-actions
+    - haskell
+    - java
+    - kotlin
+    - linux-distros
+    - node-cdns
+    - perl
+    - php
+    - playwright
+    - rust
+    - scala
+    - swift
+    - terraform
+    - zig
 safe-outputs:
   create-issue:
     max: 5
