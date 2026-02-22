@@ -1,6 +1,6 @@
-# GitHub Agent Workflows
+# Elastic AI Software Factory (GitHub Agent Workflows)
 
-GitHub Agentic Workflows with safe-output guardrails. Engine and model are configurable per workflow, and updates are delivered via the `v0` tag.
+Elastic AI Software Factory is built on GitHub Agent Workflows with safe-output guardrails. Engine and model are configurable per workflow, and updates are delivered via the `v0` tag.
 
 ## Install (caller-based, recommended)
 
@@ -20,6 +20,13 @@ jobs:
 ````
 
 Each workflow directory contains an `example.yml` starter and a README for trigger details, inputs, and safe outputs.
+
+## Recommended workflow sets
+
+The quick setup script includes two opinionated sets:
+
+- **Starter repo operations set (default):** `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
+- **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `bug-exterminator`, `code-simplifier`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues`, `test-improver`, `breaking-change-detector`, `code-duplication-detector`, `update-pr-body`
 
 ## Available workflows
 

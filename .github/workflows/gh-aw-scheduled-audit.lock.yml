@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5407be51afed9319bcbdd8da718762d79b3ddb6c28bc2ed7edf261cd01714d58"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a90f442fb5eb0e9394e5f9c6ce528559733ba3b49c1304d2bc709256fe4b1c4f"}
 
 name: "Scheduled Audit"
 "on":
@@ -1394,7 +1394,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"${{ inputs.issue-title-prefix }} \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"expires\":168,\"max\":1,\"title_prefix\":\"${{ inputs.issue-title-prefix }} \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

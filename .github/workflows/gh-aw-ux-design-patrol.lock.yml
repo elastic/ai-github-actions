@@ -21,11 +21,12 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Find typos, unclear error messages, and awkward user-facing text, then file an improvement issue
+# Detect UI/UX design drift in recent commits and file a consolidation report
 #
 # Resolved workflow manifest:
 #   Imports:
 #     - gh-aw-fragments/elastic-tools.md
+#     - gh-aw-fragments/ensure-full-history.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
@@ -36,9 +37,9 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8256995d64a2f39caaf59ca932184ba2ef01b1c17999690c1ffe15956b685476"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f77c414d2042c47b4d63adca15cdaf74e03076577fa9a0c96b587601d21b7423"}
 
-name: "Text Auditor"
+name: "UX Design Patrol"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -58,29 +59,9 @@ name: "Text Auditor"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
-      edit-clarity:
-        default: low
-        description: How aggressively to flag unclear user-facing text, especially error/help messages. 'high' = proactively suggest clearer phrasing, 'low' = flag only clearly ambiguous text, 'none' = skip clarity checks
-        required: false
-        type: string
-      edit-grammar:
-        default: low
-        description: How aggressively to flag grammar and sentence construction problems. 'high' = improve awkward sentence structure, 'low' = flag only clear grammatical errors, 'none' = skip grammar checks
-        required: false
-        type: string
-      edit-misleading-text:
-        default: low
-        description: How aggressively to flag text that conflicts with current behavior. 'high' = proactively flag likely drift, 'low' = flag only direct contradictions, 'none' = skip behavior-alignment checks
-        required: false
-        type: string
-      edit-terminology:
-        default: low
-        description: How aggressively to flag inconsistent terminology for the same concept. 'high' = proactively normalize wording, 'low' = flag only unambiguous inconsistencies, 'none' = skip terminology checks
-        required: false
-        type: string
-      edit-typos:
-        default: low
-        description: How aggressively to flag typos and misspellings. 'high' = suggest broad consistency fixes, 'low' = flag only clear spelling errors, 'none' = skip typo checks
+      lookback-window:
+        default: 7 days ago
+        description: Git lookback window for detecting recent commits (e.g. '7 days ago', '14 days ago')
         required: false
         type: string
       messages-footer:
@@ -106,9 +87,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: text-auditor
+  group: ux-design-patrol
 
-run-name: "Text Auditor"
+run-name: "UX Design Patrol"
 
 jobs:
   activation:
@@ -144,7 +125,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-text-auditor.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-ux-design-patrol.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -155,12 +136,8 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_EXPR_118A0B98: ${{ inputs.edit-terminology }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_7193CB58: ${{ inputs.edit-typos }}
-          GH_AW_EXPR_A0224D4D: ${{ inputs.edit-misleading-text }}
-          GH_AW_EXPR_CFC1B138: ${{ inputs.edit-grammar }}
-          GH_AW_EXPR_FEB6148B: ${{ inputs.edit-clarity }}
+          GH_AW_EXPR_C9922AB3: ${{ inputs.lookback-window }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -262,6 +239,9 @@ jobs:
           
           - **`generate_agents_md`** — generates a summary of the repository's structure, conventions, and coding guidelines from AGENTS.md and related files. Call at the start of every workflow to get repo context.
           - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           
@@ -408,116 +388,85 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          Find typos, unclear error messages, and awkward user-facing text that are low-effort to fix, and file a single improvement issue.
-          
-          **The bar is high: only report concrete, unambiguous text problems.** Most runs should end with `noop` — that means user-facing text is clean.
-          
-          ## Edit Level Configuration
-          
-          The following edit levels are configured for this run. Each dimension is independent.
-          
-          | Dimension | Level | Meaning |
-          | --- | --- | --- |
-          | **typos** | `__GH_AW_EXPR_7193CB58__` | How aggressively to flag typos and misspellings |
-          | **grammar** | `__GH_AW_EXPR_CFC1B138__` | How aggressively to flag grammar and sentence construction issues |
-          | **clarity** | `__GH_AW_EXPR_FEB6148B__` | How aggressively to flag unclear user-facing text |
-          | **terminology** | `__GH_AW_EXPR_118A0B98__` | How aggressively to flag inconsistent naming for the same concept |
-          | **misleading-text** | `__GH_AW_EXPR_A0224D4D__` | How aggressively to flag text that no longer matches behavior |
-          
-          Level semantics:
-          - **`high`** — apply best judgment proactively within this dimension
-          - **`low`** — report only concrete, unambiguous issues
-          - **`none`** — skip this dimension entirely
+          Detect UX design drift — recent commits that introduce new UI or user-facing patterns that duplicate or conflict with patterns already established elsewhere in the codebase.
           
           ### Data Gathering
           
-          1. Identify user-facing text sources — scan the repository for:
-             - CLI output strings, error messages, and help text
-             - Log messages shown to users (not debug-level internal logs)
-             - README, CONTRIBUTING, DEVELOPING, and other markdown documentation
-             - UI strings, notification templates, and user-visible configuration descriptions
-             - Code comments in public APIs that appear in generated documentation
-          2. Read the identified files and search for text issues.
+          Use a lookback window of `--since="__GH_AW_EXPR_C9922AB3__"` for all runs (scheduled and manual).
           
-          ### What to Look For by Dimension
+          1. Run `git log --since="__GH_AW_EXPR_C9922AB3__" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
+          2. For each commit, read the full diff to understand what user-facing patterns were added or changed.
+          3. Discover existing user-facing patterns in the codebase dynamically — search for related code in source files, templates, and configuration that handles output, prompts, messages, or other user interactions.
           
-          Use each dimension's configured level to determine whether to report findings.
+          ### What to Look For
           
-          #### Typos (`__GH_AW_EXPR_7193CB58__`)
+          Focus on places where a recent commit introduces a user-facing pattern that already exists elsewhere in a different form — where consolidation would benefit the user experience. Examples include:
           
-          - **`high`**: Flag typos/misspellings proactively and include nearby consistency fixes when they are obviously beneficial.
-          - **`low`**: Flag only clear spelling errors (for example, `recieve` → `receive`), not style variants.
-          - **`none`**: Skip typo checks.
+          1. **Output and message formatting** — a new command prints a table differently than existing tables; a new error message uses a different style than the established error format; progress indicators use a different style than elsewhere
+          2. **Confirmation and prompt dialogs** — a new interactive prompt uses different wording, ordering, or structure from existing prompts (e.g., `[y/N]` vs `[yes/no]`)
+          3. **CLI flag and option naming** — a new flag uses a different naming convention (`--dry-run` vs `--dryRun` vs `--no-execute`) or a different value format than existing flags for the same concept
+          4. **Status and state representation** — a new feature displays status (enabled/disabled, active/inactive, true/false) differently from how status is shown elsewhere
+          5. **Help text and usage strings** — new help text uses a different structure, tone, or level of detail than existing help text
+          6. **Date, time, and number formatting** — a new output formats timestamps or numeric values differently from the established format
+          7. **Color, icon, and symbol usage** — a new UI element uses different colors, symbols, or emoji for the same semantic meaning as existing elements
+          8. **Loading and progress indicators** — a new operation shows progress differently (spinner vs dots vs percentage) from existing operations
           
-          #### Grammar (`__GH_AW_EXPR_CFC1B138__`)
+          ### How to Analyze
           
-          - **`high`**: Flag grammar and sentence construction issues that reduce readability, including awkward or fragmented sentences.
-          - **`low`**: Flag only clear grammatical errors (subject-verb disagreement, missing articles, broken sentence structure).
-          - **`none`**: Skip grammar checks.
-          
-          #### Clarity (`__GH_AW_EXPR_FEB6148B__`)
-          
-          - **`high`**: Proactively flag unclear user-facing text and suggest concrete rewrites, especially for errors/help text.
-          - **`low`**: Flag only clearly ambiguous or incomplete user-facing text (for example, `"Error: failed"` with no actionable context).
-          - **`none`**: Skip clarity checks.
-          
-          #### Terminology (`__GH_AW_EXPR_118A0B98__`)
-          
-          - **`high`**: Proactively flag inconsistent naming for the same concept across user-facing surfaces.
-          - **`low`**: Flag only unambiguous inconsistencies where the same concept is clearly referred to by different terms.
-          - **`none`**: Skip terminology checks.
-          
-          #### Misleading Text (`__GH_AW_EXPR_A0224D4D__`)
-          
-          - **`high`**: Proactively flag text likely to have drifted from behavior.
-          - **`low`**: Flag only direct, verifiable contradictions between text and current code behavior.
-          - **`none`**: Skip behavior-alignment checks.
+          For each potentially impactful change:
+          - Read the full diff to understand what user-facing pattern was introduced
+          - Search the codebase for similar patterns — look for the same type of output, message, prompt, or UI element elsewhere
+          - Compare the new pattern to the existing ones to determine whether they are meaningfully inconsistent
+          - Check whether an open issue or PR already tracks the consolidation
           
           ### What to Skip
           
-          - **Style preferences** — do not flag Oxford comma usage, line length, or prose style unless it causes ambiguity
-          - **Internal-only text** — debug logs, developer-only comments, test fixtures
-          - **Intentional abbreviations** — short forms that are standard in the project
-          - **Generated or vendored files** — do not scan auto-generated code, lock files, or third-party content
-          - **Issues already tracked** — check open issues before filing
-          - **Findings that require design decisions** — if fixing the text requires deciding on new terminology or restructuring content, skip it
+          - Internal implementation details with no user-facing output
+          - Changes where the new pattern is intentionally different (e.g., a separate UI context, a deliberate redesign, a different audience)
+          - Trivial differences that would not confuse or frustrate a user (e.g., minor whitespace differences)
+          - Changes that already align with the established pattern
+          - Changes where an open issue or PR already tracks the consolidation
+          - Cases where no existing pattern exists to compare against
           
           ### Quality Gate — When to Noop
           
-          Call `noop` if any of these are true:
-          - All edit dimensions are set to `none`
-          - No concrete text problems were found
-          - All findings are style preferences rather than clear errors
-          - The problems found are in generated or vendored files
-          - A similar issue is already open
-          - The fixes would require design decisions or significant rewording beyond simple corrections
+          **Noop is the expected outcome most days.** Only file an issue when:
+          - A **concrete, specific inconsistency** exists — you can name the exact files, functions, or output strings that conflict
+          - The inconsistency would be **noticeable to a user** — they would encounter both patterns in normal use
+          - **Consolidation is clearly feasible** — the patterns are close enough that a maintainer could reasonably unify them
+          
+          Do not file for: subjective style preferences, theoretical future inconsistencies, or cases where the difference is intentional or negligible.
           
           ### Issue Format
           
-          **Issue title:** Brief summary of text improvements found
+          **Issue title:** Brief summary of the design drift (e.g., "Inconsistent error message format across CLI commands")
           
           **Issue body:**
           
-          > ## Text Improvements
+          > Recent commits have introduced UI/UX patterns that diverge from established patterns elsewhere in the codebase. The following inconsistencies reduce design consistency for users.
           >
-          > The following user-facing text issues were found in the repository. Each is a low-effort fix.
+          > ## Design Drift Findings
           >
-          > ### 1. [Brief description]
+          > ### 1. [Brief description of the inconsistency]
           >
-          > **File:** `path/to/file` (line N)
-          > **Current text:** `the existing text with the problem`
-          > **Suggested fix:** `the corrected text`
-          > **Why:** [Brief explanation — typo, grammar, unclear error, etc.]
+          > **Commit(s):** [SHA(s) with links]
+          > **New pattern (introduced by commit):**
+          > ```
+          > [example of the new pattern — output, code, or config]
+          > ```
+          > **Existing pattern (established elsewhere):**
+          > ```
+          > [example of the existing pattern — output, code, or config]
+          > ```
+          > **Location of new pattern:** [file path(s)]
+          > **Location of existing pattern:** [file path(s)]
+          > **User impact:** [brief explanation of how this inconsistency affects users]
           >
           > ### 2. [Next finding...]
           >
           > ## Suggested Actions
           >
-          > - [ ] [Specific, actionable checkbox for each fix]
-          
-          ### Labeling
-          
-          - If the `text-auditor` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[text-auditor]` title prefix only.
+          > - [ ] [Specific, actionable checkbox for each consolidation needed]
           
           __GH_AW_EXPR_49B959F1__
           
@@ -528,11 +477,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_FEB6148B: ${{ inputs.edit-clarity }}
-          GH_AW_EXPR_CFC1B138: ${{ inputs.edit-grammar }}
-          GH_AW_EXPR_A0224D4D: ${{ inputs.edit-misleading-text }}
-          GH_AW_EXPR_118A0B98: ${{ inputs.edit-terminology }}
-          GH_AW_EXPR_7193CB58: ${{ inputs.edit-typos }}
+          GH_AW_EXPR_C9922AB3: ${{ inputs.lookback-window }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -543,12 +488,8 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_EXPR_118A0B98: ${{ inputs.edit-terminology }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_7193CB58: ${{ inputs.edit-typos }}
-          GH_AW_EXPR_A0224D4D: ${{ inputs.edit-misleading-text }}
-          GH_AW_EXPR_CFC1B138: ${{ inputs.edit-grammar }}
-          GH_AW_EXPR_FEB6148B: ${{ inputs.edit-clarity }}
+          GH_AW_EXPR_C9922AB3: ${{ inputs.lookback-window }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -570,12 +511,8 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
-                GH_AW_EXPR_118A0B98: process.env.GH_AW_EXPR_118A0B98,
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
-                GH_AW_EXPR_7193CB58: process.env.GH_AW_EXPR_7193CB58,
-                GH_AW_EXPR_A0224D4D: process.env.GH_AW_EXPR_A0224D4D,
-                GH_AW_EXPR_CFC1B138: process.env.GH_AW_EXPR_CFC1B138,
-                GH_AW_EXPR_FEB6148B: process.env.GH_AW_EXPR_FEB6148B,
+                GH_AW_EXPR_C9922AB3: process.env.GH_AW_EXPR_C9922AB3,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -622,7 +559,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawtextauditor
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawuxdesignpatrol
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
@@ -686,6 +623,12 @@ jobs:
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
       - env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPO_NAME: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+        name: Ensure full history
+        run: "if git rev-parse --is-shallow-repository | grep -q true; then\n  SERVER_URL_STRIPPED=\"${SERVER_URL#https://}\"\n  git remote set-url origin \"https://x-access-token:${GITHUB_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git\"\n  git fetch --unshallow --quiet\nfi"
+      - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup
@@ -729,7 +672,7 @@ jobs:
               model: "${{ inputs.model }}",
               version: "",
               agent_version: "0.0.412",
-              workflow_name: "Text Auditor",
+              workflow_name: "UX Design Patrol",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -791,7 +734,7 @@ jobs:
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[text-auditor] \".",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[ux-design-patrol] \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -1077,7 +1020,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,labels"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search"
                 }
               },
               "public-code-search": {
@@ -1313,7 +1256,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Text Auditor"
+          GH_AW_WORKFLOW_NAME: "UX Design Patrol"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1326,7 +1269,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Text Auditor"
+          GH_AW_WORKFLOW_NAME: "UX Design Patrol"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1339,10 +1282,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Text Auditor"
+          GH_AW_WORKFLOW_NAME: "UX Design Patrol"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-text-auditor"
+          GH_AW_WORKFLOW_ID: "gh-aw-ux-design-patrol"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
@@ -1359,7 +1302,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Text Auditor"
+          GH_AW_WORKFLOW_NAME: "UX Design Patrol"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1407,8 +1350,8 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Text Auditor"
-          WORKFLOW_DESCRIPTION: "Find typos, unclear error messages, and awkward user-facing text, then file an improvement issue"
+          WORKFLOW_NAME: "UX Design Patrol"
+          WORKFLOW_DESCRIPTION: "Detect UI/UX design drift in recent commits and file a consolidation report"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1510,8 +1453,8 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-text-auditor"
-      GH_AW_WORKFLOW_NAME: "Text Auditor"
+      GH_AW_WORKFLOW_ID: "gh-aw-ux-design-patrol"
+      GH_AW_WORKFLOW_NAME: "UX Design Patrol"
     outputs:
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
@@ -1538,7 +1481,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"expires\":168,\"max\":1,\"title_prefix\":\"[text-auditor] \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"[ux-design-patrol] \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

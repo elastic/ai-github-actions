@@ -6,7 +6,7 @@ AI-powered GitHub workflows for Elastic repositories.
 
 Full documentation lives at https://elastic.github.io/ai-github-actions/.
 
-- GitHub Agent Workflows (recommended): https://elastic.github.io/ai-github-actions/workflows/gh-agent-workflows/
+- Elastic AI Software Factory (GitHub Agent Workflows, recommended): https://elastic.github.io/ai-github-actions/workflows/gh-agent-workflows/
 - Legacy Claude Composite Actions: https://elastic.github.io/ai-github-actions/workflows/claude-workflows/
 - Developing: https://elastic.github.io/ai-github-actions/developing/
 - Security: https://elastic.github.io/ai-github-actions/security/
@@ -16,8 +16,13 @@ Full documentation lives at https://elastic.github.io/ai-github-actions/.
 
 ## Overview
 
-- GitHub Agent Workflows are the primary/recommended path and provide safe-output guardrails with configurable engines.
+- Elastic AI Software Factory (GitHub Agent Workflows) is the primary/recommended path and provides safe-output guardrails with configurable engines.
 - Claude Composite Actions remain supported as a legacy option with RO/RWX/RWXP permission variants.
+
+## Top recommended workflows
+
+- Starter repo operations set: `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
+- Continuous improvement set: `bug-hunter`, `bug-exterminator`, `code-simplifier`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues`, `test-improver`, `breaking-change-detector`, `code-duplication-detector`, `update-pr-body`
 
 ## Quick setup script
 
