@@ -37,6 +37,9 @@ Pre-built workflows with domain-specific prompts. These import the same base fra
 - [Text Beautifier](text-beautifier/) — fix text-auditor issues
 - [Code Duplication Fixer](code-duplication-fixer/) — fix code-duplication-detector issues
 
+**Research assistants**:
+- [Deep Research](deep-research/) — issue-comment deep research with web search/fetch and optional PR creation
+
 ## Quick setup script
 
 Run from the repository you want to configure:
