@@ -35,14 +35,14 @@ These repositories run a broad set of workflows and serve as real-world examples
 
 | Repository | Notes |
 | --- | --- |
-| [elastic/beats](https://github.com/elastic/beats) | Large Elastic OSS repo with diverse workflow coverage |
-| [elastic/integrations](https://github.com/elastic/integrations) | Large multi-package repo using multiple scheduled and event-driven workflows |
+| [strawgate/py-key-value](https://github.com/strawgate/py-key-value) | Python project with broad workflow coverage |
 
 ### Light users
 
 | Repository | Notes |
 | --- | --- |
-| [strawgate/py-key-value](https://github.com/strawgate/py-key-value) | Small Python project using a focused set of workflows |
+| [elastic/beats](https://github.com/elastic/beats) | Large Elastic OSS repo using a focused set of workflows |
+| [elastic/integrations](https://github.com/elastic/integrations) | Large multi-package Elastic repo using a focused set of workflows |
 
 ## More
 

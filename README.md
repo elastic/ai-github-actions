@@ -37,8 +37,8 @@ sets `COPILOT_GITHUB_TOKEN`, creates branch `ai-gh-aw-setup`, pushes it, and ope
 See the [full list in the docs](https://elastic.github.io/ai-github-actions/#who-uses-this).
 
 - **Playground**: [elastic/ai-github-actions-playground](https://github.com/elastic/ai-github-actions-playground) — reference implementation with the full workflow suite enabled.
-- **Heavy users**: [elastic/beats](https://github.com/elastic/beats), [elastic/integrations](https://github.com/elastic/integrations)
-- **Light users**: [strawgate/py-key-value](https://github.com/strawgate/py-key-value)
+- **Heavy users**: [strawgate/py-key-value](https://github.com/strawgate/py-key-value)
+- **Light users**: [elastic/beats](https://github.com/elastic/beats), [elastic/integrations](https://github.com/elastic/integrations)
 
 ## License
 
