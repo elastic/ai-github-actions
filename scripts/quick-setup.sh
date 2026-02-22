@@ -130,7 +130,9 @@ continuous_improvement_workflows=(
   bug-exterminator
   code-simplifier
   docs-patrol
+  ideas-man
   newbie-contributor-patrol
+  refactor-proposal
   small-problem-fixer
   stale-issues
   test-improver

@@ -31,7 +31,7 @@
 # in create-discussions, create-issues, or create-pull-request safe-outputs configuration.
 # Schedule frequency is automatically determined by the shortest expiration time.
 #
-name: "Internal: Agentic Maintenance"
+name: Agentic Maintenance
 
 on:
   schedule:

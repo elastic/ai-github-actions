@@ -28,6 +28,8 @@ Pre-built workflows with domain-specific prompts. These import the same base fra
 - [Code Duplication Detector](code-duplication-detector/) — find duplicate code
 - [Breaking Change Detector](breaking-change-detector/) — find breaking changes
 - [Docs Patrol](docs-patrol/) — detect stale documentation
+- [Ideas Man](ideas-man/) — propose well-researched new feature ideas
+- [Refactor Proposal](refactor-proposal/) — pitch proven refactors with partial implementations
 - [Stale Issues](stale-issues/) — detect stale issues
 
 **Fixers** (create PRs):
@@ -63,7 +65,9 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 - `bug-exterminator`
 - `code-simplifier`
 - `docs-patrol`
+- `ideas-man`
 - `newbie-contributor-patrol`
+- `refactor-proposal`
 - `small-problem-fixer`
 - `stale-issues`
 - `test-improver`
