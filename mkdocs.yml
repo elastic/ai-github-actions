@@ -11,7 +11,7 @@ hooks:
 nav:
   - Home: index.md
   - Workflows:
-      - GitHub Agent Workflows:
+      - Elastic AI Software Factory (GitHub Agent Workflows):
           - Overview: workflows/gh-agent-workflows.md
           - Base Workflows:
               - Scheduled Audit: workflows/gh-agent-workflows/scheduled-audit.md
@@ -20,7 +20,9 @@ nav:
               - Docs PR Review: workflows/gh-agent-workflows/docs-pr-review.md
               - Plan: workflows/gh-agent-workflows/plan.md
               - Mention in Issue: workflows/gh-agent-workflows/mention-in-issue.md
+              - Mention in Issue (no sandbox): workflows/gh-agent-workflows/mention-in-issue-no-sandbox.md
               - Mention in PR: workflows/gh-agent-workflows/mention-in-pr.md
+              - Mention in PR (no sandbox): workflows/gh-agent-workflows/mention-in-pr-no-sandbox.md
               - PR Actions Fixer: workflows/gh-agent-workflows/pr-actions-fixer.md
           - Event-driven:
               - Duplicate Issue Detector: workflows/gh-agent-workflows/duplicate-issue-detector.md
