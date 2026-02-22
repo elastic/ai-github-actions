@@ -49,6 +49,16 @@ on:
         type: string
         required: false
         default: ""
+      max-review-comments:
+        description: "Maximum number of review comments per run"
+        type: number
+        required: false
+        default: 30
+      max-resolve-threads:
+        description: "Maximum number of review threads to resolve per run"
+        type: number
+        required: false
+        default: 10
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true

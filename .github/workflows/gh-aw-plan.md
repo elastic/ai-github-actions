@@ -44,6 +44,11 @@ on:
         type: string
         required: false
         default: ""
+      max-issues:
+        description: "Maximum number of issues to create per run"
+        type: number
+        required: false
+        default: 5
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -73,7 +78,7 @@ network:
     - ruby
 safe-outputs:
   create-issue:
-    max: 5
+    max: ${{ inputs.max-issues }}
 strict: false
 timeout-minutes: 60
 steps:
