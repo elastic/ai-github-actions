@@ -131,6 +131,8 @@ continuous_improvement_workflows=(
   code-simplifier
   docs-patrol
   newbie-contributor-patrol
+  product-manager-impersonator
+  refactor-opportunist
   small-problem-fixer
   stale-issues
   test-improver
