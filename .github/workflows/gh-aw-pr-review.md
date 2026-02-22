@@ -13,6 +13,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
+  - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -74,14 +75,6 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
-network:
-  allowed:
-    - defaults
-    - github
-    - go
-    - node
-    - python
-    - ruby
 strict: false
 timeout-minutes: 90
 steps:

@@ -9,6 +9,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment.md
+  - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -77,8 +78,6 @@ mcp-servers:
       Authorization: "Bearer ${{ secrets.BUILDKITE_API_TOKEN }}"
 network:
   allowed:
-    - defaults
-    - github
     - "mcp.buildkite.com"
 strict: false
 timeout-minutes: 30

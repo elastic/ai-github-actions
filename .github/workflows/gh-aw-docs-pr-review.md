@@ -11,6 +11,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
+  - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -87,12 +88,6 @@ mcp-servers:
       - "AnalyzeDocumentStructure"
 network:
   allowed:
-    - defaults
-    - github
-    - go
-    - node
-    - python
-    - ruby
     - "www.elastic.co"
     - "docs-v3-preview.elastic.dev"
 strict: false

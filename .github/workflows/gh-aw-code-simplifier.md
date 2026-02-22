@@ -10,6 +10,7 @@ imports:
   - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-pr.md
+  - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -64,14 +65,6 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
-network:
-  allowed:
-    - defaults
-    - github
-    - go
-    - node
-    - python
-    - ruby
 strict: false
 safe-outputs:
   noop:
