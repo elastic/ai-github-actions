@@ -1,6 +1,6 @@
-# Elastic Agent Factory (GitHub Agent Workflows)
+# Elastic AI Software Factory (GitHub Agent Workflows)
 
-Elastic Agent Factory is built on GitHub Agent Workflows with safe-output guardrails. Engine and model are configurable per workflow, and updates are delivered via the `v0` tag.
+Elastic AI Software Factory is built on GitHub Agent Workflows with safe-output guardrails. Engine and model are configurable per workflow, and updates are delivered via the `v0` tag.
 
 ## Install (caller-based, recommended)
 

@@ -4,7 +4,7 @@
 
 AI-powered GitHub workflows for Elastic repositories.
 
-## Elastic Agent Factory (recommended)
+## Elastic AI Software Factory (recommended)
 
 | Feature | GitHub Agent Workflows |
 | --- | --- |
@@ -12,9 +12,9 @@ AI-powered GitHub workflows for Elastic repositories.
 | Install | Copy trigger YAML (recommended) |
 | Guardrails | Safe-outputs framework (structured API outputs) |
 | Customization | `additional-instructions`, `setup-commands`, or full shim edit |
-| Also called | Elastic Agent Factory |
+| Also called | Elastic AI Software Factory |
 
-Elastic Agent Factory (GitHub Agent Workflows) is recommended for all new deployments and ongoing maintenance.
+Elastic AI Software Factory (GitHub Agent Workflows) is recommended for all new deployments and ongoing maintenance.
 
 ## Top recommended workflows
 
@@ -41,7 +41,7 @@ Elastic Agent Factory (GitHub Agent Workflows) is recommended for all new deploy
 
 ## Workflows
 
-- [Elastic Agent Factory (GitHub Agent Workflows)](workflows/gh-agent-workflows.md)
+- [Elastic AI Software Factory (GitHub Agent Workflows)](workflows/gh-agent-workflows.md)
 
 ## Legacy
 
