@@ -71,6 +71,9 @@ network:
     - node
     - python
     - ruby
+safe-outputs:
+  create-issue:
+    max: 5
 strict: false
 timeout-minutes: 60
 steps:
