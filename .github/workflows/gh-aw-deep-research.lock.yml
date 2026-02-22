@@ -32,11 +32,10 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
-#     - gh-aw-fragments/workflow-edit-guardrails.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7a1f40f6c38eb027a727079f71053eca936a2dd0d4815a099c1046fb785dfb1a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"518e365bb8f0abe8fbee72b010547b654f564f787f76b9691533634c45d06c7c"}
 
 name: "Deep Research"
 "on":
@@ -297,13 +296,6 @@ jobs:
           - **Fetch incrementally**: Get an overview first, then details for specific items
           - **Use filters**: Combine `perPage` with state, label, or date filters to reduce result size
           - **Process as you go**: Don't accumulate all pages before acting — process each batch immediately
-          
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          ## Workflow Editing Guardrails
-          
-          - Do not modify files under `.github/workflows/`.
-          - If asked to change workflow files, place a copy under `github/` (no leading dot) and note that a maintainer must relocate it into `.github/workflows/`.
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
