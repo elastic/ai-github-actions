@@ -22,6 +22,8 @@ EXCLUDED_WORKFLOWS=(
   "newbie-contributor-patrol-external"
   "flaky-test-investigator"
   "issue-fixer"
+  "mention-in-issue-no-sandbox"
+  "mention-in-pr-no-sandbox"
   "performance-profiler"
   "pr-review-fork"
   "release-update"
