@@ -7,10 +7,10 @@ on:
 
 permissions:
   actions: read
-  contents: write
+  contents: read
   discussions: write
   issues: write
-  pull-requests: write
+  pull-requests: read
 
 jobs:
   run:
@@ -19,4 +19,4 @@ jobs:
       startsWith(github.event.comment.body, '/research')
     uses: ./.github/workflows/gh-aw-deep-research.lock.yml
     secrets:
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

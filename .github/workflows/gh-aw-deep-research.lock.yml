@@ -21,7 +21,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Deep research assistant for issue comments with web fetch/search and optional PR creation
+# Deep research assistant for issue comments with web fetch
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -32,13 +32,11 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
-#     - gh-aw-fragments/safe-output-create-issue.md
-#     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b8a62d2a8bb12d7b0e4a201d749af69393ff752376342d4e09e938ad4e574fdc"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7a1f40f6c38eb027a727079f71053eca936a2dd0d4815a099c1046fb785dfb1a"}
 
 name: "Deep Research"
 "on":
@@ -60,14 +58,14 @@ name: "Deep Research"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
-      draft-prs:
-        default: true
-        description: Whether to create pull requests as drafts
-        required: false
-        type: boolean
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
+        required: false
+        type: string
+      model:
+        default: gemini-3-pro-preview
+        description: AI model to use
         required: false
         type: string
       setup-commands:
@@ -76,7 +74,7 @@ name: "Deep Research"
         required: false
         type: string
     secrets:
-      ANTHROPIC_API_KEY:
+      GEMINI_API_KEY:
         required: true
 
 permissions: {}
@@ -184,26 +182,13 @@ jobs:
           
           ---
           
-          ## Adding a Comment to an Issue or Pull Request, Creating an Issue, Creating a Pull Request, Reporting Missing Tools or Functionality, Reporting Missing Data
+          ## Adding a Comment to an Issue or Pull Request, Reporting Missing Tools or Functionality, Reporting Missing Data
           
           **IMPORTANT**: To perform the actions listed above, use the **safeoutputs** tools. Do NOT use `gh`, do NOT call the GitHub API directly. You do not have write access to the GitHub repository.
           
           **Adding a Comment to an Issue or Pull Request**
           
           To add a comment to an issue or pull request, use the add_comment tool from safeoutputs.
-          
-          **Creating an Issue**
-          
-          To create an issue, use the create_issue tool from safeoutputs.
-          
-          **Creating a Pull Request**
-          
-          To create a pull request:
-          1. Make any file changes directly in the working directory.
-          2. If you haven't done so already, create a local branch using an appropriate unique name.
-          3. Add and commit your changes to the branch. Be careful to add exactly the files you intend, and check there are no extra files left un-added. Verify you haven't deleted or changed any files you didn't intend to.
-          4. Do not push your changes. That will be done by the tool.
-          5. Create the pull request with the create_pull_request tool from safeoutputs.
           
           **Reporting Missing Tools or Functionality**
           
@@ -339,33 +324,9 @@ jobs:
           If you exceed 10 mentions or 50 links, the comment will be rejected.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist.
-          
-          ## create-pull-request Limitations
-          
-          - **Patch files**: Max 100 files per PR. If changes span more files, split into multiple focused PRs.
-          - **Patch size**: Max 1,024 KB by default. Keep changes focused.
-          - **Title**: Max 128 characters. Sanitized.
-          - **Body**: No explicit mention/link limits, but bot triggers (`fixes #123`, `closes #456`) are neutralized.
-          - **Committed changes required**: You must have locally committed changes before creating a PR (unless `allow_empty` is configured).
-          - **Base branch**: Must be configured in the safe-output config. The PR targets this branch.
-          - **Max per run**: Typically 1 PR creation per workflow run.
-          - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
-          ## create-issue Limitations
-          
-          - **Title**: Max 128 characters. Sanitized (special characters escaped).
-          - **Labels**: Max 10 labels per issue. Each label max 64 characters. Labels containing only `-` are rejected.
-          - **Assignees**: Max 5 assignees per issue.
-          - **Body**: No strict character limit beyond GitHub's API limit (~65,536 characters), but fields over 16,000 tokens are written to a file reference instead of inlined.
-          - **Bot triggers**: References like `fixes #123` or `closes #456` in the body are neutralized to prevent unintended issue closures.
-          - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # Deep Research Assistant
           
-          Assist with deep research on __GH_AW_GITHUB_REPOSITORY__ from issue comments, then provide an evidence-backed answer and create a PR when requested.
+          Assist with deep research on __GH_AW_GITHUB_REPOSITORY__ from issue comments, then provide an evidence-backed answer.
           
           ## Context
           
@@ -375,35 +336,44 @@ jobs:
           
           ## Constraints
           
-          - **CAN**: Read files, search code, use web fetch/search, run commands, comment on issues, create pull requests, create issues
-          - **CANNOT**: Directly push to the repository — use `create_pull_request` to propose changes
-          
-          When creating pull requests, make the changes in the workspace first, then use `create_pull_request`.
+          - **CAN**: Read files, search code, use web fetch, comment on issues
+          - **CANNOT**: Execute commands, modify files, run tests, or push to the repository
           
           ## Instructions
           
           Understand the request, investigate repository and external context, and respond with a concise, actionable result.
           
-          ### Step 1: Gather Context
+          ### Step 1: Gather Context and Plan
           
           1. Call `generate_agents_md` to get repository conventions.
-          2. Read the full issue thread and any referenced issues/PRs.
-          3. Explore relevant local files with grep and file reads.
-          4. Use `search_code` and web search/fetch only where external references are necessary.
+          2. Read the full issue thread and any referenced issues. Identify the specific question or goal — this is your research anchor for all subsequent steps.
+          3. Before searching, decompose the question into sub-questions. For complex or multi-faceted requests, list 2–5 specific sub-questions that, if answered, would fully address the original request. This prevents unfocused searching and ensures complete coverage.
+          4. Use `search_code` and local file reads only when codebase knowledge is needed to answer the question or prepare an implementation.
           
-          ### Step 2: Research and Execute
+          ### Step 2: Research Iteratively
           
-          1. Synthesize findings with concrete evidence (file paths, line numbers, links when needed).
-          2. If implementation is requested, make minimal changes and run required validations.
-          3. If needed, open a focused PR via `create_pull_request`.
+          1. Use web fetch as your primary external research method. For each sub-question from Step 1, fetch authoritative sources directly.
+          2. After each round of searches, assess what you've learned and what gaps remain. If key sub-questions are still unanswered, search again with refined queries — do not settle for incomplete evidence on important points.
+          3. For any key factual claim, seek at least two independent sources. If only one source exists, note this. If sources conflict, investigate further before drawing conclusions — do not present a claim as settled when the evidence is mixed.
+          4. Favor primary sources (official documentation, release notes, RFCs, peer-reviewed papers, author blog posts) over secondary summaries or aggregator content. If a claim relies solely on a secondary source, note this.
+          5. Before moving to synthesis, re-read your findings against the original research anchor from Step 1. Drop any findings that don't help answer the original question — tangential information dilutes the response.
           
-          ### Step 3: Post Response
+          ### Step 3: Verify Before Posting
+          
+          Before writing the response, apply Chain-of-Verification to your draft findings:
+          
+          1. For each key claim, generate a specific verification question (e.g., "Is it true that X supports Y as of version Z?"). Answer each verification question using the evidence you gathered — if the evidence doesn't clearly support the claim, either search for confirmation or drop the claim.
+          2. If you hedged with "might," "could," or "possibly," the claim is not ready — either confirm it or drop it.
+          3. If the research scope was too large to fully investigate, say so explicitly rather than presenting partial findings as complete.
+          
+          ### Step 4: Post Response
           
           Call `add_comment` with a concise response:
           
-          1. **Key takeaway**
-          2. **Evidence**
-          3. **Actions taken** (including validation results and PR link if created)
+          1. **Key takeaway** — lead with the direct answer to the original question
+          2. **Evidence** — cite specific URLs, docs, or file paths for each claim
+          3. **Actions taken** (including validation results)
+          4. **Open questions** — if anything could not be confirmed or conflicting evidence was found, list it here rather than omitting silently
           
           __GH_AW_EXPR_49B959F1__
           
@@ -490,7 +460,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-claude-deep-research-${{ github.event.issue.number }}"
+      group: "gh-aw-gemini-deep-research-${{ github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -602,13 +572,13 @@ jobs:
             const fs = require('fs');
             
             const awInfo = {
-              engine_id: "claude",
-              engine_name: "Claude Code",
-              model: process.env.GH_AW_MODEL_AGENT_CLAUDE || "",
+              engine_id: "gemini",
+              engine_name: "Google Gemini CLI",
+              model: "${{ inputs.model }}",
               version: "",
-              agent_version: "2.1.49",
+              agent_version: "",
               workflow_name: "Deep Research",
-              experimental: false,
+              experimental: true,
               supports_tools_allowlist: true,
               run_id: context.runId,
               run_number: context.runNumber,
@@ -619,9 +589,9 @@ jobs:
               actor: context.actor,
               event_name: context.eventName,
               staged: false,
-              allowed_domains: ["agents-md-generator.fastmcp.app","artifacts.elastic.co","cloud.elastic.co","defaults","ela.st","elastic.co","github","go","node","public-code-search.fastmcp.app","python","ruby","www.elastic.co"],
-              firewall_enabled: true,
-              awf_version: "v0.20.2",
+              allowed_domains: ["agents-md-generator.fastmcp.app","artifacts.elastic.co","cloud.elastic.co","ela.st","elastic.co","public-code-search.fastmcp.app","www.elastic.co"],
+              firewall_enabled: false,
+              awf_version: "",
               awmg_version: "v0.1.4",
               steps: {
                 firewall: "squid"
@@ -637,11 +607,11 @@ jobs:
             
             // Set model as output for reuse in other steps/jobs
             core.setOutput('model', awInfo.model);
-      - name: Validate ANTHROPIC_API_KEY secret
+      - name: Validate GEMINI_API_KEY secret
         id: validate-secret
-        run: /opt/gh-aw/actions/validate_multi_secret.sh ANTHROPIC_API_KEY 'Claude Code' https://github.github.com/gh-aw/reference/engines/#anthropic-claude-code
+        run: /opt/gh-aw/actions/validate_multi_secret.sh GEMINI_API_KEY 'Gemini CLI' https://geminicli.com/docs/get-started/authentication/
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
@@ -649,8 +619,8 @@ jobs:
           package-manager-cache: false
       - name: Install awf binary
         run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.20.2
-      - name: Install Claude Code CLI
-        run: npm install -g --silent @anthropic-ai/claude-code@2.1.49
+      - name: Install Gemini CLI
+        run: npm install -g --silent @google/gemini-cli@0.29.0
       - name: Determine automatic lockdown mode for GitHub MCP Server
         id: determine-automatic-lockdown
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -662,58 +632,17 @@ jobs:
             const determineAutomaticLockdown = require('/opt/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.20.2 ghcr.io/github/gh-aw-firewall/api-proxy:0.20.2 ghcr.io/github/gh-aw-firewall/squid:0.20.2 ghcr.io/github/gh-aw-mcpg:v0.1.4 ghcr.io/github/github-mcp-server:v0.31.0 node:lts-alpine
+        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.20.2 ghcr.io/github/gh-aw-firewall/api-proxy:0.20.2 ghcr.io/github/gh-aw-firewall/squid:0.20.2 ghcr.io/github/gh-aw-mcpg:v0.1.4 ghcr.io/github/github-mcp-server:v0.31.0 mcp/fetch node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p /opt/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"add_comment":{"max":1},"create_issue":{"max":1},"create_pull_request":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
+          {"add_comment":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
-            {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created.",
-              "inputSchema": {
-                "additionalProperties": false,
-                "properties": {
-                  "body": {
-                    "description": "Detailed issue description in Markdown. Do NOT repeat the title as a heading since it already appears as the issue's h1. Include context, reproduction steps, or acceptance criteria as appropriate.",
-                    "type": "string"
-                  },
-                  "labels": {
-                    "description": "Labels to categorize the issue (e.g., 'bug', 'enhancement'). Labels must exist in the repository.",
-                    "items": {
-                      "type": "string"
-                    },
-                    "type": "array"
-                  },
-                  "parent": {
-                    "description": "Parent issue number for creating sub-issues. This is the numeric ID from the GitHub URL (e.g., 42 in github.com/owner/repo/issues/42). Can also be a temporary_id (e.g., 'aw_abc123', 'aw_Test123') from a previously created issue in the same workflow run.",
-                    "type": [
-                      "number",
-                      "string"
-                    ]
-                  },
-                  "temporary_id": {
-                    "description": "Unique temporary identifier for referencing this issue before it's created. Format: 'aw_' followed by 3 to 8 alphanumeric characters (e.g., 'aw_abc1', 'aw_Test123'). Use '#aw_ID' in body text to reference other issues by their temporary_id; these are replaced with actual issue numbers after creation.",
-                    "pattern": "^aw_[A-Za-z0-9]{3,8}$",
-                    "type": "string"
-                  },
-                  "title": {
-                    "description": "Concise issue title summarizing the bug, feature, or task. The title appears as the main heading, so keep it brief and descriptive.",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "title",
-                  "body"
-                ],
-                "type": "object"
-              },
-              "name": "create_issue"
-            },
             {
               "description": "Add a comment to an existing GitHub issue, pull request, or discussion. Use this to provide feedback, answer questions, or add information to an existing conversation. For creating new items, use create_issue, create_discussion, or create_pull_request instead. IMPORTANT: Comments are subject to validation constraints enforced by the MCP server - maximum 65536 characters for the complete comment (including footer which is added automatically), 10 mentions (@username), and 50 links. Exceeding these limits will result in an immediate error with specific guidance. NOTE: By default, this tool requires discussions:write permission. If your GitHub App lacks Discussions permission, set 'discussions: false' in the workflow's safe-outputs.add-comment configuration to exclude this permission. CONSTRAINTS: Maximum 1 comment(s) can be added.",
               "inputSchema": {
@@ -734,43 +663,6 @@ jobs:
                 "type": "object"
               },
               "name": "add_comment"
-            },
-            {
-              "description": "Create a new GitHub pull request to propose code changes. Use this after making file edits to submit them for review and merging. The PR will be created from the current branch with your committed changes. For code review comments on an existing PR, use create_pull_request_review_comment instead. CONSTRAINTS: Maximum 1 pull request(s) can be created.",
-              "inputSchema": {
-                "additionalProperties": false,
-                "properties": {
-                  "body": {
-                    "description": "Detailed PR description in Markdown. Include what changes were made, why, testing notes, and any breaking changes. Do NOT repeat the title as a heading.",
-                    "type": "string"
-                  },
-                  "branch": {
-                    "description": "Source branch name containing the changes. If omitted, uses the current working branch.",
-                    "type": "string"
-                  },
-                  "draft": {
-                    "description": "Whether to create the PR as a draft. Draft PRs cannot be merged until marked as ready for review. Use mark_pull_request_as_ready_for_review to convert a draft PR. Default: true.",
-                    "type": "boolean"
-                  },
-                  "labels": {
-                    "description": "Labels to categorize the PR (e.g., 'enhancement', 'bugfix'). Labels must exist in the repository.",
-                    "items": {
-                      "type": "string"
-                    },
-                    "type": "array"
-                  },
-                  "title": {
-                    "description": "Concise PR title describing the changes. Follow repository conventions (e.g., conventional commits). The title appears as the main heading.",
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "title",
-                  "body"
-                ],
-                "type": "object"
-              },
-              "name": "create_pull_request"
             },
             {
               "description": "Report that a tool or capability needed to complete the task is not available, or share any information you deem important about missing functionality or limitations. Use this when you cannot accomplish what was requested because the required functionality is missing or access is restricted.",
@@ -860,75 +752,6 @@ jobs:
                 "repo": {
                   "type": "string",
                   "maxLength": 256
-                }
-              }
-            },
-            "create_issue": {
-              "defaultMax": 1,
-              "fields": {
-                "body": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 65000
-                },
-                "labels": {
-                  "type": "array",
-                  "itemType": "string",
-                  "itemSanitize": true,
-                  "itemMaxLength": 128
-                },
-                "parent": {
-                  "issueOrPRNumber": true
-                },
-                "repo": {
-                  "type": "string",
-                  "maxLength": 256
-                },
-                "temporary_id": {
-                  "type": "string"
-                },
-                "title": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 128
-                }
-              }
-            },
-            "create_pull_request": {
-              "defaultMax": 1,
-              "fields": {
-                "body": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 65000
-                },
-                "branch": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 256
-                },
-                "draft": {
-                  "type": "boolean"
-                },
-                "labels": {
-                  "type": "array",
-                  "itemType": "string",
-                  "itemSanitize": true,
-                  "itemMaxLength": 128
-                },
-                "repo": {
-                  "type": "string",
-                  "maxLength": 256
-                },
-                "title": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 128
                 }
               }
             },
@@ -1029,99 +852,9 @@ jobs:
           
           bash /opt/gh-aw/actions/start_safe_outputs_server.sh
           
-      - name: Setup Safe Inputs Config
-        run: |
-          mkdir -p /opt/gh-aw/safe-inputs/logs
-          cat > /opt/gh-aw/safe-inputs/tools.json << 'GH_AW_SAFE_INPUTS_TOOLS_EOF'
-          {
-            "serverName": "safeinputs",
-            "version": "1.0.0",
-            "logDir": "/opt/gh-aw/safe-inputs/logs",
-            "tools": [
-              {
-                "name": "ready-to-make-pr",
-                "description": "Run the PR readiness checklist before creating or updating a PR",
-                "inputSchema": {
-                  "properties": {},
-                  "type": "object"
-                },
-                "handler": "ready-to-make-pr.cjs",
-                "timeout": 60
-              }
-            ]
-          }
-          GH_AW_SAFE_INPUTS_TOOLS_EOF
-          cat > /opt/gh-aw/safe-inputs/mcp-server.cjs << 'GH_AW_SAFE_INPUTS_SERVER_EOF'
-            const path = require("path");
-            const { startHttpServer } = require("./safe_inputs_mcp_server_http.cjs");
-            const configPath = path.join(__dirname, "tools.json");
-            const port = parseInt(process.env.GH_AW_SAFE_INPUTS_PORT || "3000", 10);
-            const apiKey = process.env.GH_AW_SAFE_INPUTS_API_KEY || "";
-            startHttpServer(configPath, {
-              port: port,
-              stateless: true,
-              logDir: "/opt/gh-aw/safe-inputs/logs"
-            }).catch(error => {
-              console.error("Failed to start safe-inputs HTTP server:", error);
-              process.exit(1);
-            });
-          GH_AW_SAFE_INPUTS_SERVER_EOF
-          chmod +x /opt/gh-aw/safe-inputs/mcp-server.cjs
-          
-      - name: Setup Safe Inputs Tool Files
-        run: |
-          cat > /opt/gh-aw/safe-inputs/ready-to-make-pr.cjs << 'GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF'
-            async function execute(inputs) {
-              const fs = require('fs');
-              const find = (...paths) => paths.find(p => fs.existsSync(p)) || null;
-              const contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md');
-              const prTemplate = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md');
-              const checklist = [];
-              if (contributing) checklist.push(`Review the contributing guide (${contributing}) before opening or updating a PR.`);
-              if (prTemplate) checklist.push(`Follow the PR template (${prTemplate}) for title, description, and validation notes.`);
-              checklist.push('Confirm the requested task is fully completed and validated before creating or pushing PR changes.');
-              return { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
-            }
-            module.exports = { execute };
-          GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF
-          
-      - name: Generate Safe Inputs MCP Server Config
-        id: safe-inputs-config
-        run: |
-          # Generate a secure random API key (360 bits of entropy, 40+ chars)
-          # Mask immediately to prevent timing vulnerabilities
-          API_KEY=$(openssl rand -base64 45 | tr -d '/+=')
-          echo "::add-mask::${API_KEY}"
-          
-          PORT=3000
-          
-          # Set outputs for next steps
-          {
-            echo "safe_inputs_api_key=${API_KEY}"
-            echo "safe_inputs_port=${PORT}"
-          } >> "$GITHUB_OUTPUT"
-          
-          echo "Safe Inputs MCP server will run on port ${PORT}"
-          
-      - name: Start Safe Inputs MCP HTTP Server
-        id: safe-inputs-start
-        env:
-          DEBUG: '*'
-          GH_AW_SAFE_INPUTS_PORT: ${{ steps.safe-inputs-config.outputs.safe_inputs_port }}
-          GH_AW_SAFE_INPUTS_API_KEY: ${{ steps.safe-inputs-config.outputs.safe_inputs_api_key }}
-        run: |
-          # Environment variables are set above to prevent template injection
-          export DEBUG
-          export GH_AW_SAFE_INPUTS_PORT
-          export GH_AW_SAFE_INPUTS_API_KEY
-          
-          bash /opt/gh-aw/actions/start_safe_inputs_server.sh
-          
       - name: Start MCP Gateway
         id: start-mcp-gateway
         env:
-          GH_AW_SAFE_INPUTS_API_KEY: ${{ steps.safe-inputs-start.outputs.api_key }}
-          GH_AW_SAFE_INPUTS_PORT: ${{ steps.safe-inputs-start.outputs.port }}
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_SAFE_OUTPUTS_API_KEY: ${{ steps.safe-outputs-start.outputs.api_key }}
           GH_AW_SAFE_OUTPUTS_PORT: ${{ steps.safe-outputs-start.outputs.port }}
@@ -1141,8 +874,8 @@ jobs:
           mkdir -p "${MCP_GATEWAY_PAYLOAD_DIR}"
           export DEBUG="*"
           
-          export GH_AW_ENGINE="claude"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_INPUTS_PORT -e GH_AW_SAFE_INPUTS_API_KEY -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.4'
+          export GH_AW_ENGINE="gemini"
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.4'
           
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
           {
@@ -1164,19 +897,21 @@ jobs:
                 "type": "http",
                 "url": "https://public-code-search.fastmcp.app/mcp"
               },
-              "safeinputs": {
-                "type": "http",
-                "url": "http://host.docker.internal:$GH_AW_SAFE_INPUTS_PORT",
-                "headers": {
-                  "Authorization": "$GH_AW_SAFE_INPUTS_API_KEY"
-                }
-              },
               "safeoutputs": {
                 "type": "http",
                 "url": "http://host.docker.internal:$GH_AW_SAFE_OUTPUTS_PORT",
                 "headers": {
                   "Authorization": "$GH_AW_SAFE_OUTPUTS_API_KEY"
                 }
+              },
+              "web-fetch": {
+                "command": "docker",
+                "args": [
+                  "run",
+                  "-i",
+                  "--rm",
+                  "mcp/fetch"
+                ]
               }
             },
             "gateway": {
@@ -1200,99 +935,20 @@ jobs:
           path: /tmp/gh-aw/aw-prompts
       - name: Clean git credentials
         run: bash /opt/gh-aw/actions/clean_git_credentials.sh
-      - name: Execute Claude Code CLI
+      - name: Run Gemini
         id: agentic_execution
-        # Allowed tools (sorted):
-        # - Bash
-        # - BashOutput
-        # - Edit
-        # - ExitPlanMode
-        # - Glob
-        # - Grep
-        # - KillBash
-        # - LS
-        # - MultiEdit
-        # - NotebookEdit
-        # - NotebookRead
-        # - Read
-        # - Task
-        # - TodoWrite
-        # - WebFetch
-        # - WebSearch
-        # - Write
-        # - mcp__agents-md-generator__generate_agents_md
-        # - mcp__github__download_workflow_run_artifact
-        # - mcp__github__get_code_scanning_alert
-        # - mcp__github__get_commit
-        # - mcp__github__get_dependabot_alert
-        # - mcp__github__get_discussion
-        # - mcp__github__get_discussion_comments
-        # - mcp__github__get_file_contents
-        # - mcp__github__get_job_logs
-        # - mcp__github__get_label
-        # - mcp__github__get_latest_release
-        # - mcp__github__get_me
-        # - mcp__github__get_notification_details
-        # - mcp__github__get_pull_request
-        # - mcp__github__get_pull_request_comments
-        # - mcp__github__get_pull_request_diff
-        # - mcp__github__get_pull_request_files
-        # - mcp__github__get_pull_request_review_comments
-        # - mcp__github__get_pull_request_reviews
-        # - mcp__github__get_pull_request_status
-        # - mcp__github__get_release_by_tag
-        # - mcp__github__get_secret_scanning_alert
-        # - mcp__github__get_tag
-        # - mcp__github__get_workflow_run
-        # - mcp__github__get_workflow_run_logs
-        # - mcp__github__get_workflow_run_usage
-        # - mcp__github__issue_read
-        # - mcp__github__list_branches
-        # - mcp__github__list_code_scanning_alerts
-        # - mcp__github__list_commits
-        # - mcp__github__list_dependabot_alerts
-        # - mcp__github__list_discussion_categories
-        # - mcp__github__list_discussions
-        # - mcp__github__list_issue_types
-        # - mcp__github__list_issues
-        # - mcp__github__list_label
-        # - mcp__github__list_notifications
-        # - mcp__github__list_pull_requests
-        # - mcp__github__list_releases
-        # - mcp__github__list_secret_scanning_alerts
-        # - mcp__github__list_starred_repositories
-        # - mcp__github__list_tags
-        # - mcp__github__list_workflow_jobs
-        # - mcp__github__list_workflow_run_artifacts
-        # - mcp__github__list_workflow_runs
-        # - mcp__github__list_workflows
-        # - mcp__github__pull_request_read
-        # - mcp__github__search_code
-        # - mcp__github__search_issues
-        # - mcp__github__search_orgs
-        # - mcp__github__search_pull_requests
-        # - mcp__github__search_repositories
-        # - mcp__github__search_users
-        # - mcp__public-code-search__search_code
-        timeout-minutes: 60
         run: |
           set -o pipefail
-          sudo -E awf --tty --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.githubusercontent.com,*.jsr.io,*.pythonhosted.org,*.rvm.io,agents-md-generator.fastmcp.app,anaconda.org,anthropic.com,api.anthropic.com,api.github.com,api.npms.io,api.rubygems.org,api.snapcraft.io,archive.ubuntu.com,artifacts.elastic.co,azure.archive.ubuntu.com,binstar.org,bootstrap.pypa.io,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.jsdelivr.net,cdn.playwright.dev,cloud.elastic.co,codeload.github.com,conda.anaconda.org,conda.binstar.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,deb.nodesource.com,deno.land,ela.st,elastic.co,esm.sh,files.pythonhosted.org,gems.rubyforge.org,gems.rubyonrails.org,get.pnpm.io,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,host.docker.internal,index.crates.io,index.rubygems.org,json-schema.org,json.schemastore.org,jsr.io,keyserver.ubuntu.com,lfs.github.com,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pip.pypa.io,pkg.go.dev,playwright.download.prss.microsoft.com,ppa.launchpad.net,proxy.golang.org,public-code-search.fastmcp.app,pypi.org,pypi.python.org,raw.githubusercontent.com,registry.bower.io,registry.npmjs.com,registry.npmjs.org,registry.yarnpkg.com,repo.anaconda.com,repo.continuum.io,repo.yarnpkg.com,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,security.ubuntu.com,sentry.io,skimdb.npmjs.com,static.crates.io,statsig.anthropic.com,storage.googleapis.com,sum.golang.org,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.elastic.co,www.npmjs.com,www.npmjs.org,yarnpkg.com' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.2 --skip-pull --enable-api-proxy \
-            -- /bin/bash -c 'export PATH="$(find /opt/hostedtoolcache -maxdepth 4 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true && claude --print --disable-slash-commands --no-chrome --mcp-config /tmp/gh-aw/mcp-config/mcp-servers.json --allowed-tools Bash,BashOutput,Edit,ExitPlanMode,Glob,Grep,KillBash,LS,MultiEdit,NotebookEdit,NotebookRead,Read,Task,TodoWrite,WebFetch,WebSearch,Write,mcp__agents-md-generator__generate_agents_md,mcp__github__download_workflow_run_artifact,mcp__github__get_code_scanning_alert,mcp__github__get_commit,mcp__github__get_dependabot_alert,mcp__github__get_discussion,mcp__github__get_discussion_comments,mcp__github__get_file_contents,mcp__github__get_job_logs,mcp__github__get_label,mcp__github__get_latest_release,mcp__github__get_me,mcp__github__get_notification_details,mcp__github__get_pull_request,mcp__github__get_pull_request_comments,mcp__github__get_pull_request_diff,mcp__github__get_pull_request_files,mcp__github__get_pull_request_review_comments,mcp__github__get_pull_request_reviews,mcp__github__get_pull_request_status,mcp__github__get_release_by_tag,mcp__github__get_secret_scanning_alert,mcp__github__get_tag,mcp__github__get_workflow_run,mcp__github__get_workflow_run_logs,mcp__github__get_workflow_run_usage,mcp__github__issue_read,mcp__github__list_branches,mcp__github__list_code_scanning_alerts,mcp__github__list_commits,mcp__github__list_dependabot_alerts,mcp__github__list_discussion_categories,mcp__github__list_discussions,mcp__github__list_issue_types,mcp__github__list_issues,mcp__github__list_label,mcp__github__list_notifications,mcp__github__list_pull_requests,mcp__github__list_releases,mcp__github__list_secret_scanning_alerts,mcp__github__list_starred_repositories,mcp__github__list_tags,mcp__github__list_workflow_jobs,mcp__github__list_workflow_run_artifacts,mcp__github__list_workflow_runs,mcp__github__list_workflows,mcp__github__pull_request_read,mcp__github__search_code,mcp__github__search_issues,mcp__github__search_orgs,mcp__github__search_pull_requests,mcp__github__search_repositories,mcp__github__search_users,mcp__public-code-search__search_code --debug-file /tmp/gh-aw/agent-stdio.log --verbose --permission-mode bypassPermissions --output-format stream-json "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"${GH_AW_MODEL_AGENT_CLAUDE:+ --model "$GH_AW_MODEL_AGENT_CLAUDE"}' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
+          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.googleapis.com,agents-md-generator.fastmcp.app,artifacts.elastic.co,cloud.elastic.co,ela.st,elastic.co,generativelanguage.googleapis.com,github.com,host.docker.internal,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,www.elastic.co' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.2 --skip-pull --enable-api-proxy \
+            -- /bin/bash -c 'export PATH="$(find /opt/hostedtoolcache -maxdepth 4 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true && gemini --yolo --output-format stream-json --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          BASH_DEFAULT_TIMEOUT_MS: 60000
-          BASH_MAX_TIMEOUT_MS: 60000
-          DISABLE_BUG_COMMAND: 1
-          DISABLE_ERROR_REPORTING: 1
-          DISABLE_TELEMETRY: 1
-          GH_AW_MCP_CONFIG: /tmp/gh-aw/mcp-config/mcp-servers.json
-          GH_AW_MODEL_AGENT_CLAUDE: ${{ vars.GH_AW_MODEL_AGENT_CLAUDE || '' }}
+          GEMINI_API_BASE_URL: http://host.docker.internal:10003
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ inputs.model }}
+          GH_AW_MCP_CONFIG: ${{ github.workspace }}/.gemini/settings.json
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
-          MCP_TIMEOUT: 120000
-          MCP_TOOL_TIMEOUT: 60000
       - name: Configure Git credentials
         env:
           REPO_NAME: ${{ github.repository }}
@@ -1323,8 +979,8 @@ jobs:
             const { main } = require('/opt/gh-aw/actions/redact_secrets.cjs');
             await main();
         env:
-          GH_AW_SECRET_NAMES: 'ANTHROPIC_API_KEY,GH_AW_GITHUB_MCP_SERVER_TOKEN,GH_AW_GITHUB_TOKEN,GITHUB_TOKEN'
-          SECRET_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GH_AW_SECRET_NAMES: 'GEMINI_API_KEY,GH_AW_GITHUB_MCP_SERVER_TOKEN,GH_AW_GITHUB_TOKEN,GITHUB_TOKEN'
+          SECRET_GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SECRET_GH_AW_GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN }}
           SECRET_GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
           SECRET_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -1341,7 +997,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_ALLOWED_DOMAINS: "*.githubusercontent.com,*.jsr.io,*.pythonhosted.org,*.rvm.io,agents-md-generator.fastmcp.app,anaconda.org,anthropic.com,api.anthropic.com,api.github.com,api.npms.io,api.rubygems.org,api.snapcraft.io,archive.ubuntu.com,artifacts.elastic.co,azure.archive.ubuntu.com,binstar.org,bootstrap.pypa.io,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.jsdelivr.net,cdn.playwright.dev,cloud.elastic.co,codeload.github.com,conda.anaconda.org,conda.binstar.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,deb.nodesource.com,deno.land,ela.st,elastic.co,esm.sh,files.pythonhosted.org,gems.rubyforge.org,gems.rubyonrails.org,get.pnpm.io,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,host.docker.internal,index.crates.io,index.rubygems.org,json-schema.org,json.schemastore.org,jsr.io,keyserver.ubuntu.com,lfs.github.com,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pip.pypa.io,pkg.go.dev,playwright.download.prss.microsoft.com,ppa.launchpad.net,proxy.golang.org,public-code-search.fastmcp.app,pypi.org,pypi.python.org,raw.githubusercontent.com,registry.bower.io,registry.npmjs.com,registry.npmjs.org,registry.yarnpkg.com,repo.anaconda.com,repo.continuum.io,repo.yarnpkg.com,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,security.ubuntu.com,sentry.io,skimdb.npmjs.com,static.crates.io,statsig.anthropic.com,storage.googleapis.com,sum.golang.org,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.elastic.co,www.npmjs.com,www.npmjs.org,yarnpkg.com"
+          GH_AW_ALLOWED_DOMAINS: "agents-md-generator.fastmcp.app,artifacts.elastic.co,cloud.elastic.co,ela.st,elastic.co,public-code-search.fastmcp.app,www.elastic.co"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
         with:
@@ -1366,16 +1022,7 @@ jobs:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/parse_claude_log.cjs');
-            await main();
-      - name: Parse Safe Inputs logs for step summary
-        if: always()
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        with:
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/parse_safe_inputs_logs.cjs');
+            const { main } = require('/opt/gh-aw/actions/parse_gemini_log.cjs');
             await main();
       - name: Parse MCP Gateway logs for step summary
         if: always()
@@ -1386,21 +1033,6 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/parse_mcp_gateway_log.cjs');
             await main();
-      - name: Print firewall logs
-        if: always()
-        continue-on-error: true
-        env:
-          AWF_LOGS_DIR: /tmp/gh-aw/sandbox/firewall/logs
-        run: |
-          # Fix permissions on firewall logs so they can be uploaded as artifacts
-          # AWF runs with sudo, creating files owned by root
-          sudo chmod -R a+r /tmp/gh-aw/sandbox/firewall/logs 2>/dev/null || true
-          # Only run awf logs summary if awf command exists (it may not be installed if workflow failed before install step)
-          if command -v awf &> /dev/null; then
-            awf logs summary | tee -a "$GITHUB_STEP_SUMMARY"
-          else
-            echo 'AWF binary not installed, skipping firewall log summary'
-          fi
       - name: Upload agent artifacts
         if: always()
         continue-on-error: true
@@ -1411,11 +1043,8 @@ jobs:
             /tmp/gh-aw/aw-prompts/prompt.txt
             /tmp/gh-aw/aw_info.json
             /tmp/gh-aw/mcp-logs/
-            /tmp/gh-aw/safe-inputs/logs/
-            /tmp/gh-aw/sandbox/firewall/logs/
             /tmp/gh-aw/agent-stdio.log
             /tmp/gh-aw/agent/
-            /tmp/gh-aw/aw-*.patch
           if-no-files-found: ignore
 
   conclusion:
@@ -1427,9 +1056,8 @@ jobs:
     if: (always()) && (needs.agent.result != 'skipped')
     runs-on: ubuntu-slim
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
       tools_reported: ${{ steps.missing_tool.outputs.tools_reported }}
@@ -1514,20 +1142,6 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/handle_noop_message.cjs');
             await main();
-      - name: Handle Create Pull Request Error
-        id: handle_create_pr_error
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Deep Research"
-          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/handle_create_pr_error.cjs');
-            await main();
 
   detection:
     needs: agent
@@ -1535,7 +1149,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     concurrency:
-      group: "gh-aw-claude-deep-research-${{ github.event.issue.number }}"
+      group: "gh-aw-gemini-deep-research-${{ github.event.issue.number }}"
     timeout-minutes: 10
     outputs:
       success: ${{ steps.parse_results.outputs.success }}
@@ -1565,7 +1179,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           WORKFLOW_NAME: "Deep Research"
-          WORKFLOW_DESCRIPTION: "Deep research assistant for issue comments with web fetch/search and optional PR creation"
+          WORKFLOW_DESCRIPTION: "Deep research assistant for issue comments with web fetch"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1577,55 +1191,28 @@ jobs:
         run: |
           mkdir -p /tmp/gh-aw/threat-detection
           touch /tmp/gh-aw/threat-detection/detection.log
-      - name: Validate ANTHROPIC_API_KEY secret
+      - name: Validate GEMINI_API_KEY secret
         id: validate-secret
-        run: /opt/gh-aw/actions/validate_multi_secret.sh ANTHROPIC_API_KEY 'Claude Code' https://github.github.com/gh-aw/reference/engines/#anthropic-claude-code
+        run: /opt/gh-aw/actions/validate_multi_secret.sh GEMINI_API_KEY 'Gemini CLI' https://geminicli.com/docs/get-started/authentication/
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       - name: Setup Node.js
         uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Install Claude Code CLI
-        run: npm install -g --silent @anthropic-ai/claude-code@2.1.49
-      - name: Execute Claude Code CLI
+      - name: Install Gemini CLI
+        run: npm install -g --silent @google/gemini-cli@0.29.0
+      - name: Run Gemini
         id: agentic_execution
-        # Allowed tools (sorted):
-        # - Bash(cat)
-        # - Bash(grep)
-        # - Bash(head)
-        # - Bash(jq)
-        # - Bash(ls)
-        # - Bash(tail)
-        # - Bash(wc)
-        # - BashOutput
-        # - ExitPlanMode
-        # - Glob
-        # - Grep
-        # - KillBash
-        # - LS
-        # - NotebookRead
-        # - Read
-        # - Task
-        # - TodoWrite
-        timeout-minutes: 20
         run: |
           set -o pipefail
-                    # Execute Claude Code CLI with prompt from file
-                    claude --print --disable-slash-commands --no-chrome --allowed-tools 'Bash(cat),Bash(grep),Bash(head),Bash(jq),Bash(ls),Bash(tail),Bash(wc),BashOutput,ExitPlanMode,Glob,Grep,KillBash,LS,NotebookRead,Read,Task,TodoWrite' --debug-file /tmp/gh-aw/threat-detection/detection.log --verbose --permission-mode bypassPermissions --output-format stream-json "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"${GH_AW_MODEL_DETECTION_CLAUDE:+ --model "$GH_AW_MODEL_DETECTION_CLAUDE"} 2>&1 | tee -a /tmp/gh-aw/threat-detection/detection.log
+          gemini --yolo --output-format stream-json --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)" 2>&1 | tee -a /tmp/gh-aw/threat-detection/detection.log
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          BASH_DEFAULT_TIMEOUT_MS: 60000
-          BASH_MAX_TIMEOUT_MS: 60000
-          DISABLE_BUG_COMMAND: 1
-          DISABLE_ERROR_REPORTING: 1
-          DISABLE_TELEMETRY: 1
-          GH_AW_MODEL_DETECTION_CLAUDE: ${{ vars.GH_AW_MODEL_DETECTION_CLAUDE || '' }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ inputs.model }}
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GITHUB_WORKSPACE: ${{ github.workspace }}
-          MCP_TIMEOUT: 120000
-          MCP_TOOL_TIMEOUT: 60000
       - name: Parse threat detection results
         id: parse_results
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -1685,18 +1272,17 @@ jobs:
 
   safe_outputs:
     needs:
-      - activation
       - agent
       - detection
     if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (needs.detection.outputs.success == 'true')
     runs-on: ubuntu-slim
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write
     timeout-minutes: 15
     env:
-      GH_AW_ENGINE_ID: "claude"
+      GH_AW_ENGINE_ID: "gemini"
+      GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-deep-research"
       GH_AW_WORKFLOW_NAME: "Deep Research"
@@ -1721,39 +1307,12 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs/
           find "/tmp/gh-aw/safeoutputs/" -type f -print
           echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/safeoutputs/agent_output.json" >> "$GITHUB_ENV"
-      - name: Download patch artifact
-        continue-on-error: true
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
-        with:
-          name: agent-artifacts
-          path: /tmp/gh-aw/
-      - name: Checkout repository
-        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ github.base_ref || github.ref_name }}
-          token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          persist-credentials: false
-          fetch-depth: 1
-      - name: Configure Git credentials
-        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
-        env:
-          REPO_NAME: ${{ github.repository }}
-          SERVER_URL: ${{ github.server_url }}
-          GIT_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          # Re-authenticate git with GitHub token
-          SERVER_URL_STRIPPED="${SERVER_URL#https://}"
-          git remote set-url origin "https://x-access-token:${GIT_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git"
-          echo "Git configured with standard GitHub Actions identity"
       - name: Process Safe Outputs
         id: process_safe_outputs
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"create_issue\":{\"max\":1},\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
