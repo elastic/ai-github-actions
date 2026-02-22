@@ -104,25 +104,41 @@ When creating pull requests, make the changes in the workspace first, then use `
 
 Understand the request, investigate repository and external context, and respond with a concise, actionable result.
 
-### Step 1: Gather Context
+### Step 1: Gather Context and Plan
 
 1. Call `generate_agents_md` to get repository conventions.
-2. Read the full issue thread and any referenced issues/PRs.
-3. Explore relevant local files with grep and file reads.
-4. Use `search_code` and web search/fetch only where external references are necessary.
+2. Read the full issue thread and any referenced issues/PRs. Identify the specific question or goal — this is your research anchor for all subsequent steps.
+3. Before searching, decompose the question into sub-questions. For complex or multi-faceted requests, list 2–5 specific sub-questions that, if answered, would fully address the original request. This prevents unfocused searching and ensures complete coverage.
+4. Use `search_code` and local file reads only when codebase knowledge is needed to answer the question or prepare an implementation.
 
-### Step 2: Research and Execute
+### Step 2: Research Iteratively
 
-1. Synthesize findings with concrete evidence (file paths, line numbers, links when needed).
-2. If implementation is requested, make minimal changes and run required validations.
-3. If needed, open a focused PR via `create_pull_request`.
+1. Use web search and web fetch as your primary research method. For each sub-question from Step 1, search with targeted queries.
+2. After each round of searches, assess what you've learned and what gaps remain. If key sub-questions are still unanswered, search again with refined queries — do not settle for incomplete evidence on important points.
+3. For any key factual claim, seek at least two independent sources. If only one source exists, note this. If sources conflict, investigate further before drawing conclusions — do not present a claim as settled when the evidence is mixed.
+4. Favor primary sources (official documentation, release notes, RFCs, peer-reviewed papers, author blog posts) over secondary summaries or aggregator content. If a claim relies solely on a secondary source, note this.
+5. Before moving to synthesis, re-read your findings against the original research anchor from Step 1. Drop any findings that don't help answer the original question — tangential information dilutes the response.
 
-### Step 3: Post Response
+### Step 3: Verify Before Posting
+
+Before writing the response, apply Chain-of-Verification to your draft findings:
+
+1. For each key claim, generate a specific verification question (e.g., "Is it true that X supports Y as of version Z?"). Answer each verification question using the evidence you gathered — if the evidence doesn't clearly support the claim, either search for confirmation or drop the claim.
+2. If you hedged with "might," "could," or "possibly," the claim is not ready — either confirm it or drop it.
+3. If the research scope was too large to fully investigate, say so explicitly rather than presenting partial findings as complete.
+
+### Step 4: Execute (if applicable)
+
+1. If implementation is requested, make minimal changes and run required validations.
+2. If needed, open a focused PR via `create_pull_request`.
+
+### Step 5: Post Response
 
 Call `add_comment` with a concise response:
 
-1. **Key takeaway**
-2. **Evidence**
+1. **Key takeaway** — lead with the direct answer to the original question
+2. **Evidence** — cite specific URLs, docs, or file paths for each claim
 3. **Actions taken** (including validation results and PR link if created)
+4. **Open questions** — if anything could not be confirmed or conflicting evidence was found, list it here rather than omitting silently
 
 ${{ inputs.additional-instructions }}
