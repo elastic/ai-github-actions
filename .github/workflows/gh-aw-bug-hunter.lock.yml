@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"760d2c65f08ce2e248d5f20032748d9db3aab3a37b206d946ab1d8f24e5601f3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"63aa7b51c6b2e45b1b93ff5de8dae9b2fc8e7c92f9d33a020f2dd3901f8cfefa"}
 
 name: "Bug Hunter"
 "on":
@@ -1461,7 +1461,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"[bug-hunter] \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"expires\":168,\"max\":1,\"title_prefix\":\"[bug-hunter] \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
