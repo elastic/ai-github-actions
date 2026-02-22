@@ -57,6 +57,11 @@ on:
         type: string
         required: false
         default: ""
+      create-pull-request-review-comment-max:
+        description: "Maximum number of review comments the agent can create per run"
+        type: string
+        required: false
+        default: "30"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true

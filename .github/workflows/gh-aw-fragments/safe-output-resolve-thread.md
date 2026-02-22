@@ -1,7 +1,7 @@
 ---
 safe-outputs:
   resolve-pull-request-review-thread:
-    max: 10
+    max: ${{ inputs.resolve-pull-request-review-thread-max }}
 ---
 
 ## resolve-pull-request-review-thread Limitations
