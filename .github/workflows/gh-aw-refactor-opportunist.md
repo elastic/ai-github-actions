@@ -75,8 +75,6 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "[refactor-opportunist] "
-    close-older-issues: true
-    expires: 7d
 timeout-minutes: 90
 steps:
   - name: Repo-specific setup
