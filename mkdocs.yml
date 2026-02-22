@@ -11,7 +11,7 @@ hooks:
 nav:
   - Home: index.md
   - Workflows:
-      - GitHub Agent Workflows:
+      - Elastic Agent Factory (GitHub Agent Workflows):
           - Overview: workflows/gh-agent-workflows.md
           - Base Workflows:
               - Scheduled Audit: workflows/gh-agent-workflows/scheduled-audit.md
