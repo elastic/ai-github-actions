@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/review-examples.md
 #     - gh-aw-fragments/review-process.md
 #     - gh-aw-fragments/rigor.md
@@ -38,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"515915c9bb6b419435c0bccc29d20e51125a488aea99da160f3eead461d19f24"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bc6e264cc960a00b6ecce8a72edef8a95a14f66d6466315013aba3c10dbd532b"}
 
 name: "PR Review"
 "on":
@@ -513,6 +514,9 @@ jobs:
           - **Max per run**: 1 review submission per workflow run. Leave inline comments first, then submit the review as a single final action.
           
           **Do NOT** describe what the PR does, list the files you reviewed, summarize inline comments, or restate prior review feedback. The PR author already knows what their PR does. Your inline comments already contain all the detail. The review body exists solely to communicate the approve/request-changes decision and important/critical feedback that cannot be covered in inline comments.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # PR Review Agent

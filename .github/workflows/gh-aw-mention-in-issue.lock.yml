@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
@@ -38,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"39bc1431b1397a8cfed230aa04ee67eeec75be2d3e0cb30d4a4e11e7d3e96306"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6797c2a6685038bff9983fae87932dd0392304d6a311eec7cb1baea34efe3d45"}
 
 name: "Mention in Issue"
 "on":
@@ -366,6 +367,9 @@ jobs:
           - **Body**: No strict character limit beyond GitHub's API limit (~65,536 characters), but fields over 16,000 tokens are written to a file reference instead of inlined.
           - **Bot triggers**: References like `fixes #123` or `closes #456` in the body are neutralized to prevent unintended issue closures.
           - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # Issue Assistant

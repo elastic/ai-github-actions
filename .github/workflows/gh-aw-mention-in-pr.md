@@ -16,6 +16,7 @@ imports:
   - gh-aw-fragments/safe-output-submit-review.md
   - gh-aw-fragments/safe-output-push-to-pr.md
   - gh-aw-fragments/safe-output-resolve-thread.md
+  - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -68,34 +69,6 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
-network:
-  allowed:
-    - defaults
-    - github
-    - go
-    - node
-    - python
-    - ruby
-    - clojure
-    - containers
-    - dart
-    - dotnet
-    - elixir
-    - fonts
-    - github-actions
-    - haskell
-    - java
-    - kotlin
-    - linux-distros
-    - node-cdns
-    - perl
-    - php
-    - playwright
-    - rust
-    - scala
-    - swift
-    - terraform
-    - zig
 strict: false
 timeout-minutes: 60
 steps:

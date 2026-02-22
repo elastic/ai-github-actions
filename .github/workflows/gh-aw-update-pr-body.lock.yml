@@ -28,13 +28,14 @@
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-update-pr.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"719a4df6861dd3cf186c9a5d9f58015ca280ff32ad39ae66b5332f7f01f97c2b"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6e24b1449271ddc1ba4024f4873ab5253c59de63d0e195b2115eedd070e7ac3c"}
 
 name: "Update PR Body"
 "on":
@@ -323,6 +324,9 @@ jobs:
           - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
           - **Max per run**: 1 update per workflow run.
           - **Draft**: Optionally convert the PR between draft and ready-for-review.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # PR Body Update Agent

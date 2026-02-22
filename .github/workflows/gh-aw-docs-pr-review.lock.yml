@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-review-comment.md
@@ -36,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"23204508fbd94de5c933bf3904891995e6ece16df5791fae3f2490931951caef"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"747e8f61edff6cb21d6db3eaccd919d3056ba2460c0116190760ea3112abe216"}
 
 name: "Docs PR Review"
 "on":
@@ -337,6 +338,9 @@ jobs:
           - **Max per run**: 1 review submission per workflow run. Leave inline comments first, then submit the review as a single final action.
           
           **Do NOT** describe what the PR does, list the files you reviewed, summarize inline comments, or restate prior review feedback. The PR author already knows what their PR does. Your inline comments already contain all the detail. The review body exists solely to communicate the approve/request-changes decision and important/critical feedback that cannot be covered in inline comments.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # Docs PR Review Agent

@@ -30,6 +30,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-issue.md
@@ -37,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"652f35870f6f66c4d7e6037e2e1bbac8542359ad8344b5df0ace7a640ef0d6e8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0a95027ba44c6aa8520cd6da8c84b2163b63a0cdab9a465d9e2126ac869f4b77"}
 
 name: "Docs Patrol"
 "on":
@@ -385,6 +386,9 @@ jobs:
           - If a finding is ambiguous, it does not pass the quality gate — drop it
           
           **Report Assignment:**
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"

@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/review-process.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
@@ -41,7 +42,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f42cf3d96162d2299f9f2ee50555ff5d89fb2305a63f1c6cbfa6b8e7d2889385"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4db7ad043f6ef7ba324077a415b04ac7dd9ac49b9b07268f44865c2fba9a8699"}
 
 name: "Mention in PR"
 "on":
@@ -500,6 +501,9 @@ jobs:
           - **Required field**: `thread_id` — the GraphQL node ID of the review thread (e.g., `PRRT_kwDO...`). This is the `id` field from `get_review_comments`, not the numeric REST comment ID.
           - **Only resolve what you've addressed**: Do not resolve threads you skipped, disagreed with, or didn't fix. Only resolve threads where your changes directly address the feedback.
           - **Max per run**: 10 thread resolutions per workflow run.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # PR Assistant

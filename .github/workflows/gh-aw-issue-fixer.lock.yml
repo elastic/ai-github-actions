@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
@@ -37,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"41adc80a813233597755ed40bd4d97a3fbde5a4bc97cd538529c3371e83a1037"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bf90c5fe9b3dfad66ab72f87cc210791e167f5d63e9f39c6d1e2e2dd50601069"}
 
 name: "Issue Fixer"
 "on":
@@ -347,6 +348,9 @@ jobs:
           - **Base branch**: Must be configured in the safe-output config. The PR targets this branch.
           - **Max per run**: Typically 1 PR creation per workflow run.
           - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # Issue Fixer

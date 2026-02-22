@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-issue.md
@@ -36,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9ceea0f68a9ec5a4f0425f99917b617bf4018c123df3c05169a58fb8176ce395"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3f4f69bd359cdc63c967e63e37fb3760dfe6b09e759bc9d16bd23ad5b9051eb9"}
 
 name: "Code Duplication Detector"
 "on":
@@ -387,6 +388,9 @@ jobs:
           - If a finding is ambiguous, it does not pass the quality gate — drop it
           
           **Report Assignment:**
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"

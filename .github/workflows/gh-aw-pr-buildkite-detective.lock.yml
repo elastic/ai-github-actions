@@ -29,13 +29,14 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a151c47021e05fd64b60c8c803b4e1caaedd33bfa4efe81aa8ea0db18645c516"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0dc20a67a05a95649f1fcb95d9370d22ea1fc1fa5c31d2721fddfae20facce01"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -326,6 +327,9 @@ jobs:
           - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
           
           If you exceed 10 mentions or 50 links, the comment will be rejected.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # PR Buildkite Detective

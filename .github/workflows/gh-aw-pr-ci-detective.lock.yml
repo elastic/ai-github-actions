@@ -34,6 +34,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
@@ -41,7 +42,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ed4383f5765fd3b707f9e43dc3f14f4b6d276573f9ea8336414810f36d7ff35c"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"daa41840992922382da37f58624063e783fb71c241a54a3b69ec7e4296c48e62"}
 
 name: "PR Actions Detective"
 "on":
@@ -324,6 +325,9 @@ jobs:
           - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
           
           If you exceed 10 mentions or 50 links, the comment will be rejected.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # PR Actions Detective

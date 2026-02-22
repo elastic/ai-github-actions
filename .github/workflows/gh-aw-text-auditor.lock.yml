@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-issue.md
@@ -36,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"309d07fad0066f95a57e2b17925b25b758970b33b9e7904192b5dadf3e7630dd"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"71f62b6d0fbebe42caea7983c0135d3cae311015d0014a8d7694ec401d85e89f"}
 
 name: "Text Auditor"
 "on":
@@ -405,6 +406,9 @@ jobs:
           - If a finding is ambiguous, it does not pass the quality gate — drop it
           
           **Report Assignment:**
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"

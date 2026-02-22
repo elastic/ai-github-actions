@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-issue.md
@@ -36,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e1fb08a9cffabc500030f352ab7260e0c0ca9a3b004984a126c6c3809d74c32e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"29cd8b50bb7e6b2100277cfbbc797934bf3f36ab9513056f586f989a5ea9ee45"}
 
 name: "Newbie Contributor Patrol"
 "on":
@@ -375,6 +376,9 @@ jobs:
           - If a finding is ambiguous, it does not pass the quality gate — drop it
           
           **Report Assignment:**
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"

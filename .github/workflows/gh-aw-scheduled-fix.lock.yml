@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-pr.md
@@ -37,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"77d69738c78a0cc8096958a244472134fc4ceac46206f00d7b5aa7bdb893bbf8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"846deb8bdddb2ed1675bdb41acd3212de793550f9f20658225d388d92aab9fd3"}
 
 name: "Scheduled Fix"
 "on":
@@ -403,6 +404,9 @@ jobs:
           - A note on any items from the issue that were skipped (if any)
           
           **Fix Assignment:**
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"

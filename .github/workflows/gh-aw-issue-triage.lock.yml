@@ -29,13 +29,14 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1d016e79f1060bd06f3d73c3dc862b9354da48ea7b3dfed527346600964007a9"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d849b870dc6c8418ad6454496bcf52c0a24361d5b92378e43e9715599fd31b0c"}
 
 name: "Issue Triage"
 "on":
@@ -313,6 +314,9 @@ jobs:
           - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
           
           If you exceed 10 mentions or 50 links, the comment will be rejected.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # Issue Triage Agent

@@ -9,6 +9,7 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/safe-output-update-pr.md
+  - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -75,34 +76,6 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
-network:
-  allowed:
-    - defaults
-    - github
-    - go
-    - node
-    - python
-    - ruby
-    - clojure
-    - containers
-    - dart
-    - dotnet
-    - elixir
-    - fonts
-    - github-actions
-    - haskell
-    - java
-    - kotlin
-    - linux-distros
-    - node-cdns
-    - perl
-    - php
-    - playwright
-    - rust
-    - scala
-    - swift
-    - terraform
-    - zig
 strict: false
 safe-outputs:
   messages:

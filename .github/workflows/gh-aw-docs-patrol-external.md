@@ -12,6 +12,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/scheduled-audit.md
+  - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -76,33 +77,7 @@ mcp-servers:
       - "FindInconsistencies"
 network:
   allowed:
-    - defaults
-    - github
-    - go
-    - node
-    - python
-    - ruby
     - "www.elastic.co"
-    - clojure
-    - containers
-    - dart
-    - dotnet
-    - elixir
-    - fonts
-    - github-actions
-    - haskell
-    - java
-    - kotlin
-    - linux-distros
-    - node-cdns
-    - perl
-    - php
-    - playwright
-    - rust
-    - scala
-    - swift
-    - terraform
-    - zig
 strict: false
 safe-outputs:
   noop:

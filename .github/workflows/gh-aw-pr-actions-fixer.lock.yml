@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
@@ -37,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e91e2cc23f8a1eab67b3884434a00dd8b81b982c83e339796b0cd925e72d1bc5"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9089b97f848c32b3b3ba734e7a70b2f66ccbd0ac79411994d3aea9b07b720dd4"}
 
 name: "PR Actions Fixer"
 "on":
@@ -347,6 +348,9 @@ jobs:
           2. Edit the files directly to incorporate the changes from main
           3. Commit the changes as regular commits
           4. Use push_to_pull_request_branch to push
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # PR Actions Fixer

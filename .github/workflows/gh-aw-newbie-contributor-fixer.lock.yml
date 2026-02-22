@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-pr.md
@@ -37,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0d44835f606cb1aabd8019f009f4d765cc2290b999ae4fa5ab08e76bc9e881bf"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e657f45a7e5af749c28cde38c64c9576163c3e7c9ea70cc2cc9c6e26149552e5"}
 
 name: "Newbie Contributor Fixer"
 "on":
@@ -393,6 +394,9 @@ jobs:
           - A note on any items from the issue that were skipped (if any)
           
           **Fix Assignment:**
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"

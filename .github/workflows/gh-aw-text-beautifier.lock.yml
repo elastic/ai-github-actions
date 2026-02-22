@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-pr.md
@@ -37,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"71fa1b054ebbc27068a4aec62f459a3bf9eef84dc4d77b702a1fcecda16986c3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ec11ec836467b3fa757073cfbc551ffeab02264a870bb766f40f5af089217986"}
 
 name: "Text Beautifier"
 "on":
@@ -393,6 +394,9 @@ jobs:
           - A note on any items from the issue that were skipped (if any)
           
           **Fix Assignment:**
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"

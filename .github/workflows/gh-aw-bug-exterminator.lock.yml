@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-pr.md
@@ -37,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"df9f3470e5f52a3bd463ee6ea13c2916b1d0e51e63741cb52c29ffc82cc44297"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"fb8df0bd328a466d4b79edfce4dba0f3492c4bc8afbcc1e448a0d9f231bf93c8"}
 
 name: "Gh Aw Bug Exterminator"
 "on":
@@ -393,6 +394,9 @@ jobs:
           - A note on any items from the issue that were skipped (if any)
           
           **Fix Assignment:**
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"

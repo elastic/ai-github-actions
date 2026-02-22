@@ -34,6 +34,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-pr.md
@@ -41,7 +42,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"272cd3bd1f3115dde460a9d07adbb98eac01cae6fa20e83373a7331a9e3558f8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"103a5bd94cceb7f35b269799efa617cc51dc8b9e900a05b43e4dd3df8aaf546a"}
 
 name: "Test Improver"
 "on":
@@ -334,6 +335,9 @@ jobs:
           - **Base branch**: Must be configured in the safe-output config. The PR targets this branch.
           - **Max per run**: Typically 1 PR creation per workflow run.
           - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # Test Improver Agent

@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-pr.md
@@ -37,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ed58d776f52239b0b62c39ceea554ac7155657285c73a7a558ebdacc16ebf5ae"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"85a8dd376db4bb2b14d1b25d5acb6fa28050124c52c2f372e40f20c80020addc"}
 
 name: "Code Duplication Fixer"
 "on":
@@ -393,6 +394,9 @@ jobs:
           - A note on any items from the issue that were skipped (if any)
           
           **Fix Assignment:**
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"

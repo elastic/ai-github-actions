@@ -10,6 +10,7 @@ imports:
   - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment.md
+  - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -60,34 +61,6 @@ tools:
     toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
-network:
-  allowed:
-    - defaults
-    - github
-    - go
-    - node
-    - python
-    - ruby
-    - clojure
-    - containers
-    - dart
-    - dotnet
-    - elixir
-    - fonts
-    - github-actions
-    - haskell
-    - java
-    - kotlin
-    - linux-distros
-    - node-cdns
-    - perl
-    - php
-    - playwright
-    - rust
-    - scala
-    - swift
-    - terraform
-    - zig
 strict: false
 timeout-minutes: 60
 steps:

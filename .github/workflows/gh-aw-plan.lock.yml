@@ -29,6 +29,7 @@
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment.md
@@ -36,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"96c0d692aaaa8fe5dc4e4c2be7fcb656ac914d466c6264a4d3c8941b2a879372"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5e159c42d97635a0b9368508063c8a15d502edd141c1f8559ff2ea9f22fad8bf"}
 
 name: "Plan"
 "on":
@@ -329,6 +330,9 @@ jobs:
           - **Body**: No strict character limit beyond GitHub's API limit (~65,536 characters), but fields over 16,000 tokens are written to a file reference instead of inlined.
           - **Bot triggers**: References like `fixes #123` or `closes #456` in the body are neutralized to prevent unintended issue closures.
           - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
           # Plan Assistant
