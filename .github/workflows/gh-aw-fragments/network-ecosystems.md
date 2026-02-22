@@ -4,6 +4,8 @@
 network:
   allowed:
     - defaults
+    - "elastic.co"
+    - "elastic.dev"
     - github
     - clojure
     - containers
