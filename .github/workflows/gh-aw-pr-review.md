@@ -80,6 +80,8 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
+safe-outputs:
+  activation-comments: false
 strict: false
 timeout-minutes: 90
 steps:

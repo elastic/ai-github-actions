@@ -73,6 +73,8 @@ network:
     - node
     - python
     - ruby
+safe-outputs:
+  activation-comments: false
 strict: false
 timeout-minutes: 60
 steps:

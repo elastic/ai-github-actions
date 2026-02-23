@@ -79,6 +79,8 @@ mcp-servers:
 network:
   allowed:
     - "mcp.buildkite.com"
+safe-outputs:
+  activation-comments: false
 strict: false
 timeout-minutes: 30
 steps:

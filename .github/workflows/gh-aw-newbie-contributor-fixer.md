@@ -69,6 +69,7 @@ tools:
   web-fetch:
 strict: false
 safe-outputs:
+  activation-comments: false
   noop:
 timeout-minutes: 90
 steps:

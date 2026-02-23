@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8fca8640084f8e21751c2fabe265fb4078548ccd7701df7eed6787ce4d82ff28"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f8bcf7fa1930b0a482473bf60218bdf5c24b17b9c86861359797a50ae8445616"}
 
 name: "Mention in Issue (no sandbox)"
 "on":
@@ -108,7 +108,7 @@ jobs:
       comment_repo: ""
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@1c8368cbfb9ff0cc0781d2d76586fabb3035b0cf # v0.49.2
+        uses: github/gh-aw/actions/setup@bf34f9947505c887fdc597a13b8ff277cccd9c20 # v0.49.4
         with:
           destination: /opt/gh-aw/actions
       - name: Validate context variables
@@ -472,7 +472,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@1c8368cbfb9ff0cc0781d2d76586fabb3035b0cf # v0.49.2
+        uses: github/gh-aw/actions/setup@bf34f9947505c887fdc597a13b8ff277cccd9c20 # v0.49.4
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -1340,7 +1340,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@1c8368cbfb9ff0cc0781d2d76586fabb3035b0cf # v0.49.2
+        uses: github/gh-aw/actions/setup@bf34f9947505c887fdc597a13b8ff277cccd9c20 # v0.49.4
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1394,7 +1394,7 @@ jobs:
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_CODE_PUSH_FAILURE_ERRORS: ${{ needs.safe_outputs.outputs.code_push_failure_errors }}
           GH_AW_CODE_PUSH_FAILURE_COUNT: ${{ needs.safe_outputs.outputs.code_push_failure_count }}
-          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
           GH_AW_GROUP_REPORTS: "false"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1447,7 +1447,7 @@ jobs:
       success: ${{ steps.parse_results.outputs.success }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@1c8368cbfb9ff0cc0781d2d76586fabb3035b0cf # v0.49.2
+        uses: github/gh-aw/actions/setup@bf34f9947505c887fdc597a13b8ff277cccd9c20 # v0.49.4
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent artifacts
@@ -1547,7 +1547,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@1c8368cbfb9ff0cc0781d2d76586fabb3035b0cf # v0.49.2
+        uses: github/gh-aw/actions/setup@bf34f9947505c887fdc597a13b8ff277cccd9c20 # v0.49.4
         with:
           destination: /opt/gh-aw/actions
       - name: Add eyes reaction for immediate feedback
@@ -1592,7 +1592,7 @@ jobs:
     env:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
-      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
+      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-mention-in-issue-no-sandbox"
       GH_AW_WORKFLOW_NAME: "Mention in Issue (no sandbox)"
     outputs:
@@ -1604,7 +1604,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@1c8368cbfb9ff0cc0781d2d76586fabb3035b0cf # v0.49.2
+        uses: github/gh-aw/actions/setup@bf34f9947505c887fdc597a13b8ff277cccd9c20 # v0.49.4
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact

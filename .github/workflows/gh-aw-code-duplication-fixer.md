@@ -70,6 +70,7 @@ tools:
   serena: ["go", "python", "typescript", "java", "csharp", "rust"]
 strict: false
 safe-outputs:
+  activation-comments: false
   noop:
 timeout-minutes: 90
 steps:

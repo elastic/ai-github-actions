@@ -95,6 +95,8 @@ network:
   allowed:
     - "www.elastic.co"
     - "docs-v3-preview.elastic.dev"
+safe-outputs:
+  activation-comments: false
 strict: false
 timeout-minutes: 90
 steps:

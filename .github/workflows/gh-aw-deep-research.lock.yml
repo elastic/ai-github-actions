@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"518e365bb8f0abe8fbee72b010547b654f564f787f76b9691533634c45d06c7c"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3b1f9f0ae6f543e4de171a6b7fe6cb2c4f444445413acff40c8e1026ed291e86"}
 
 name: "Deep Research"
 "on":
@@ -99,7 +99,7 @@ jobs:
       comment_repo: ""
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@1c8368cbfb9ff0cc0781d2d76586fabb3035b0cf # v0.49.2
+        uses: github/gh-aw/actions/setup@bf34f9947505c887fdc597a13b8ff277cccd9c20 # v0.49.4
         with:
           destination: /opt/gh-aw/actions
       - name: Validate context variables
@@ -429,7 +429,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@1c8368cbfb9ff0cc0781d2d76586fabb3035b0cf # v0.49.2
+        uses: github/gh-aw/actions/setup@bf34f9947505c887fdc597a13b8ff277cccd9c20 # v0.49.4
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -854,13 +854,7 @@ jobs:
                 }
               },
               "web-fetch": {
-                "command": "docker",
-                "args": [
-                  "run",
-                  "-i",
-                  "--rm",
-                  "mcp/fetch"
-                ]
+                "container": "mcp/fetch"
               }
             },
             "gateway": {
@@ -899,7 +893,7 @@ jobs:
         id: agentic_execution
         run: |
           set -o pipefail
-          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains '*.googleapis.com,agents-md-generator.fastmcp.app,artifacts.elastic.co,cloud.elastic.co,ela.st,elastic.co,generativelanguage.googleapis.com,github.com,host.docker.internal,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,www.elastic.co' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.2 --skip-pull --enable-api-proxy \
+          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains "*.googleapis.com,agents-md-generator.fastmcp.app,artifacts.elastic.co,cloud.elastic.co,ela.st,elastic.co,generativelanguage.googleapis.com,github.com,host.docker.internal,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,www.elastic.co" --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.2 --skip-pull --enable-api-proxy \
             -- /bin/bash -c 'export PATH="$(find /opt/hostedtoolcache -maxdepth 4 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true && gemini --yolo --output-format stream-json --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           DEBUG: gemini-cli:*
@@ -1036,7 +1030,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@1c8368cbfb9ff0cc0781d2d76586fabb3035b0cf # v0.49.2
+        uses: github/gh-aw/actions/setup@bf34f9947505c887fdc597a13b8ff277cccd9c20 # v0.49.4
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1088,7 +1082,7 @@ jobs:
           GH_AW_WORKFLOW_ID: "gh-aw-deep-research"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
-          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
           GH_AW_GROUP_REPORTS: "false"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1127,7 +1121,7 @@ jobs:
       success: ${{ steps.parse_results.outputs.success }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@1c8368cbfb9ff0cc0781d2d76586fabb3035b0cf # v0.49.2
+        uses: github/gh-aw/actions/setup@bf34f9947505c887fdc597a13b8ff277cccd9c20 # v0.49.4
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent artifacts
@@ -1225,7 +1219,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@1c8368cbfb9ff0cc0781d2d76586fabb3035b0cf # v0.49.2
+        uses: github/gh-aw/actions/setup@bf34f9947505c887fdc597a13b8ff277cccd9c20 # v0.49.4
         with:
           destination: /opt/gh-aw/actions
       - name: Add eyes reaction for immediate feedback
@@ -1268,7 +1262,7 @@ jobs:
     env:
       GH_AW_ENGINE_ID: "gemini"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
-      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
+      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-deep-research"
       GH_AW_WORKFLOW_NAME: "Deep Research"
     outputs:
@@ -1280,7 +1274,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@1c8368cbfb9ff0cc0781d2d76586fabb3035b0cf # v0.49.2
+        uses: github/gh-aw/actions/setup@bf34f9947505c887fdc597a13b8ff277cccd9c20 # v0.49.4
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact

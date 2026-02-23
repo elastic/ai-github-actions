@@ -85,6 +85,7 @@ tools:
   web-fetch:
 strict: false
 safe-outputs:
+  activation-comments: false
   add-comment:
     target: "${{ inputs.target-pr-number }}"
   create-pull-request-review-comment:

@@ -70,6 +70,7 @@ tools:
   bash: true
   web-fetch:
 safe-outputs:
+  activation-comments: false
   create-issue:
     max: ${{ inputs.create-issue-max }}
 strict: false
