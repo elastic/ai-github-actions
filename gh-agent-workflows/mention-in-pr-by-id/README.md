@@ -4,7 +4,7 @@ Trigger the PR assistant manually by PR number.
 
 ## How it works
 
-Run via `workflow_dispatch` with a PR number and prompt text. The workflow invokes `mention-in-pr` with an explicit target and instructs the agent to operate only on that PR.
+Run via `workflow_dispatch` with a PR number and prompt text. The workflow invokes `mention-in-pr-by-id`, which hard-targets safe outputs to that PR.
 
 ## Quick Install
 

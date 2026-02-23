@@ -20,13 +20,9 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-mention-in-pr.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-mention-in-pr-by-id.lock.yml@v0
     with:
       target-pr-number: ${{ inputs.pull-request-number }}
       prompt: ${{ inputs.prompt }}
-      additional-instructions: |
-        This run was started via workflow_dispatch with an explicit PR target.
-        You MUST operate only on PR #${{ inputs.pull-request-number }}.
-        For any safe output that accepts an explicit target (for example comments), set item_number to ${{ inputs.pull-request-number }}.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
