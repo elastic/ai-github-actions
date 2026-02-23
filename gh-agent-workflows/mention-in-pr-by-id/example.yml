@@ -1,0 +1,32 @@
+name: Mention in PR by ID
+on:
+  workflow_dispatch:
+    inputs:
+      pull-request-number:
+        description: "PR number to target (e.g. 123)"
+        required: true
+        type: string
+      prompt:
+        description: "Prompt for the agent (review/fix/explain/etc.)"
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+  discussions: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-mention-in-pr.lock.yml@v0
+    with:
+      target-pr-number: ${{ inputs.pull-request-number }}
+      prompt: ${{ inputs.prompt }}
+      additional-instructions: |
+        This run was started via workflow_dispatch with an explicit PR target.
+        You MUST operate only on PR #${{ inputs.pull-request-number }}.
+        For any safe output that accepts an explicit target (for example comments), set item_number to ${{ inputs.pull-request-number }}.
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

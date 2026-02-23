@@ -42,7 +42,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"783fe2b0fc7d0ec7940b476f07668f66233124ece656ae34c5156b2e9f698c55"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"db6a1020e80885ccf4bf4256804e4027317cc12a853674e71fcfdc3a80ee17d6"}
 
 name: "Mention in PR"
 "on":
@@ -79,6 +79,11 @@ name: "Mention in PR"
         description: AI model to use
         required: false
         type: string
+      prompt:
+        default: ""
+        description: Explicit prompt text to run when no comment trigger is present
+        required: false
+        type: string
       resolve-pull-request-review-thread-max:
         default: "10"
         description: Maximum number of review threads the agent can resolve per run
@@ -89,6 +94,11 @@ name: "Mention in PR"
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
         required: false
         type: string
+      target-pr-number:
+        default: ""
+        description: Explicit PR number to target (used for manual/dispatch triggers)
+        required: false
+        type: string
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -97,7 +107,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: mention-pr-${{ github.event.issue.number }}
+  group: mention-pr-${{ inputs.target-pr-number || github.event.issue.number }}
 
 run-name: "Mention in PR"
 
@@ -150,7 +160,9 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_770EE58B: ${{ inputs.prompt || steps.sanitized.outputs.text }}
           GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
+          GH_AW_EXPR_95B47D04: ${{ inputs.target-pr-number || github.event.issue.number }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -160,7 +172,6 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         run: |
           bash /opt/gh-aw/actions/create_prompt_first.sh
           {
@@ -525,8 +536,8 @@ jobs:
           ## Context
           
           - **Repository**: __GH_AW_GITHUB_REPOSITORY__
-          - **PR**: #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__ — __GH_AW_GITHUB_EVENT_ISSUE_TITLE__
-          - **Request**: "__GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT__"
+          - **PR**: #__GH_AW_EXPR_95B47D04__ — __GH_AW_GITHUB_EVENT_ISSUE_TITLE__
+          - **Request**: "__GH_AW_EXPR_770EE58B__"
           
           ## Constraints
           
@@ -542,9 +553,10 @@ jobs:
           ### Step 1: Gather Context
           
           1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-          2. Call `pull_request_read` with method `get` on PR #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__ to get the full PR details (author, description, branches).
+          2. Call `pull_request_read` with method `get` on PR #__GH_AW_EXPR_95B47D04__ to get the full PR details (author, description, branches).
           3. If the PR description references issues (e.g., "Fixes #123"), call `issue_read` with method `get` on each linked issue to understand the motivation and requirements.
           4. Read the comment thread to understand what's being asked. Use `pull_request_read` with methods like `get_review_comments` and `get_comments` to see the full conversation context.
+          5. Do not modify, review, comment on, or resolve threads for any PR other than #__GH_AW_EXPR_95B47D04__.
           
           ### Step 2: Handle the Request
           
@@ -590,11 +602,11 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
-          GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
           GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
+          GH_AW_EXPR_770EE58B: ${{ inputs.prompt || steps.sanitized.outputs.text }}
+          GH_AW_EXPR_95B47D04: ${{ inputs.target-pr-number || github.event.issue.number }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -606,7 +618,9 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_770EE58B: ${{ inputs.prompt || steps.sanitized.outputs.text }}
           GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
+          GH_AW_EXPR_95B47D04: ${{ inputs.target-pr-number || github.event.issue.number }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -617,7 +631,6 @@ jobs:
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
-          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -630,7 +643,9 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_EXPR_770EE58B: process.env.GH_AW_EXPR_770EE58B,
                 GH_AW_EXPR_7F2A702A: process.env.GH_AW_EXPR_7F2A702A,
+                GH_AW_EXPR_95B47D04: process.env.GH_AW_EXPR_95B47D04,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -640,8 +655,7 @@ jobs:
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
-                GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: process.env.GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
               }
             });
       - name: Validate prompt placeholders
@@ -668,7 +682,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-mention-pr-${{ github.event.issue.number }}"
+      group: "gh-aw-copilot-mention-pr-${{ inputs.target-pr-number || github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -1710,7 +1724,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     concurrency:
-      group: "gh-aw-copilot-mention-pr-${{ github.event.issue.number }}"
+      group: "gh-aw-copilot-mention-pr-${{ inputs.target-pr-number || github.event.issue.number }}"
     timeout-minutes: 10
     outputs:
       success: ${{ steps.parse_results.outputs.success }}

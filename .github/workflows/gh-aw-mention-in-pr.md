@@ -21,7 +21,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-mention-pr-${{ github.event.issue.number }}"
+    group: "gh-aw-copilot-mention-pr-${{ inputs.target-pr-number || github.event.issue.number }}"
 on:
   workflow_call:
     inputs:
@@ -50,6 +50,16 @@ on:
         type: string
         required: false
         default: ""
+      target-pr-number:
+        description: "Explicit PR number to target (used for manual/dispatch triggers)"
+        type: string
+        required: false
+        default: ""
+      prompt:
+        description: "Explicit prompt text to run when no comment trigger is present"
+        type: string
+        required: false
+        default: ""
       create-pull-request-review-comment-max:
         description: "Maximum number of review comments the agent can create per run"
         type: string
@@ -68,7 +78,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: mention-pr-${{ github.event.issue.number }}
+  group: mention-pr-${{ inputs.target-pr-number || github.event.issue.number }}
   cancel-in-progress: true
 permissions:
   contents: read
@@ -105,8 +115,8 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **PR**: #${{ github.event.issue.number }} — ${{ github.event.issue.title }}
-- **Request**: "${{ needs.activation.outputs.text }}"
+- **PR**: #${{ inputs.target-pr-number || github.event.issue.number }} — ${{ github.event.issue.title }}
+- **Request**: "${{ inputs.prompt || needs.activation.outputs.text }}"
 
 ## Constraints
 
@@ -122,9 +132,10 @@ Understand the request, investigate the code, and respond appropriately.
 ### Step 1: Gather Context
 
 1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Call `pull_request_read` with method `get` on PR #${{ github.event.issue.number }} to get the full PR details (author, description, branches).
+2. Call `pull_request_read` with method `get` on PR #${{ inputs.target-pr-number || github.event.issue.number }} to get the full PR details (author, description, branches).
 3. If the PR description references issues (e.g., "Fixes #123"), call `issue_read` with method `get` on each linked issue to understand the motivation and requirements.
 4. Read the comment thread to understand what's being asked. Use `pull_request_read` with methods like `get_review_comments` and `get_comments` to see the full conversation context.
+5. Do not modify, review, comment on, or resolve threads for any PR other than #${{ inputs.target-pr-number || github.event.issue.number }}.
 
 ### Step 2: Handle the Request
 
