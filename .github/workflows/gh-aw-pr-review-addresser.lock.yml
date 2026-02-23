@@ -39,9 +39,9 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"dab90f0af7a94894345ff3c9807e1cea2f1ea7a7ad1c2c5cdf37c66c159f2aa3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c0df427ec6620c896f2f4d7cb28bd39ea5e0ca47d5a8f2c3dd851c9d1c605e3f"}
 
-name: "Address PR Feedback"
+name: "PR Review Addresser"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -84,9 +84,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: false
-  group: address-pr-feedback-${{ github.event.pull_request.number }}
+  group: pr-review-addresser-${{ github.event.pull_request.number }}
 
-run-name: "Address PR Feedback"
+run-name: "PR Review Addresser"
 
 jobs:
   activation:
@@ -100,7 +100,7 @@ jobs:
       comment_repo: ""
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
+        uses: github/gh-aw/actions/setup@0eb518a648ba8178f4f42559a4c250d3e513acd1 # v0.49.0
         with:
           destination: /opt/gh-aw/actions
       - name: Validate context variables
@@ -122,7 +122,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-address-pr-feedback.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-pr-review-addresser.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -134,6 +134,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -146,13 +147,14 @@ jobs:
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
           bash /opt/gh-aw/actions/create_prompt_first.sh
-          cat << 'GH_AW_PROMPT_EOF' > "$GH_AW_PROMPT"
+          {
+          cat << 'GH_AW_PROMPT_EOF'
           <system>
           GH_AW_PROMPT_EOF
-          cat "/opt/gh-aw/prompts/xpia.md" >> "$GH_AW_PROMPT"
-          cat "/opt/gh-aw/prompts/temp_folder_prompt.md" >> "$GH_AW_PROMPT"
-          cat "/opt/gh-aw/prompts/markdown.md" >> "$GH_AW_PROMPT"
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat "/opt/gh-aw/prompts/xpia.md"
+          cat "/opt/gh-aw/prompts/temp_folder_prompt.md"
+          cat "/opt/gh-aw/prompts/markdown.md"
+          cat << 'GH_AW_PROMPT_EOF'
           <safe-outputs>
           <description>GitHub API Access Instructions</description>
           <important>
@@ -244,19 +246,19 @@ jobs:
           </github-context>
           
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           </system>
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           ## MCP Servers
           
           - **`generate_agents_md`** — generates a summary of the repository's structure, conventions, and coding guidelines from AGENTS.md and related files. Call at the start of every workflow to get repo context.
           - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           ## Formatting Guidelines
           
           - Lead with the most important information — your first sentence should be the key takeaway
@@ -266,7 +268,7 @@ jobs:
           - Include code snippets with file paths and line numbers when referencing the codebase
           
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           ## Rigor
           
           **Silence is better than noise. A false positive wastes a human's time and erodes trust in every future report.**
@@ -279,7 +281,7 @@ jobs:
           - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
           
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           ## MCP Pagination
           
           MCP tool responses have a **25,000 token limit**. When responses exceed this limit, the call fails and you must retry with pagination — wasting turns and tokens. Use proactive pagination to stay under the limit.
@@ -314,19 +316,19 @@ jobs:
           - **Process as you go**: Don't accumulate all pages before acting — process each batch immediately
           
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           ## Workflow Editing Guardrails
           
           - Do not modify files under `.github/workflows/`.
           - If asked to change workflow files, place a copy under `github/` (no leading dot) and note that a maintainer must relocate it into `.github/workflows/`.
           
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           ## Message Footer
           
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           ## add-comment Limitations
           
           - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
@@ -338,7 +340,7 @@ jobs:
           
           If you exceed 10 mentions or 50 links, the comment will be rejected.
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           Before calling `push_to_pull_request_branch`, call `ready_to_make_pr` and apply its checklist.
           
           ## push-to-pull-request-branch Limitations
@@ -355,14 +357,14 @@ jobs:
           3. Commit the changes as regular commits
           4. Use push_to_pull_request_branch to push
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           ## resolve-pull-request-review-thread Limitations
           
           - **Required field**: `thread_id` — the GraphQL node ID of the review thread (e.g., `PRRT_kwDO...`). This is the `id` field from `get_review_comments`, not the numeric REST comment ID.
           - **Only resolve what you've addressed**: Do not resolve threads you skipped, disagreed with, or didn't fix. Only resolve threads where your changes directly address the feedback.
-          - **Max per run**: 10 thread resolutions per workflow run.
+          - **Max per run**: __GH_AW_EXPR_7F2A702A__ thread resolutions per workflow run.
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           ## reply-to-pull-request-review-comment Limitations
           
           - **Required field**: `comment_id` — the ID of the review comment to reply to. This is the numeric REST comment ID from `get_review_comments`.
@@ -370,7 +372,7 @@ jobs:
           - **Purpose**: Reply directly to a specific review comment thread to explain your reasoning when you disagree with or skip feedback. Do NOT use `add_comment` for this — use this tool to keep replies in context.
           - **Max per run**: 10 replies per workflow run.
           GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF' >> "$GH_AW_PROMPT"
+          cat << 'GH_AW_PROMPT_EOF'
           # Address PR Feedback
           
           Automatically address review feedback on pull requests in __GH_AW_GITHUB_REPOSITORY__ — fix code issues, resolve review threads, and push changes.
@@ -437,10 +439,12 @@ jobs:
           __GH_AW_EXPR_49B959F1__
           
           GH_AW_PROMPT_EOF
+          } > "$GH_AW_PROMPT"
       - name: Interpolate variables and render templates
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
           GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
           GH_AW_GITHUB_EVENT_PULL_REQUEST_TITLE: ${{ github.event.pull_request.title }}
           GH_AW_GITHUB_EVENT_REVIEW_ID: ${{ github.event.review.id }}
@@ -457,6 +461,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -468,7 +473,6 @@ jobs:
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
-          GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: ${{ needs.pre_activation.outputs.matched_command }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -481,6 +485,7 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_EXPR_7F2A702A: process.env.GH_AW_EXPR_7F2A702A,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -491,8 +496,7 @@ jobs:
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_MATCHED_COMMAND
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
               }
             });
       - name: Validate prompt placeholders
@@ -519,7 +523,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-address-pr-feedback-${{ github.event.pull_request.number }}"
+      group: "gh-aw-copilot-pr-review-addresser-${{ github.event.pull_request.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -529,7 +533,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawaddressprfeedback
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawprreviewaddresser
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
@@ -539,7 +543,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
+        uses: github/gh-aw/actions/setup@0eb518a648ba8178f4f42559a4c250d3e513acd1 # v0.49.0
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -641,8 +645,8 @@ jobs:
               engine_name: "GitHub Copilot CLI",
               model: "${{ inputs.model }}",
               version: "",
-              agent_version: "0.0.412",
-              workflow_name: "Address PR Feedback",
+              agent_version: "0.0.414",
+              workflow_name: "PR Review Addresser",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -657,7 +661,7 @@ jobs:
               allowed_domains: ["agents-md-generator.fastmcp.app","artifacts.elastic.co","cloud.elastic.co","defaults","ela.st","elastic.co","github","go","node","public-code-search.fastmcp.app","python","ruby","www.elastic.co"],
               firewall_enabled: true,
               awf_version: "v0.20.2",
-              awmg_version: "v0.1.4",
+              awmg_version: "v0.1.5",
               steps: {
                 firewall: "squid"
               },
@@ -678,7 +682,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       - name: Install GitHub Copilot CLI
-        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.412
+        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.414
       - name: Install awf binary
         run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.20.2
       - name: Determine automatic lockdown mode for GitHub MCP Server
@@ -692,14 +696,14 @@ jobs:
             const determineAutomaticLockdown = require('/opt/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.20.2 ghcr.io/github/gh-aw-firewall/api-proxy:0.20.2 ghcr.io/github/gh-aw-firewall/squid:0.20.2 ghcr.io/github/gh-aw-mcpg:v0.1.4 ghcr.io/github/github-mcp-server:v0.31.0 node:lts-alpine
+        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.20.2 ghcr.io/github/gh-aw-firewall/api-proxy:0.20.2 ghcr.io/github/gh-aw-firewall/squid:0.20.2 ghcr.io/github/gh-aw-mcpg:v0.1.5 ghcr.io/github/github-mcp-server:v0.31.0 node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p /opt/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"add_comment":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1},"push_to_pull_request_branch":{"max":0},"resolve_pull_request_review_thread":{"max":10}}
+          {"add_comment":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1},"push_to_pull_request_branch":{"max":0},"resolve_pull_request_review_thread":{"max":"${{ inputs.resolve-pull-request-review-thread-max }}"}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
@@ -757,7 +761,7 @@ jobs:
               "name": "reply_to_pull_request_review_comment"
             },
             {
-              "description": "Resolve a review thread on a pull request. Use this to mark a review conversation as resolved after addressing the feedback. The thread_id must be the node ID of the review thread (e.g., PRRT_kwDO...). CONSTRAINTS: Maximum 10 review thread(s) can be resolved.",
+              "description": "Resolve a review thread on a pull request. Use this to mark a review conversation as resolved after addressing the feedback. The thread_id must be the node ID of the review thread (e.g., PRRT_kwDO...).",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -1131,7 +1135,7 @@ jobs:
           export DEBUG="*"
           
           export GH_AW_ENGINE="copilot"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_INPUTS_PORT -e GH_AW_SAFE_INPUTS_API_KEY -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.4'
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_INPUTS_PORT -e GH_AW_SAFE_INPUTS_API_KEY -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.5'
           
           mkdir -p /home/runner/.copilot
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
@@ -1386,7 +1390,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
+        uses: github/gh-aw/actions/setup@0eb518a648ba8178f4f42559a4c250d3e513acd1 # v0.49.0
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1405,8 +1409,8 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_NOOP_MAX: 1
-          GH_AW_WORKFLOW_NAME: "Address PR Feedback"
+          GH_AW_NOOP_MAX: "1"
+          GH_AW_WORKFLOW_NAME: "PR Review Addresser"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1419,7 +1423,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Address PR Feedback"
+          GH_AW_WORKFLOW_NAME: "PR Review Addresser"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1432,12 +1436,14 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Address PR Feedback"
+          GH_AW_WORKFLOW_NAME: "PR Review Addresser"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-address-pr-feedback"
+          GH_AW_WORKFLOW_ID: "gh-aw-pr-review-addresser"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
+          GH_AW_CODE_PUSH_FAILURE_ERRORS: ${{ needs.safe_outputs.outputs.code_push_failure_errors }}
+          GH_AW_CODE_PUSH_FAILURE_COUNT: ${{ needs.safe_outputs.outputs.code_push_failure_count }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
           GH_AW_GROUP_REPORTS: "false"
         with:
@@ -1452,7 +1458,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Address PR Feedback"
+          GH_AW_WORKFLOW_NAME: "PR Review Addresser"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1471,13 +1477,13 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     concurrency:
-      group: "gh-aw-copilot-address-pr-feedback-${{ github.event.pull_request.number }}"
+      group: "gh-aw-copilot-pr-review-addresser-${{ github.event.pull_request.number }}"
     timeout-minutes: 10
     outputs:
       success: ${{ steps.parse_results.outputs.success }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
+        uses: github/gh-aw/actions/setup@0eb518a648ba8178f4f42559a4c250d3e513acd1 # v0.49.0
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent artifacts
@@ -1500,7 +1506,7 @@ jobs:
       - name: Setup threat detection
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Address PR Feedback"
+          WORKFLOW_NAME: "PR Review Addresser"
           WORKFLOW_DESCRIPTION: "Auto-address PR review feedback — fix code, resolve threads, and push changes"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
@@ -1519,7 +1525,7 @@ jobs:
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       - name: Install GitHub Copilot CLI
-        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.412
+        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.414
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
@@ -1570,9 +1576,10 @@ jobs:
     runs-on: ubuntu-slim
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
+      matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
+        uses: github/gh-aw/actions/setup@0eb518a648ba8178f4f42559a4c250d3e513acd1 # v0.49.0
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1605,16 +1612,18 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-address-pr-feedback"
-      GH_AW_WORKFLOW_NAME: "Address PR Feedback"
+      GH_AW_WORKFLOW_ID: "gh-aw-pr-review-addresser"
+      GH_AW_WORKFLOW_NAME: "PR Review Addresser"
     outputs:
+      code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
+      code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
       process_safe_outputs_processed_count: ${{ steps.process_safe_outputs.outputs.processed_count }}
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@26b6572ae210580303087bc3142fe58d140bf65c # v0.48.1
+        uses: github/gh-aw/actions/setup@0eb518a648ba8178f4f42559a4c250d3e513acd1 # v0.49.0
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1660,7 +1669,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"missing_data\":{},\"missing_tool\":{},\"push_to_pull_request_branch\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"if_no_changes\":\"warn\",\"max_patch_size\":1024},\"reply_to_pull_request_review_comment\":{\"max\":10},\"resolve_pull_request_review_thread\":{\"max\":10}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"missing_data\":{},\"missing_tool\":{},\"push_to_pull_request_branch\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"if_no_changes\":\"warn\",\"max_patch_size\":1024},\"reply_to_pull_request_review_comment\":{\"max\":10},\"resolve_pull_request_review_thread\":{\"max\":\"${{ inputs.resolve-pull-request-review-thread-max }}\"}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

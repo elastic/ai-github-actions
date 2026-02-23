@@ -1,4 +1,4 @@
-# Address PR Feedback
+# PR Review Addresser
 
 Auto-address PR review feedback — fix code, resolve threads, and push changes.
 
@@ -10,8 +10,8 @@ Triggered when a pull request review is submitted with `changes_requested` or `c
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/address-pr-feedback/example.yml \
-  -o .github/workflows/address-pr-feedback.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-review-addresser/example.yml \
+  -o .github/workflows/pr-review-addresser.yml
 ```
 
 See [example.yml](example.yml) for the full workflow file.
@@ -20,7 +20,7 @@ See [example.yml](example.yml) for the full workflow file.
 
 | Event | Types | Condition |
 | --- | --- | --- |
-| `pull_request_review` | `submitted` | Review state is `changes_requested` or `commented`; PR is not draft; label `skip-auto-address-pr-feedback` is not present |
+| `pull_request_review` | `submitted` | Review state is `changes_requested` or `commented`; PR is not draft; label `skip-auto-pr-review-addresser` is not present |
 
 ## Inputs
 

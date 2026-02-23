@@ -1,6 +1,6 @@
 ---
 inlined-imports: true
-name: "Address PR Feedback"
+name: "PR Review Addresser"
 description: "Auto-address PR review feedback — fix code, resolve threads, and push changes"
 imports:
   - gh-aw-fragments/elastic-tools.md
@@ -18,7 +18,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-address-pr-feedback-${{ github.event.pull_request.number }}"
+    group: "gh-aw-copilot-pr-review-addresser-${{ github.event.pull_request.number }}"
 on:
   workflow_call:
     inputs:
@@ -54,7 +54,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: address-pr-feedback-${{ github.event.pull_request.number }}
+  group: pr-review-addresser-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 permissions:
   contents: read
