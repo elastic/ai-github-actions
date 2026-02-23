@@ -45,6 +45,11 @@ on:
         type: string
         required: false
         default: ""
+      create-issue-max:
+        description: "Maximum number of issues the agent can create per run"
+        type: string
+        required: false
+        default: "5"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -66,7 +71,7 @@ tools:
   web-fetch:
 safe-outputs:
   create-issue:
-    max: 5
+    max: ${{ inputs.create-issue-max }}
 strict: false
 timeout-minutes: 60
 steps:

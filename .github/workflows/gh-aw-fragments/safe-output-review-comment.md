@@ -1,7 +1,7 @@
 ---
 safe-outputs:
   create-pull-request-review-comment:
-    max: 30
+    max: ${{ inputs.create-pull-request-review-comment-max }}
 ---
 
 ## create-pull-request-review-comment

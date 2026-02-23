@@ -50,6 +50,16 @@ on:
         type: string
         required: false
         default: ""
+      create-pull-request-review-comment-max:
+        description: "Maximum number of review comments the agent can create per run"
+        type: string
+        required: false
+        default: "30"
+      resolve-pull-request-review-thread-max:
+        description: "Maximum number of review threads the agent can resolve per run"
+        type: string
+        required: false
+        default: "10"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true

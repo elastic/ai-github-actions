@@ -36,7 +36,8 @@ IMPROVERS=(
 )
 
 MONITORS=(
-  "Trigger Agent Efficiency"
+  "Agent Deep Dive"
+  "Agent Efficiency"
   "Trigger Agent Suggestions"
   "Trigger Downstream Health"
   "Trigger Project Summary"
