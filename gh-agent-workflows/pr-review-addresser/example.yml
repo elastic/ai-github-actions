@@ -1,4 +1,4 @@
-name: Address PR Feedback
+name: PR Review Addresser
 on:
   pull_request_review:
     types: [submitted]
@@ -14,7 +14,7 @@ jobs:
     if: >-
       (github.event.review.state == 'changes_requested' || github.event.review.state == 'commented') &&
       !github.event.pull_request.draft &&
-      !contains(github.event.pull_request.labels.*.name, 'skip-auto-address-pr-feedback')
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-address-pr-feedback.lock.yml@v0
+      !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review-addresser')
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review-addresser.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
