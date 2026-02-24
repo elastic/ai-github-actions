@@ -88,7 +88,7 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Agent Suggestions](gh-agent-workflows/agent-suggestions.md) | Weekly schedule | Suggest new agent workflows based on repo and downstream needs |
 | [Breaking Change Detector](gh-agent-workflows/breaking-change-detector.md) | Weekday schedule | Detect undocumented public breaking changes |
 | [Code Simplifier](gh-agent-workflows/code-simplifier.md) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
-| [Downstream Health](gh-agent-workflows/downstream-health.md) | Daily schedule | Monitor downstream repo quality |
+| [Downstream Health](gh-agent-workflows/downstream-health.md) | Daily schedule | Monitor downstream repo quality across heavy/medium/light adopters, highlighting the playground |
 | [Flaky Test Investigator](gh-agent-workflows/flaky-test-investigator.md) | Weekday schedule + failed CI runs | Identify repeated flaky failures and file root-cause-first triage reports |
 | [Performance Profiler](gh-agent-workflows/performance-profiler.md) | Weekday schedule | Profile performance hotspots |
 | [Project Summary](gh-agent-workflows/project-summary.md) | Daily schedule | Summarize recent activity and priorities |

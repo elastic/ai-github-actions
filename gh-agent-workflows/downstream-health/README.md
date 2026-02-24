@@ -6,6 +6,16 @@ Monitor downstream repositories using AI workflows and report quality issues.
 
 Discovers elastic-owned repositories that use ai-github-actions workflows, monitors recent agent activity (comments and PR reviews by `github-actions[bot]`), and reports when agents are silent or producing unexpected outputs.
 
+## Example downstream repositories
+
+The workflow is commonly used to monitor a mix of heavy, medium, and light adopters:
+
+| Usage tier | Repositories |
+| --- | --- |
+| Heavy | `elastic/ai-github-actions-playground` (primary playground for rapid workflow iteration), `elastic/integrations` |
+| Medium | `elastic/beats` |
+| Light | `strawgate/py-key-value` |
+
 ## Quick Install
 
 ```bash
