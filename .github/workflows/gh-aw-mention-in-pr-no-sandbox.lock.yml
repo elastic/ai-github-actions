@@ -42,7 +42,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f1d0cac9920bafcab253721fc377ba94089fdd56dcf6358b58b6614331ccf768"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ff4156e1228f025d07a6484fc1278558f75f6fea32a5072f6629b528ba9fba22"}
 
 name: "Mention in PR (no sandbox)"
 "on":
@@ -605,6 +605,7 @@ jobs:
     needs: activation
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
       issues: read
       pull-requests: read
@@ -1327,7 +1328,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,actions"
                 }
               },
               "public-code-search": {

@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f8bcf7fa1930b0a482473bf60218bdf5c24b17b9c86861359797a50ae8445616"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"473c0289f758c2bb24a22ab604d59039abe72447ef4187f214af1729f6074e58"}
 
 name: "Mention in Issue (no sandbox)"
 "on":
@@ -448,6 +448,7 @@ jobs:
     needs: activation
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
       issues: read
       pull-requests: read
@@ -1117,7 +1118,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,actions"
                 }
               },
               "public-code-search": {
