@@ -59,17 +59,19 @@ concurrency:
   group: code-duplication-fixer
   cancel-in-progress: true
 permissions:
+  actions: read
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
-    toolsets: [repos, issues, pull_requests, search]
+    toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
   serena: ["go", "python", "typescript", "java", "csharp", "rust"]
 strict: false
 safe-outputs:
+  activation-comments: false
   noop:
 timeout-minutes: 90
 steps:

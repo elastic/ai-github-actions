@@ -71,6 +71,7 @@ concurrency:
   group: mention-pr-no-sandbox-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  actions: read
   contents: read
   issues: read
   pull-requests: read
@@ -78,9 +79,11 @@ sandbox:
   agent: false
 tools:
   github:
-    toolsets: [repos, issues, pull_requests, search]
+    toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
+safe-outputs:
+  activation-comments: false
 strict: false
 timeout-minutes: 60
 steps:

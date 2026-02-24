@@ -64,6 +64,8 @@ tools:
   web-fetch:
 network:
   firewall: false
+safe-outputs:
+  activation-comments: false
 strict: false
 timeout-minutes: 60
 steps:

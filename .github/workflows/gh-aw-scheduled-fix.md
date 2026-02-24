@@ -67,16 +67,18 @@ concurrency:
   group: scheduled-fix-${{ inputs.issue-title-prefix }}
   cancel-in-progress: true
 permissions:
+  actions: read
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
-    toolsets: [repos, issues, pull_requests, search]
+    toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
 strict: false
 safe-outputs:
+  activation-comments: false
   noop:
 timeout-minutes: 90
 steps:

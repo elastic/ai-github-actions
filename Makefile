@@ -1,7 +1,12 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.49.2
+GH_AW_VERSION := v0.50.1
+GH_AW_COMPAT_VERSION := v0.49.4
+
+# Workflows that must be compiled with the compat compiler
+# (no-sandbox workflows hit a threat-detection bug in newer versions)
+GH_AW_COMPAT_WORKFLOWS := gh-aw-mention-in-issue-no-sandbox gh-aw-mention-in-pr-no-sandbox
 
 # Helper: Detect OS and architecture (sets OS and ARCH variables)
 # Usage: $(DETECT_OS_ARCH)
@@ -124,12 +129,32 @@ setup-gh-aw:
 		echo "✓ gh-aw compiler installed: $$(.bin/gh-aw version)"; \
 	fi
 
+setup-gh-aw-compat:
+	@echo "Setting up gh-aw compat compiler..."
+	@mkdir -p .bin
+	@if ! command -v go >/dev/null 2>&1; then \
+		echo "Error: Go is required to install gh-aw compiler."; \
+		echo "Install Go: https://go.dev/dl/"; \
+		exit 1; \
+	elif [ -x ".bin/gh-aw-compat" ] && .bin/gh-aw-compat version 2>/dev/null | grep -q "$(GH_AW_COMPAT_VERSION)"; then \
+		echo "✓ gh-aw compat compiler already installed: $(GH_AW_COMPAT_VERSION)"; \
+	else \
+		echo "Installing gh-aw compat compiler $(GH_AW_COMPAT_VERSION) from github/gh-aw..."; \
+		TMPGOBIN=$$(mktemp -d) && \
+		GOBIN="$$TMPGOBIN" go install github.com/github/gh-aw/cmd/gh-aw@$(GH_AW_COMPAT_VERSION) && \
+		mv "$$TMPGOBIN/gh-aw" .bin/gh-aw-compat && \
+		rm -rf "$$TMPGOBIN" && \
+		echo "✓ gh-aw compat compiler installed: $$(.bin/gh-aw-compat version)"; \
+	fi
+
 sync:
 	@./scripts/dogfood.sh
 
-compile: setup-gh-aw sync
+compile: setup-gh-aw setup-gh-aw-compat sync
 	@echo "Compiling agentic workflows..."
-	@.bin/gh-aw compile --action-mode release --action-tag $(GH_AW_VERSION)
+	-@.bin/gh-aw compile --action-mode release --action-tag $(GH_AW_VERSION)
+	@echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."
+	@.bin/gh-aw-compat compile --action-mode release --action-tag $(GH_AW_COMPAT_VERSION) $(GH_AW_COMPAT_WORKFLOWS)
 	@./scripts/backwards-compat.sh
 
 setup-actionlint:

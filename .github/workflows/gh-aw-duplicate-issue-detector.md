@@ -60,6 +60,7 @@ tools:
 strict: false
 timeout-minutes: 30
 safe-outputs:
+  activation-comments: false
   noop:
     report-as-issue: false
   add-comment:

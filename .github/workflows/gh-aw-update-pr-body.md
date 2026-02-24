@@ -78,6 +78,7 @@ tools:
   web-fetch:
 strict: false
 safe-outputs:
+  activation-comments: false
   messages:
     footer: ""
 timeout-minutes: 30

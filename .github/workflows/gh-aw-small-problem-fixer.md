@@ -57,16 +57,18 @@ concurrency:
   group: small-problem-fixer
   cancel-in-progress: true
 permissions:
+  actions: read
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
-    toolsets: [repos, issues, pull_requests, search, labels]
+    toolsets: [repos, issues, pull_requests, search, labels, actions]
   bash: true
   web-fetch:
 strict: false
 safe-outputs:
+  activation-comments: false
   noop:
 timeout-minutes: 90
 steps:

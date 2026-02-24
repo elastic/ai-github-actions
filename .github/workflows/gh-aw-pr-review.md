@@ -14,6 +14,8 @@ imports:
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
   - gh-aw-fragments/network-ecosystems.md
+features:
+  copilot-requests: true
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -72,14 +74,17 @@ concurrency:
   group: pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
+  actions: read
   contents: read
   pull-requests: read
   issues: read
 tools:
   github:
-    toolsets: [repos, issues, pull_requests, search]
+    toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
+safe-outputs:
+  activation-comments: false
 strict: false
 timeout-minutes: 90
 steps:

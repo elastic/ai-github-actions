@@ -43,3 +43,7 @@ Give us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.
 ## File Convention
 
 Every workflow action has three files: `action.yml`, `example.yml`, `README.md`.
+
+## Lock Files
+
+Avoid code reviewing lock files directly. These are compiled by gh-aw and we do not control their contents, except for the parts that come from the corresponding `.md` workflow source.
