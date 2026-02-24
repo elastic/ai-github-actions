@@ -21,6 +21,7 @@ network:
     - linux-distros
     - node
     - node-cdns
+    - "opentelemetry.io"
     - perl
     - php
     - playwright
