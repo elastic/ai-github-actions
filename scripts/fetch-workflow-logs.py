@@ -49,10 +49,25 @@ def _normalize_until(until: str | None) -> str | None:
     return until + "T23:59:59Z"
 
 
+def _parse_iso8601(value: str | None) -> datetime | None:
+    """Parse ISO 8601 timestamps, handling Z suffix and naive values as UTC."""
+    if not value:
+        return None
+    try:
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
 def list_workflow_runs(repo: str, workflow: str, token: str, since: str | None, until: str | None,
                        conclusion: str | None, last: int) -> list[dict]:
     """Return up to `last` workflow runs matching the filters."""
     until_normalized = _normalize_until(until)
+    since_dt = _parse_iso8601(since)
+    until_dt = _parse_iso8601(until_normalized)
     runs = []
     page = 1
     per_page = 100
@@ -66,10 +81,15 @@ def list_workflow_runs(repo: str, workflow: str, token: str, since: str | None, 
             if conclusion and run.get("conclusion") != conclusion:
                 continue
             created = run.get("created_at", "")
-            if since and created < since:
+            created_dt = _parse_iso8601(created)
+            if since_dt and created_dt and created_dt < since_dt:
                 # Runs are sorted newest-first; once we go past since, stop paging
                 return runs
-            if until_normalized and created > until_normalized:
+            if until_dt and created_dt and created_dt > until_dt:
+                continue
+            if since and (since_dt is None or created_dt is None) and created < since:
+                return runs
+            if until_normalized and (until_dt is None or created_dt is None) and created > until_normalized:
                 continue
             runs.append(run)
             if len(runs) >= last:
