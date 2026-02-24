@@ -9,6 +9,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -58,10 +59,6 @@ tools:
     toolsets: [repos, issues, search, actions]
   bash: true
   web-fetch:
-network:
-  allowed:
-    - defaults
-    - github
 strict: false
 safe-outputs:
   activation-comments: false

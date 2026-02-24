@@ -77,7 +77,7 @@ permissions:
   actions: read
 tools:
   github:
-    toolsets: [repos, issues, pull_requests, search]
+    toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
 mcp-servers:
