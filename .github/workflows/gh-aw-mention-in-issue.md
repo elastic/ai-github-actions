@@ -55,6 +55,8 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      SAFE_OUTPUTS_GITHUB_TOKEN:
+        required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:
@@ -73,6 +75,8 @@ tools:
   web-fetch:
 strict: false
 timeout-minutes: 60
+safe-outputs:
+  github-token: "${{ secrets.SAFE_OUTPUTS_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}"
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
