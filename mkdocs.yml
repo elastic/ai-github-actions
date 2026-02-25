@@ -4,62 +4,77 @@ docs_dir: docs
 site_dir: site
 theme:
   name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
 extra_css:
   - assets/extra.css
 hooks:
   - docs/hooks.py
+plugins:
+  - search
+  - blog:
+      blog_dir: blog
+      post_date_format: long
+      post_url_format: "{slug}"
+      categories_allowed:
+        - Meet the Agents
+        - Design
+        - Architecture
 nav:
   - Home: index.md
+  - Blog:
+      - blog/index.md
   - Workflows:
-      - Elastic AI Software Factory (GitHub Agent Workflows):
-          - Overview: workflows/gh-agent-workflows.md
-          - Base Workflows:
-              - Scheduled Audit: workflows/gh-agent-workflows/scheduled-audit.md
-              - Scheduled Fix: workflows/gh-agent-workflows/scheduled-fix.md
-          - Human-coordinated:
-              - Docs PR Review: workflows/gh-agent-workflows/docs-pr-review.md
-              - Plan: workflows/gh-agent-workflows/plan.md
-              - Mention in Issue: workflows/gh-agent-workflows/mention-in-issue.md
-              - Mention in Issue (no sandbox): workflows/gh-agent-workflows/mention-in-issue-no-sandbox.md
-              - Mention in PR: workflows/gh-agent-workflows/mention-in-pr.md
-              - Mention in PR (no sandbox): workflows/gh-agent-workflows/mention-in-pr-no-sandbox.md
-              - PR Actions Fixer: workflows/gh-agent-workflows/pr-actions-fixer.md
-          - Event-driven:
-              - Duplicate Issue Detector: workflows/gh-agent-workflows/duplicate-issue-detector.md
-              - Issue Triage: workflows/gh-agent-workflows/issue-triage.md
-              - Issue Fixer: workflows/gh-agent-workflows/issue-fixer.md
-              - PR Actions Detective: workflows/gh-agent-workflows/pr-actions-detective.md
-              - PR Buildkite Detective: workflows/gh-agent-workflows/pr-buildkite-detective.md
-              - PR Review: workflows/gh-agent-workflows/pr-review.md
-              - PR Review (Fork): workflows/gh-agent-workflows/pr-review-fork.md
-              - Update PR Body: workflows/gh-agent-workflows/update-pr-body.md
-          - Scheduled:
-              - Detector / Fixer Pairs:
-                  - Bug Hunting: workflows/gh-agent-workflows/bugs.md
-                  - Code Duplication: workflows/gh-agent-workflows/code-duplication.md
-                  - Docs Patrol: workflows/gh-agent-workflows/docs-patrol-overview.md
-                  - Newbie Contributor: workflows/gh-agent-workflows/newbie-contributor.md
-                  - Text Quality: workflows/gh-agent-workflows/text-quality.md
-              - Standalone Scheduled:
-                  - Agent Efficiency: workflows/gh-agent-workflows/agent-efficiency.md
-                  - Agent Suggestions: workflows/gh-agent-workflows/agent-suggestions.md
-                  - Breaking Change Detector: workflows/gh-agent-workflows/breaking-change-detector.md
-                  - Code Simplifier: workflows/gh-agent-workflows/code-simplifier.md
-                  - Downstream Health: workflows/gh-agent-workflows/downstream-health.md
-                  - Flaky Test Investigator: workflows/gh-agent-workflows/flaky-test-investigator.md
-                  - Performance Profiler: workflows/gh-agent-workflows/performance-profiler.md
-                  - Project Summary: workflows/gh-agent-workflows/project-summary.md
-                  - Release Update Check: workflows/gh-agent-workflows/release-update.md
-                  - Small Problem Fixer: workflows/gh-agent-workflows/small-problem-fixer.md
-                  - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
-                  - Test Improver: workflows/gh-agent-workflows/test-improver.md
-      - Legacy:
-          - Claude Composite Actions: workflows/claude-workflows.md
+      - Overview: workflows/gh-agent-workflows.md
+      - Human-coordinated:
+          - Mention in PR: workflows/gh-agent-workflows/mention-in-pr.md
+          - Mention in Issue: workflows/gh-agent-workflows/mention-in-issue.md
+          - Plan: workflows/gh-agent-workflows/plan.md
+          - Mention in Issue (no sandbox): workflows/gh-agent-workflows/mention-in-issue-no-sandbox.md
+          - Mention in PR (no sandbox): workflows/gh-agent-workflows/mention-in-pr-no-sandbox.md
+          - Docs PR Review: workflows/gh-agent-workflows/docs-pr-review.md
+      - Event-driven:
+          - Automatic Issue Triage: workflows/gh-agent-workflows/issue-triage.md
+          - PR Review: workflows/gh-agent-workflows/pr-review.md
+          - Duplicate Issue Detector: workflows/gh-agent-workflows/duplicate-issue-detector.md
+          - Update PR Body: workflows/gh-agent-workflows/update-pr-body.md
+          - PR Review (Fork): workflows/gh-agent-workflows/pr-review-fork.md
+          - Issue Fixer: workflows/gh-agent-workflows/issue-fixer.md
+          - PR Actions Detective: workflows/gh-agent-workflows/pr-actions-detective.md
+          - PR Actions Fixer: workflows/gh-agent-workflows/pr-actions-fixer.md
+          - PR Buildkite Detective: workflows/gh-agent-workflows/pr-buildkite-detective.md
+      - Base Workflows:
+          - Scheduled Audit: workflows/gh-agent-workflows/scheduled-audit.md
+          - Scheduled Fix: workflows/gh-agent-workflows/scheduled-fix.md
+      - Scheduled:
+          - Detector / Fixer Pairs:
+              - Bug Hunting: workflows/gh-agent-workflows/bugs.md
+              - Code Duplication: workflows/gh-agent-workflows/code-duplication.md
+              - Docs Patrol: workflows/gh-agent-workflows/docs-patrol-overview.md
+              - Newbie Contributor: workflows/gh-agent-workflows/newbie-contributor.md
+              - Text Quality: workflows/gh-agent-workflows/text-quality.md
+          - Standalone Scheduled:
+              - Agent Efficiency: workflows/gh-agent-workflows/agent-efficiency.md
+              - Agent Suggestions: workflows/gh-agent-workflows/agent-suggestions.md
+              - Breaking Change Detector: workflows/gh-agent-workflows/breaking-change-detector.md
+              - Code Simplifier: workflows/gh-agent-workflows/code-simplifier.md
+              - Downstream Health: workflows/gh-agent-workflows/downstream-health.md
+              - Flaky Test Investigator: workflows/gh-agent-workflows/flaky-test-investigator.md
+              - Performance Profiler: workflows/gh-agent-workflows/performance-profiler.md
+              - Project Summary: workflows/gh-agent-workflows/project-summary.md
+              - Release Update Check: workflows/gh-agent-workflows/release-update.md
+              - Small Problem Fixer: workflows/gh-agent-workflows/small-problem-fixer.md
+              - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
+              - Test Improver: workflows/gh-agent-workflows/test-improver.md
+  - Legacy: workflows/claude-workflows.md
   - Developing: developing.md
   - Upgrading: upgrading.md
   - Security: security.md
   - Release: release.md
 markdown_extensions:
   - admonition
+  - attr_list
+  - md_in_html
   - toc:
       permalink: true

@@ -2,54 +2,73 @@
 
 # AI GitHub Actions
 
-AI-powered GitHub workflows for Elastic repositories.
+*40+ AI agents. Zero new tabs to monitor. Your repo (almost) runs itself.*
 
-## Elastic AI Software Factory (recommended)
+We built a fleet of specialized AI agents that review PRs, hunt bugs, triage issues, investigate CI failures, generate feature ideas, and audit your docs — all running as GitHub Actions. This is the Elastic AI Software Factory.
 
-| Feature | GitHub Agent Workflows |
-| --- | --- |
-| Engine | Copilot (default) or Claude |
-| Install | Copy trigger YAML (recommended) |
-| Guardrails | Safe-outputs framework (structured API outputs) |
-| Customization | `additional-instructions`, `setup-commands`, or full shim edit |
-| Also called | Elastic AI Software Factory |
+[Welcome to the Agent Factory](blog/posts/welcome-to-the-factory.md){ .md-button .md-button--primary }
+[Quick Start](workflows/gh-agent-workflows.md){ .md-button }
 
-Elastic AI Software Factory (GitHub Agent Workflows) is recommended for all new deployments and ongoing maintenance.
+---
 
-## Top recommended workflows
+## Meet the Crew
 
-### Starter repo operations set
+<div class="grid cards" markdown>
 
-- `pr-review`
-- `issue-triage`
-- `mention-in-issue`
-- `mention-in-pr`
-- `pr-actions-detective`
+-   **[The Reviewers](blog/posts/meet-the-reviewers.md)**
 
-### Continuous improvement add-ons
+    ---
 
-- `bug-hunter` + `bug-exterminator`
-- `code-simplifier`
-- `docs-patrol`
-- `newbie-contributor-patrol`
-- `small-problem-fixer`
-- `stale-issues`
-- `test-improver`
-- `breaking-change-detector`
-- `code-duplication-detector`
-- `update-pr-body`
+    PR Review, Mention in PR, Update PR Body. File-by-file severity-ranked code reviews on every pull request — and they fix what they find.
 
-## Workflows
+-   **[The Detectives](blog/posts/meet-the-detectives.md)**
 
-- [Elastic AI Software Factory (GitHub Agent Workflows)](workflows/gh-agent-workflows.md)
+    ---
 
-## Legacy
+    PR Actions Detective, Branch Actions Detective. CI is red and the logs are noise. The Detectives find the line that matters.
 
-- [Claude Composite Actions (legacy)](workflows/claude-workflows.md)
+-   **[The Quality Crew](blog/posts/meet-the-quality-crew.md)**
 
-## More
+    ---
 
-- [Developing](developing.md)
-- [Security](security.md)
-- [Release process](release.md)
-- [Repository README](https://github.com/elastic/ai-github-actions/blob/main/README.md)
+    Bug Hunter, Flaky Test Investigator, Code Duplication Detector. From finding bugs to preventing them — the full quality spectrum.
+
+-   **[The Idea Machines](blog/posts/meet-the-idea-machines.md)**
+
+    ---
+
+    Custom audit agents that generate daily feature proposals from different personas. See what you can build with the base workflows.
+
+-   **[The Issue Squad](blog/posts/meet-the-issue-squad.md)**
+
+    ---
+
+    Issue Triage, Duplicate Detector, Deep Research. New issues are labeled, prioritized, and deduplicated within seconds.
+
+-   **[The Watchdogs](blog/posts/meet-the-watchdogs.md)**
+
+    ---
+
+    Breaking Change Detector, Performance Profiler, UX Design Patrol. They guard the things developers forget to check.
+
+</div>
+
+[Browse all blog posts](blog/index.md){ .md-button }
+
+---
+
+## Quick Start
+
+1. **Store a Copilot PAT** as `COPILOT_GITHUB_TOKEN` in your repo secrets
+2. **Copy a workflow's `example.yml`** from [gh-agent-workflows/](https://github.com/elastic/ai-github-actions/tree/main/gh-agent-workflows)
+3. **Customize** with `additional-instructions` and `setup-commands` for your project
+
+Updates propagate automatically through the `v0` tag. See the [full setup docs](workflows/gh-agent-workflows.md) for the complete guide.
+
+---
+
+## Explore the Full Catalog
+
+The complete reference for every agent — triggers, inputs, safe outputs, and installation instructions.
+
+[Workflows Reference](workflows/gh-agent-workflows.md){ .md-button }
