@@ -84,7 +84,6 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
-| [Agent Efficiency](gh-agent-workflows/agent-efficiency.md) | Weekday schedule | Analyze agent logs for inefficiencies |
 | [Agent Suggestions](gh-agent-workflows/agent-suggestions.md) | Weekly schedule | Suggest new agent workflows based on repo and downstream needs |
 | [Breaking Change Detector](gh-agent-workflows/breaking-change-detector.md) | Weekday schedule | Detect undocumented public breaking changes |
 | [Code Simplifier](gh-agent-workflows/code-simplifier.md) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
