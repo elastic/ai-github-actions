@@ -1,12 +1,14 @@
 # Upgrading
 
+> **Migrating from Claude Workflows?** See the [Migration Guide](migration-guide.md) for step-by-step instructions on migrating from legacy Claude Composite Actions to GitHub Agent Workflows.
+
 ## v0.2.5 → v0.2.6
 
 ### Breaking changes — workflow renames
 
-The following workflows have been renamed. Consumers referencing the old `uses:` path must update their trigger files. Symlinks are provided for the four most widely adopted workflows (marked below); the rest require a manual rename.
+The following workflows have been renamed. Consumers referencing the old `uses:` path must update their trigger files. Temporary backwards-compatibility copies are provided for the four most widely adopted workflows (marked below); the rest require a manual rename. The compatibility copies include a deprecation header and will be removed in a future release — migrate to the new names now.
 
-| Old name | New name | Symlink? |
+| Old name | New name | Compat copy? |
 | --- | --- | --- |
 | `breaking-change-detect` | `breaking-change-detector` | Yes |
 | `docs-drift` | `docs-patrol` | Yes |
@@ -17,6 +19,7 @@ The following workflows have been renamed. Consumers referencing the old `uses:`
 | `issue-triage-pr` | `issue-fixer` | No |
 | `pr-ci-fixer` | `pr-actions-fixer` | No |
 | `semantic-function-clustering` | `code-duplication-detector` | No |
+| `address-pr-feedback` | `pr-review-addresser` | No |
 
 **How to update:** In your trigger workflow file, change the `uses:` line:
 

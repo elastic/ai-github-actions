@@ -8,6 +8,7 @@ Full documentation lives at https://elastic.github.io/ai-github-actions/.
 
 - Elastic AI Software Factory (GitHub Agent Workflows, recommended): https://elastic.github.io/ai-github-actions/workflows/gh-agent-workflows/
 - Legacy Claude Composite Actions: https://elastic.github.io/ai-github-actions/workflows/claude-workflows/
+- Migration Guide (Claude → GitHub Agent Workflows): https://elastic.github.io/ai-github-actions/migration-guide/
 - Developing: https://elastic.github.io/ai-github-actions/developing/
 - Security: https://elastic.github.io/ai-github-actions/security/
 - Upgrading: https://elastic.github.io/ai-github-actions/upgrading/
