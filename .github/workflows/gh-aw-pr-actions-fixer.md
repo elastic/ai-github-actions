@@ -1,5 +1,6 @@
 ---
 inlined-imports: true
+name: "PR Actions Fixer"
 description: "Opt-in fixer for failed PR checks that can push safe, targeted changes"
 imports:
   - gh-aw-fragments/elastic-tools.md

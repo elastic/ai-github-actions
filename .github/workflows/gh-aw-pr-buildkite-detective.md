@@ -1,5 +1,6 @@
 ---
 inlined-imports: true
+name: "PR Buildkite Detective"
 description: "Analyze failed Buildkite PR checks and report findings"
 imports:
   - gh-aw-fragments/elastic-tools.md

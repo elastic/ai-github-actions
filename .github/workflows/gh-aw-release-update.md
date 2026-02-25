@@ -1,5 +1,6 @@
 ---
 inlined-imports: true
+name: "Release Update"
 description: "Check for new ai-github-actions releases and open PRs to update pinned workflow SHAs"
 imports:
   - gh-aw-fragments/elastic-tools.md

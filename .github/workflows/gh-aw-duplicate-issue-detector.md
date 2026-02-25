@@ -1,5 +1,6 @@
 ---
 inlined-imports: true
+name: "Duplicate Issue Detector"
 description: "Detect duplicate issues and notify reporters when a matching open or closed issue exists"
 imports:
   - gh-aw-fragments/elastic-tools.md

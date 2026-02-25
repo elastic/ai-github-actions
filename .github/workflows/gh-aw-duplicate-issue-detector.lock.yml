@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"db5502d9654e71bf9f3a0c5859fdaf10b1b1f41717c9ed4f83e9831602843df3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f2da51f58550e9fddf08fb803f9348be49ce2c1a8c98b810804e619b9f39f39b"}
 
 name: "Duplicate Issue Detector"
 "on":

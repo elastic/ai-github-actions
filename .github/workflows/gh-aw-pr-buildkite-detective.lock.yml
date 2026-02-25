@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"280f5a9e12557385fedf9a30dc60c614159664b647b69173c9d6be501615d857"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"967910b42d9aa6b56f20268e92a4b1e63c4b7e0c4ab73e387247a8f1a3e7a947"}
 
 name: "PR Buildkite Detective"
 "on":

@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5ef6c55f2d504c5f2d94dca68c57a37a25fca07c9925d28706cc19504185b10d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"be241ae15392a655a3d87ecb2fd78a7177ee68686b6bd727bd55bee7933d570a"}
 
 name: "Code Simplifier"
 "on":

@@ -1,5 +1,6 @@
 ---
 inlined-imports: true
+name: "Branch Actions Detective"
 description: "Analyze failed branch CI runs and create or update a tracking issue"
 imports:
   - gh-aw-fragments/elastic-tools.md

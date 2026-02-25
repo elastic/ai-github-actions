@@ -1,5 +1,6 @@
 ---
 inlined-imports: true
+name: "PR Actions Detective"
 description: "Analyze failed PR checks and report findings"
 imports:
   - gh-aw-fragments/elastic-tools.md

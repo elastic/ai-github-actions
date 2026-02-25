@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9f21a965a399bf87df4ed7de232599ec0992f66e26b9747f2a8fdc3d75fffdc2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"10d9cfe30b5478b74bd5df1e6fa010d8047efa0e52bf782c397aef865b93360b"}
 
 name: "PR Actions Detective"
 "on":

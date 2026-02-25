@@ -1,5 +1,6 @@
 ---
 inlined-imports: true
+name: "Bug Exterminator"
 description: "Fix bug-hunter issues and open a focused PR"
 imports:
   - gh-aw-fragments/elastic-tools.md

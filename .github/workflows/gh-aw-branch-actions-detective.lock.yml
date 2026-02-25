@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ccaeb873e6f4388bb786239a3ab6951ac04362a632aff020a5c0ebfd040e452f"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c35961575011bec55ab5a588ce47669702dfcacc94531bf1add1f85634cde67a"}
 
 name: "Branch Actions Detective"
 "on":

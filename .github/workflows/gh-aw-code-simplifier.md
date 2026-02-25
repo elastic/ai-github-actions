@@ -1,5 +1,6 @@
 ---
 inlined-imports: true
+name: "Code Simplifier"
 description: "Simplify overcomplicated code with high-confidence refactors"
 imports:
   - gh-aw-fragments/elastic-tools.md
