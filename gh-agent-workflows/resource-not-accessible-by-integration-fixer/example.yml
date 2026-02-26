@@ -3,17 +3,22 @@ on:
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
+    inputs:
+      look-back-days:
+        description: "Number of look-back days for failed-run scan"
+        required: false
+        default: "1"
 
 permissions:
   actions: read
-  contents: write
   issues: write
-  pull-requests: write
+  contents: read
 
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-resource-not-accessible-by-integration-fixer.lock.yml@v0
     with:
       long-term-branches: ""
+      look-back-days: ${{ inputs.look-back-days || 1 }}
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
