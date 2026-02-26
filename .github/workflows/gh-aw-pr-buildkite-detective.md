@@ -86,6 +86,19 @@ safe-outputs:
 strict: false
 timeout-minutes: 30
 steps:
+  - name: Resolve event context
+    run: |
+      set -euo pipefail
+      echo "BK_EVENT_NAME=$GITHUB_EVENT_NAME" >> "$GITHUB_ENV"
+      if [ "$GITHUB_EVENT_NAME" = "status" ]; then
+        echo "BK_EVENT_ID=$(jq -r '.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+        echo "BK_FAILURE_STATE=$(jq -r '.state' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+        echo "BK_COMMIT_SHA=$(jq -r '.sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+      else
+        echo "BK_EVENT_ID=$(jq -r '.check_run.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+        echo "BK_FAILURE_STATE=$(jq -r '.check_run.conclusion' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+        echo "BK_COMMIT_SHA=$(jq -r '.check_run.head_sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+      fi
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
@@ -100,10 +113,10 @@ Analyze failed Buildkite CI builds for pull requests in ${{ github.repository }}
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Event Name**: ${{ github.event_name }}
-- **Event ID**: ${{ github.event_name == 'status' && github.event.id || github.event.check_run.id }}
-- **Failure State**: ${{ github.event_name == 'status' && github.event.state || github.event.check_run.conclusion }}
-- **Commit SHA**: ${{ github.event_name == 'status' && github.event.sha || github.event.check_run.head_sha }}
+- **Event Name**: ${{ env.BK_EVENT_NAME }}
+- **Event ID**: ${{ env.BK_EVENT_ID }}
+- **Failure State**: ${{ env.BK_FAILURE_STATE }}
+- **Commit SHA**: ${{ env.BK_COMMIT_SHA }}
 - **Buildkite Organization**: ${{ inputs.buildkite-org }}
 
 ## Constraints
@@ -135,7 +148,7 @@ Classify each failure to guide your investigation:
 ### Step 1: Gather Context
 
 1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Resolve the failed commit SHA from the triggering event (`github.event.sha` for `status`, `github.event.check_run.head_sha` for `check_run`).
+2. Use the commit SHA provided in the Context section above. If it is empty, discover it from the PR's commit statuses or check runs.
 3. Call `list_pull_requests` for the repository (open PRs), then call `pull_request_read` with method `get` on candidates and keep PRs where `head.sha` matches the failed commit SHA. If none match, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
 4. For each matching PR, keep author, branches, and fork status for downstream analysis.
 
