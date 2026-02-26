@@ -92,7 +92,7 @@ Assist with implementation planning on ${{ github.repository }} from issue comme
 
 - **Repository**: ${{ github.repository }}
 - **Issue**: #${{ github.event.issue.number }} — ${{ github.event.issue.title }}
-- **Request**: "${{ needs.activation.outputs.text }}"
+- **Request**: "${{ steps.sanitized.outputs.text }}"
 
 ## Constraints
 

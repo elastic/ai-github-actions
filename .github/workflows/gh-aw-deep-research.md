@@ -84,7 +84,7 @@ Assist with deep research on ${{ github.repository }} from issue comments, then 
 
 - **Repository**: ${{ github.repository }}
 - **Issue**: #${{ github.event.issue.number }} — ${{ github.event.issue.title }}
-- **Request**: "${{ needs.activation.outputs.text }}"
+- **Request**: "${{ steps.sanitized.outputs.text }}"
 
 ## Constraints
 

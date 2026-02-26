@@ -42,7 +42,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cfd467196fde808dd59cfc6b1e6f5151a06ddaa798cb82c78eda994bd9ab9bc1"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"075100921cd60329bfe68de90ac40bccaec0220e2da312dbb40017d028ca125b"}
 
 name: "Mention in PR (no sandbox)"
 "on":
@@ -112,8 +112,11 @@ jobs:
       issues: write
       pull-requests: write
     outputs:
+      body: ${{ steps.sanitized.outputs.body }}
       comment_id: ""
       comment_repo: ""
+      text: ${{ steps.sanitized.outputs.text }}
+      title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
         uses: github/gh-aw/actions/setup@90ebf8057e8e005103b8d123732d2c64c30e9b27 # v0.50.4
@@ -144,6 +147,15 @@ jobs:
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/check_workflow_timestamp_api.cjs');
+            await main();
+      - name: Compute current body text
+        id: sanitized
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('/opt/gh-aw/actions/compute_text.cjs');
             await main();
       - name: Create prompt with built-in context
         env:

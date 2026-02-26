@@ -12,7 +12,7 @@ What if your repo generated its own feature backlog every morning? Not vague "we
 
 <!-- more -->
 
-The Idea Machines don't ship as named workflows in the ai-github-actions framework. They're custom configurations we built on top of the [Scheduled Audit](../../workflows/gh-agent-workflows/scheduled-audit.md) base workflow using `additional-instructions` to define each agent's persona and domain focus. We're showing them here because they demonstrate one of the most powerful patterns in the factory: take a generic base workflow, give it a personality, and let it run.
+The Idea Machines are all instances of the [Product Manager Impersonator](../../workflows/gh-agent-workflows/product-manager-impersonator.md) workflow, configured with different `persona` and `idea-size` inputs. You run the same workflow multiple times in a single trigger file — each job gets its own persona, scope, and title prefix.
 
 Here's what we built for our playground repo. You can build your own set for any domain.
 
@@ -54,6 +54,6 @@ The result is a self-generating feature backlog that represents perspectives you
 
 ## Build Your Own
 
-Every Ideas Man agent is a [Scheduled Audit](../../workflows/gh-agent-workflows/scheduled-audit.md) workflow with a custom `additional-instructions` prompt. You're not limited to these five personas. Need a "Data Pipeline Ideas Man" or a "Mobile UX Ideas Man"? Copy the Scheduled Audit example, write your persona prompt, set a cron schedule, and you're running.
+Every Ideas Man agent is a [Product Manager Impersonator](../../workflows/gh-agent-workflows/product-manager-impersonator.md) job with its own `persona`, `idea-size`, and `title-prefix`. You're not limited to these five personas. Need a "Data Pipeline Ideas Man" or a "Mobile UX Ideas Man"? Add another job to your trigger file with a new persona prompt and you're running. See the [Product Manager Impersonator README](../../workflows/gh-agent-workflows/product-manager-impersonator.md) for a multi-persona example.
 
 See the [workflow docs](../../workflows/gh-agent-workflows.md) for setup instructions and base workflow details. If you're new to the factory, start with the [welcome post](welcome-to-the-factory.md) for the full picture.

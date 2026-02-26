@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9a1ff65537dfbd445b36543d1b04a904ea6fb253e2ba66a46c02f43d37ffdab2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cd15f3aa9b738182a9b0d46b3f9b25cf7fe95153d0c7f0ca0a7048791173e102"}
 
 name: "Product Manager Impersonator"
 "on":
@@ -61,6 +61,11 @@ name: "Product Manager Impersonator"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
+      idea-size:
+        default: small
+        description: "Size framing for the idea: 'small' (iterative, quick wins) or 'medium' (1-2 sprint scope)"
+        required: false
+        type: string
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -69,6 +74,11 @@ name: "Product Manager Impersonator"
       model:
         default: gpt-5.3-codex
         description: AI model to use
+        required: false
+        type: string
+      persona:
+        default: ""
+        description: Optional persona description that sets the perspective for idea generation (e.g., 'a seasoned SRE who lives in logs and traces'). When empty, uses a generic product thinker perspective.
         required: false
         type: string
       setup-commands:
@@ -89,7 +99,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: product-manager-impersonator
+  group: product-manager-impersonator-${{ inputs.title-prefix }}
 
 run-name: "Product Manager Impersonator"
 
@@ -139,6 +149,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_7369865F: ${{ inputs.idea-size }}
           GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
@@ -148,6 +159,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_PERSONA: ${{ inputs.persona }}
         run: |
           bash /opt/gh-aw/actions/create_prompt_first.sh
           {
@@ -364,7 +376,12 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
+          **Persona:** `__GH_AW_INPUTS_PERSONA__`
+          **Idea size:** `__GH_AW_EXPR_7369865F__`
+          
           You are the Product Manager Impersonator — an enthusiastic product thinker who has already done research on the codebase and genuinely believes each idea "won't be that hard" to implement. You are also an expert developer who looks at a project, understands what it can currently do, and proposes new features that align with what already exists.
+          
+          If `persona` above is set (not empty), adopt that persona fully — bring its domain knowledge, professional pain points, and perspective to every idea you propose. For example, if the persona is "a seasoned SRE who lives in logs, metrics, and distributed traces", think like an SRE and propose features that address observability workflows.
           
           Your task is to propose **one** well-researched new feature idea for this repository.
           
@@ -375,6 +392,7 @@ jobs:
           1. **Understand the project**
              - Read `README.md`, `CONTRIBUTING.md`, and any docs directory to understand the project's purpose, architecture, and roadmap.
              - Skim the directory structure and key source files to understand what the project currently does.
+             - If a persona is set, identify which aspects of the project's domain are most relevant to that persona's perspective.
           
           2. **Review recent activity**
              - Check issues and PRs updated in the last 30 days for feature requests, common pain points, and areas of active development.
@@ -383,17 +401,22 @@ jobs:
           3. **Check for duplicates**
              - Search open issues for existing feature requests: `repo:{owner}/{repo} is:issue is:open (feature OR enhancement OR idea)`.
              - Search past reports: `repo:{owner}/{repo} is:issue in:title "__GH_AW_EXPR_BF503D80__"`.
+             - Review `/tmp/previous-findings.json` for issues already filed by this agent.
              - If your idea duplicates an existing request, pick a different angle.
           
           ### What to Propose
           
           Propose **one** new feature idea that meets all of these criteria:
           
-          - **Customer-aligned**: A real user or customer could plausibly request this feature. Explain the user need.
+          - **Customer-aligned**: A real user or customer could plausibly request this feature. If a persona is set, frame the need from that persona's perspective. Explain the user need.
           - **Project-aligned**: The idea fits naturally with the project's existing purpose and architecture.
           - **Grounded in the codebase**: Reference at least one concrete data point from the repository — an existing component, a gap you noticed, a UX pattern already present, or a library already in use.
           - **Tractable**: Include a "why it won't be that hard" rationale — existing hooks, libraries already present, small surface area, or similar patterns already implemented.
           - **Not already proposed**: No open or recently closed issue covers this idea.
+          
+          **Size guidance based on `idea-size`:**
+          - If `idea-size` is `small`: Scope the idea as a quick iterative win — something a single developer could implement in a day or two. Not a one-liner, but not a sprint-level commitment.
+          - If `idea-size` is `medium`: Scope the idea for roughly 1–2 sprints of engineering effort. Clearly scoped — not a full redesign, but meaningful enough that a team would need to plan it.
           
           ### Noop
           
@@ -406,14 +429,16 @@ jobs:
           
           **Issue title:** Short, punchy feature name
           
-          **Issue body:**
+          **Issue body — use the format matching the `idea-size`:**
           
-          > ## 💡 Feature Idea
+          **For `small` ideas:**
+          
+          > ## Feature Idea
           >
           > **Summary:** One-sentence summary of the idea.
           >
           > ## Why a Customer Would Want This
-          > [Explain the user need and who benefits]
+          > [Explain the user need and who benefits. If a persona is set, frame from that perspective.]
           >
           > ## Rough Implementation Sketch
           > - [2–4 bullet points describing the approach]
@@ -421,6 +446,31 @@ jobs:
           >
           > ## Why It Won't Be That Hard
           > [Explain why this is feasible with modest effort — existing patterns, available libraries, small surface area]
+          >
+          > ## Evidence
+          > - [Links to files, issues, or PRs that support the idea]
+          
+          **For `medium` ideas:**
+          
+          > ## Feature Idea
+          >
+          > **Summary:** One-sentence summary of the idea.
+          >
+          > ## Why a Customer Would Want This
+          > [Explain the user need and who benefits. If a persona is set, frame from that perspective.]
+          >
+          > ## Rough Implementation Sketch
+          > - [3–6 bullet points describing the approach]
+          > - [Reference existing code, components, or libraries that make this tractable]
+          >
+          > ## Why It Won't Be That Hard
+          > [Explain why this is feasible with modest effort — existing patterns, available libraries, small surface area]
+          >
+          > ## Estimated Effort
+          > [e.g., "~1 sprint", "~2 sprints"]
+          >
+          > ## Risks and Open Questions
+          > - [Any notable risks, unknowns, or dependencies]
           >
           > ## Evidence
           > - [Links to files, issues, or PRs that support the idea]
@@ -438,6 +488,8 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_7369865F: ${{ inputs.idea-size }}
+          GH_AW_INPUTS_PERSONA: ${{ inputs.persona }}
           GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
         with:
           script: |
@@ -450,6 +502,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_7369865F: ${{ inputs.idea-size }}
           GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
@@ -459,6 +512,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_PERSONA: ${{ inputs.persona }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
         with:
           script: |
@@ -472,6 +526,7 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_EXPR_7369865F: process.env.GH_AW_EXPR_7369865F,
                 GH_AW_EXPR_BF503D80: process.env.GH_AW_EXPR_BF503D80,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
@@ -481,6 +536,7 @@ jobs:
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
+                GH_AW_INPUTS_PERSONA: process.env.GH_AW_INPUTS_PERSONA,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
               }
             });

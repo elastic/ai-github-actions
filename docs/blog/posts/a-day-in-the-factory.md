@@ -8,11 +8,11 @@ categories:
 
 # A Day in the Factory
 
-What does it look like when a repo runs the full Elastic AI Software Factory? We deployed the framework on our playground repository -- combining the named workflows that ship with ai-github-actions and a set of custom [Scheduled Audit](../../workflows/gh-agent-workflows/scheduled-audit.md) configurations (Ideas Man agents, Playwright smoke testers, and domain-specific analyzers). The result is over 30 agents running on a daily schedule, and from the outside it can look like chaos. But there is a rhythm to it.
+What does it look like when a repo runs the full Elastic AI Software Factory? We deployed the framework on our playground repository -- combining the named workflows that ship with ai-github-actions and a set of custom [Scheduled Audit](../../workflows/gh-agent-workflows/scheduled-audit.md) configurations (Ideas Man agents and Playwright smoke testers). The result is over 30 agents running on a daily schedule, and from the outside it can look like chaos. But there is a rhythm to it.
 
 <!-- more -->
 
-This is the story of a Monday in that deployment, told hour by hour. All times are UTC. Some agents below are named workflows from the framework (Bug Hunter, PR Review, etc.). Others are custom configurations we built on the Scheduled Audit base (marked with *custom* in the schedule table). Your deployment will look different -- the point is the pattern, not the specific lineup.
+This is the story of a Monday in that deployment, told hour by hour. All times are UTC. Some agents below are named workflows from the framework (Bug Hunter, PR Review, etc.). Others are custom configurations we built on the Scheduled Audit base (marked with *custom* in the schedule table). A few — like Framework Best Practices, Autonomy Atomicity Analyzer, and Information Architecture — started as custom configurations and graduated to named workflows. Your deployment will look different -- the point is the pattern, not the specific lineup.
 
 The event-driven agents are always listening in the background, but the scheduled crew punches in at 9 AM sharp.
 
@@ -60,11 +60,11 @@ All times UTC, weekdays unless noted.
 | 10:00 AM | Smoke Connection Dialog *(custom)*, Medium Ideas Man *(custom)*, Product Manager Impersonator, Text Auditor |
 | 11:00 AM | Smoke Auth Tab Switch *(custom)*, Security Ideas Man *(custom)*, Bug Hunter |
 | 12:00 PM | Smoke Connect Button Enablement *(custom)*, Observability Ideas Man *(custom)*, Code Duplication Detector |
-| 1:00 PM | Smoke Reset Visibility *(custom)*, Vector Search Ideas Man *(custom)*, Framework Best Practices *(custom)* |
+| 1:00 PM | Smoke Reset Visibility *(custom)*, Vector Search Ideas Man *(custom)*, Framework Best Practices |
 | 2:00 PM | Flaky Test Investigator, Performance Profiler, Breaking Change Detector |
 | 3:00 PM | Code Simplifier, Refactor Opportunist, Docs Patrol |
-| 4:00 PM | Newbie Contributor Patrol, Autonomy Atomicity Analyzer *(custom)*, Stale Issues |
-| 5:00 PM | Information Architecture *(custom)*, UX Design Patrol, Small Problem Fixer, Test Improver *(weekly)* |
+| 4:00 PM | Newbie Contributor Patrol, Autonomy Atomicity Analyzer, Stale Issues |
+| 5:00 PM | Information Architecture, UX Design Patrol, Small Problem Fixer, Test Improver *(weekly)* |
 
 **Event-driven (anytime):** PR Review, PR Actions Detective, Branch Actions Detective, Issue Triage, Duplicate Issue Detector, Update PR Body
 

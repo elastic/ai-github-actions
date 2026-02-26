@@ -21,25 +21,27 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Generate implementation plans from issue comments and create follow-up issues/sub-issues
+# Find places where library-native features could replace hand-rolled solutions
 #
 # Resolved workflow manifest:
 #   Imports:
+#     - gh-aw-fragments/best-of-three-investigation.md
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/network-ecosystems.md
+#     - gh-aw-fragments/previous-findings.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
-#     - gh-aw-fragments/safe-output-add-comment-issue.md
 #     - gh-aw-fragments/safe-output-create-issue.md
+#     - gh-aw-fragments/scheduled-audit.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6d51ce4c6fa5cc8450d19640f61c3db2e78a03f61b3998bf17b7801d2aec9610"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1ed2241b597ef033c35f72553439ef8585648066c2ae7f0a0bfd72da00e1ff8a"}
 
-name: "Plan"
+name: "Framework Best Practices"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -59,11 +61,6 @@ name: "Plan"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
-      create-issue-max:
-        default: "5"
-        description: Maximum number of issues the agent can create per run
-        required: false
-        type: string
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -79,6 +76,11 @@ name: "Plan"
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
         required: false
         type: string
+      title-prefix:
+        default: "[framework-best-practices]"
+        description: Title prefix for created issues (e.g. '[framework-best-practices]')
+        required: false
+        type: string
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -87,9 +89,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: plan-${{ github.event.issue.number }}
+  group: framework-best-practices
 
-run-name: "Plan"
+run-name: "Framework Best Practices"
 
 jobs:
   activation:
@@ -98,15 +100,9 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      discussions: write
-      issues: write
-      pull-requests: write
     outputs:
-      body: ${{ steps.sanitized.outputs.body }}
       comment_id: ""
       comment_repo: ""
-      text: ${{ steps.sanitized.outputs.text }}
-      title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
         uses: github/gh-aw/actions/setup@90ebf8057e8e005103b8d123732d2c64c30e9b27 # v0.50.4
@@ -131,37 +127,27 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-plan.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-framework-best-practices.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/check_workflow_timestamp_api.cjs');
             await main();
-      - name: Compute current body text
-        id: sanitized
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        with:
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/compute_text.cjs');
-            await main();
       - name: Create prompt with built-in context
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
           GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
           GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         run: |
           bash /opt/gh-aw/actions/create_prompt_first.sh
           {
@@ -174,7 +160,7 @@ jobs:
           cat "/opt/gh-aw/prompts/safe_outputs_prompt.md"
           cat << 'GH_AW_PROMPT_EOF'
           <safe-output-tools>
-          Tools: add_comment, create_issue, missing_tool, missing_data
+          Tools: create_issue, missing_tool, missing_data
           </safe-output-tools>
           <github-context>
           The following GitHub context information is available for this workflow:
@@ -281,18 +267,6 @@ jobs:
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          ## add-comment Limitations
-          
-          - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
-          - **Mentions**: Max 10 `@` mentions per comment.
-          - **Links**: Max 50 URLs per comment.
-          - **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.
-          - **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.
-          - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
-          
-          If you exceed 10 mentions or 50 links, the comment will be rejected.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## create-issue Limitations
           
           - **Title**: Max 128 characters. Sanitized (special characters escaped).
@@ -303,53 +277,167 @@ jobs:
           - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
+          ## Previous Findings
           
+          Before filing a new issue, check `/tmp/previous-findings.json` for issues this agent has already filed.
+          
+          - Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
+          - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
+          - Only file a new issue when the finding is genuinely distinct from all previous findings.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          # Plan Assistant
+          ### Best-of-Three Investigation
           
-          Assist with implementation planning on __GH_AW_GITHUB_REPOSITORY__ from issue comments.
+          For your initial investigation, use multiple sub-agents to explore the codebase and gather the best possible result. Give each sub-agent a unique instruction to explore a different starting point or angle — e.g., different starting points, different approaches, or different heuristics.
           
-          ## Context
+          Wait for all the sub-agents to complete. Do not proceed until every sub-agent has returned its result.
           
-          - **Repository**: __GH_AW_GITHUB_REPOSITORY__
-          - **Issue**: #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__ — __GH_AW_GITHUB_EVENT_ISSUE_TITLE__
-          - **Request**: "__GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT__"
+          Evaluate the candidates by comparing evidence quality, specificity, and actionability. Prefer candidates with concrete file paths, line numbers, and verifiable evidence over general observations. If most or all sub-agents recommend `noop`, that is a strong signal to `noop`.
+          
+          Select the single best candidate and proceed with it. Discard the others. If no candidate meets the quality gate, call `noop`.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
           
           ## Constraints
           
-          - **CAN**: Read files, search code, run tests and commands, post issue comments, create new issues/sub-issues.
-          - **CANNOT**: Directly push code or create pull requests from this workflow.
+          This workflow is for detection and reporting only. You can read files, search code, run commands, and read PR/issue details — but your only output is either a single issue or a noop.
           
-          ## Instructions
+          ## Process
           
-          Understand the request, investigate the codebase, and produce a concrete implementation plan.
+          Follow these steps in order.
           
           ### Step 1: Gather Context
           
-          1. Call `generate_agents_md` to get repository coding guidelines and conventions. If this fails, continue without it.
-          2. Read the full issue thread and the request comment.
-          3. If related issues or PRs are referenced, call `issue_read` / `pull_request_read` with method `get` for each relevant item.
-          4. Use `grep` and file reading to inspect the relevant code paths.
+          1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
+          2. Follow the data gathering instructions in the **Report Assignment** section.
           
-          ### Step 2: Investigate and Plan
+          ### Step 2: Analyze
           
-          1. Validate current behavior by running relevant existing commands when useful (tests/lint/build).
-          2. Form a concrete recommendation with clear implementation steps.
-          3. If work should be split, create follow-up issues with `create_issue`.
-          4. For sub-issues, set the `parent` field in `create_issue`.
+          Follow the analysis instructions in the **Report Assignment** section to determine whether an issue should be filed. The Report Assignment defines:
+          - What data to gather and how
+          - What to look for
+          - What constitutes a finding worth reporting
+          - What to skip or ignore
           
-          ### Step 3: Post Response
+          ### Step 3: Self-Review (Quality Gate)
           
-          Call `add_comment` with a concise planning response that includes:
+          Before filing anything, critically evaluate every finding against these criteria:
           
-          1. **Recommendation** — The best implementation approach.
-          2. **Findings** — Evidence with file paths and line numbers.
-          3. **Verification** — Commands run and outcomes.
-          4. **Detailed Action Plan** — Ordered, actionable steps.
-          5. **Related Items** — Relevant issues, PRs, and files.
+          1. **Evidence is concrete** — you can point to exact file paths, line numbers, commit SHAs, or command outputs. No "I believe" or "it seems."
+          2. **Finding is actionable** — a maintainer reading the issue can act on it without re-investigating from scratch.
+          3. **Finding is not already tracked** — you checked open issues and recent PRs for duplicates.
+          4. **Finding is worth a human's time** — the issue is material enough that a maintainer would thank you for filing it, not close it as noise.
           
-          Use `<details>` and `<summary>` for long sections.
+          If zero findings pass all four criteria, call `noop` with a brief reason and stop. **Noop is the expected outcome most days.** Filing nothing is a success when there is nothing worth filing.
+          
+          ### Step 4: Report
+          
+          If there are findings that pass the quality gate, call `create_issue` with a structured report. Use the issue format specified in the Report Assignment if one is provided, otherwise use this default format:
+          
+          **Issue title:** Brief summary of findings
+          
+          **Issue body:**
+          
+          > ## Findings
+          >
+          > ### 1. [Brief description]
+          >
+          > **Evidence:** [Links, references, or data supporting the finding]
+          > **Action needed:** [What should be done]
+          >
+          > ## Suggested Actions
+          >
+          > - [ ] [Actionable checkbox for each finding]
+          
+          **Guidelines:**
+          - Group related findings together
+          - Be specific about what needs to happen
+          - Include links and references where possible
+          - Make suggested actions concrete enough to act on without re-investigating
+          - If a finding is ambiguous, it does not pass the quality gate — drop it
+          
+          **Report Assignment:**
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          You are the Framework & Library Best Practices Analyst — an expert in the libraries and frameworks used by this project who identifies opportunities to leverage built-in features instead of hand-rolled solutions.
+          
+          Your task is to analyze the codebase, identify the frameworks and libraries in use, and find places where the code could be simplified or improved by using library-native features.
+          
+          **The bar is high.** Most codebases make reasonable use of their dependencies; most runs should end with `noop`. Only file an issue when you find a concrete simplification.
+          
+          ## Report Assignment
+          
+          ### Data Gathering
+          
+          1. **Discover the tech stack**
+             - Read `package.json`, `go.mod`, `pyproject.toml`, `Cargo.toml`, `pom.xml`, `Gemfile`, or equivalent to identify all dependencies and their versions.
+             - Read `README.md`, `CONTRIBUTING.md`, and any docs to understand the project's purpose and key technologies.
+             - Skim the directory structure and key source files to understand the architecture.
+          
+          2. **Scan for library underuse**
+             - For each major dependency, understand what features it provides at the installed version.
+             - Search the codebase for patterns that reinvent or work around library features.
+             - Check configuration files for unnecessary complexity.
+             - Look for TODOs or workaround comments that reference library limitations that may have been resolved in the current version.
+          
+          3. **Check for duplicates**
+             - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "__GH_AW_EXPR_BF503D80__"`.
+             - Review `/tmp/previous-findings.json` for issues already filed by this agent.
+          
+          ### What to Look For
+          
+          1. **Reimplemented library features** — custom utility functions that duplicate what a library already provides (e.g., hand-rolled debounce when `lodash/debounce` is available, custom deep-clone when `structuredClone` or a library function exists).
+          2. **State management anti-patterns** — using low-level primitives (e.g., `useState`/`useEffect`) for complex state that the project's state management library handles better; prop drilling through many levels when a store or context is available.
+          3. **UI framework underuse** — building custom components (dialogs, tooltips, menus, form controls) when the UI library provides ready-made, accessible versions.
+          4. **Build tool configuration** — config files that are overly complex or work around issues that newer versions of the tool have resolved natively.
+          5. **Testing patterns** — manual mocking or test setup that testing libraries provide as built-in features.
+          6. **Deprecated or legacy patterns** — using older API styles when the library has introduced newer, simpler alternatives.
+          7. **Missing framework optimizations** — places where framework-native performance patterns could be applied following the framework's own guidance.
+          
+          ### What to Skip
+          
+          - Micro-optimizations with no observable impact
+          - Speculative performance improvements without evidence
+          - Cases where the custom implementation is intentionally different from the library version (e.g., different error handling, domain-specific logic)
+          - Findings already tracked by an open issue
+          
+          ### Quality Gate — When to Noop
+          
+          Call `noop` if:
+          - You cannot find a concrete simplification where the library feature exists, is stable, and would demonstrably reduce code complexity or improve behavior.
+          - Every finding is speculative, subjective, or already tracked.
+          - The codebase makes reasonable use of its dependencies.
+          
+          "Framework Best Practices skipped — no concrete library underuse found."
+          
+          ### Issue Format
+          
+          **Issue title:** Brief summary of the opportunity (e.g., "Replace custom debounce with lodash/debounce already in dependencies")
+          
+          **Issue body:**
+          
+          > ## Framework / Library Best Practices Findings
+          >
+          > ### 1. [Brief description]
+          > **Library:** [name and version from manifest]
+          > **Library feature:** [specific API or feature name]
+          > **Current code:** [file path(s) and brief description of what the code does instead]
+          > **Simplification:** [how using the library feature would reduce or improve the code]
+          > **Documentation:** [link to relevant library docs]
+          >
+          > ### 2. [Next finding...]
+          >
+          > ## Suggested Actions
+          > - [ ] [Specific, actionable checkbox for each improvement]
+          
+          ### Labeling
+          
+          - If the `framework-best-practices` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `__GH_AW_EXPR_BF503D80__` title prefix only.
           
           __GH_AW_EXPR_49B959F1__
           
@@ -359,11 +447,8 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
-          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -375,17 +460,16 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
           GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
           GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
-          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -398,17 +482,16 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_EXPR_BF503D80: process.env.GH_AW_EXPR_BF503D80,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
                 GH_AW_GITHUB_EVENT_ISSUE_NUMBER: process.env.GH_AW_GITHUB_EVENT_ISSUE_NUMBER,
-                GH_AW_GITHUB_EVENT_ISSUE_TITLE: process.env.GH_AW_GITHUB_EVENT_ISSUE_TITLE,
                 GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: process.env.GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER,
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
-                GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: process.env.GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
               }
             });
       - name: Validate prompt placeholders
@@ -431,12 +514,9 @@ jobs:
     needs: activation
     runs-on: ubuntu-latest
     permissions:
-      actions: read
       contents: read
       issues: read
       pull-requests: read
-    concurrency:
-      group: "gh-aw-copilot-plan-${{ github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -446,7 +526,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawplan
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawframeworkbestpractices
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       detection_conclusion: ${{ steps.detection_conclusion.outputs.conclusion }}
@@ -512,6 +592,11 @@ jobs:
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
       - env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE_PREFIX: ${{ inputs.title-prefix }}
+        name: List previous findings
+        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
+      - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup
@@ -556,7 +641,7 @@ jobs:
               model: "${{ inputs.model }}",
               version: "",
               agent_version: "0.0.417",
-              workflow_name: "Plan",
+              workflow_name: "Framework Best Practices",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -613,12 +698,12 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"add_comment":{"max":1},"create_issue":{"max":"${{ inputs.create-issue-max }}"},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
+          {"create_issue":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead.",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"${{ inputs.title-prefix }} \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -657,27 +742,6 @@ jobs:
                 "type": "object"
               },
               "name": "create_issue"
-            },
-            {
-              "description": "Add a comment to an existing GitHub issue, pull request, or discussion. Use this to provide feedback, answer questions, or add information to an existing conversation. For creating new items, use create_issue, create_discussion, or create_pull_request instead. IMPORTANT: Comments are subject to validation constraints enforced by the MCP server - maximum 65536 characters for the complete comment (including footer which is added automatically), 10 mentions (@username), and 50 links. Exceeding these limits will result in an immediate error with specific guidance. NOTE: By default, this tool requires discussions:write permission. If your GitHub App lacks Discussions permission, set 'discussions: false' in the workflow's safe-outputs.add-comment configuration to exclude this permission. CONSTRAINTS: Maximum 1 comment(s) can be added.",
-              "inputSchema": {
-                "additionalProperties": false,
-                "properties": {
-                  "body": {
-                    "description": "The comment text in Markdown format. This is the 'body' field - do not use 'comment_body' or other variations. Provide helpful, relevant information that adds value to the conversation. CONSTRAINTS: The complete comment (your body text + automatically added footer) must not exceed 65536 characters total. Maximum 10 mentions (@username), maximum 50 links (http/https URLs). A footer (~200-500 characters) is automatically appended with workflow attribution, so leave adequate space. If these limits are exceeded, the tool call will fail with a detailed error message indicating which constraint was violated.",
-                    "type": "string"
-                  },
-                  "item_number": {
-                    "description": "The issue, pull request, or discussion number to comment on. This is the numeric ID from the GitHub URL (e.g., 123 in github.com/owner/repo/issues/123). If omitted, the tool auto-targets the issue, PR, or discussion that triggered this workflow. Auto-targeting only works for issue, pull_request, discussion, and comment event triggers — it does NOT work for schedule, workflow_dispatch, push, or workflow_run triggers. For those trigger types, always provide item_number explicitly, or the comment will be silently discarded.",
-                    "type": "number"
-                  }
-                },
-                "required": [
-                  "body"
-                ],
-                "type": "object"
-              },
-              "name": "add_comment"
             },
             {
               "description": "Report that a tool or capability needed to complete the task is not available, or share any information you deem important about missing functionality or limitations. Use this when you cannot accomplish what was requested because the required functionality is missing or access is restricted.",
@@ -752,24 +816,6 @@ jobs:
           GH_AW_SAFE_OUTPUTS_TOOLS_EOF
           cat > /opt/gh-aw/safeoutputs/validation.json << 'GH_AW_SAFE_OUTPUTS_VALIDATION_EOF'
           {
-            "add_comment": {
-              "defaultMax": 1,
-              "fields": {
-                "body": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 65000
-                },
-                "item_number": {
-                  "issueOrPRNumber": true
-                },
-                "repo": {
-                  "type": "string",
-                  "maxLength": 256
-                }
-              }
-            },
             "create_issue": {
               "defaultMax": 1,
               "fields": {
@@ -943,7 +989,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,actions"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,labels"
                 }
               },
               "public-code-search": {
@@ -985,7 +1031,7 @@ jobs:
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
-        timeout-minutes: 60
+        timeout-minutes: 90
         run: |
           set -o pipefail
           # shellcheck disable=SC1003
@@ -1179,8 +1225,8 @@ jobs:
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Plan"
-          WORKFLOW_DESCRIPTION: "Generate implementation plans from issue comments and create follow-up issues/sub-issues"
+          WORKFLOW_NAME: "Framework Best Practices"
+          WORKFLOW_DESCRIPTION: "Find places where library-native features could replace hand-rolled solutions"
           HAS_PATCH: ${{ steps.collect_output.outputs.has_patch }}
         with:
           script: |
@@ -1268,7 +1314,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-      pull-requests: write
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
       tools_reported: ${{ steps.missing_tool.outputs.tools_reported }}
@@ -1295,7 +1340,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
-          GH_AW_WORKFLOW_NAME: "Plan"
+          GH_AW_WORKFLOW_NAME: "Framework Best Practices"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1308,7 +1353,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Plan"
+          GH_AW_WORKFLOW_NAME: "Framework Best Practices"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1321,10 +1366,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Plan"
+          GH_AW_WORKFLOW_NAME: "Framework Best Practices"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-plan"
+          GH_AW_WORKFLOW_ID: "gh-aw-framework-best-practices"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
@@ -1341,7 +1386,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Plan"
+          GH_AW_WORKFLOW_NAME: "Framework Best Practices"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1356,10 +1401,6 @@ jobs:
 
   pre_activation:
     runs-on: ubuntu-slim
-    permissions:
-      discussions: write
-      issues: write
-      pull-requests: write
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
       matched_command: ''
@@ -1368,19 +1409,6 @@ jobs:
         uses: github/gh-aw/actions/setup@90ebf8057e8e005103b8d123732d2c64c30e9b27 # v0.50.4
         with:
           destination: /opt/gh-aw/actions
-      - name: Add eyes reaction for immediate feedback
-        id: react
-        if: github.event_name == 'issues' || github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment' || github.event_name == 'discussion' || github.event_name == 'discussion_comment' || (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.id == github.repository_id)
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_REACTION: "eyes"
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/add_reaction.cjs');
-            await main();
       - name: Check team membership for workflow
         id: check_membership
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -1402,14 +1430,13 @@ jobs:
     permissions:
       contents: read
       issues: write
-      pull-requests: write
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-plan"
-      GH_AW_WORKFLOW_NAME: "Plan"
+      GH_AW_WORKFLOW_ID: "gh-aw-framework-best-practices"
+      GH_AW_WORKFLOW_NAME: "Framework Best Practices"
     outputs:
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}
@@ -1438,7 +1465,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"create_issue\":{\"max\":\"${{ inputs.create-issue-max }}\"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"max\":1,\"title_prefix\":\"${{ inputs.title-prefix }} \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

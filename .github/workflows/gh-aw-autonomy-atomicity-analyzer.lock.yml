@@ -21,25 +21,27 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Generate implementation plans from issue comments and create follow-up issues/sub-issues
+# Find patterns that block concurrent development by multiple agents or developers
 #
 # Resolved workflow manifest:
 #   Imports:
+#     - gh-aw-fragments/best-of-three-investigation.md
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/network-ecosystems.md
+#     - gh-aw-fragments/previous-findings.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
-#     - gh-aw-fragments/safe-output-add-comment-issue.md
 #     - gh-aw-fragments/safe-output-create-issue.md
+#     - gh-aw-fragments/scheduled-audit.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6d51ce4c6fa5cc8450d19640f61c3db2e78a03f61b3998bf17b7801d2aec9610"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0febb361a71adf4c7251e2ce62368a2811b2d53e8ec41e44f4c9ea3006000c46"}
 
-name: "Plan"
+name: "Autonomy Atomicity Analyzer"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -59,11 +61,6 @@ name: "Plan"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
-      create-issue-max:
-        default: "5"
-        description: Maximum number of issues the agent can create per run
-        required: false
-        type: string
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -79,6 +76,11 @@ name: "Plan"
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
         required: false
         type: string
+      title-prefix:
+        default: "[autonomy-atomicity]"
+        description: Title prefix for created issues (e.g. '[autonomy-atomicity]')
+        required: false
+        type: string
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -87,9 +89,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: plan-${{ github.event.issue.number }}
+  group: autonomy-atomicity-analyzer
 
-run-name: "Plan"
+run-name: "Autonomy Atomicity Analyzer"
 
 jobs:
   activation:
@@ -98,15 +100,9 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      discussions: write
-      issues: write
-      pull-requests: write
     outputs:
-      body: ${{ steps.sanitized.outputs.body }}
       comment_id: ""
       comment_repo: ""
-      text: ${{ steps.sanitized.outputs.text }}
-      title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
         uses: github/gh-aw/actions/setup@90ebf8057e8e005103b8d123732d2c64c30e9b27 # v0.50.4
@@ -131,37 +127,27 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-plan.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-autonomy-atomicity-analyzer.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/check_workflow_timestamp_api.cjs');
             await main();
-      - name: Compute current body text
-        id: sanitized
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        with:
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/compute_text.cjs');
-            await main();
       - name: Create prompt with built-in context
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
           GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
           GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         run: |
           bash /opt/gh-aw/actions/create_prompt_first.sh
           {
@@ -174,7 +160,7 @@ jobs:
           cat "/opt/gh-aw/prompts/safe_outputs_prompt.md"
           cat << 'GH_AW_PROMPT_EOF'
           <safe-output-tools>
-          Tools: add_comment, create_issue, missing_tool, missing_data
+          Tools: create_issue, missing_tool, missing_data
           </safe-output-tools>
           <github-context>
           The following GitHub context information is available for this workflow:
@@ -281,18 +267,6 @@ jobs:
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          ## add-comment Limitations
-          
-          - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
-          - **Mentions**: Max 10 `@` mentions per comment.
-          - **Links**: Max 50 URLs per comment.
-          - **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.
-          - **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.
-          - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
-          
-          If you exceed 10 mentions or 50 links, the comment will be rejected.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## create-issue Limitations
           
           - **Title**: Max 128 characters. Sanitized (special characters escaped).
@@ -303,53 +277,164 @@ jobs:
           - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
+          ## Previous Findings
           
+          Before filing a new issue, check `/tmp/previous-findings.json` for issues this agent has already filed.
+          
+          - Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
+          - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
+          - Only file a new issue when the finding is genuinely distinct from all previous findings.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          # Plan Assistant
+          ### Best-of-Three Investigation
           
-          Assist with implementation planning on __GH_AW_GITHUB_REPOSITORY__ from issue comments.
+          For your initial investigation, use multiple sub-agents to explore the codebase and gather the best possible result. Give each sub-agent a unique instruction to explore a different starting point or angle — e.g., different starting points, different approaches, or different heuristics.
           
-          ## Context
+          Wait for all the sub-agents to complete. Do not proceed until every sub-agent has returned its result.
           
-          - **Repository**: __GH_AW_GITHUB_REPOSITORY__
-          - **Issue**: #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__ — __GH_AW_GITHUB_EVENT_ISSUE_TITLE__
-          - **Request**: "__GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT__"
+          Evaluate the candidates by comparing evidence quality, specificity, and actionability. Prefer candidates with concrete file paths, line numbers, and verifiable evidence over general observations. If most or all sub-agents recommend `noop`, that is a strong signal to `noop`.
+          
+          Select the single best candidate and proceed with it. Discard the others. If no candidate meets the quality gate, call `noop`.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
           
           ## Constraints
           
-          - **CAN**: Read files, search code, run tests and commands, post issue comments, create new issues/sub-issues.
-          - **CANNOT**: Directly push code or create pull requests from this workflow.
+          This workflow is for detection and reporting only. You can read files, search code, run commands, and read PR/issue details — but your only output is either a single issue or a noop.
           
-          ## Instructions
+          ## Process
           
-          Understand the request, investigate the codebase, and produce a concrete implementation plan.
+          Follow these steps in order.
           
           ### Step 1: Gather Context
           
-          1. Call `generate_agents_md` to get repository coding guidelines and conventions. If this fails, continue without it.
-          2. Read the full issue thread and the request comment.
-          3. If related issues or PRs are referenced, call `issue_read` / `pull_request_read` with method `get` for each relevant item.
-          4. Use `grep` and file reading to inspect the relevant code paths.
+          1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
+          2. Follow the data gathering instructions in the **Report Assignment** section.
           
-          ### Step 2: Investigate and Plan
+          ### Step 2: Analyze
           
-          1. Validate current behavior by running relevant existing commands when useful (tests/lint/build).
-          2. Form a concrete recommendation with clear implementation steps.
-          3. If work should be split, create follow-up issues with `create_issue`.
-          4. For sub-issues, set the `parent` field in `create_issue`.
+          Follow the analysis instructions in the **Report Assignment** section to determine whether an issue should be filed. The Report Assignment defines:
+          - What data to gather and how
+          - What to look for
+          - What constitutes a finding worth reporting
+          - What to skip or ignore
           
-          ### Step 3: Post Response
+          ### Step 3: Self-Review (Quality Gate)
           
-          Call `add_comment` with a concise planning response that includes:
+          Before filing anything, critically evaluate every finding against these criteria:
           
-          1. **Recommendation** — The best implementation approach.
-          2. **Findings** — Evidence with file paths and line numbers.
-          3. **Verification** — Commands run and outcomes.
-          4. **Detailed Action Plan** — Ordered, actionable steps.
-          5. **Related Items** — Relevant issues, PRs, and files.
+          1. **Evidence is concrete** — you can point to exact file paths, line numbers, commit SHAs, or command outputs. No "I believe" or "it seems."
+          2. **Finding is actionable** — a maintainer reading the issue can act on it without re-investigating from scratch.
+          3. **Finding is not already tracked** — you checked open issues and recent PRs for duplicates.
+          4. **Finding is worth a human's time** — the issue is material enough that a maintainer would thank you for filing it, not close it as noise.
           
-          Use `<details>` and `<summary>` for long sections.
+          If zero findings pass all four criteria, call `noop` with a brief reason and stop. **Noop is the expected outcome most days.** Filing nothing is a success when there is nothing worth filing.
+          
+          ### Step 4: Report
+          
+          If there are findings that pass the quality gate, call `create_issue` with a structured report. Use the issue format specified in the Report Assignment if one is provided, otherwise use this default format:
+          
+          **Issue title:** Brief summary of findings
+          
+          **Issue body:**
+          
+          > ## Findings
+          >
+          > ### 1. [Brief description]
+          >
+          > **Evidence:** [Links, references, or data supporting the finding]
+          > **Action needed:** [What should be done]
+          >
+          > ## Suggested Actions
+          >
+          > - [ ] [Actionable checkbox for each finding]
+          
+          **Guidelines:**
+          - Group related findings together
+          - Be specific about what needs to happen
+          - Include links and references where possible
+          - Make suggested actions concrete enough to act on without re-investigating
+          - If a finding is ambiguous, it does not pass the quality gate — drop it
+          
+          **Report Assignment:**
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          You are the Autonomy & Atomicity Analyzer — an expert in concurrent development workflows who identifies patterns that cause problems when multiple agents or developers work on the repository simultaneously.
+          
+          Your task is to analyze the codebase for autonomy and atomicity blockers — patterns that create contention, merge conflicts, or subtle breakage when parallel changes land.
+          
+          **The bar is high.** Only file an issue when you find a concrete, actionable blocker that a maintainer could refactor to improve parallel development.
+          
+          ## Report Assignment
+          
+          ### Data Gathering
+          
+          1. **Understand the architecture**
+             - Read `README.md`, `CONTRIBUTING.md`, `DEVELOPING.md`, and any architecture docs.
+             - Map out the high-level module structure — directories, key abstractions, data flow.
+          
+          2. **Identify blockers**
+             - Scan the project structure and identify files with the highest import fan-in and fan-out.
+             - Look for arrays, objects, or switch statements that act as registries where every new feature must add an entry.
+             - Identify test files whose scope spans multiple unrelated features.
+             - Check for module-level mutable state (e.g., `let` declarations at module scope, mutable singletons).
+             - Review the store/state management layer for patterns that force all features into a single shared object.
+          
+          3. **Check for duplicates**
+             - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "__GH_AW_EXPR_BF503D80__"`.
+             - Review `/tmp/previous-findings.json` for issues already filed by this agent.
+          
+          ### What to Look For
+          
+          1. **Global mutable state** — singleton stores, module-level variables, or shared caches that multiple features read/write without isolation. Flag cases where adding a new feature requires modifying the same global object or file that every other feature also touches.
+          2. **Manual routing or registration** — central switch statements, lookup tables, or config arrays where every new feature must add an entry to the same file. These are merge-conflict magnets.
+          3. **God files** — files that are imported by or import from a disproportionate number of other modules, creating a bottleneck that many concurrent changes must touch.
+          4. **Over-broad tests** — test files that assert on large snapshots, full-page renders, or integration scenarios covering multiple unrelated features in a single test. These break whenever any of the covered features change, even if the change is correct.
+          5. **Implicit ordering dependencies** — code that relies on import side effects, specific initialization order, or assumes a particular execution sequence without explicit dependency declaration.
+          6. **Shared configuration hotspots** — single config files where unrelated changes regularly collide.
+          
+          ### What to Skip
+          
+          - Minor style issues or theoretical problems with no current impact
+          - Patterns that are already well-isolated or that the team has intentionally centralized
+          - Issues already tracked by an open issue
+          
+          ### Quality Gate — When to Noop
+          
+          Call `noop` if:
+          - No concrete, actionable blocker is found.
+          - Every finding is theoretical with no evidence of actual contention.
+          - A similar issue is already open.
+          
+          "Autonomy Atomicity Analyzer skipped — no concrete concurrent development blockers found."
+          
+          ### Issue Format
+          
+          **Issue title:** Brief summary of the blocker (e.g., "Central visualization registry is a merge-conflict hotspot")
+          
+          **Issue body:**
+          
+          > ## Autonomy / Atomicity Findings
+          >
+          > ### 1. [Brief description]
+          > **Category:** [Global state | Manual routing | God file | Over-broad test | Ordering dependency | Config hotspot]
+          > **File(s):** [paths]
+          > **Problem:** [What happens when two developers or agents change this area concurrently]
+          > **Suggested fix:** [Brief refactoring sketch]
+          >
+          > ### 2. [Next finding...]
+          >
+          > ## Suggested Actions
+          > - [ ] [Specific, actionable checkbox for each improvement]
+          
+          ### Labeling
+          
+          - If the `autonomy-atomicity` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `__GH_AW_EXPR_BF503D80__` title prefix only.
           
           __GH_AW_EXPR_49B959F1__
           
@@ -359,11 +444,8 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
-          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -375,17 +457,16 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
           GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
           GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
-          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -398,17 +479,16 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_EXPR_BF503D80: process.env.GH_AW_EXPR_BF503D80,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
                 GH_AW_GITHUB_EVENT_ISSUE_NUMBER: process.env.GH_AW_GITHUB_EVENT_ISSUE_NUMBER,
-                GH_AW_GITHUB_EVENT_ISSUE_TITLE: process.env.GH_AW_GITHUB_EVENT_ISSUE_TITLE,
                 GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: process.env.GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER,
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
-                GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: process.env.GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
               }
             });
       - name: Validate prompt placeholders
@@ -431,12 +511,9 @@ jobs:
     needs: activation
     runs-on: ubuntu-latest
     permissions:
-      actions: read
       contents: read
       issues: read
       pull-requests: read
-    concurrency:
-      group: "gh-aw-copilot-plan-${{ github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -446,7 +523,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawplan
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawautonomyatomicityanalyzer
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       detection_conclusion: ${{ steps.detection_conclusion.outputs.conclusion }}
@@ -512,6 +589,11 @@ jobs:
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
       - env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE_PREFIX: ${{ inputs.title-prefix }}
+        name: List previous findings
+        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
+      - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup
@@ -556,7 +638,7 @@ jobs:
               model: "${{ inputs.model }}",
               version: "",
               agent_version: "0.0.417",
-              workflow_name: "Plan",
+              workflow_name: "Autonomy Atomicity Analyzer",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -613,12 +695,12 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"add_comment":{"max":1},"create_issue":{"max":"${{ inputs.create-issue-max }}"},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
+          {"create_issue":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead.",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"${{ inputs.title-prefix }} \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -657,27 +739,6 @@ jobs:
                 "type": "object"
               },
               "name": "create_issue"
-            },
-            {
-              "description": "Add a comment to an existing GitHub issue, pull request, or discussion. Use this to provide feedback, answer questions, or add information to an existing conversation. For creating new items, use create_issue, create_discussion, or create_pull_request instead. IMPORTANT: Comments are subject to validation constraints enforced by the MCP server - maximum 65536 characters for the complete comment (including footer which is added automatically), 10 mentions (@username), and 50 links. Exceeding these limits will result in an immediate error with specific guidance. NOTE: By default, this tool requires discussions:write permission. If your GitHub App lacks Discussions permission, set 'discussions: false' in the workflow's safe-outputs.add-comment configuration to exclude this permission. CONSTRAINTS: Maximum 1 comment(s) can be added.",
-              "inputSchema": {
-                "additionalProperties": false,
-                "properties": {
-                  "body": {
-                    "description": "The comment text in Markdown format. This is the 'body' field - do not use 'comment_body' or other variations. Provide helpful, relevant information that adds value to the conversation. CONSTRAINTS: The complete comment (your body text + automatically added footer) must not exceed 65536 characters total. Maximum 10 mentions (@username), maximum 50 links (http/https URLs). A footer (~200-500 characters) is automatically appended with workflow attribution, so leave adequate space. If these limits are exceeded, the tool call will fail with a detailed error message indicating which constraint was violated.",
-                    "type": "string"
-                  },
-                  "item_number": {
-                    "description": "The issue, pull request, or discussion number to comment on. This is the numeric ID from the GitHub URL (e.g., 123 in github.com/owner/repo/issues/123). If omitted, the tool auto-targets the issue, PR, or discussion that triggered this workflow. Auto-targeting only works for issue, pull_request, discussion, and comment event triggers — it does NOT work for schedule, workflow_dispatch, push, or workflow_run triggers. For those trigger types, always provide item_number explicitly, or the comment will be silently discarded.",
-                    "type": "number"
-                  }
-                },
-                "required": [
-                  "body"
-                ],
-                "type": "object"
-              },
-              "name": "add_comment"
             },
             {
               "description": "Report that a tool or capability needed to complete the task is not available, or share any information you deem important about missing functionality or limitations. Use this when you cannot accomplish what was requested because the required functionality is missing or access is restricted.",
@@ -752,24 +813,6 @@ jobs:
           GH_AW_SAFE_OUTPUTS_TOOLS_EOF
           cat > /opt/gh-aw/safeoutputs/validation.json << 'GH_AW_SAFE_OUTPUTS_VALIDATION_EOF'
           {
-            "add_comment": {
-              "defaultMax": 1,
-              "fields": {
-                "body": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 65000
-                },
-                "item_number": {
-                  "issueOrPRNumber": true
-                },
-                "repo": {
-                  "type": "string",
-                  "maxLength": 256
-                }
-              }
-            },
             "create_issue": {
               "defaultMax": 1,
               "fields": {
@@ -943,7 +986,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,actions"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,labels"
                 }
               },
               "public-code-search": {
@@ -985,7 +1028,7 @@ jobs:
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
-        timeout-minutes: 60
+        timeout-minutes: 90
         run: |
           set -o pipefail
           # shellcheck disable=SC1003
@@ -1179,8 +1222,8 @@ jobs:
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Plan"
-          WORKFLOW_DESCRIPTION: "Generate implementation plans from issue comments and create follow-up issues/sub-issues"
+          WORKFLOW_NAME: "Autonomy Atomicity Analyzer"
+          WORKFLOW_DESCRIPTION: "Find patterns that block concurrent development by multiple agents or developers"
           HAS_PATCH: ${{ steps.collect_output.outputs.has_patch }}
         with:
           script: |
@@ -1268,7 +1311,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-      pull-requests: write
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
       tools_reported: ${{ steps.missing_tool.outputs.tools_reported }}
@@ -1295,7 +1337,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
-          GH_AW_WORKFLOW_NAME: "Plan"
+          GH_AW_WORKFLOW_NAME: "Autonomy Atomicity Analyzer"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1308,7 +1350,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Plan"
+          GH_AW_WORKFLOW_NAME: "Autonomy Atomicity Analyzer"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1321,10 +1363,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Plan"
+          GH_AW_WORKFLOW_NAME: "Autonomy Atomicity Analyzer"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-plan"
+          GH_AW_WORKFLOW_ID: "gh-aw-autonomy-atomicity-analyzer"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
@@ -1341,7 +1383,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Plan"
+          GH_AW_WORKFLOW_NAME: "Autonomy Atomicity Analyzer"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1356,10 +1398,6 @@ jobs:
 
   pre_activation:
     runs-on: ubuntu-slim
-    permissions:
-      discussions: write
-      issues: write
-      pull-requests: write
     outputs:
       activated: ${{ steps.check_membership.outputs.is_team_member == 'true' }}
       matched_command: ''
@@ -1368,19 +1406,6 @@ jobs:
         uses: github/gh-aw/actions/setup@90ebf8057e8e005103b8d123732d2c64c30e9b27 # v0.50.4
         with:
           destination: /opt/gh-aw/actions
-      - name: Add eyes reaction for immediate feedback
-        id: react
-        if: github.event_name == 'issues' || github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment' || github.event_name == 'discussion' || github.event_name == 'discussion_comment' || (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.id == github.repository_id)
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_REACTION: "eyes"
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/add_reaction.cjs');
-            await main();
       - name: Check team membership for workflow
         id: check_membership
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -1402,14 +1427,13 @@ jobs:
     permissions:
       contents: read
       issues: write
-      pull-requests: write
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-plan"
-      GH_AW_WORKFLOW_NAME: "Plan"
+      GH_AW_WORKFLOW_ID: "gh-aw-autonomy-atomicity-analyzer"
+      GH_AW_WORKFLOW_NAME: "Autonomy Atomicity Analyzer"
     outputs:
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}
@@ -1438,7 +1462,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"create_issue\":{\"max\":\"${{ inputs.create-issue-max }}\"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"max\":1,\"title_prefix\":\"${{ inputs.title-prefix }} \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

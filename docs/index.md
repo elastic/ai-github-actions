@@ -37,7 +37,7 @@ We built a fleet of specialized AI agents that review PRs, hunt bugs, triage iss
 
     ---
 
-    Custom audit agents that generate daily feature proposals from different personas. See what you can build with the base workflows.
+    Product Manager Impersonator, configured with different personas. Daily feature proposals from an iterative thinker, an SRE, a security analyst, and more.
 
 -   **[The Issue Squad](blog/posts/meet-the-issue-squad.md)**
 
@@ -49,7 +49,7 @@ We built a fleet of specialized AI agents that review PRs, hunt bugs, triage iss
 
     ---
 
-    Breaking Change Detector, Performance Profiler, UX Design Patrol. They guard the things developers forget to check.
+    Breaking Change Detector, Performance Profiler, UX Design Patrol, Information Architecture. They guard the things developers forget to check.
 
 </div>
 
