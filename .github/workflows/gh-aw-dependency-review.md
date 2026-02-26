@@ -1,7 +1,7 @@
 ---
 inlined-imports: true
 name: "Dependency Review"
-description: "Analyze Dependabot and Renovate PRs for GitHub Actions and Buildkite dependency updates"
+description: "Analyze Dependabot and Renovate dependency update PRs"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
@@ -84,7 +84,7 @@ steps:
 
 # Dependency Review Agent
 
-Analyze dependency update pull requests (Dependabot, Renovate) in ${{ github.repository }} and provide a detailed analysis comment covering security, compatibility, and risk.
+Analyze dependency update pull requests (Dependabot, Renovate) in ${{ github.repository }}. Provide a detailed analysis comment covering changelog highlights, compatibility, risk, and ecosystem-specific checks.
 
 ## Context
 
@@ -105,15 +105,22 @@ This workflow is read-only. You can read files, search code, run commands, and c
 3. Call `pull_request_read` with method `get_diff` to see exactly what changed.
 4. Call `pull_request_read` with method `get_files` to get the list of changed files.
 
-### Step 2: Identify Updated Dependencies
+### Step 2: Identify and Classify Updated Dependencies
 
 Parse the diff to identify each dependency being updated. For each dependency, extract:
-- **Type**: GitHub Action, Buildkite plugin, or other
-- **Source repository**: e.g. `actions/checkout`, `docker/build-push-action`
+- **Ecosystem**: GitHub Actions, Buildkite plugin, Go module, npm package, Python (pip/Poetry/uv), Maven/Gradle (Java), or other
+- **Package name**: e.g. `actions/checkout`, `golang.org/x/net`, `express`, `requests`
 - **Old version**: tag, SHA, or version before the update
 - **New version**: tag, SHA, or version after the update
 
-If the PR does not update any GitHub Actions or Buildkite plugin dependencies, call `noop` with message "PR does not update GitHub Actions or Buildkite dependencies; nothing to analyze" and stop.
+Classify each dependency by looking at the files changed:
+- `.github/workflows/*.yml` or `.github/workflows/*.yaml` → **GitHub Actions**
+- `pipeline.yml`, `.buildkite/` files → **Buildkite plugin**
+- `go.mod`, `go.sum` → **Go module**
+- `package.json`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml` → **npm/Node**
+- `pyproject.toml`, `requirements*.txt`, `Pipfile*`, `poetry.lock`, `uv.lock` → **Python**
+- `pom.xml`, `build.gradle`, `build.gradle.kts`, `gradle.lockfile` → **Java/Kotlin (Maven/Gradle)**
+- Other manifest files → classify by ecosystem
 
 ### Step 3: Analyze Each Dependency
 
@@ -127,7 +134,7 @@ If the action reference uses a commit SHA (e.g. `uses: actions/checkout@de0fac2e
    ```bash
    gh api repos/{owner}/{repo}/commits/{sha} --jq '.commit.verification.verified'
    ```
-2. If the commit is **not verified**, flag this prominently. Unverified commits in pinned actions are a supply-chain risk — see [Imposter Commits in CI/CD](https://www.chainguard.dev/unchained/what-the-fork-imposter-commits-in-github-actions-and-ci-cd).
+2. If the commit is **not verified**, flag this prominently. Unverified commits in pinned actions are a supply-chain risk.
 3. Check whether the commit SHA corresponds to a known release tag:
    ```bash
    gh api repos/{owner}/{repo}/git/matching-refs/tags --jq '.[].ref' | head -20
@@ -136,6 +143,7 @@ If the action reference uses a commit SHA (e.g. `uses: actions/checkout@de0fac2e
 
 #### 3b: Changelog and Release Notes
 
+For dependencies hosted on GitHub, fetch the release notes:
 1. Fetch the release notes for the new version from the dependency's repository:
    ```bash
    gh api repos/{owner}/{repo}/releases/tags/{new_tag} --jq '.body' 2>/dev/null
@@ -144,28 +152,32 @@ If the action reference uses a commit SHA (e.g. `uses: actions/checkout@de0fac2e
    ```bash
    gh api repos/{owner}/{repo}/releases --jq '.[].tag_name' | head -10
    ```
-3. Summarize key changes between the old and new versions, focusing on:
+3. For non-GitHub dependencies, check the package registry or changelog files in the source repo when available.
+4. Summarize key changes between the old and new versions, focusing on:
    - Breaking changes or removed features
-   - New required inputs or changed defaults
+   - New required configuration or changed defaults
    - Security fixes
-   - Notable new features relevant to how this repo uses the action
+   - Deprecations
+   - Notable new features relevant to how this repo uses the dependency
 
 #### 3c: Usage Analysis
 
-1. Search the repository for all places the dependency is used:
-   ```bash
-   grep -rn '{owner}/{repo}' .github/workflows/ --include='*.yml' --include='*.yaml'
-   ```
+1. Search the repository for all places the dependency is used. The search method depends on the ecosystem:
+   - **GitHub Actions**: `grep -rn '{owner}/{repo}' .github/workflows/ --include='*.yml' --include='*.yaml'`
+   - **Go**: `grep -rn '{module}' --include='*.go'` (look for import statements)
+   - **npm/Node**: `grep -rn "require('{package}')\|from '{package}'" --include='*.js' --include='*.ts' --include='*.mjs' --include='*.cjs'`
+   - **Python**: `grep -rn "import {package}\|from {package}" --include='*.py'`
+   - **Java**: `grep -rn '{groupId}' --include='*.java' --include='*.kt' --include='*.gradle' --include='*.xml'`
 2. For each usage, note:
-   - Which workflow file and job uses it
-   - What inputs are passed to it
-   - What outputs are consumed from it
-   - What events trigger the workflow (push, pull_request, schedule, release, etc.)
+   - Which files and modules use it
+   - What APIs, functions, or features are consumed
+   - For GitHub Actions: what inputs are passed and outputs consumed
+   - For GitHub Actions: what events trigger the workflow
 
 3. Cross-reference the usage against the changelog:
-   - Are any inputs used by this repo deprecated or removed in the new version?
-   - Are any outputs consumed by this repo changed in the new version?
-   - Are there new required inputs that are not provided?
+   - Are any APIs, inputs, or features used by this repo deprecated or removed in the new version?
+   - Are there breaking changes to consumed interfaces?
+   - Are there new required configuration options that are not provided?
 
 #### 3d: Testability Assessment
 
@@ -180,15 +192,40 @@ For Buildkite plugin updates:
 2. Check if the update moves from one mutable tag to another mutable tag (moderate risk).
 3. SHA-to-SHA or tag-to-SHA-pinned updates are preferred.
 
+#### 3f: Ecosystem-Specific Guidance
+
+Apply the following additional checks based on the dependency ecosystem:
+
+**Go modules:**
+- Check if this is a major version bump (e.g. v1 → v2) — Go major versions change the import path, which is a breaking change requiring code updates across the repo.
+- For indirect dependency updates, note that these are transitive and generally lower risk.
+- Check for `// Deprecated:` annotations in the module if accessible.
+
+**npm / Node packages:**
+- Check if this is a major semver bump — major versions typically signal breaking changes.
+- Look for peer dependency conflicts that may arise from the update.
+- For `devDependencies`, note that these only affect development and CI, not production.
+
+**Python packages (pip, Poetry, uv):**
+- Check if this is a major version bump — may indicate breaking API changes.
+- Check for minimum Python version requirements that may have changed.
+- For packages with native extensions (e.g. `numpy`, `cryptography`), note potential build or platform compatibility changes.
+
+**Java / Kotlin (Maven, Gradle):**
+- Check if this is a major version bump — may indicate breaking API changes.
+- Note if the groupId or artifactId changed (dependency relocation).
+- For Spring or framework dependencies, check for minimum JDK version changes.
+
 ### Step 4: Determine Labels
 
 Based on the analysis, determine if labels should be applied:
 
 - **`needs-human-review`**: Apply when ANY of these conditions are met:
-  - A GitHub Action update introduces breaking input/output changes that affect this repo's usage
-  - A commit SHA is not verified
+  - A dependency update introduces breaking changes that affect this repo's usage
+  - A GitHub Actions commit SHA is not verified
   - A Buildkite plugin moves from SHA-pinned to mutable tag, or between mutable tags
   - The changelog indicates breaking changes
+  - A major version bump in any ecosystem (e.g. v1 → v2 in Go, major semver in npm/Python/Java)
 
 - **`higher-risk`**: Apply when:
   - The updated dependency is used only in workflows triggered by push-to-main, release, schedule, or workflow_dispatch (cannot be validated in PR context)
@@ -203,14 +240,18 @@ Call `add_comment` on the PR with a structured analysis. Use the following forma
 >
 > **Summary**: [One-line summary of the update and overall risk assessment]
 >
-> ### [Dependency 1: owner/repo vOLD → vNEW]
+> ### [Dependency 1: package vOLD → vNEW]
+>
+> **Ecosystem**: [GitHub Actions / Go / npm / Python / Java / Buildkite / other]
 >
 > | Check | Result |
 > | --- | --- |
-> | Commit verified | ✅ Yes / ⚠️ No |
 > | Breaking changes | ✅ None found / ⚠️ Found (details below) |
 > | Testable in PR | ✅ Yes / ⚠️ No — workflow only runs on [events] |
-> | Pin format | ✅ SHA-pinned / ⚠️ Mutable tag |
+> | Commit verified | ✅ Yes / ⚠️ No *(GitHub Actions only)* |
+> | Pin format | ✅ SHA-pinned / ⚠️ Mutable tag *(GitHub Actions / Buildkite only)* |
+>
+> Only include rows relevant to the dependency ecosystem. For example, "Commit verified" and "Pin format" only apply to GitHub Actions and Buildkite.
 >
 > <details>
 > <summary>Changelog highlights (vOLD → vNEW)</summary>
@@ -221,13 +262,13 @@ Call `add_comment` on the PR with a structured analysis. Use the following forma
 > <details>
 > <summary>Usage in this repository</summary>
 >
-> [List of workflows/jobs using this dependency and relevant inputs/outputs]
+> [List of files/modules using this dependency and relevant APIs/inputs/outputs]
 > </details>
 >
 > <details>
 > <summary>Compatibility assessment</summary>
 >
-> [Analysis of whether current usage is compatible with the new version]
+> [Analysis of whether current usage is compatible with the new version, including ecosystem-specific notes]
 > </details>
 >
 > ### Labels Applied

@@ -38,7 +38,7 @@ Pre-built workflows with domain-specific prompts. These import the same base fra
 - [Code Duplication Fixer](code-duplication-fixer/) — fix code-duplication-detector issues
 
 **Event-driven** (comment on PRs):
-- [Dependency Review](dependency-review/) — analyze Dependabot/Renovate PRs across dependency types, with specialized checks for GitHub Actions and Buildkite updates
+- [Dependency Review](dependency-review/) — analyze Dependabot/Renovate dependency update PRs across ecosystems (GitHub Actions, Go, npm, Python, Java, Buildkite)
 
 **Research assistants**:
 - [Deep Research](deep-research/) — issue-comment deep research with web search/fetch and optional PR creation
