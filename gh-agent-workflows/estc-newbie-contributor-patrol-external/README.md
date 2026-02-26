@@ -1,4 +1,4 @@
-# Newbie Contributor Patrol External
+# Estc Newbie Contributor Patrol External
 
 Review docs from a new contributor perspective, cross-referencing published Elastic documentation.
 
@@ -10,8 +10,8 @@ Like Newbie Contributor Patrol, but also cross-references the repo's documentati
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol-external/example.yml \
-  -o .github/workflows/newbie-contributor-patrol-external.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/estc-newbie-contributor-patrol-external/example.yml \
+  -o .github/workflows/estc-newbie-contributor-patrol-external.yml
 ```
 
 See [example.yml](example.yml) for the full workflow file.

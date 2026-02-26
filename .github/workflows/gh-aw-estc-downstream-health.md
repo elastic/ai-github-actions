@@ -1,6 +1,6 @@
 ---
 inlined-imports: true
-name: "Downstream Health"
+name: "Estc Downstream Health"
 description: "Monitor downstream repositories using AI workflows and report quality issues"
 imports:
   - gh-aw-fragments/elastic-tools.md

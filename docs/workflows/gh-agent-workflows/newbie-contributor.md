@@ -2,7 +2,7 @@
 
 Review documentation from a new contributor's perspective and automatically fix gaps.
 
-**Newbie Contributor Patrol** reads all contributor-facing documentation as if it were a new contributor's first encounter with the project — following getting-started paths, checking for missing prerequisites, and flagging blocking gaps. An **External** variant also cross-references published Elastic documentation. **Newbie Contributor Fixer** picks up patrol issues and opens PRs with documentation improvements. Most runs end with `noop`.
+**Newbie Contributor Patrol** reads all contributor-facing documentation as if it were a new contributor's first encounter with the project — following getting-started paths, checking for missing prerequisites, and flagging blocking gaps. An **Estc External** variant also cross-references published Elastic documentation. **Newbie Contributor Fixer** picks up patrol issues and opens PRs with documentation improvements. Most runs end with `noop`.
 
 ## Quick install
 
@@ -30,8 +30,8 @@ curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent
 mkdir -p .github/workflows && \
 curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol/example.yml \
   -o .github/workflows/newbie-contributor-patrol.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol-external/example.yml \
-  -o .github/workflows/newbie-contributor-patrol-external.yml && \
+curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/estc-newbie-contributor-patrol-external/example.yml \
+  -o .github/workflows/estc-newbie-contributor-patrol-external.yml && \
 curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-fixer/example.yml \
   -o .github/workflows/newbie-contributor-fixer.yml
 ```
@@ -83,7 +83,7 @@ jobs:
 
 ---
 
-## Newbie Contributor Patrol External (detector variant)
+## Estc Newbie Contributor Patrol External (detector variant)
 
 Like Newbie Contributor Patrol, but also cross-references the repo's documentation against published Elastic documentation on `elastic.co/docs`. Contradictions between the repo and published docs are treated as blocking issues.
 
@@ -108,7 +108,7 @@ Like Newbie Contributor Patrol, but also cross-references the repo's documentati
 ### Example workflow
 
 ```yaml
-name: Newbie Contributor Patrol External
+name: Estc Newbie Contributor Patrol External
 on:
   schedule:
     - cron: "0 11 * * 1"
@@ -121,7 +121,7 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-newbie-contributor-patrol-external.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-newbie-contributor-patrol-external.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

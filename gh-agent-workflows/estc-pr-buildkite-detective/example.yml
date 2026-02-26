@@ -1,4 +1,4 @@
-name: PR Buildkite Detective
+name: Estc PR Buildkite Detective
 on:
   status:
   check_run:
@@ -16,7 +16,7 @@ jobs:
     if: >-
       (github.event_name == 'status' && github.event.state == 'failure') ||
       (github.event_name == 'check_run' && github.event.check_run.conclusion == 'failure')
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-buildkite-detective.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-pr-buildkite-detective.lock.yml@v0
     with:
       buildkite-org: "elastic"
       # buildkite-pipeline: "your-pipeline"  # auto-discovered if omitted

@@ -34,7 +34,7 @@ Running on a weekday schedule, the UX Design Patrol reviews UI components for de
 
 The Information Architecture agent evaluates whether the application's interface is logically organized, navigable, and consistent. It traces the component tree from the top-level layout, examining navigation structure, action placement, data presentation patterns, progressive disclosure, and empty states. It only files an issue when it finds a concrete, user-impacting IA problem — something a real user would likely get confused or frustrated by. Like the other watchdogs, most runs end with `noop`.
 
-## [Downstream Health](../../workflows/gh-agent-workflows/downstream-health.md)
+## [Estc Downstream Health](../../workflows/gh-agent-workflows/estc-downstream-health.md)
 
 Running on a daily schedule, the Downstream Health agent monitors the overall quality of downstream repositories. It provides a regular pulse check on the repos that consume the factory's workflows and components, catching issues that might not surface in any single focused audit but become visible when you look at the repository holistically.
 

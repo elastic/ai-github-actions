@@ -1,4 +1,4 @@
-name: Docs Patrol External
+name: Estc Docs Patrol External
 on:
   schedule:
     - cron: "0 14 * * 1-5"
@@ -11,6 +11,6 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-docs-patrol-external.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-docs-patrol-external.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

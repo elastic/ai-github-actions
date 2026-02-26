@@ -1,4 +1,4 @@
-# Downstream Health
+# Estc Downstream Health
 
 Monitor downstream repositories using AI workflows and report quality issues.
 
@@ -10,8 +10,8 @@ Discovers elastic-owned repositories that use ai-github-actions workflows, monit
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/downstream-health/example.yml \
-  -o .github/workflows/downstream-health.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/estc-downstream-health/example.yml \
+  -o .github/workflows/estc-downstream-health.yml
 ```
 
 See [example.yml](example.yml) for the full workflow file.

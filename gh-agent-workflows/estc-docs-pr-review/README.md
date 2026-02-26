@@ -1,4 +1,4 @@
-# Docs PR Review
+# Estc Docs PR Review
 
 Docs PR review from an Elastic technical writer perspective. Reviews documentation changes for style guide compliance, `applies_to` tag correctness, and consistency with published Elastic documentation.
 
@@ -13,8 +13,8 @@ Docs PR review from an Elastic technical writer perspective. Reviews documentati
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/docs-pr-review/example.yml \
-  -o .github/workflows/docs-pr-review.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/estc-docs-pr-review/example.yml \
+  -o .github/workflows/estc-docs-pr-review.yml
 ```
 
 See [example.yml](example.yml) for the full workflow file.

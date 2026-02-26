@@ -42,7 +42,7 @@ Every PR needs a good description, and nobody wants to write one. Update PR Body
 
 This sounds simple, and it is. But it solves a real problem. PRs that sit in review with a blank description, or a description that was accurate three days and twelve commits ago, slow everyone down. Update PR Body keeps the description clean and current throughout the PR lifecycle, so reviewers always know what they're looking at.
 
-## [Docs PR Review](../../workflows/gh-agent-workflows/docs-pr-review.md) — The Style Guide Enforcer
+## [Estc Docs PR Review](../../workflows/gh-agent-workflows/estc-docs-pr-review.md) — The Style Guide Enforcer
 
 Docs PR Review is the specialist. Invoke it with the `/docs-review` command on a PR, and it reviews documentation changes for style guide compliance, `applies_to` frontmatter correctness, and overall consistency. It's human-coordinated — you call it when you want a docs-specific review on top of the standard code review.
 

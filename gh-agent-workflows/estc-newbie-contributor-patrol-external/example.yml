@@ -1,4 +1,4 @@
-name: Newbie Contributor Patrol External
+name: Estc Newbie Contributor Patrol External
 on:
   schedule:
     - cron: "0 11 * * 1"
@@ -11,6 +11,6 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-newbie-contributor-patrol-external.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-newbie-contributor-patrol-external.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

@@ -33,7 +33,6 @@ nav:
           - Plan: workflows/gh-agent-workflows/plan.md
           - Mention in Issue (no sandbox): workflows/gh-agent-workflows/mention-in-issue-no-sandbox.md
           - Mention in PR (no sandbox): workflows/gh-agent-workflows/mention-in-pr-no-sandbox.md
-          - Docs PR Review: workflows/gh-agent-workflows/docs-pr-review.md
       - Event-driven:
           - Automatic Issue Triage: workflows/gh-agent-workflows/issue-triage.md
           - PR Review: workflows/gh-agent-workflows/pr-review.md
@@ -43,7 +42,6 @@ nav:
           - Issue Fixer: workflows/gh-agent-workflows/issue-fixer.md
           - PR Actions Detective: workflows/gh-agent-workflows/pr-actions-detective.md
           - PR Actions Fixer: workflows/gh-agent-workflows/pr-actions-fixer.md
-          - PR Buildkite Detective: workflows/gh-agent-workflows/pr-buildkite-detective.md
       - Base Workflows:
           - Scheduled Audit: workflows/gh-agent-workflows/scheduled-audit.md
           - Scheduled Fix: workflows/gh-agent-workflows/scheduled-fix.md
@@ -58,7 +56,6 @@ nav:
               - Agent Suggestions: workflows/gh-agent-workflows/agent-suggestions.md
               - Breaking Change Detector: workflows/gh-agent-workflows/breaking-change-detector.md
               - Code Simplifier: workflows/gh-agent-workflows/code-simplifier.md
-              - Downstream Health: workflows/gh-agent-workflows/downstream-health.md
               - Flaky Test Investigator: workflows/gh-agent-workflows/flaky-test-investigator.md
               - Performance Profiler: workflows/gh-agent-workflows/performance-profiler.md
               - Project Summary: workflows/gh-agent-workflows/project-summary.md
@@ -66,6 +63,12 @@ nav:
               - Small Problem Fixer: workflows/gh-agent-workflows/small-problem-fixer.md
               - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
               - Test Improver: workflows/gh-agent-workflows/test-improver.md
+      - Elastic-specific:
+          - Estc Docs PR Review: workflows/gh-agent-workflows/estc-docs-pr-review.md
+          - Estc PR Buildkite Detective: workflows/gh-agent-workflows/estc-pr-buildkite-detective.md
+          - Estc Docs Patrol External: workflows/gh-agent-workflows/estc-docs-patrol-external.md
+          - Estc Newbie Contributor Patrol External: workflows/gh-agent-workflows/estc-newbie-contributor-patrol-external.md
+          - Estc Downstream Health: workflows/gh-agent-workflows/estc-downstream-health.md
   - Legacy:
       - Claude Workflows: workflows/claude-workflows.md
       - Migration Guide: migration-guide.md
