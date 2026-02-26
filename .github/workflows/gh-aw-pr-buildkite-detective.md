@@ -141,7 +141,7 @@ Classify each failure to guide your investigation:
 
 ### Step 2: Find the Buildkite Build
 
-> **If Buildkite MCP is unavailable** (connection error, 401, timeout, or empty token): Fall back to the **public pipeline** path described in Step 2b. Do not stop — public Buildkite pipelines expose build pages and logs without authentication.
+> **If Buildkite MCP is unavailable** (connection error, 401, timeout, or empty token): Proceed with the **public pipeline** fallback described in Step 2b. Public Buildkite pipelines expose build pages and logs without authentication.
 
 #### Step 2a: Via Buildkite MCP (when API token is available)
 
@@ -162,13 +162,12 @@ Use this path when the Buildkite MCP server is unavailable (missing token, 401, 
 1. **Discover the Buildkite build URL** from the PR's commit statuses or check runs:
    - Call `pull_request_read` with method `get_status` for the PR to retrieve commit status contexts.
    - Look for status contexts or check runs whose `target_url` contains `buildkite.com`. The URL typically follows the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>`.
-   - If no Buildkite URL is found in statuses, try `web-fetch` on the PR's commits page (`https://github.com/<owner>/<repo>/pull/<number>/commits`) and search the HTML for `buildkite.com` links.
 
 2. **Fetch the public build page**: Use `web-fetch` to retrieve the Buildkite build URL found above. The page contains the build status, job list, and links to individual job logs.
 
 3. **Collect failure evidence from public pages**:
-   - Parse the fetched build page to identify failed jobs and their log URLs.
-   - For each failed job, use `web-fetch` to retrieve the job log page (append `/jobs/<job-id>/log` or follow the job link from the build page).
+   - Parse the fetched build page to identify failed jobs. Look for job links matching the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>#<job-uuid>`.
+   - For each failed job, use `web-fetch` to retrieve the job log page at `https://buildkite.com/<org>/<pipeline>/builds/<number>/jobs/<job-uuid>/log`.
    - Extract error messages, stack traces, and the final output from the fetched log content.
    - If the pipeline is not publicly accessible (403/404), note this in your comment and proceed with whatever evidence is available from GitHub status contexts.
 
