@@ -26,7 +26,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 The quick setup script includes two opinionated sets:
 
 - **Starter repo operations set (default):** `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
-- **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `bug-exterminator`, `code-simplifier`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues`, `test-improver`, `breaking-change-detector`, `code-duplication-detector`, `update-pr-body`
+- **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `bug-exterminator`, `code-simplifier`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues`, `test-improver`, `breaking-change-detector`, `code-duplication-detector`, `update-pr-body`, `resource-not-accessible-by-integration-fixer`
 
 ## Available workflows
 
@@ -96,6 +96,7 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Product Manager Impersonator](gh-agent-workflows/product-manager-impersonator.md) | Weekday schedule | Propose feature ideas from a configurable persona and scope |
 | [Project Summary](gh-agent-workflows/project-summary.md) | Daily schedule | Summarize recent activity and priorities |
 | [Release Update Check](gh-agent-workflows/release-update.md) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
+| [Resource Not Accessible By Integration Fixer](gh-agent-workflows/resource-not-accessible-by-integration-fixer.md) | Daily schedule | Fix `Resource not accessible by integration` CI errors across long-term branches |
 | [Small Problem Fixer](gh-agent-workflows/small-problem-fixer.md) | Weekday schedule | Fix small, related issues and open a focused PR |
 | [Stale Issues](gh-agent-workflows/stale-issues.md) | Weekday schedule | Find resolved issues that can be closed |
 | [Test Improver](gh-agent-workflows/test-improver.md) | Weekly schedule | Add targeted tests and clean up redundant coverage |

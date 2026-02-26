@@ -36,6 +36,7 @@ Pre-built workflows with domain-specific prompts. These import the same base fra
 - [Bug Exterminator](bug-exterminator/) — fix bug-hunter issues
 - [Text Beautifier](text-beautifier/) — fix text-auditor issues
 - [Code Duplication Fixer](code-duplication-fixer/) — fix code-duplication-detector issues
+- [Resource Not Accessible By Integration Fixer](resource-not-accessible-by-integration-fixer/) — fix `Resource not accessible by integration` errors across long-term branches
 
 **Research assistants**:
 - [Deep Research](deep-research/) — issue-comment deep research with web search/fetch and optional PR creation
@@ -77,3 +78,4 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 - `breaking-change-detector`
 - `code-duplication-detector`
 - `update-pr-body`
+- `resource-not-accessible-by-integration-fixer`

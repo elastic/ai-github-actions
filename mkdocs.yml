@@ -63,6 +63,7 @@ nav:
               - Performance Profiler: workflows/gh-agent-workflows/performance-profiler.md
               - Project Summary: workflows/gh-agent-workflows/project-summary.md
               - Release Update Check: workflows/gh-agent-workflows/release-update.md
+              - Resource Not Accessible By Integration Fixer: workflows/gh-agent-workflows/resource-not-accessible-by-integration-fixer.md
               - Small Problem Fixer: workflows/gh-agent-workflows/small-problem-fixer.md
               - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
               - Test Improver: workflows/gh-agent-workflows/test-improver.md
