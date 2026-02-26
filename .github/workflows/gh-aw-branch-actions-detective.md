@@ -9,6 +9,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -41,6 +42,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[branch-actions-detective]')"
+        type: string
+        required: false
+        default: "[branch-actions-detective]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -65,7 +71,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[branch-actions-detective] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: true
     expires: 7d
 timeout-minutes: 60

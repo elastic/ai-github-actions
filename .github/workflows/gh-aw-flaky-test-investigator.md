@@ -11,6 +11,7 @@ imports:
   - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -44,6 +45,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[flaky-test-investigator]')"
+        type: string
+        required: false
+        default: "[flaky-test-investigator]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -69,7 +75,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[flaky-test-investigator] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90

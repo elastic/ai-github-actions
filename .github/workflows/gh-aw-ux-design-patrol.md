@@ -11,6 +11,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -49,6 +50,11 @@ on:
         type: string
         required: false
         default: "7 days ago"
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[ux-design-patrol]')"
+        type: string
+        required: false
+        default: "[ux-design-patrol]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -73,7 +79,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[ux-design-patrol] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: true
     expires: 7d
 timeout-minutes: 90

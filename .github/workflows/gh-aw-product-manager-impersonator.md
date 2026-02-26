@@ -10,6 +10,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -43,6 +44,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[product-manager-impersonator]')"
+        type: string
+        required: false
+        default: "[product-manager-impersonator]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -67,7 +73,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[product-manager-impersonator] "
+    title-prefix: "${{ inputs.title-prefix }} "
 timeout-minutes: 90
 steps:
   - name: Repo-specific setup

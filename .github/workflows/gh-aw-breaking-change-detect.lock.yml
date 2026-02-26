@@ -36,6 +36,7 @@
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/network-ecosystems.md
+#     - gh-aw-fragments/previous-findings.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-create-issue.md
@@ -43,7 +44,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e3bcc18139a72b6fdef380882174776faff8460d68198011cb5a87fb11ccdca6"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"080ae5527d02ff338c3b70283e71474d9c628798c075b3b2d1106994e7697666"}
 
 name: "Breaking Change Detector"
 "on":
@@ -78,6 +79,11 @@ name: "Breaking Change Detector"
       setup-commands:
         default: ""
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
+        required: false
+        type: string
+      title-prefix:
+        default: "[breaking-change]"
+        description: Title prefix for created issues (e.g. '[breaking-change]')
         required: false
         type: string
     secrets:
@@ -276,6 +282,15 @@ jobs:
           - **Body**: No strict character limit beyond GitHub's API limit (~65,536 characters), but fields over 16,000 tokens are written to a file reference instead of inlined.
           - **Bot triggers**: References like `fixes #123` or `closes #456` in the body are neutralized to prevent unintended issue closures.
           - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## Previous Findings
+          
+          Before filing a new issue, check `/tmp/previous-findings.json` for issues this agent has already filed.
+          
+          - Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
+          - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
+          - Only file a new issue when the finding is genuinely distinct from all previous findings.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           You are an agent for __GH_AW_GITHUB_REPOSITORY__. You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
@@ -496,8 +511,6 @@ jobs:
       contents: read
       issues: read
       pull-requests: read
-    concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -578,6 +591,11 @@ jobs:
           SERVER_URL: ${{ github.server_url }}
         name: Ensure full history
         run: "if git rev-parse --is-shallow-repository | grep -q true; then\n  SERVER_URL_STRIPPED=\"${SERVER_URL#https://}\"\n  git remote set-url origin \"https://x-access-token:${GITHUB_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git\"\n  git fetch --unshallow --quiet\nfi"
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE_PREFIX: ${{ inputs.title-prefix }}
+        name: List previous findings
+        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || echo \"[]\" > /tmp/previous-findings.json"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
@@ -685,7 +703,7 @@ jobs:
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[breaking-change] \".",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"${{ inputs.title-prefix }} \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -1445,7 +1463,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":false,\"expires\":168,\"max\":1,\"title_prefix\":\"[breaking-change] \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":false,\"expires\":168,\"max\":1,\"title_prefix\":\"${{ inputs.title-prefix }} \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

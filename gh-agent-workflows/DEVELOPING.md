@@ -100,6 +100,7 @@ Fragments live in `.github/workflows/gh-aw-fragments/`. Workflows import them us
 | [gh-aw-fragments/safe-output-resolve-thread.md](../.github/workflows/gh-aw-fragments/safe-output-resolve-thread.md) | Limitations for `resolve-pull-request-review-thread` (thread ID format) |
 | [gh-aw-fragments/safe-output-create-issue.md](../.github/workflows/gh-aw-fragments/safe-output-create-issue.md) | Limitations for `create-issue` (title, labels, assignees) |
 | [gh-aw-fragments/safe-output-create-pr.md](../.github/workflows/gh-aw-fragments/safe-output-create-pr.md) | Limitations for `create-pull-request` (patch files/size, title) |
+| [gh-aw-fragments/previous-findings.md](../.github/workflows/gh-aw-fragments/previous-findings.md) | Fetches previous issues filed by this agent (using `inputs.title-prefix`) and instructs the agent not to repeat them |
 
 ### Import rules
 
