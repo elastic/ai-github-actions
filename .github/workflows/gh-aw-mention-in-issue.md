@@ -11,6 +11,9 @@ imports:
   - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment-issue.md
+  - gh-aw-fragments/safe-output-add-labels.md
+  - gh-aw-fragments/safe-output-assign-to-user.md
+  - gh-aw-fragments/safe-output-add-reviewer.md
   - gh-aw-fragments/safe-output-create-pr.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/network-ecosystems.md
@@ -74,6 +77,15 @@ tools:
   web-fetch:
 safe-outputs:
   activation-comments: false
+  add-labels:
+    max: 3
+    target: "*"
+  assign-to-user:
+    max: 1
+    target: "*"
+  add-reviewer:
+    max: 3
+    target: "*"
 strict: false
 timeout-minutes: 60
 steps:
@@ -96,7 +108,7 @@ Assist with issues on ${{ github.repository }} — answer questions, debug probl
 
 ## Constraints
 
-- **CAN**: Read files, search code, modify files locally, run tests and commands, comment on issues, create pull requests, create issues
+- **CAN**: Read files, search code, modify files locally, run tests and commands, comment on issues, add labels to issues, assign issues to users, add reviewers to pull requests, create pull requests, create issues
 - **CANNOT**: Directly push or commit to the repository — use `create_pull_request` to propose changes
 
 When creating pull requests, make the changes in the workspace first, then use `create_pull_request` — branches are managed automatically.
@@ -131,5 +143,8 @@ Call `add_comment` with your response. Be concise and actionable — no filler o
 **Additional tools:**
 - `create_pull_request` — create a PR with your changes
 - `create_issue` — create a new issue (e.g. to split off sub-tasks)
+- `add_labels` — add labels to this issue or another issue/PR when asked (only use labels that exist in the repository)
+- `assign_to_user` — assign this issue or another issue to a specific user when asked
+- `add_reviewer` — add a reviewer to a pull request when asked (provide the PR number)
 
 ${{ inputs.additional-instructions }}

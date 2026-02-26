@@ -33,3 +33,5 @@ See [example.yml](example.yml) for the full workflow file.
 ## Safe Outputs
 
 - `add-comment` — post a triage analysis comment on the issue
+- `add-labels` — apply up to 3 relevant labels from the repository's existing label set
+- `assign-to-user` — assign the issue to the most relevant owner (only when a clear owner is identified)

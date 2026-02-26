@@ -35,3 +35,6 @@ See [example.yml](example.yml) for the full workflow file.
 - `add-comment` — reply to the issue
 - `create-pull-request` — open a PR with code changes
 - `create-issue` — file a new issue
+- `add-labels` — add labels to the issue or another issue/PR
+- `assign-to-user` — assign the issue or another issue to a specific user
+- `add-reviewer` — add a reviewer to a pull request

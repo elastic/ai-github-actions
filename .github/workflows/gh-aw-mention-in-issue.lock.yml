@@ -33,13 +33,16 @@
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment-issue.md
+#     - gh-aw-fragments/safe-output-add-labels.md
+#     - gh-aw-fragments/safe-output-add-reviewer.md
+#     - gh-aw-fragments/safe-output-assign-to-user.md
 #     - gh-aw-fragments/safe-output-create-issue.md
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"eab038274f5694415a6f9dbe07ac5b42fac4aa4c956851029207d68a435498c6"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"814a0847fd677917fd50f4edce96ffee1ff09488f6b4d3bc3ca40aa07e448c4c"}
 
 name: "Mention in Issue"
 "on":
@@ -176,7 +179,7 @@ jobs:
           cat "/opt/gh-aw/prompts/safe_outputs_prompt.md"
           cat << 'GH_AW_PROMPT_EOF'
           <safe-output-tools>
-          Tools: add_comment, create_issue, create_pull_request, missing_tool, missing_data
+          Tools: add_comment, create_issue, create_pull_request, add_labels, add_reviewer, assign_to_user, missing_tool, missing_data
           GH_AW_PROMPT_EOF
           cat "/opt/gh-aw/prompts/safe_outputs_create_pull_request.md"
           cat << 'GH_AW_PROMPT_EOF'
@@ -305,6 +308,33 @@ jobs:
           If you exceed 10 mentions or 50 links, the comment will be rejected.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
+          ## add-labels Limitations
+          
+          - **Max labels per run**: 3 (configurable with `max`).
+          - **Label length**: Max 64 characters per label. Longer labels are truncated.
+          - **No removal**: Labels starting with `-` are rejected. Use `remove-labels` to remove labels.
+          - **Deduplication**: Duplicate labels are silently deduplicated.
+          - **Mentions**: `@mentions` in labels are neutralized (backticked).
+          - **Special characters**: `<`, `>`, `&`, `'`, `"` are stripped from label names.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## assign-to-user Limitations
+          
+          - **Max assignments per run**: 1 by default (configurable with `max`).
+          - **Target**: `"triggering"` (default, requires issue event), `"*"` (any issue), or a specific issue number.
+          - **Requires issue number**: When `target: "*"`, the agent must provide `issue_number` in its output to identify which issue to assign.
+          - **Username validation**: Usernames are validated; invalid or non-existent users are rejected.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## add-reviewer Limitations
+          
+          - **Max reviewers per run**: 3 (configurable with `max`).
+          - **Pull requests only**: Reviewers can only be added to pull requests, not issues.
+          - **Target**: `"triggering"` (default, requires PR event), `"*"` (any PR), or a specific PR number.
+          - **Requires PR number**: When `target: "*"`, the agent must provide `pull_request_number` in its output to identify which PR to assign.
+          - **Username validation**: Usernames are validated; invalid or non-existent users are rejected.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
           Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist.
           
           ## create-pull-request Limitations
@@ -344,7 +374,7 @@ jobs:
           
           ## Constraints
           
-          - **CAN**: Read files, search code, modify files locally, run tests and commands, comment on issues, create pull requests, create issues
+          - **CAN**: Read files, search code, modify files locally, run tests and commands, comment on issues, add labels to issues, assign issues to users, add reviewers to pull requests, create pull requests, create issues
           - **CANNOT**: Directly push or commit to the repository — use `create_pull_request` to propose changes
           
           When creating pull requests, make the changes in the workspace first, then use `create_pull_request` — branches are managed automatically.
@@ -379,6 +409,9 @@ jobs:
           **Additional tools:**
           - `create_pull_request` — create a PR with your changes
           - `create_issue` — create a new issue (e.g. to split off sub-tasks)
+          - `add_labels` — add labels to this issue or another issue/PR when asked (only use labels that exist in the repository)
+          - `assign_to_user` — assign this issue or another issue to a specific user when asked
+          - `add_reviewer` — add a reviewer to a pull request when asked (provide the PR number)
           
           __GH_AW_EXPR_49B959F1__
           
@@ -642,7 +675,7 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"add_comment":{"max":1},"create_issue":{"max":1},"create_pull_request":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
+          {"add_comment":{"max":1},"add_labels":{"max":3,"target":"*"},"add_reviewer":{"max":3},"assign_to_user":{"max":1},"create_issue":{"max":1},"create_pull_request":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
@@ -746,6 +779,85 @@ jobs:
               "name": "create_pull_request"
             },
             {
+              "description": "Add labels to an existing GitHub issue or pull request for categorization and filtering. Labels must already exist in the repository. For creating new issues with labels, use create_issue with the labels property instead. CONSTRAINTS: Maximum 3 label(s) can be added. Target: *.",
+              "inputSchema": {
+                "additionalProperties": false,
+                "properties": {
+                  "item_number": {
+                    "description": "Issue or PR number to add labels to. This is the numeric ID from the GitHub URL (e.g., 456 in github.com/owner/repo/issues/456). If omitted, adds labels to the issue or PR that triggered this workflow. Only works for issue or pull_request event triggers. For schedule, workflow_dispatch, or other triggers, item_number is required — omitting it will silently skip the label operation.",
+                    "type": "number"
+                  },
+                  "labels": {
+                    "description": "Label names to add (e.g., ['bug', 'priority-high']). Labels must exist in the repository.",
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              "name": "add_labels"
+            },
+            {
+              "description": "Add reviewers to a GitHub pull request. Reviewers receive notifications and can approve or request changes. Use 'copilot' as a reviewer name to request the Copilot PR review bot. CONSTRAINTS: Maximum 3 reviewer(s) can be added.",
+              "inputSchema": {
+                "additionalProperties": false,
+                "properties": {
+                  "pull_request_number": {
+                    "description": "Pull request number to add reviewers to. This is the numeric ID from the GitHub URL (e.g., 876 in github.com/owner/repo/pull/876). If omitted, adds reviewers to the PR that triggered this workflow. Only works for pull_request event triggers. For workflow_dispatch, schedule, or other triggers, pull_request_number is required — omitting it will silently skip the reviewer assignment.",
+                    "type": [
+                      "number",
+                      "string"
+                    ]
+                  },
+                  "reviewers": {
+                    "description": "GitHub usernames to add as reviewers (e.g., ['octocat', 'copilot']). Users must have access to the repository.",
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "reviewers"
+                ],
+                "type": "object"
+              },
+              "name": "add_reviewer"
+            },
+            {
+              "description": "Assign one or more GitHub users to an issue. Use this to delegate work to specific team members. Users must have access to the repository.",
+              "inputSchema": {
+                "additionalProperties": false,
+                "properties": {
+                  "assignee": {
+                    "description": "Single GitHub username to assign. Use 'assignees' array for multiple users.",
+                    "type": "string"
+                  },
+                  "assignees": {
+                    "description": "GitHub usernames to assign to the issue (e.g., ['octocat', 'mona']). Users must have access to the repository.",
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "issue_number": {
+                    "description": "Issue number to assign users to. This is the numeric ID from the GitHub URL (e.g., 543 in github.com/owner/repo/issues/543). If omitted, assigns to the issue that triggered this workflow.",
+                    "type": [
+                      "number",
+                      "string"
+                    ]
+                  }
+                },
+                "required": [
+                  "issue_number"
+                ],
+                "type": "object"
+              },
+              "name": "assign_to_user"
+            },
+            {
               "description": "Report that a tool or capability needed to complete the task is not available, or share any information you deem important about missing functionality or limitations. Use this when you cannot accomplish what was requested because the required functionality is missing or access is restricted.",
               "inputSchema": {
                 "additionalProperties": false,
@@ -828,6 +940,66 @@ jobs:
                   "maxLength": 65000
                 },
                 "item_number": {
+                  "issueOrPRNumber": true
+                },
+                "repo": {
+                  "type": "string",
+                  "maxLength": 256
+                }
+              }
+            },
+            "add_labels": {
+              "defaultMax": 5,
+              "fields": {
+                "item_number": {
+                  "issueOrPRNumber": true
+                },
+                "labels": {
+                  "required": true,
+                  "type": "array",
+                  "itemType": "string",
+                  "itemSanitize": true,
+                  "itemMaxLength": 128
+                },
+                "repo": {
+                  "type": "string",
+                  "maxLength": 256
+                }
+              }
+            },
+            "add_reviewer": {
+              "defaultMax": 3,
+              "fields": {
+                "pull_request_number": {
+                  "issueOrPRNumber": true
+                },
+                "repo": {
+                  "type": "string",
+                  "maxLength": 256
+                },
+                "reviewers": {
+                  "required": true,
+                  "type": "array",
+                  "itemType": "string",
+                  "itemSanitize": true,
+                  "itemMaxLength": 39
+                }
+              }
+            },
+            "assign_to_user": {
+              "defaultMax": 1,
+              "fields": {
+                "assignee": {
+                  "type": "string",
+                  "sanitize": true,
+                  "maxLength": 39
+                },
+                "assignees": {
+                  "type": "[]string",
+                  "sanitize": true,
+                  "maxLength": 39
+                },
+                "issue_number": {
                   "issueOrPRNumber": true
                 },
                 "repo": {
@@ -1641,6 +1813,8 @@ jobs:
       GH_AW_WORKFLOW_ID: "gh-aw-mention-in-issue"
       GH_AW_WORKFLOW_NAME: "Mention in Issue"
     outputs:
+      add_reviewer_reviewers_added: ${{ steps.process_safe_outputs.outputs.reviewers_added }}
+      assign_to_user_assigned: ${{ steps.process_safe_outputs.outputs.assigned }}
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
@@ -1696,7 +1870,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"create_issue\":{\"max\":1},\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":\"${{ inputs.draft-prs }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"add_labels\":{\"max\":3,\"target\":\"*\"},\"add_reviewer\":{\"max\":3,\"target\":\"*\"},\"assign_to_user\":{\"max\":1,\"target\":\"*\"},\"create_issue\":{\"max\":1},\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":\"${{ inputs.draft-prs }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
           GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}

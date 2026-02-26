@@ -10,6 +10,8 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment-issue.md
+  - gh-aw-fragments/safe-output-add-labels.md
+  - gh-aw-fragments/safe-output-assign-to-user.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -66,6 +68,10 @@ tools:
   web-fetch:
 safe-outputs:
   activation-comments: false
+  add-labels:
+    max: 3
+  assign-to-user:
+    max: 1
 strict: false
 timeout-minutes: 60
 steps:
@@ -87,7 +93,7 @@ Triage new issues in ${{ github.repository }} and provide actionable analysis wi
 
 ## Constraints
 
-This workflow is for investigation and planning only. You can read files, search code, run tests and commands, and write temporary files locally — but your only output is a comment on the issue. Local file changes are for verification only and will not be persisted.
+This workflow is for investigation and planning only. You can read files, search code, run tests and commands, and write temporary files locally. Local file changes are for verification only and will not be persisted. Your outputs are a comment on the issue, and optionally adding labels or an assignee.
 
 ## Triage Process
 
@@ -178,5 +184,7 @@ Use `<details>` and `<summary>` tags for sections that would otherwise make the 
 ### Step 4: Post Response
 
 1. Call `add_comment` with your triage response.
+2. Call `add_labels` to apply up to 3 relevant labels from the repository's existing label set. Only apply labels that already exist in the repository — do not invent new ones. Fetch the list of available labels using the GitHub tools before calling `add_labels`.
+3. Optionally call `assign_to_user` if there is a clear owner for the issue (e.g., the author of the relevant code area), but only if you are confident in the assignment. Omit this step when the right assignee is unclear.
 
 ${{ inputs.additional-instructions }}
