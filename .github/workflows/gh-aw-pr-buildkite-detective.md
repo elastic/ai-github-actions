@@ -138,6 +138,8 @@ Classify each failure to guide your investigation:
 
 ### Step 2: Find the Buildkite Build
 
+> **If Buildkite MCP is unavailable** (connection error, 401, timeout): The build failure may come from GitHub Actions CI, not Buildkite. Fall back to analyzing the GitHub Actions workflow run directly — use `web-fetch` to retrieve the run page, `bash` to call `gh run view`, or the GitHub API to read job logs. Proceed to Step 3 using whatever evidence is available and note in your comment that Buildkite data was unavailable.
+
 1. **Resolve the pipeline**: If `${{ inputs.buildkite-pipeline }}` is provided, use it. Otherwise, call `list_pipelines` for organization `${{ inputs.buildkite-org }}` and find the pipeline whose slug matches the repository name (extract the repo name from `${{ github.repository }}`). If multiple pipelines match, prefer an exact slug match.
 2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by commit SHA `${{ github.event.workflow_run.head_sha }}`. If no match by SHA, use the PR's head branch (from the `pull_request_read` response in Step 1) to filter builds and select the most recent failed one.
 3. **Collect failure evidence**:

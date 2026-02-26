@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"280f5a9e12557385fedf9a30dc60c614159664b647b69173c9d6be501615d857"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0f26029c5e802395a8faf76bc1883c2e84118c84df07ac71fe01a8a8c60216ba"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -335,6 +335,8 @@ jobs:
           3. For each PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status.
           
           ### Step 2: Find the Buildkite Build
+          
+          > **If Buildkite MCP is unavailable** (connection error, 401, timeout): The build failure may come from GitHub Actions CI, not Buildkite. Fall back to analyzing the GitHub Actions workflow run directly — use `web-fetch` to retrieve the run page, `bash` to call `gh run view`, or the GitHub API to read job logs. Proceed to Step 3 using whatever evidence is available and note in your comment that Buildkite data was unavailable.
           
           1. **Resolve the pipeline**: If `__GH_AW_EXPR_0EAAB79A__` is provided, use it. Otherwise, call `list_pipelines` for organization `__GH_AW_EXPR_6908A9DD__` and find the pipeline whose slug matches the repository name (extract the repo name from `__GH_AW_GITHUB_REPOSITORY__`). If multiple pipelines match, prefer an exact slug match.
           2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by commit SHA `__GH_AW_GITHUB_EVENT_WORKFLOW_RUN_HEAD_SHA__`. If no match by SHA, use the PR's head branch (from the `pull_request_read` response in Step 1) to filter builds and select the most recent failed one.

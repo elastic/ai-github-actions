@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9ba9cd2e16b3167c0686ea260ee64b467de6a53b7cab30abd2b96c505144b608"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"08ac82763a7b490da4b6ee791bd82ceb5d1fa42bf79b7f5750649b5555e66d4b"}
 
 name: "Update PR Body"
 "on":
@@ -384,7 +384,7 @@ jobs:
           
           **If any changes are warranted:**
           
-          Call `update_pull_request` with a `replace` operation to write a body that applies all warranted changes. The updated body must:
+          Call `update_pull_request` **exactly once** with a `replace` operation to write a body that applies all warranted changes. You may only call this tool once per run — additional calls will be rejected by validation. The updated body must:
           - Apply only the changes identified in Step 4 — do not make unplanned edits
           - Preserve the original structure, formatting, and wording of sections untouched by warranted changes
           - Preserve the original motivation and context (including issue links like `Fixes #N`)
