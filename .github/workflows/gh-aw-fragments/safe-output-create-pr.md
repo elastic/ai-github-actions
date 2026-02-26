@@ -11,7 +11,9 @@ safe-inputs:
       if (contributing) checklist.push(`Review the contributing guide (${contributing}) before opening or updating a PR.`);
       if (prTemplate) checklist.push(`Follow the PR template (${prTemplate}) for title, description, and validation notes.`);
       checklist.push('Confirm the requested task is fully completed and validated before creating or pushing PR changes.');
-      return { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+      const result = { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+      console.log(JSON.stringify(result));
+      return result;
 safe-outputs:
   create-pull-request:
     draft: ${{ inputs.draft-prs }}
