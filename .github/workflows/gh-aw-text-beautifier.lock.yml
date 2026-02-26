@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"074493ba72bde72df5c7239557613e11e0caefe45f2e4efd4c605aca5f6015a0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a84d576ef9fe7b8f6ee3f14265c08db439edbdb171c63a4df7284d82b0a5dc6c"}
 
 name: "Text Beautifier"
 "on":
@@ -924,7 +924,9 @@ jobs:
               if (contributing) checklist.push(`Review the contributing guide (${contributing}) before opening or updating a PR.`);
               if (prTemplate) checklist.push(`Follow the PR template (${prTemplate}) for title, description, and validation notes.`);
               checklist.push('Confirm the requested task is fully completed and validated before creating or pushing PR changes.');
-              return { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+              const result = { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+              console.log(JSON.stringify(result));
+              return result;
             }
             module.exports = { execute };
           GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF

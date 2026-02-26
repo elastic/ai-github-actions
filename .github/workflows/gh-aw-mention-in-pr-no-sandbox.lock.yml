@@ -42,7 +42,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"075100921cd60329bfe68de90ac40bccaec0220e2da312dbb40017d028ca125b"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e3419020c0872c77806a0dafad62ed921afb0f4112135764a1f7953f61061d33"}
 
 name: "Mention in PR (no sandbox)"
 "on":
@@ -1259,7 +1259,9 @@ jobs:
               if (contributing) checklist.push(`Review the contributing guide (${contributing}) before opening or updating a PR.`);
               if (prTemplate) checklist.push(`Follow the PR template (${prTemplate}) for title, description, and validation notes.`);
               checklist.push('Confirm the requested task is fully completed and validated before creating or pushing PR changes.');
-              return { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+              const result = { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+              console.log(JSON.stringify(result));
+              return result;
             }
             module.exports = { execute };
           GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF
@@ -1556,7 +1558,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: write
-      issues: write
       pull-requests: write
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
@@ -1694,7 +1695,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: write
-      issues: write
       pull-requests: write
     timeout-minutes: 15
     env:

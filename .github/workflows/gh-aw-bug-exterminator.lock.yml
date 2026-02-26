@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"991407085650d1743069bebc1248a85ae740a054baeec5cc0fc20c6acc359adc"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"45cf942b227f987fa2c177ada5793842c9c740a9a0240beeee6ad4cfa23f9fea"}
 
 name: "Gh Aw Bug Exterminator"
 "on":
@@ -913,7 +913,9 @@ jobs:
               if (contributing) checklist.push(`Review the contributing guide (${contributing}) before opening or updating a PR.`);
               if (prTemplate) checklist.push(`Follow the PR template (${prTemplate}) for title, description, and validation notes.`);
               checklist.push('Confirm the requested task is fully completed and validated before creating or pushing PR changes.');
-              return { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+              const result = { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+              console.log(JSON.stringify(result));
+              return result;
             }
             module.exports = { execute };
           GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF

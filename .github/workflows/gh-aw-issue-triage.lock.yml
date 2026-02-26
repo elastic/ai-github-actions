@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9ff2f4232a4751065c9ba7cf743c3cf3e915dd437ebcf40c268cd6388f372351"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2d9bd8a6fb5b4dfbe599905904131888b4dec8b5e1052f12c3f3248ecddae85c"}
 
 name: "Issue Triage"
 "on":
@@ -1220,7 +1220,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-      pull-requests: write
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
       tools_reported: ${{ steps.missing_tool.outputs.tools_reported }}
@@ -1354,7 +1353,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-      pull-requests: write
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"

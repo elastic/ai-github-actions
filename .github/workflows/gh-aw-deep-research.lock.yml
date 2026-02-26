@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"061e4fc9ccac91b2aa6df67fbd9bbfcda529e0627757e2a86b9841f292927484"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"27d2caa68b0f61eb756746772f601a036434d8212d4803cc5a4402fa769ea05a"}
 
 name: "Deep Research"
 "on":
@@ -1154,7 +1154,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-      pull-requests: write
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
       tools_reported: ${{ steps.missing_tool.outputs.tools_reported }}
@@ -1288,7 +1287,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-      pull-requests: write
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "gemini"

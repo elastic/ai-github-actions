@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"13be3d21cd1f4e6255034e93334a3f9cd60640d39576e00c1ca20face8423926"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"63534bda77999d6aea61353f5e9015a218d38f769cce0d8316961ad0f0864346"}
 
 name: "PR Actions Detective"
 "on":
@@ -1166,7 +1166,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      issues: write
       pull-requests: write
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
@@ -1283,7 +1282,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      issues: write
       pull-requests: write
     timeout-minutes: 15
     env:
