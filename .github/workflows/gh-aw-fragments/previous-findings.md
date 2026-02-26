@@ -12,7 +12,7 @@ steps:
         --state all \
         --limit 100 \
         --json number,title,state \
-        > /tmp/previous-findings.json || echo "[]" > /tmp/previous-findings.json
+        > /tmp/previous-findings.json || { echo "::warning::Failed to fetch previous findings — dedup will be skipped"; echo "[]" > /tmp/previous-findings.json; }
 ---
 
 ## Previous Findings

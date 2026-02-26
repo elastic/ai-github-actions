@@ -177,7 +177,7 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 
 **Guidelines:**
 - Do not actually place the issue body in a block quote.
-- Cap the report at 10 issues per run. If more qualify, prefer oldest issues first — they are highest priority for cleanup.
+- Cap the report at 10 stale issues per run. If more qualify, prefer oldest issues first — they are highest priority for cleanup.
 - Within the same age tier, order by confidence level (most confident first)
 - Always include the specific evidence — don't just say "this looks resolved"
 - Link to the resolving PR, commit, or code when possible

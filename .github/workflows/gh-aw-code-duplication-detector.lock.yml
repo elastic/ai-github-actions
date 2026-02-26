@@ -25,6 +25,7 @@
 #
 # Resolved workflow manifest:
 #   Imports:
+#     - gh-aw-fragments/best-of-three.md
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
@@ -38,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3259f64bc26f3c92d93a7e37355a26e59ed78a6affaf4bd952957493633beb6e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3d74c6fa6c124e3aa027bf46c2e8594794e3fc0f32347ecced4559fcc42ef2da"}
 
 name: "Code Duplication Detector"
 "on":
@@ -294,6 +295,38 @@ jobs:
           - Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
           - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
           - Only file a new issue when the finding is genuinely distinct from all previous findings.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## Best-of-Three Investigation
+          
+          **Do not jump straight to filing an issue. Instead, run three independent investigations in parallel and pick the best result.**
+          
+          ### Process
+          
+          1. **Spawn 3 sub-agents** using the `Task` tool. Each sub-agent receives the same Report Assignment (the full investigation task described in this prompt) and works independently.
+             - Each sub-agent should explore a different starting point or angle — e.g., different files, different heuristics, or different areas of the codebase.
+             - Each sub-agent gathers evidence, analyzes it, and produces either a candidate finding (with title, body, labels, and supporting evidence) or a recommendation to `noop`.
+          
+          2. **Wait for all 3 to complete.** Do not proceed until every sub-agent has returned its result.
+          
+          3. **Evaluate the candidates.** Compare them on:
+             - **Evidence quality** — Are file paths, line numbers, and code snippets cited? Is the evidence verifiable?
+             - **Actionability** — Could a developer act on this without further investigation?
+             - **Severity** — How impactful is the issue?
+             - **Novelty** — Is this genuinely new, or does it overlap with previous findings?
+          
+          4. **Select the best candidate** and submit it via `create_issue`.
+             - If multiple candidates found the *same* underlying issue, that convergence is a strong quality signal — use the best-written version.
+             - If no candidate meets the quality bar (see the Rigor guidelines), call `noop`. Three weak findings do not combine into one strong finding.
+          
+          ### Sub-agent prompt template
+          
+          When spawning each sub-agent, include:
+          - The full text of the Report Assignment section from this prompt
+          - All relevant context (repo name, previous findings, etc.)
+          - An instruction to return a structured result: either `{ "action": "create_issue", "title": "...", "body": "...", "labels": [...] }` or `{ "action": "noop", "reason": "..." }`
+          - An instruction to explore independently — do not coordinate with other sub-agents
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           You are an agent for __GH_AW_GITHUB_REPOSITORY__. You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
@@ -625,7 +658,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
-        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || echo \"[]\" > /tmp/previous-findings.json"
+        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

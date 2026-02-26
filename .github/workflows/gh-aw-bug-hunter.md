@@ -12,6 +12,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/previous-findings.md
+  - gh-aw-fragments/best-of-three.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -98,7 +99,7 @@ Find a single reproducible, user-impacting bug in the repository that can be cov
    - Read the diffs and related files for each candidate.
 2. Check for existing reports:
    - Search open and closed issues for similar symptoms or areas before filing a new issue.
-   - Prioritize Bug Hunter reports by searching `repo:{owner}/{repo} is:issue (label:bug-hunter OR in:title "[bug-hunter]")`.
+   - Prioritize Bug Hunter reports by searching `repo:{owner}/{repo} is:issue (label:bug-hunter OR in:title "${{ inputs.title-prefix }}")`.
    - If a close match exists, do not file a new issue.
 3. Reproduce locally — this step is **mandatory**, not optional:
    - Write a **new** minimal reproduction: a small script or test case that directly triggers the specific bug you identified through code analysis. Do **not** run the existing test suite (e.g. `make test`, `pytest`, `go test ./...`) — if you did not write the test, a failure is not your finding.
@@ -154,6 +155,6 @@ Call `noop` if any of these are true:
 
 ### Labeling
 
-- If the `bug-hunter` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[bug-hunter]` title prefix only.
+- If the `bug-hunter` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `${{ inputs.title-prefix }}` title prefix only.
 
 ${{ inputs.additional-instructions }}

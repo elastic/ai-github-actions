@@ -25,6 +25,7 @@
 #
 # Resolved workflow manifest:
 #   Imports:
+#     - gh-aw-fragments/best-of-three.md
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/ensure-full-history.md
 #     - gh-aw-fragments/formatting.md
@@ -39,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"33c6eff5cf6f9d0aa55f6a9ea3dd7f0f34d9c305d523da4fbc37b516e6d3118e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"33a3fd221185aa757b3292476822ea874e753e46aa81ee734c228c9ea3260829"}
 
 name: "Bug Hunter"
 "on":
@@ -139,6 +140,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -288,6 +290,38 @@ jobs:
           - Only file a new issue when the finding is genuinely distinct from all previous findings.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
+          ## Best-of-Three Investigation
+          
+          **Do not jump straight to filing an issue. Instead, run three independent investigations in parallel and pick the best result.**
+          
+          ### Process
+          
+          1. **Spawn 3 sub-agents** using the `Task` tool. Each sub-agent receives the same Report Assignment (the full investigation task described in this prompt) and works independently.
+             - Each sub-agent should explore a different starting point or angle — e.g., different files, different heuristics, or different areas of the codebase.
+             - Each sub-agent gathers evidence, analyzes it, and produces either a candidate finding (with title, body, labels, and supporting evidence) or a recommendation to `noop`.
+          
+          2. **Wait for all 3 to complete.** Do not proceed until every sub-agent has returned its result.
+          
+          3. **Evaluate the candidates.** Compare them on:
+             - **Evidence quality** — Are file paths, line numbers, and code snippets cited? Is the evidence verifiable?
+             - **Actionability** — Could a developer act on this without further investigation?
+             - **Severity** — How impactful is the issue?
+             - **Novelty** — Is this genuinely new, or does it overlap with previous findings?
+          
+          4. **Select the best candidate** and submit it via `create_issue`.
+             - If multiple candidates found the *same* underlying issue, that convergence is a strong quality signal — use the best-written version.
+             - If no candidate meets the quality bar (see the Rigor guidelines), call `noop`. Three weak findings do not combine into one strong finding.
+          
+          ### Sub-agent prompt template
+          
+          When spawning each sub-agent, include:
+          - The full text of the Report Assignment section from this prompt
+          - All relevant context (repo name, previous findings, etc.)
+          - An instruction to return a structured result: either `{ "action": "create_issue", "title": "...", "body": "...", "labels": [...] }` or `{ "action": "noop", "reason": "..." }`
+          - An instruction to explore independently — do not coordinate with other sub-agents
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
           You are an agent for __GH_AW_GITHUB_REPOSITORY__. You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
           
           ## Context
@@ -370,7 +404,7 @@ jobs:
              - Read the diffs and related files for each candidate.
           2. Check for existing reports:
              - Search open and closed issues for similar symptoms or areas before filing a new issue.
-             - Prioritize Bug Hunter reports by searching `repo:{owner}/{repo} is:issue (label:bug-hunter OR in:title "[bug-hunter]")`.
+             - Prioritize Bug Hunter reports by searching `repo:{owner}/{repo} is:issue (label:bug-hunter OR in:title "__GH_AW_EXPR_BF503D80__")`.
              - If a close match exists, do not file a new issue.
           3. Reproduce locally — this step is **mandatory**, not optional:
              - Write a **new** minimal reproduction: a small script or test case that directly triggers the specific bug you identified through code analysis. Do **not** run the existing test suite (e.g. `make test`, `pytest`, `go test ./...`) — if you did not write the test, a failure is not your finding.
@@ -426,7 +460,7 @@ jobs:
           
           ### Labeling
           
-          - If the `bug-hunter` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[bug-hunter]` title prefix only.
+          - If the `bug-hunter` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `__GH_AW_EXPR_BF503D80__` title prefix only.
           
           __GH_AW_EXPR_49B959F1__
           
@@ -438,6 +472,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -449,6 +484,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -470,6 +506,7 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_EXPR_BF503D80: process.env.GH_AW_EXPR_BF503D80,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -589,7 +626,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
-        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || echo \"[]\" > /tmp/previous-findings.json"
+        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
