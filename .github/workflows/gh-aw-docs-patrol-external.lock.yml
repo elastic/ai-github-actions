@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"943d4c6ce830398109b1454cfacffc27b24daa91949e461fe407a513ea636eb2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6e8148d197697e6bcbd937883265e67c2d25912aad7bfc2ed69da7453e45a210"}
 
 name: "Docs Patrol External"
 "on":
@@ -232,7 +232,7 @@ jobs:
           - It's worth the time to verify now versus guessing and forcing someone else to verify later.
           - Before filing any issue or opening any PR, re-read your own output as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
           - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
-          
+          - Be thorough, spend the time to investigate and verify. There is no rush. Do your best work.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## MCP Pagination
@@ -621,7 +621,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
-        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || echo \"[]\" > /tmp/previous-findings.json"
+        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

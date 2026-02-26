@@ -12,7 +12,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/previous-findings.md
-  - gh-aw-fragments/best-of-three.md
+  - gh-aw-fragments/best-of-three-investigation.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -97,11 +97,7 @@ Find a single reproducible, user-impacting bug in the repository that can be cov
 1. Review recent changes:
    - Run `git log --since="28 days ago" --stat` and identify candidates with user-facing impact.
    - Read the diffs and related files for each candidate.
-2. Check for existing reports:
-   - Search open and closed issues for similar symptoms or areas before filing a new issue.
-   - Prioritize Bug Hunter reports by searching `repo:{owner}/{repo} is:issue (label:bug-hunter OR in:title "${{ inputs.title-prefix }}")`.
-   - If a close match exists, do not file a new issue.
-3. Reproduce locally — this step is **mandatory**, not optional:
+2. Reproduce locally — this step is **mandatory**, not optional:
    - Write a **new** minimal reproduction: a small script or test case that directly triggers the specific bug you identified through code analysis. Do **not** run the existing test suite (e.g. `make test`, `pytest`, `go test ./...`) — if you did not write the test, a failure is not your finding.
    - Capture the exact steps and output from your reproduction.
    - If you cannot write a concrete reproduction that fails due to the bug, do **not** file it. Call `noop` instead.

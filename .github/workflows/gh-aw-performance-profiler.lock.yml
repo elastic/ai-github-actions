@@ -25,6 +25,7 @@
 #
 # Resolved workflow manifest:
 #   Imports:
+#     - gh-aw-fragments/best-of-three-investigation.md
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/ensure-full-history.md
 #     - gh-aw-fragments/formatting.md
@@ -40,7 +41,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5e15e3f4d841a9cf574bb889adb64468885d65f73da626447b1dab1dc62a50f5"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1bd999675e5242816ba5fa6c401116424ddb358eaf0f17549732f993c03a6f83"}
 
 name: "Performance Profiler"
 "on":
@@ -140,6 +141,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -227,7 +229,7 @@ jobs:
           - It's worth the time to verify now versus guessing and forcing someone else to verify later.
           - Before filing any issue or opening any PR, re-read your own output as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
           - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
-          
+          - Be thorough, spend the time to investigate and verify. There is no rush. Do your best work.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## MCP Pagination
@@ -294,6 +296,30 @@ jobs:
           - Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
           - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
           - Only file a new issue when the finding is genuinely distinct from all previous findings.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## Best-of-Three Investigation
+          
+          ## Process
+          
+          1. **Spawn 3 sub-agents**. Each sub-agent receives the same Report Assignment (the full investigation task described in this prompt) and works independently.
+             - Each sub-agent should explore a different starting point or angle — e.g., different files, different heuristics, or different areas of the codebase.
+             - Each sub-agent gathers evidence, analyzes it, and produces either a candidate finding (with title, body, labels, and supporting evidence) or a recommendation to `noop`.
+          
+          2. **Wait for all 3 to complete.** Do not proceed until every sub-agent has returned its result.
+          
+          3. **Evaluate the candidates.** Based on the task
+          
+          4. **Select the best candidate**
+          
+          ## Sub-agent prompt template
+          
+          When spawning each sub-agent, include:
+          - The full text of the Report Assignment section from this prompt
+          - All relevant context (repo name, previous findings, etc.)
+          - An instruction to return a structured result: either `{ "action": "create_issue", "title": "...", "body": "...", "labels": [...] }` or `{ "action": "noop", "reason": "..." }`
+          - A unique instruction designed to help the sub-agent explore independently — do not coordinate with other sub-agents
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           You are an agent for __GH_AW_GITHUB_REPOSITORY__. You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
@@ -387,10 +413,6 @@ jobs:
              - Find functions called frequently from main entry points (CLI commands, API handlers, request paths).
              - Look for loops over large data structures, repeated I/O, expensive string operations, or known anti-patterns.
              - Use `git log --since="28 days ago" --stat` to find recently changed performance-sensitive areas.
-          5. Check for existing performance-related issues:
-             - Search `repo:{owner}/{repo} is:issue (label:performance OR label:perf OR in:title "performance" OR in:title "[performance-profiler]")`.
-             - If a close match exists, do not file a new issue.
-          
           ### Profiling
           
           Generate concrete profiling data — do not speculate about performance based on code reading alone.
@@ -478,7 +500,7 @@ jobs:
           
           ### Labeling
           
-          - If a `performance` label exists (check with `github-get_label`), include it in the `create_issue` call. Otherwise, if `performance-profiler` exists, use that. If neither exists, rely on the `[performance-profiler]` title prefix only.
+          - If a `performance` label exists (check with `github-get_label`), include it in the `create_issue` call. Otherwise, if `performance-profiler` exists, use that. If neither exists, rely on the `__GH_AW_EXPR_BF503D80__` title prefix only.
           
           __GH_AW_EXPR_49B959F1__
           
@@ -490,6 +512,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -501,6 +524,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -522,6 +546,7 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_EXPR_BF503D80: process.env.GH_AW_EXPR_BF503D80,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -640,7 +665,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
-        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || echo \"[]\" > /tmp/previous-findings.json"
+        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

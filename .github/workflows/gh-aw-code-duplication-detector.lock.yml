@@ -25,7 +25,7 @@
 #
 # Resolved workflow manifest:
 #   Imports:
-#     - gh-aw-fragments/best-of-three.md
+#     - gh-aw-fragments/best-of-three-investigation.md
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
@@ -235,7 +235,7 @@ jobs:
           - It's worth the time to verify now versus guessing and forcing someone else to verify later.
           - Before filing any issue or opening any PR, re-read your own output as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
           - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
-          
+          - Be thorough, spend the time to investigate and verify. There is no rush. Do your best work.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## MCP Pagination
@@ -299,33 +299,25 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF'
           ## Best-of-Three Investigation
           
-          **Do not jump straight to filing an issue. Instead, run three independent investigations in parallel and pick the best result.**
+          ## Process
           
-          ### Process
-          
-          1. **Spawn 3 sub-agents** using the `Task` tool. Each sub-agent receives the same Report Assignment (the full investigation task described in this prompt) and works independently.
+          1. **Spawn 3 sub-agents**. Each sub-agent receives the same Report Assignment (the full investigation task described in this prompt) and works independently.
              - Each sub-agent should explore a different starting point or angle — e.g., different files, different heuristics, or different areas of the codebase.
              - Each sub-agent gathers evidence, analyzes it, and produces either a candidate finding (with title, body, labels, and supporting evidence) or a recommendation to `noop`.
           
           2. **Wait for all 3 to complete.** Do not proceed until every sub-agent has returned its result.
           
-          3. **Evaluate the candidates.** Compare them on:
-             - **Evidence quality** — Are file paths, line numbers, and code snippets cited? Is the evidence verifiable?
-             - **Actionability** — Could a developer act on this without further investigation?
-             - **Severity** — How impactful is the issue?
-             - **Novelty** — Is this genuinely new, or does it overlap with previous findings?
+          3. **Evaluate the candidates.** Based on the task
           
-          4. **Select the best candidate** and submit it via `create_issue`.
-             - If multiple candidates found the *same* underlying issue, that convergence is a strong quality signal — use the best-written version.
-             - If no candidate meets the quality bar (see the Rigor guidelines), call `noop`. Three weak findings do not combine into one strong finding.
+          4. **Select the best candidate**
           
-          ### Sub-agent prompt template
+          ## Sub-agent prompt template
           
           When spawning each sub-agent, include:
           - The full text of the Report Assignment section from this prompt
           - All relevant context (repo name, previous findings, etc.)
           - An instruction to return a structured result: either `{ "action": "create_issue", "title": "...", "body": "...", "labels": [...] }` or `{ "action": "noop", "reason": "..." }`
-          - An instruction to explore independently — do not coordinate with other sub-agents
+          - A unique instruction designed to help the sub-agent explore independently — do not coordinate with other sub-agents
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'

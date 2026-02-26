@@ -12,7 +12,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/previous-findings.md
-  - gh-aw-fragments/best-of-three.md
+  - gh-aw-fragments/best-of-three-investigation.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -102,11 +102,6 @@ You are a senior software architect reviewing this codebase with fresh eyes. You
    - Look for: tangled dependencies, duplicated patterns across modules, inconsistent abstractions, overly complex indirection, modules doing too many things, or clear layering violations.
    - Review `git log --since="60 days ago" --stat` for files that frequently change together (coupling signal) or areas with high churn.
    - Check recent PRs and issues for complaints about code being "hard to change," "confusing," or "duplicated."
-
-3. **Check for existing proposals**
-   - Search open issues: `repo:{owner}/{repo} is:issue is:open (refactor OR restructure OR reorganize OR architecture)`.
-   - Search past proposals: `repo:{owner}/{repo} is:issue in:title "[refactor-opportunist]"`.
-   - If your idea overlaps with an existing proposal, pick a different angle or call `noop`.
 
 ### Analysis and Partial Implementation
 

@@ -25,6 +25,7 @@
 #
 # Resolved workflow manifest:
 #   Imports:
+#     - gh-aw-fragments/best-of-three-investigation.md
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
@@ -38,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b0334eb9c903266c714a02a30becaa8551e8ee31cf340fefad6720f78a680878"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d188f00aa5e01ab6f1720f8847d84c6b138a7b23d9b18f1f257cd329188d5279"}
 
 name: "Product Manager Impersonator"
 "on":
@@ -138,6 +139,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -222,7 +224,7 @@ jobs:
           - It's worth the time to verify now versus guessing and forcing someone else to verify later.
           - Before filing any issue or opening any PR, re-read your own output as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
           - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
-          
+          - Be thorough, spend the time to investigate and verify. There is no rush. Do your best work.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## MCP Pagination
@@ -282,6 +284,30 @@ jobs:
           - Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
           - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
           - Only file a new issue when the finding is genuinely distinct from all previous findings.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## Best-of-Three Investigation
+          
+          ## Process
+          
+          1. **Spawn 3 sub-agents**. Each sub-agent receives the same Report Assignment (the full investigation task described in this prompt) and works independently.
+             - Each sub-agent should explore a different starting point or angle — e.g., different files, different heuristics, or different areas of the codebase.
+             - Each sub-agent gathers evidence, analyzes it, and produces either a candidate finding (with title, body, labels, and supporting evidence) or a recommendation to `noop`.
+          
+          2. **Wait for all 3 to complete.** Do not proceed until every sub-agent has returned its result.
+          
+          3. **Evaluate the candidates.** Based on the task
+          
+          4. **Select the best candidate**
+          
+          ## Sub-agent prompt template
+          
+          When spawning each sub-agent, include:
+          - The full text of the Report Assignment section from this prompt
+          - All relevant context (repo name, previous findings, etc.)
+          - An instruction to return a structured result: either `{ "action": "create_issue", "title": "...", "body": "...", "labels": [...] }` or `{ "action": "noop", "reason": "..." }`
+          - A unique instruction designed to help the sub-agent explore independently — do not coordinate with other sub-agents
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           You are an agent for __GH_AW_GITHUB_REPOSITORY__. You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
@@ -373,7 +399,7 @@ jobs:
           
           3. **Check for duplicates**
              - Search open issues for existing feature requests: `repo:{owner}/{repo} is:issue is:open (feature OR enhancement OR idea)`.
-             - Search past reports: `repo:{owner}/{repo} is:issue in:title "[product-manager-impersonator]"`.
+             - Search past reports: `repo:{owner}/{repo} is:issue in:title "__GH_AW_EXPR_BF503D80__"`.
              - If your idea duplicates an existing request, pick a different angle.
           
           ### What to Propose
@@ -418,7 +444,7 @@ jobs:
           
           ### Labeling
           
-          - If the `product-manager-impersonator` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[product-manager-impersonator]` title prefix only.
+          - If the `product-manager-impersonator` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `__GH_AW_EXPR_BF503D80__` title prefix only.
           
           __GH_AW_EXPR_49B959F1__
           
@@ -430,6 +456,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -441,6 +468,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -462,6 +490,7 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_EXPR_BF503D80: process.env.GH_AW_EXPR_BF503D80,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -574,7 +603,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
-        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || echo \"[]\" > /tmp/previous-findings.json"
+        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

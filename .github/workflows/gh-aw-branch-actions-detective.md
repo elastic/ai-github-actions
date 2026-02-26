@@ -117,11 +117,6 @@ Analyze failed GitHub Actions CI runs on protected branches (e.g. `main`) in ${{
        > /tmp/gh-aw/agent/workflow-logs-{run_id}.zip
      unzip -o /tmp/gh-aw/agent/workflow-logs-{run_id}.zip -d /tmp/gh-aw/agent/workflow-logs-{run_id}/
      ````
-3. Check for existing open issues with the `[branch-actions-detective]` title prefix to avoid duplicates:
-   ````bash
-   gh api 'repos/{owner}/{repo}/issues?state=open&per_page=10' \
-     --jq '.[] | select(.title | startswith("[branch-actions-detective]")) | {number: .number, title: .title, html_url: .html_url}'
-   ````
 
 ### Step 2: Analyze
 
@@ -133,7 +128,7 @@ Analyze failed GitHub Actions CI runs on protected branches (e.g. `main`) in ${{
 
 ### Step 3: Respond
 
-**If an existing open `[branch-actions-detective]` issue tracks the same root cause:**
+**If an existing open `${{ inputs.title-prefix }}` issue tracks the same root cause:**
 Call `noop` with a message explaining that the failure is already tracked by the existing issue (include the issue number).
 
 **If this is a new or distinct failure:**

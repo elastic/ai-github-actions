@@ -30,6 +30,7 @@
 #
 # Resolved workflow manifest:
 #   Imports:
+#     - gh-aw-fragments/best-of-three-investigation.md
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/ensure-full-history.md
 #     - gh-aw-fragments/formatting.md
@@ -44,7 +45,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"080ae5527d02ff338c3b70283e71474d9c628798c075b3b2d1106994e7697666"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"80bac445c3bc933b257f33e8e38e1e5c986a3f9bf9ddd9d2165fc71fa276ef8e"}
 
 name: "Breaking Change Detector"
 "on":
@@ -231,7 +232,7 @@ jobs:
           - It's worth the time to verify now versus guessing and forcing someone else to verify later.
           - Before filing any issue or opening any PR, re-read your own output as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
           - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
-          
+          - Be thorough, spend the time to investigate and verify. There is no rush. Do your best work.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## MCP Pagination
@@ -291,6 +292,30 @@ jobs:
           - Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
           - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
           - Only file a new issue when the finding is genuinely distinct from all previous findings.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## Best-of-Three Investigation
+          
+          ## Process
+          
+          1. **Spawn 3 sub-agents**. Each sub-agent receives the same Report Assignment (the full investigation task described in this prompt) and works independently.
+             - Each sub-agent should explore a different starting point or angle — e.g., different files, different heuristics, or different areas of the codebase.
+             - Each sub-agent gathers evidence, analyzes it, and produces either a candidate finding (with title, body, labels, and supporting evidence) or a recommendation to `noop`.
+          
+          2. **Wait for all 3 to complete.** Do not proceed until every sub-agent has returned its result.
+          
+          3. **Evaluate the candidates.** Based on the task
+          
+          4. **Select the best candidate**
+          
+          ## Sub-agent prompt template
+          
+          When spawning each sub-agent, include:
+          - The full text of the Report Assignment section from this prompt
+          - All relevant context (repo name, previous findings, etc.)
+          - An instruction to return a structured result: either `{ "action": "create_issue", "title": "...", "body": "...", "labels": [...] }` or `{ "action": "noop", "reason": "..." }`
+          - A unique instruction designed to help the sub-agent explore independently — do not coordinate with other sub-agents
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           You are an agent for __GH_AW_GITHUB_REPOSITORY__. You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
@@ -595,7 +620,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
-        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || echo \"[]\" > /tmp/previous-findings.json"
+        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

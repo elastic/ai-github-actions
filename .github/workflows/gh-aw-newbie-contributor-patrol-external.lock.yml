@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"deca784a242035ea0d5dba17d53e427a7268ec7a2bd945341cdc3870c4109674"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0ccdfcb4f4148a785c5d57a4d22d778b52b9ed2a34f19484f04e169ea21d906c"}
 
 name: "Newbie Contributor Patrol External"
 "on":
@@ -222,7 +222,7 @@ jobs:
           - It's worth the time to verify now versus guessing and forcing someone else to verify later.
           - Before filing any issue or opening any PR, re-read your own output as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
           - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
-          
+          - Be thorough, spend the time to investigate and verify. There is no rush. Do your best work.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## MCP Pagination
@@ -366,8 +366,7 @@ jobs:
              - Do not assume a fixed directory structure. The repository may organize docs differently.
           2. Follow the quick start or recommended install path as far as possible without secrets, elevated privileges, or write access:
              - If a step requires secrets or admin privileges, stop and note whether the docs clearly warned about it.
-          3. Check for existing open issues that already cover the same documentation gaps.
-          4. Use the `elastic-docs` MCP server to cross-reference the repo's documentation against published Elastic documentation:
+          3. Use the `elastic-docs` MCP server to cross-reference the repo's documentation against published Elastic documentation:
              - Call `SemanticSearch` or `FindRelatedDocs` with the project name and key concepts to find the published getting-started guide, if one exists.
              - Call `GetDocumentByUrl` to read any published pages that describe this project's setup or usage.
              - Check whether the repo's onboarding docs are consistent with what's published. Contradictions between the repo and `elastic.co/docs` are blockers for new contributors.
@@ -564,7 +563,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
-        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || echo \"[]\" > /tmp/previous-findings.json"
+        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

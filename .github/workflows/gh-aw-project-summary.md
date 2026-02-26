@@ -91,7 +91,7 @@ Create a periodic project summary with actionable highlights from recent activit
 ### Data Gathering
 
 1. **Find the last report**
-   - Use `github-search_issues` with `repo:{owner}/{repo} is:issue in:title "[project-summary]"` sorted by `created` descending.
+   - Use `github-search_issues` with `repo:{owner}/{repo} is:issue in:title "${{ inputs.title-prefix }}"` sorted by `created` descending.
    - If a previous report exists, use its `createdAt` as the start date. Otherwise, use **14 days ago**.
 
 2. **Collect activity since the start date**

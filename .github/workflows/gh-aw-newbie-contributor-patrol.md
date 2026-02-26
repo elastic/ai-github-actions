@@ -96,8 +96,6 @@ Review repository documentation from the perspective of an external contributor 
    - Do not assume a fixed directory structure. The repository may organize docs differently.
 2. Follow the quick start or recommended install path as far as possible without secrets, elevated privileges, or write access:
    - If a step requires secrets or admin privileges, stop and note whether the docs clearly warned about it.
-3. Check for existing open issues that already cover the same documentation gaps.
-
 ### What to Look For
 
 - Missing prerequisites or setup steps that would block a new contributor.
