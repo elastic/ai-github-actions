@@ -64,11 +64,11 @@ nav:
               - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
               - Test Improver: workflows/gh-agent-workflows/test-improver.md
       - Elastic-specific:
-          - Estc Docs PR Review: workflows/gh-agent-workflows/estc-docs-pr-review.md
-          - Estc PR Buildkite Detective: workflows/gh-agent-workflows/estc-pr-buildkite-detective.md
-          - Estc Docs Patrol External: workflows/gh-agent-workflows/estc-docs-patrol-external.md
-          - Estc Newbie Contributor Patrol External: workflows/gh-agent-workflows/estc-newbie-contributor-patrol-external.md
-          - Estc Downstream Health: workflows/gh-agent-workflows/estc-downstream-health.md
+          - Docs PR Review (Elastic-specific): workflows/gh-agent-workflows/estc-docs-pr-review.md
+          - PR Buildkite Detective (Elastic-specific): workflows/gh-agent-workflows/estc-pr-buildkite-detective.md
+          - Docs Patrol External (Elastic-specific): workflows/gh-agent-workflows/estc-docs-patrol-external.md
+          - Newbie Contributor Patrol External (Elastic-specific): workflows/gh-agent-workflows/estc-newbie-contributor-patrol-external.md
+          - Downstream Health (Elastic-specific): workflows/gh-agent-workflows/estc-downstream-health.md
   - Legacy:
       - Claude Workflows: workflows/claude-workflows.md
       - Migration Guide: migration-guide.md

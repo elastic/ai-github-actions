@@ -1,4 +1,4 @@
-# Estc Downstream Health
+# Downstream Health (Elastic-specific)
 
 Monitor downstream repositories using AI workflows and report quality issues.
 

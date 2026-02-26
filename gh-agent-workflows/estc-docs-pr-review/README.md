@@ -1,4 +1,4 @@
-# Estc Docs PR Review
+# Docs PR Review (Elastic-specific)
 
 Docs PR review from an Elastic technical writer perspective. Reviews documentation changes for style guide compliance, `applies_to` tag correctness, and consistency with published Elastic documentation.
 

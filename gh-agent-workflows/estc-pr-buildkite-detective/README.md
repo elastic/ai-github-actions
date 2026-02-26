@@ -1,4 +1,4 @@
-# Estc PR Buildkite Detective
+# PR Buildkite Detective (Elastic-specific)
 
 Analyze failed PR checks backed by Buildkite and report findings (read-only).
 

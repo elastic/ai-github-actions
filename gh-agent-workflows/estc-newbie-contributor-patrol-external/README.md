@@ -1,4 +1,4 @@
-# Estc Newbie Contributor Patrol External
+# Newbie Contributor Patrol External (Elastic-specific)
 
 Review docs from a new contributor perspective, cross-referencing published Elastic documentation.
 

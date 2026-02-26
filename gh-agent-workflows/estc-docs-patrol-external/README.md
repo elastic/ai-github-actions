@@ -1,4 +1,4 @@
-# Estc Docs Patrol External
+# Docs Patrol External (Elastic-specific)
 
 Detect code changes that require updates to published Elastic documentation, `applies_to` tags, or backports.
 

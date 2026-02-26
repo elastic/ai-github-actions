@@ -26,7 +26,7 @@ Not every failure happens on a PR. Sometimes code passes all checks, gets merged
 
 It triggers on failed checks against the main or default branch -- but only when those failures aren't associated with any open PR. That distinction is important. If a PR is open and its checks fail, the PR Actions Detective handles it. The Branch Actions Detective picks up the failures that nobody owns: post-merge breakage on main that would otherwise sit unnoticed until someone runs into it manually. It reads the logs, diagnoses the root cause, and files its findings so the team can act.
 
-## [Estc PR Buildkite Detective](../../workflows/gh-agent-workflows/estc-pr-buildkite-detective.md)
+## [PR Buildkite Detective (Elastic-specific)](../../workflows/gh-agent-workflows/estc-pr-buildkite-detective.md)
 
 Not every team runs CI exclusively on GitHub Actions. The PR Buildkite Detective does the same job as the PR Actions Detective, but for Buildkite CI pipelines. It requires a `BUILDKITE_API_TOKEN` to access pipeline logs, and from there the workflow is the same: read the failure, diagnose it, and recommend a fix directly on the PR.
 

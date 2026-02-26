@@ -2,7 +2,7 @@
 
 Review documentation from a new contributor's perspective and automatically fix gaps.
 
-**Newbie Contributor Patrol** reads all contributor-facing documentation as if it were a new contributor's first encounter with the project — following getting-started paths, checking for missing prerequisites, and flagging blocking gaps. An **Estc External** variant also cross-references published Elastic documentation. **Newbie Contributor Fixer** picks up patrol issues and opens PRs with documentation improvements. Most runs end with `noop`.
+**Newbie Contributor Patrol** reads all contributor-facing documentation as if it were a new contributor's first encounter with the project — following getting-started paths, checking for missing prerequisites, and flagging blocking gaps. An **Elastic-specific** variant also cross-references published Elastic documentation. **Newbie Contributor Fixer** picks up patrol issues and opens PRs with documentation improvements. Most runs end with `noop`.
 
 ## Quick install
 
@@ -83,7 +83,7 @@ jobs:
 
 ---
 
-## Estc Newbie Contributor Patrol External (detector variant)
+## Newbie Contributor Patrol External (Elastic-specific) (detector variant)
 
 Like Newbie Contributor Patrol, but also cross-references the repo's documentation against published Elastic documentation on `elastic.co/docs`. Contradictions between the repo and published docs are treated as blocking issues.
 
@@ -108,7 +108,7 @@ Like Newbie Contributor Patrol, but also cross-references the repo's documentati
 ### Example workflow
 
 ```yaml
-name: Estc Newbie Contributor Patrol External
+name: Newbie Contributor Patrol External (Elastic-specific)
 on:
   schedule:
     - cron: "0 11 * * 1"

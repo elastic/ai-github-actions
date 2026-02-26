@@ -103,24 +103,24 @@ These workflows are tailored for Elastic's internal tooling and documentation pl
 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
-| [Estc Docs PR Review](gh-agent-workflows/estc-docs-pr-review.md) | `/docs-review` on PRs | Review docs for Elastic style guide, `applies_to`, and consistency with elastic.co/docs |
+| [Docs PR Review (Elastic-specific)](gh-agent-workflows/estc-docs-pr-review.md) | `/docs-review` on PRs | Review docs for Elastic style guide, `applies_to`, and consistency with elastic.co/docs |
 
 #### Event-driven
 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
-| [Estc PR Buildkite Detective](gh-agent-workflows/estc-pr-buildkite-detective.md) | Failed PR checks | Diagnose Buildkite failures and recommend fixes |
+| [PR Buildkite Detective (Elastic-specific)](gh-agent-workflows/estc-pr-buildkite-detective.md) | Failed PR checks | Diagnose Buildkite failures and recommend fixes |
 
 #### Scheduled
 
 | Detector | Fixer | Domain |
 | --- | --- | --- |
-| [Estc Docs Patrol External](gh-agent-workflows/estc-docs-patrol-external.md) | — | Stale published Elastic docs |
-| [Estc Newbie Contributor Patrol External](gh-agent-workflows/estc-newbie-contributor-patrol-external.md) | — | Cross-referencing published Elastic docs |
+| [Docs Patrol External (Elastic-specific)](gh-agent-workflows/estc-docs-patrol-external.md) | — | Stale published Elastic docs |
+| [Newbie Contributor Patrol External (Elastic-specific)](gh-agent-workflows/estc-newbie-contributor-patrol-external.md) | — | Cross-referencing published Elastic docs |
 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
-| [Estc Downstream Health](gh-agent-workflows/estc-downstream-health.md) | Daily schedule | Monitor downstream Elastic repo quality |
+| [Downstream Health (Elastic-specific)](gh-agent-workflows/estc-downstream-health.md) | Daily schedule | Monitor downstream Elastic repo quality |
 
 ## Secrets
 

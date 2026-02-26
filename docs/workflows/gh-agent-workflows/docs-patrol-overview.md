@@ -2,7 +2,7 @@
 
 Detect code changes that require documentation updates — both internal and published.
 
-Two variants cover different documentation scopes: **Docs Patrol** checks internal documentation (READMEs, CONTRIBUTING, etc.) against recent code changes, while **Estc Docs Patrol External** focuses on published Elastic documentation on `elastic.co/docs`. Both scan recent commits for public API or behavioral changes not reflected in documentation. Most runs end with `noop`.
+Two variants cover different documentation scopes: **Docs Patrol** checks internal documentation (READMEs, CONTRIBUTING, etc.) against recent code changes, while **Docs Patrol External (Elastic-specific)** focuses on published Elastic documentation on `elastic.co/docs`. Both scan recent commits for public API or behavioral changes not reflected in documentation. Most runs end with `noop`.
 
 ## Quick install
 
@@ -72,7 +72,7 @@ jobs:
 
 ---
 
-## Estc Docs Patrol External
+## Docs Patrol External (Elastic-specific)
 
 Like Docs Patrol, but focuses on changes that require updates to published Elastic documentation on `elastic.co/docs`. Also flags features that need `applies_to` tag updates or documentation backports to earlier release branches.
 
@@ -98,7 +98,7 @@ Like Docs Patrol, but focuses on changes that require updates to published Elast
 ### Example workflow
 
 ```yaml
-name: Estc Docs Patrol External
+name: Docs Patrol External (Elastic-specific)
 on:
   schedule:
     - cron: "0 14 * * 1-5"

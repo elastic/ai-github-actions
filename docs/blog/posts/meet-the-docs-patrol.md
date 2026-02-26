@@ -18,11 +18,11 @@ Documentation rot is one of the most predictable problems in software engineerin
 
 This agent runs on a weekday schedule and scans for stale internal documentation — READMEs, inline docs, and any other documentation that lives inside the repository. It operates as a detector: it identifies places where the docs have drifted from the code. There is no dedicated fixer paired with it yet, so when it finds staleness it opens an issue describing what is out of date and what changed. A human still makes the call on how to update the wording, but the hard part — noticing the drift in the first place — is handled.
 
-## [Estc Docs Patrol External](../../workflows/gh-agent-workflows/estc-docs-patrol-external.md)
+## [Docs Patrol External (Elastic-specific)](../../workflows/gh-agent-workflows/estc-docs-patrol-external.md)
 
 Same concept, different scope. This agent also runs on a weekday schedule, but instead of scanning internal docs it scans published Elastic documentation for references that have fallen out of date with the codebase. Published docs are even more dangerous when they go stale because they reach a wider audience and carry more authority. If the public docs say a parameter is required but the code made it optional three releases ago, that is a real problem. This agent catches it.
 
-## [Estc Docs PR Review](../../workflows/gh-agent-workflows/estc-docs-pr-review.md)
+## [Docs PR Review (Elastic-specific)](../../workflows/gh-agent-workflows/estc-docs-pr-review.md)
 
 This one is not scheduled — it is triggered by the `/docs-review` command on pull requests. When someone opens a PR that touches documentation, they can invoke this agent to review the changes for style guide compliance, correct `applies_to` frontmatter, and consistency with existing docs. It is human-coordinated: you decide when to call it and on which PRs. Think of it as a specialized reviewer that never forgets the style guide.
 
