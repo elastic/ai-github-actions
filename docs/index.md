@@ -59,6 +59,24 @@ We built a fleet of specialized AI agents that review PRs, hunt bugs, triage iss
 
 ## Quick Start
 
+Run the quick setup script from the repository you want to configure (requires `gh`, `git`, and `curl`):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/scripts/quick-setup.sh \
+  | bash -s --
+```
+
+By default, this:
+
+- Installs the starter set of workflow triggers
+- Adds `agentics-maintenance.yml`
+- Sets `COPILOT_GITHUB_TOKEN`
+- Creates a branch, pushes it, and opens a PR
+
+Use `--continuous-improvement` to also install selected continuous improvement workflows.
+
+Or set up manually:
+
 1. **Store a Copilot PAT** as `COPILOT_GITHUB_TOKEN` in your repo secrets
 2. **Copy a workflow's `example.yml`** from [gh-agent-workflows/](https://github.com/elastic/ai-github-actions/tree/main/gh-agent-workflows)
 3. **Customize** with `additional-instructions` and `setup-commands` for your project
