@@ -1,6 +1,6 @@
 ---
 inlined-imports: true
-description: "Daily fixer for 'Resource not accessible by integration' across long-term branches"
+description: "Daily detector for 'Resource not accessible by integration' across long-term branches"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
@@ -8,8 +8,8 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-create-pr.md
-  - gh-aw-fragments/workflow-edit-guardrails.md
+  - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -47,11 +47,16 @@ on:
         type: string
         required: false
         default: ""
-      draft-prs:
-        description: "Whether to create pull requests as drafts"
-        type: boolean
+      look-back-days:
+        description: "Number of days to look back when scanning failed workflow runs"
+        type: number
         required: false
-        default: false
+        default: 1
+      issue-title-prefix:
+        description: "Title prefix for created issue (e.g. '[resource-not-accessible-by-integration]')"
+        type: string
+        required: false
+        default: "[resource-not-accessible-by-integration]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -65,18 +70,94 @@ permissions:
   actions: read
   contents: read
   issues: read
-  pull-requests: read
 tools:
   github:
-    toolsets: [repos, issues, pull_requests, search, actions]
+    toolsets: [repos, issues, search, actions]
   bash: true
   web-fetch:
 strict: false
 safe-outputs:
   activation-comments: false
   noop:
+  create-issue:
+    max: 1
+    title-prefix: "${{ inputs.issue-title-prefix }} "
+    close-older-issues: false
+    expires: 7d
 timeout-minutes: 90
 steps:
+  - name: Prescan failed runs for target error
+    env:
+      GH_TOKEN: ${{ github.token }}
+      LOOK_BACK_DAYS: ${{ inputs.look-back-days }}
+      LONG_TERM_BRANCHES: ${{ inputs.long-term-branches }}
+      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+    run: |
+      set -euo pipefail
+      mkdir -p /tmp/gh-aw/agent
+
+      since="$(date -u -d "${LOOK_BACK_DAYS} days ago" '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -v-"${LOOK_BACK_DAYS}"d '+%Y-%m-%dT%H:%M:%SZ')"
+      findings_file="/tmp/gh-aw/agent/resource-not-accessible-findings.tsv"
+      printf "workflow_path\tbranch\trun_id\trun_url\tcreated_at\tevidence\n" > "$findings_file"
+
+      branches=()
+      for branch in "$DEFAULT_BRANCH" $LONG_TERM_BRANCHES; do
+        [ -n "$branch" ] || continue
+        skip=false
+        for existing in "${branches[@]:-}"; do
+          if [ "$existing" = "$branch" ]; then
+            skip=true
+            break
+          fi
+        done
+        if [ "$skip" = false ]; then
+          branches+=("$branch")
+        fi
+      done
+
+      runs_file="/tmp/gh-aw/agent/resource-not-accessible-runs.tsv"
+      : > "$runs_file"
+      for branch in "${branches[@]}"; do
+        gh api "repos/$GITHUB_REPOSITORY/actions/runs" \
+          --method GET \
+          -f branch="$branch" \
+          -f status=failure \
+          -f created=">=${since}" \
+          --paginate \
+          --jq '.workflow_runs[] | [.id, .html_url, .path, .head_branch, .created_at] | @tsv' \
+          >> "$runs_file" || true
+      done
+
+      while IFS=$'\t' read -r run_id run_url workflow_path head_branch created_at; do
+        [ -n "${run_id:-}" ] || continue
+        zip_file="/tmp/gh-aw/agent/workflow-logs-${run_id}.zip"
+        log_dir="/tmp/gh-aw/agent/workflow-logs-${run_id}"
+
+        if ! gh api "repos/$GITHUB_REPOSITORY/actions/runs/${run_id}/logs" -H "Accept: application/vnd.github+json" > "$zip_file" 2>/dev/null; then
+          continue
+        fi
+        rm -rf "$log_dir"
+        if ! unzip -o "$zip_file" -d "$log_dir" >/dev/null 2>&1; then
+          continue
+        fi
+
+        match="$(grep -R -n -m 1 "Resource not accessible by integration" "$log_dir" 2>/dev/null || true)"
+        if [ -n "$match" ]; then
+          evidence="${match//$'\t'/ }"
+          printf "%s\t%s\t%s\t%s\t%s\t%s\n" "$workflow_path" "$head_branch" "$run_id" "$run_url" "$created_at" "$evidence" >> "$findings_file"
+        fi
+        rm -rf "$log_dir" "$zip_file"
+      done < "$runs_file"
+
+      matches="$(tail -n +2 "$findings_file" | wc -l | tr -d ' ')"
+      workflows="$(tail -n +2 "$findings_file" | cut -f1 | sort -u | wc -l | tr -d ' ')"
+      {
+        echo "since=${since}"
+        echo "look_back_days=${LOOK_BACK_DAYS}"
+        echo "matched_runs=${matches}"
+        echo "matched_workflows=${workflows}"
+        echo "findings_file=${findings_file}"
+      } > /tmp/gh-aw/agent/resource-not-accessible-summary.txt
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
@@ -84,141 +165,85 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-# Resource Not Accessible By Integration Fixer
+# Resource Not Accessible By Integration Detector
 
-Scan workflow runs from the last 24 hours across all long-term branches in ${{ github.repository }}, find failures caused by `Resource not accessible by integration`, and open one remediation PR per affected workflow.
+Use the prescan output to investigate only workflows that already matched `Resource not accessible by integration`, then create a single tracking issue with the combined analysis.
 
 ## Context
 
 - **Repository**: ${{ github.repository }}
 - **Default Branch**: ${{ github.event.repository.default_branch }}
-- **Additional long-term branches**: ${{ inputs.long-term-branches }} (space-separated; empty means default branch only)
+- **Additional long-term branches**: ${{ inputs.long-term-branches }}
+- **Look-back days**: ${{ inputs.look-back-days }}
 - **Error pattern**: `Resource not accessible by integration`
+- **Prescan summary**: `/tmp/gh-aw/agent/resource-not-accessible-summary.txt`
+- **Prescan findings**: `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`
 - **Remediation instructions URL**: `https://raw.githubusercontent.com/elastic/observability-cicd/main/github-actions/actionable/alerts/app/prompts/accessible-by-integration.txt`
 
 ## Constraints
 
-- **CAN**: Read files, search code, modify files locally, run commands, create pull requests.
-- **CANNOT**: Push directly to the repository — use `create_pull_request`. Merge or close PRs.
-- **One PR per failing workflow** (never combine fixes for different workflows into a single PR).
-- Scope: default branch plus all branches listed in `long-term-branches`.
-- If no runs match the error pattern, call `noop` with message "No 'Resource not accessible by integration' failures found in the last 24 hours — nothing to fix".
-- **Do not auto-merge.** Leave every PR open for review by the `elastic/observablt-ci` team.
+- **CAN**: Read files, search code, run commands, create one issue.
+- **CANNOT**: Push changes or open PRs in this workflow.
+- Only investigate workflows listed in `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`.
+- Do not file a duplicate issue if an open `${{ inputs.issue-title-prefix }}` issue already tracks the same workflows and failure pattern.
 
 ## Step 1: Gather context
 
 1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-2. Load the remediation instructions at runtime via `web_fetch`:
-   ```
+2. Read `/tmp/gh-aw/agent/resource-not-accessible-summary.txt`.
+3. Read `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`.
+4. Fetch remediation instructions at runtime:
+   ````
    https://raw.githubusercontent.com/elastic/observability-cicd/main/github-actions/actionable/alerts/app/prompts/accessible-by-integration.txt
-   ```
-   Store the content for use in Step 3. If the fetch fails, fall back to the general principle: add the minimum required `permissions` block to the failing workflow jobs or use a `GITHUB_TOKEN` with sufficient scopes.
-3. Determine the scan window — the ISO 8601 timestamp for 24 hours ago:
-   ````bash
-   SINCE=$(date -u -d '24 hours ago' '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null \
-     || date -u -v-24H '+%Y-%m-%dT%H:%M:%SZ')
-   echo "Scan since: $SINCE"
    ````
-4. Build the branch list: always start with the repository default branch, then append the space-separated values from `${{ inputs.long-term-branches }}` (skip duplicates and blanks).
+   If fetch fails, fall back to minimum-permissions guidance.
 
-## Step 2: Scan for failures
+## Step 2: Decide whether to noop
 
-For each branch in scope:
+- If the findings file has no data rows, call `noop` with:
+  `No 'Resource not accessible by integration' failures found in the configured look-back window — nothing to report`.
+- Check open issues for `${{ inputs.issue-title-prefix }}` in the title and compare workflow paths/evidence.
+- If an existing open issue already tracks the same findings, call `noop` and reference the existing issue number.
 
-1. List failed workflow runs created since `$SINCE`:
-   ````bash
-   gh api "repos/${{ github.repository }}/actions/runs" \
-     --method GET \
-     -f branch=BRANCH_NAME \
-     -f status=failure \
-     -f created=">=${SINCE}" \
-     --paginate \
-     --jq '.workflow_runs[] | {id: .id, name: .name, html_url: .html_url, path: .path, head_branch: .head_branch, created_at: .created_at}'
-   ````
+## Step 3: Produce combined analysis issue
 
-2. For each failed run, download and search logs for the exact string `Resource not accessible by integration`:
-   ````bash
-   mkdir -p /tmp/gh-aw/agent
-   gh api "repos/${{ github.repository }}/actions/runs/{run_id}/logs" \
-     -H "Accept: application/vnd.github+json" \
-     > /tmp/gh-aw/agent/workflow-logs-{run_id}.zip
-   unzip -o /tmp/gh-aw/agent/workflow-logs-{run_id}.zip \
-     -d /tmp/gh-aw/agent/workflow-logs-{run_id}/
-   grep -rl "Resource not accessible by integration" \
-     /tmp/gh-aw/agent/workflow-logs-{run_id}/ || true
-   ````
+Call `create_issue` exactly once with:
 
-3. Collect all runs where the log search returned matches. Group matching runs by the **workflow path** (the `.github/workflows/` file that defines the workflow) — this ensures exactly one PR per workflow, even when multiple runs or branches are affected.
+- **Title**: `Resource not accessible by integration across long-term branches`
+- **Body**:
 
-If no runs match after scanning all branches, call `noop` with message "No 'Resource not accessible by integration' failures found in the last 24 hours — nothing to fix".
+  ````
+  ## Scan Summary
 
-## Step 3: Analyze and fix each affected workflow
+  - Look-back days: <value from summary file>
+  - Since: <value from summary file>
+  - Matched workflows: <count>
+  - Matched runs: <count>
 
-For each distinct workflow path that produced at least one matching run:
+  ## Affected Workflows
 
-1. Read the workflow file from the repository:
-   ````bash
-   cat .github/workflows/<workflow-file>
-   ````
-
-2. Extract the exact log lines containing `Resource not accessible by integration` from a representative failing run as evidence (copy verbatim).
-
-3. Apply the remediation instructions loaded in Step 1 as the primary fix policy. Follow those instructions exactly when patching the workflow file's permissions or token configuration.
-
-4. Because workflow files live under `.github/workflows/`, follow the workflow-edit guardrails: place the patched copy in `github/workflows/` (without the leading dot). The PR body must note that a maintainer must rename the directory back to `.github/workflows/` before merging.
-
-## Step 4: Quality gate
-
-Before creating any PR:
-
-- Confirm the patch resolves the permission issue described in the evidence.
-- Confirm each change is minimal — only add or adjust the permissions or token configuration required to fix the error.
-- Call `ready_to_make_pr`.
-
-## Step 5: Create one PR per affected workflow
-
-For each patched workflow, call `create_pull_request` with:
-
-- **Title**: `fix(ci): resolve "Resource not accessible by integration" in <workflow-name> [<branch>]`
-  - Include the branch only when the failure is branch-specific; omit it for failures across all branches.
-- **Body** (all sections required):
-
-  ```
-  ## Affected Workflow
-
-  - **File**: `.github/workflows/<workflow-file>`
-  - **Workflow name**: <workflow-name>
-
-  ## Failing Runs
-
-  | Branch | Run | Created |
+  | Workflow file | Branches | Runs |
   | --- | --- | --- |
-  | <branch> | [<run-id>](<html_url>) | <created_at> |
+  | <workflow path> | <comma-separated branches> | [<run-id>](<run_url>), ... |
 
-  ## Failure Evidence
+  ## Evidence
 
-  ```
-  <verbatim log excerpt containing "Resource not accessible by integration">
-  ```
+  For each workflow include one or more verbatim evidence lines from the findings file.
 
-  ## Root Cause
+  ## Root Cause Assessment
 
-  <Concise explanation of why the permission was missing>
+  Concisely explain why each workflow likely lacks required permissions/token scope.
 
-  ## Remediation Applied
+  ## Remediation Guidance
 
-  <Description of the change made, with reference to the external instructions URL>
+  Provide concrete patch guidance per workflow using:
+  https://raw.githubusercontent.com/elastic/observability-cicd/main/github-actions/actionable/alerts/app/prompts/accessible-by-integration.txt
 
-  Source: https://raw.githubusercontent.com/elastic/observability-cicd/main/github-actions/actionable/alerts/app/prompts/accessible-by-integration.txt
+  ## Next Steps
 
-  ## Reviewer Note
-
-  This PR was created by an automated fixer. Please review and approve.
-  The patched file is in `github/workflows/` — a maintainer must move it to `.github/workflows/` before merging.
-  ```
-
-- **Reviewers**: request review from team `elastic/observablt-ci`.
-
-> **Important**: Do NOT merge the PR. Leave it open for review by `elastic/observablt-ci`.
+  - Recommend either applying fixes manually or enabling a fixer workflow.
+  - Note: workflow-file edits must be made under `.github/workflows/`.
+  ````
 
 ${{ inputs.additional-instructions }}
+

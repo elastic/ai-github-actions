@@ -21,7 +21,7 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Daily fixer for 'Resource not accessible by integration' across long-term branches
+# Daily detector for 'Resource not accessible by integration' across long-term branches
 #
 # Resolved workflow manifest:
 #   Imports:
@@ -30,16 +30,16 @@
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/network-ecosystems.md
+#     - gh-aw-fragments/previous-findings.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
-#     - gh-aw-fragments/safe-output-create-pr.md
-#     - gh-aw-fragments/workflow-edit-guardrails.md
+#     - gh-aw-fragments/safe-output-create-issue.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a64516be19f0a7789344a5d27021d6acebae532e8b83ea7535e4824816f3bf38"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ac1c9ef7ec0b3e6cddd2fe0a236a17eabd6d6bd22818a1669a963f1f9db0d72d"}
 
-name: "Resource Not Accessible By Integration Fixer"
+name: "Resource Not Accessible By Integration Detector"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -59,16 +59,21 @@ name: "Resource Not Accessible By Integration Fixer"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
-      draft-prs:
-        default: false
-        description: Whether to create pull requests as drafts
+      issue-title-prefix:
+        default: "[resource-not-accessible-by-integration]"
+        description: Title prefix for created issue (e.g. '[resource-not-accessible-by-integration]')
         required: false
-        type: boolean
+        type: string
       long-term-branches:
         default: ""
         description: Space-separated list of long-term branch names to scan in addition to the default branch (e.g. 'main 8.x 7.17')
         required: false
         type: string
+      look-back-days:
+        default: 1
+        description: Number of days to look back when scanning failed workflow runs
+        required: false
+        type: number
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -94,7 +99,7 @@ concurrency:
   cancel-in-progress: true
   group: resource-not-accessible-by-integration-fixer
 
-run-name: "Resource Not Accessible By Integration Fixer"
+run-name: "Resource Not Accessible By Integration Detector"
 
 jobs:
   activation:
@@ -141,8 +146,10 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GH_AW_EXPR_3A5062C8: ${{ inputs.look-back-days }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_922C262D: ${{ inputs.long-term-branches }}
+          GH_AW_EXPR_CE96317F: ${{ inputs.issue-title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -164,10 +171,7 @@ jobs:
           cat "/opt/gh-aw/prompts/safe_outputs_prompt.md"
           cat << 'GH_AW_PROMPT_EOF'
           <safe-output-tools>
-          Tools: create_pull_request, missing_tool, missing_data
-          GH_AW_PROMPT_EOF
-          cat "/opt/gh-aw/prompts/safe_outputs_create_pull_request.md"
-          cat << 'GH_AW_PROMPT_EOF'
+          Tools: create_issue, missing_tool, missing_data
           </safe-output-tools>
           <github-context>
           The following GitHub context information is available for this workflow:
@@ -274,166 +278,107 @@ jobs:
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist.
+          ## create-issue Limitations
           
-          ## create-pull-request Limitations
-          
-          - **Patch files**: Max 100 files per PR. If changes span more files, split into multiple focused PRs.
-          - **Patch size**: Max 1,024 KB by default. Keep changes focused.
-          - **Title**: Max 128 characters. Sanitized.
-          - **Body**: No explicit mention/link limits, but bot triggers (`fixes #123`, `closes #456`) are neutralized.
-          - **Committed changes required**: You must have locally committed changes before creating a PR (unless `allow_empty` is configured).
-          - **Base branch**: Must be configured in the safe-output config. The PR targets this branch.
-          - **Max per run**: Typically 1 PR creation per workflow run.
-          - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
+          - **Title**: Max 128 characters. Sanitized (special characters escaped).
+          - **Labels**: Max 10 labels per issue. Each label max 64 characters. Labels containing only `-` are rejected.
+          - **Assignees**: Max 5 assignees per issue.
+          - **Body**: No strict character limit beyond GitHub's API limit (~65,536 characters), but fields over 16,000 tokens are written to a file reference instead of inlined.
+          - **Bot triggers**: References like `fixes #123` or `closes #456` in the body are neutralized to prevent unintended issue closures.
+          - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          ## Workflow Editing Guardrails
+          ## Previous Findings
           
-          - Do not modify files under `.github/workflows/`.
-          - If asked to change workflow files, place a copy under `github/` (no leading dot) and note that a maintainer must relocate it into `.github/workflows/`.
+          Before filing a new issue, check `/tmp/previous-findings.json` for issues this agent has already filed.
           
+          - Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
+          - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
+          - Only file a new issue when the finding is genuinely distinct from all previous findings.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          # Resource Not Accessible By Integration Fixer
+          # Resource Not Accessible By Integration Detector
           
-          Scan workflow runs from the last 24 hours across all long-term branches in __GH_AW_GITHUB_REPOSITORY__, find failures caused by `Resource not accessible by integration`, and open one remediation PR per affected workflow.
+          Use the prescan output to investigate only workflows that already matched `Resource not accessible by integration`, then create a single tracking issue with the combined analysis.
           
           ## Context
           
           - **Repository**: __GH_AW_GITHUB_REPOSITORY__
           - **Default Branch**: __GH_AW_GITHUB_EVENT_REPOSITORY_DEFAULT_BRANCH__
-          - **Additional long-term branches**: __GH_AW_EXPR_922C262D__ (space-separated; empty means default branch only)
+          - **Additional long-term branches**: __GH_AW_EXPR_922C262D__
+          - **Look-back days**: __GH_AW_EXPR_3A5062C8__
           - **Error pattern**: `Resource not accessible by integration`
+          - **Prescan summary**: `/tmp/gh-aw/agent/resource-not-accessible-summary.txt`
+          - **Prescan findings**: `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`
           - **Remediation instructions URL**: `https://raw.githubusercontent.com/elastic/observability-cicd/main/github-actions/actionable/alerts/app/prompts/accessible-by-integration.txt`
           
           ## Constraints
           
-          - **CAN**: Read files, search code, modify files locally, run commands, create pull requests.
-          - **CANNOT**: Push directly to the repository — use `create_pull_request`. Merge or close PRs.
-          - **One PR per failing workflow** (never combine fixes for different workflows into a single PR).
-          - Scope: default branch plus all branches listed in `long-term-branches`.
-          - If no runs match the error pattern, call `noop` with message "No 'Resource not accessible by integration' failures found in the last 24 hours — nothing to fix".
-          - **Do not auto-merge.** Leave every PR open for review by the `elastic/observablt-ci` team.
+          - **CAN**: Read files, search code, run commands, create one issue.
+          - **CANNOT**: Push changes or open PRs in this workflow.
+          - Only investigate workflows listed in `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`.
+          - Do not file a duplicate issue if an open `__GH_AW_EXPR_CE96317F__` issue already tracks the same workflows and failure pattern.
           
           ## Step 1: Gather context
           
           1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-          2. Load the remediation instructions at runtime via `web_fetch`:
-             ```
+          2. Read `/tmp/gh-aw/agent/resource-not-accessible-summary.txt`.
+          3. Read `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`.
+          4. Fetch remediation instructions at runtime:
+             ````
              https://raw.githubusercontent.com/elastic/observability-cicd/main/github-actions/actionable/alerts/app/prompts/accessible-by-integration.txt
-             ```
-             Store the content for use in Step 3. If the fetch fails, fall back to the general principle: add the minimum required `permissions` block to the failing workflow jobs or use a `GITHUB_TOKEN` with sufficient scopes.
-          3. Determine the scan window — the ISO 8601 timestamp for 24 hours ago:
-             ````bash
-             SINCE=$(date -u -d '24 hours ago' '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null \
-               || date -u -v-24H '+%Y-%m-%dT%H:%M:%SZ')
-             echo "Scan since: $SINCE"
              ````
-          4. Build the branch list: always start with the repository default branch, then append the space-separated values from `__GH_AW_EXPR_922C262D__` (skip duplicates and blanks).
+             If fetch fails, fall back to minimum-permissions guidance.
           
-          ## Step 2: Scan for failures
+          ## Step 2: Decide whether to noop
           
-          For each branch in scope:
+          - If the findings file has no data rows, call `noop` with:
+            `No 'Resource not accessible by integration' failures found in the configured look-back window — nothing to report`.
+          - Check open issues for `__GH_AW_EXPR_CE96317F__` in the title and compare workflow paths/evidence.
+          - If an existing open issue already tracks the same findings, call `noop` and reference the existing issue number.
           
-          1. List failed workflow runs created since `$SINCE`:
-             ````bash
-             gh api "repos/__GH_AW_GITHUB_REPOSITORY__/actions/runs" \
-               --method GET \
-               -f branch=BRANCH_NAME \
-               -f status=failure \
-               -f created=">=${SINCE}" \
-               --paginate \
-               --jq '.workflow_runs[] | {id: .id, name: .name, html_url: .html_url, path: .path, head_branch: .head_branch, created_at: .created_at}'
-             ````
+          ## Step 3: Produce combined analysis issue
           
-          2. For each failed run, download and search logs for the exact string `Resource not accessible by integration`:
-             ````bash
-             mkdir -p /tmp/gh-aw/agent
-             gh api "repos/__GH_AW_GITHUB_REPOSITORY__/actions/runs/{run_id}/logs" \
-               -H "Accept: application/vnd.github+json" \
-               > /tmp/gh-aw/agent/workflow-logs-{run_id}.zip
-             unzip -o /tmp/gh-aw/agent/workflow-logs-{run_id}.zip \
-               -d /tmp/gh-aw/agent/workflow-logs-{run_id}/
-             grep -rl "Resource not accessible by integration" \
-               /tmp/gh-aw/agent/workflow-logs-{run_id}/ || true
-             ````
+          Call `create_issue` exactly once with:
           
-          3. Collect all runs where the log search returned matches. Group matching runs by the **workflow path** (the `.github/workflows/` file that defines the workflow) — this ensures exactly one PR per workflow, even when multiple runs or branches are affected.
+          - **Title**: `Resource not accessible by integration across long-term branches`
+          - **Body**:
           
-          If no runs match after scanning all branches, call `noop` with message "No 'Resource not accessible by integration' failures found in the last 24 hours — nothing to fix".
+            ````
+            ## Scan Summary
           
-          ## Step 3: Analyze and fix each affected workflow
+            - Look-back days: <value from summary file>
+            - Since: <value from summary file>
+            - Matched workflows: <count>
+            - Matched runs: <count>
           
-          For each distinct workflow path that produced at least one matching run:
+            ## Affected Workflows
           
-          1. Read the workflow file from the repository:
-             ````bash
-             cat .github/workflows/<workflow-file>
-             ````
-          
-          2. Extract the exact log lines containing `Resource not accessible by integration` from a representative failing run as evidence (copy verbatim).
-          
-          3. Apply the remediation instructions loaded in Step 1 as the primary fix policy. Follow those instructions exactly when patching the workflow file's permissions or token configuration.
-          
-          4. Because workflow files live under `.github/workflows/`, follow the workflow-edit guardrails: place the patched copy in `github/workflows/` (without the leading dot). The PR body must note that a maintainer must rename the directory back to `.github/workflows/` before merging.
-          
-          ## Step 4: Quality gate
-          
-          Before creating any PR:
-          
-          - Confirm the patch resolves the permission issue described in the evidence.
-          - Confirm each change is minimal — only add or adjust the permissions or token configuration required to fix the error.
-          - Call `ready_to_make_pr`.
-          
-          ## Step 5: Create one PR per affected workflow
-          
-          For each patched workflow, call `create_pull_request` with:
-          
-          - **Title**: `fix(ci): resolve "Resource not accessible by integration" in <workflow-name> [<branch>]`
-            - Include the branch only when the failure is branch-specific; omit it for failures across all branches.
-          - **Body** (all sections required):
-          
-            ```
-            ## Affected Workflow
-          
-            - **File**: `.github/workflows/<workflow-file>`
-            - **Workflow name**: <workflow-name>
-          
-            ## Failing Runs
-          
-            | Branch | Run | Created |
+            | Workflow file | Branches | Runs |
             | --- | --- | --- |
-            | <branch> | [<run-id>](<html_url>) | <created_at> |
+            | <workflow path> | <comma-separated branches> | [<run-id>](<run_url>), ... |
           
-            ## Failure Evidence
+            ## Evidence
           
-            ```
-            <verbatim log excerpt containing "Resource not accessible by integration">
-            ```
+            For each workflow include one or more verbatim evidence lines from the findings file.
           
-            ## Root Cause
+            ## Root Cause Assessment
           
-            <Concise explanation of why the permission was missing>
+            Concisely explain why each workflow likely lacks required permissions/token scope.
           
-            ## Remediation Applied
+            ## Remediation Guidance
           
-            <Description of the change made, with reference to the external instructions URL>
+            Provide concrete patch guidance per workflow using:
+            https://raw.githubusercontent.com/elastic/observability-cicd/main/github-actions/actionable/alerts/app/prompts/accessible-by-integration.txt
           
-            Source: https://raw.githubusercontent.com/elastic/observability-cicd/main/github-actions/actionable/alerts/app/prompts/accessible-by-integration.txt
+            ## Next Steps
           
-            ## Reviewer Note
-          
-            This PR was created by an automated fixer. Please review and approve.
-            The patched file is in `github/workflows/` — a maintainer must move it to `.github/workflows/` before merging.
-            ```
-          
-          - **Reviewers**: request review from team `elastic/observablt-ci`.
-          
-          > **Important**: Do NOT merge the PR. Leave it open for review by `elastic/observablt-ci`.
+            - Recommend either applying fixes manually or enabling a fixer workflow.
+            - Note: workflow-file edits must be made under `.github/workflows/`.
+            ````
           
           __GH_AW_EXPR_49B959F1__
           
@@ -446,7 +391,9 @@ jobs:
           GH_AW_GITHUB_EVENT_REPOSITORY_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_CE96317F: ${{ inputs.issue-title-prefix }}
           GH_AW_EXPR_922C262D: ${{ inputs.long-term-branches }}
+          GH_AW_EXPR_3A5062C8: ${{ inputs.look-back-days }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -457,8 +404,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_EXPR_3A5062C8: ${{ inputs.look-back-days }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_922C262D: ${{ inputs.long-term-branches }}
+          GH_AW_EXPR_CE96317F: ${{ inputs.issue-title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -480,8 +429,10 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
+                GH_AW_EXPR_3A5062C8: process.env.GH_AW_EXPR_3A5062C8,
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
                 GH_AW_EXPR_922C262D: process.env.GH_AW_EXPR_922C262D,
+                GH_AW_EXPR_CE96317F: process.env.GH_AW_EXPR_CE96317F,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -517,7 +468,6 @@ jobs:
       actions: read
       contents: read
       issues: read
-      pull-requests: read
     concurrency:
       group: "gh-aw-copilot-${{ github.workflow }}"
     env:
@@ -595,6 +545,18 @@ jobs:
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
       - env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE_PREFIX: ${{ inputs.title-prefix }}
+        name: List previous findings
+        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
+      - env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GH_TOKEN: ${{ github.token }}
+          LONG_TERM_BRANCHES: ${{ inputs.long-term-branches }}
+          LOOK_BACK_DAYS: ${{ inputs.look-back-days }}
+        name: Prescan failed runs for target error
+        run: "set -euo pipefail\nmkdir -p /tmp/gh-aw/agent\n\nsince=\"$(date -u -d \"${LOOK_BACK_DAYS} days ago\" '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -v-\"${LOOK_BACK_DAYS}\"d '+%Y-%m-%dT%H:%M:%SZ')\"\nfindings_file=\"/tmp/gh-aw/agent/resource-not-accessible-findings.tsv\"\nprintf \"workflow_path\\tbranch\\trun_id\\trun_url\\tcreated_at\\tevidence\\n\" > \"$findings_file\"\n\nbranches=()\nfor branch in \"$DEFAULT_BRANCH\" $LONG_TERM_BRANCHES; do\n  [ -n \"$branch\" ] || continue\n  skip=false\n  for existing in \"${branches[@]:-}\"; do\n    if [ \"$existing\" = \"$branch\" ]; then\n      skip=true\n      break\n    fi\n  done\n  if [ \"$skip\" = false ]; then\n    branches+=(\"$branch\")\n  fi\ndone\n\nruns_file=\"/tmp/gh-aw/agent/resource-not-accessible-runs.tsv\"\n: > \"$runs_file\"\nfor branch in \"${branches[@]}\"; do\n  gh api \"repos/$GITHUB_REPOSITORY/actions/runs\" \\\n    --method GET \\\n    -f branch=\"$branch\" \\\n    -f status=failure \\\n    -f created=\">=${since}\" \\\n    --paginate \\\n    --jq '.workflow_runs[] | [.id, .html_url, .path, .head_branch, .created_at] | @tsv' \\\n    >> \"$runs_file\" || true\ndone\n\nwhile IFS=$'\\t' read -r run_id run_url workflow_path head_branch created_at; do\n  [ -n \"${run_id:-}\" ] || continue\n  zip_file=\"/tmp/gh-aw/agent/workflow-logs-${run_id}.zip\"\n  log_dir=\"/tmp/gh-aw/agent/workflow-logs-${run_id}\"\n\n  if ! gh api \"repos/$GITHUB_REPOSITORY/actions/runs/${run_id}/logs\" -H \"Accept: application/vnd.github+json\" > \"$zip_file\" 2>/dev/null; then\n    continue\n  fi\n  rm -rf \"$log_dir\"\n  if ! unzip -o \"$zip_file\" -d \"$log_dir\" >/dev/null 2>&1; then\n    continue\n  fi\n\n  match=\"$(grep -R -n -m 1 \"Resource not accessible by integration\" \"$log_dir\" 2>/dev/null || true)\"\n  if [ -n \"$match\" ]; then\n    evidence=\"${match//$'\\t'/ }\"\n    printf \"%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n\" \"$workflow_path\" \"$head_branch\" \"$run_id\" \"$run_url\" \"$created_at\" \"$evidence\" >> \"$findings_file\"\n  fi\n  rm -rf \"$log_dir\" \"$zip_file\"\ndone < \"$runs_file\"\n\nmatches=\"$(tail -n +2 \"$findings_file\" | wc -l | tr -d ' ')\"\nworkflows=\"$(tail -n +2 \"$findings_file\" | cut -f1 | sort -u | wc -l | tr -d ' ')\"\n{\n  echo \"since=${since}\"\n  echo \"look_back_days=${LOOK_BACK_DAYS}\"\n  echo \"matched_runs=${matches}\"\n  echo \"matched_workflows=${workflows}\"\n  echo \"findings_file=${findings_file}\"\n} > /tmp/gh-aw/agent/resource-not-accessible-summary.txt\n"
+      - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup
@@ -639,7 +601,7 @@ jobs:
               model: "${{ inputs.model }}",
               version: "",
               agent_version: "0.0.417",
-              workflow_name: "Resource Not Accessible By Integration Fixer",
+              workflow_name: "Resource Not Accessible By Integration Detector",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -696,36 +658,40 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"create_pull_request":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
+          {"create_issue":{"expires":168,"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub pull request to propose code changes. Use this after making file edits to submit them for review and merging. The PR will be created from the current branch with your committed changes. For code review comments on an existing PR, use create_pull_request_review_comment instead. CONSTRAINTS: Maximum 1 pull request(s) can be created.",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"${{ inputs.issue-title-prefix }} \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
                   "body": {
-                    "description": "Detailed PR description in Markdown. Include what changes were made, why, testing notes, and any breaking changes. Do NOT repeat the title as a heading.",
+                    "description": "Detailed issue description in Markdown. Do NOT repeat the title as a heading since it already appears as the issue's h1. Include context, reproduction steps, or acceptance criteria as appropriate.",
                     "type": "string"
-                  },
-                  "branch": {
-                    "description": "Source branch name containing the changes. If omitted, uses the current working branch.",
-                    "type": "string"
-                  },
-                  "draft": {
-                    "description": "Whether to create the PR as a draft. Draft PRs cannot be merged until marked as ready for review. Use mark_pull_request_as_ready_for_review to convert a draft PR. Default: true.",
-                    "type": "boolean"
                   },
                   "labels": {
-                    "description": "Labels to categorize the PR (e.g., 'enhancement', 'bugfix'). Labels must exist in the repository.",
+                    "description": "Labels to categorize the issue (e.g., 'bug', 'enhancement'). Labels must exist in the repository.",
                     "items": {
                       "type": "string"
                     },
                     "type": "array"
                   },
+                  "parent": {
+                    "description": "Parent issue number for creating sub-issues. This is the numeric ID from the GitHub URL (e.g., 42 in github.com/owner/repo/issues/42). Can also be a temporary_id (e.g., 'aw_abc123', 'aw_Test123') from a previously created issue in the same workflow run.",
+                    "type": [
+                      "number",
+                      "string"
+                    ]
+                  },
+                  "temporary_id": {
+                    "description": "Unique temporary identifier for referencing this issue before it's created. Format: 'aw_' followed by 3 to 8 alphanumeric characters (e.g., 'aw_abc1', 'aw_Test123'). Use '#aw_ID' in body text to reference other issues by their temporary_id; these are replaced with actual issue numbers after creation.",
+                    "pattern": "^aw_[A-Za-z0-9]{3,8}$",
+                    "type": "string"
+                  },
                   "title": {
-                    "description": "Concise PR title describing the changes. Follow repository conventions (e.g., conventional commits). The title appears as the main heading.",
+                    "description": "Concise issue title summarizing the bug, feature, or task. The title appears as the main heading, so keep it brief and descriptive.",
                     "type": "string"
                   }
                 },
@@ -735,7 +701,7 @@ jobs:
                 ],
                 "type": "object"
               },
-              "name": "create_pull_request"
+              "name": "create_issue"
             },
             {
               "description": "Report that a tool or capability needed to complete the task is not available, or share any information you deem important about missing functionality or limitations. Use this when you cannot accomplish what was requested because the required functionality is missing or access is restricted.",
@@ -810,7 +776,7 @@ jobs:
           GH_AW_SAFE_OUTPUTS_TOOLS_EOF
           cat > /opt/gh-aw/safeoutputs/validation.json << 'GH_AW_SAFE_OUTPUTS_VALIDATION_EOF'
           {
-            "create_pull_request": {
+            "create_issue": {
               "defaultMax": 1,
               "fields": {
                 "body": {
@@ -819,24 +785,21 @@ jobs:
                   "sanitize": true,
                   "maxLength": 65000
                 },
-                "branch": {
-                  "required": true,
-                  "type": "string",
-                  "sanitize": true,
-                  "maxLength": 256
-                },
-                "draft": {
-                  "type": "boolean"
-                },
                 "labels": {
                   "type": "array",
                   "itemType": "string",
                   "itemSanitize": true,
                   "itemMaxLength": 128
                 },
+                "parent": {
+                  "issueOrPRNumber": true
+                },
                 "repo": {
                   "type": "string",
                   "maxLength": 256
+                },
+                "temporary_id": {
+                  "type": "string"
                 },
                 "title": {
                   "required": true,
@@ -943,101 +906,9 @@ jobs:
           
           bash /opt/gh-aw/actions/start_safe_outputs_server.sh
           
-      - name: Setup Safe Inputs Config
-        run: |
-          mkdir -p /opt/gh-aw/safe-inputs/logs
-          cat > /opt/gh-aw/safe-inputs/tools.json << 'GH_AW_SAFE_INPUTS_TOOLS_EOF'
-          {
-            "serverName": "safeinputs",
-            "version": "1.0.0",
-            "logDir": "/opt/gh-aw/safe-inputs/logs",
-            "tools": [
-              {
-                "name": "ready-to-make-pr",
-                "description": "Run the PR readiness checklist before creating or updating a PR",
-                "inputSchema": {
-                  "properties": {},
-                  "type": "object"
-                },
-                "handler": "ready-to-make-pr.cjs",
-                "timeout": 60
-              }
-            ]
-          }
-          GH_AW_SAFE_INPUTS_TOOLS_EOF
-          cat > /opt/gh-aw/safe-inputs/mcp-server.cjs << 'GH_AW_SAFE_INPUTS_SERVER_EOF'
-            const path = require("path");
-            const { startHttpServer } = require("./safe_inputs_mcp_server_http.cjs");
-            const configPath = path.join(__dirname, "tools.json");
-            const port = parseInt(process.env.GH_AW_SAFE_INPUTS_PORT || "3000", 10);
-            const apiKey = process.env.GH_AW_SAFE_INPUTS_API_KEY || "";
-            startHttpServer(configPath, {
-              port: port,
-              stateless: true,
-              logDir: "/opt/gh-aw/safe-inputs/logs"
-            }).catch(error => {
-              console.error("Failed to start safe-inputs HTTP server:", error);
-              process.exit(1);
-            });
-          GH_AW_SAFE_INPUTS_SERVER_EOF
-          chmod +x /opt/gh-aw/safe-inputs/mcp-server.cjs
-          
-      - name: Setup Safe Inputs Tool Files
-        run: |
-          cat > /opt/gh-aw/safe-inputs/ready-to-make-pr.cjs << 'GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF'
-            async function execute(inputs) {
-              const fs = require('fs');
-              const find = (...paths) => paths.find(p => fs.existsSync(p)) || null;
-              const contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md');
-              const prTemplate = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md');
-              const checklist = [];
-              if (contributing) checklist.push(`Review the contributing guide (${contributing}) before opening or updating a PR.`);
-              if (prTemplate) checklist.push(`Follow the PR template (${prTemplate}) for title, description, and validation notes.`);
-              checklist.push('Confirm the requested task is fully completed and validated before creating or pushing PR changes.');
-              const result = { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
-              console.log(JSON.stringify(result));
-              return result;
-            }
-            module.exports = { execute };
-          GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF
-          
-      - name: Generate Safe Inputs MCP Server Config
-        id: safe-inputs-config
-        run: |
-          # Generate a secure random API key (360 bits of entropy, 40+ chars)
-          # Mask immediately to prevent timing vulnerabilities
-          API_KEY=$(openssl rand -base64 45 | tr -d '/+=')
-          echo "::add-mask::${API_KEY}"
-          
-          PORT=3000
-          
-          # Set outputs for next steps
-          {
-            echo "safe_inputs_api_key=${API_KEY}"
-            echo "safe_inputs_port=${PORT}"
-          } >> "$GITHUB_OUTPUT"
-          
-          echo "Safe Inputs MCP server will run on port ${PORT}"
-          
-      - name: Start Safe Inputs MCP HTTP Server
-        id: safe-inputs-start
-        env:
-          DEBUG: '*'
-          GH_AW_SAFE_INPUTS_PORT: ${{ steps.safe-inputs-config.outputs.safe_inputs_port }}
-          GH_AW_SAFE_INPUTS_API_KEY: ${{ steps.safe-inputs-config.outputs.safe_inputs_api_key }}
-        run: |
-          # Environment variables are set above to prevent template injection
-          export DEBUG
-          export GH_AW_SAFE_INPUTS_PORT
-          export GH_AW_SAFE_INPUTS_API_KEY
-          
-          bash /opt/gh-aw/actions/start_safe_inputs_server.sh
-          
       - name: Start MCP Gateway
         id: start-mcp-gateway
         env:
-          GH_AW_SAFE_INPUTS_API_KEY: ${{ steps.safe-inputs-start.outputs.api_key }}
-          GH_AW_SAFE_INPUTS_PORT: ${{ steps.safe-inputs-start.outputs.port }}
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_SAFE_OUTPUTS_API_KEY: ${{ steps.safe-outputs-start.outputs.api_key }}
           GH_AW_SAFE_OUTPUTS_PORT: ${{ steps.safe-outputs-start.outputs.port }}
@@ -1058,7 +929,7 @@ jobs:
           export DEBUG="*"
           
           export GH_AW_ENGINE="copilot"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_INPUTS_PORT -e GH_AW_SAFE_INPUTS_API_KEY -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.5'
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.5'
           
           mkdir -p /home/runner/.copilot
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
@@ -1078,7 +949,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,actions"
+                  "GITHUB_TOOLSETS": "repos,issues,search,actions"
                 }
               },
               "public-code-search": {
@@ -1087,13 +958,6 @@ jobs:
                 "tools": [
                   "search_code"
                 ]
-              },
-              "safeinputs": {
-                "type": "http",
-                "url": "http://host.docker.internal:$GH_AW_SAFE_INPUTS_PORT",
-                "headers": {
-                  "Authorization": "\${GH_AW_SAFE_INPUTS_API_KEY}"
-                }
               },
               "safeoutputs": {
                 "type": "http",
@@ -1247,15 +1111,6 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/parse_copilot_log.cjs');
             await main();
-      - name: Parse Safe Inputs logs for step summary
-        if: always()
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        with:
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/parse_safe_inputs_logs.cjs');
-            await main();
       - name: Parse MCP Gateway logs for step summary
         if: always()
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -1290,11 +1145,9 @@ jobs:
             /tmp/gh-aw/aw-prompts/prompt.txt
             /tmp/gh-aw/aw_info.json
             /tmp/gh-aw/mcp-logs/
-            /tmp/gh-aw/safe-inputs/logs/
             /tmp/gh-aw/sandbox/firewall/logs/
             /tmp/gh-aw/agent-stdio.log
             /tmp/gh-aw/agent/
-            /tmp/gh-aw/aw-*.patch
           if-no-files-found: ignore
       # --- Threat Detection (inline) ---
       - name: Check if detection needed
@@ -1332,8 +1185,8 @@ jobs:
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Resource Not Accessible By Integration Fixer"
-          WORKFLOW_DESCRIPTION: "Daily fixer for 'Resource not accessible by integration' across long-term branches"
+          WORKFLOW_NAME: "Resource Not Accessible By Integration Detector"
+          WORKFLOW_DESCRIPTION: "Daily detector for 'Resource not accessible by integration' across long-term branches"
           HAS_PATCH: ${{ steps.collect_output.outputs.has_patch }}
         with:
           script: |
@@ -1419,9 +1272,8 @@ jobs:
     if: (always()) && (needs.agent.result != 'skipped')
     runs-on: ubuntu-slim
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
       tools_reported: ${{ steps.missing_tool.outputs.tools_reported }}
@@ -1448,7 +1300,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
-          GH_AW_WORKFLOW_NAME: "Resource Not Accessible By Integration Fixer"
+          GH_AW_WORKFLOW_NAME: "Resource Not Accessible By Integration Detector"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1461,7 +1313,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Resource Not Accessible By Integration Fixer"
+          GH_AW_WORKFLOW_NAME: "Resource Not Accessible By Integration Detector"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1474,14 +1326,12 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Resource Not Accessible By Integration Fixer"
+          GH_AW_WORKFLOW_NAME: "Resource Not Accessible By Integration Detector"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-resource-not-accessible-by-integration-fixer"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
-          GH_AW_CODE_PUSH_FAILURE_ERRORS: ${{ needs.safe_outputs.outputs.code_push_failure_errors }}
-          GH_AW_CODE_PUSH_FAILURE_COUNT: ${{ needs.safe_outputs.outputs.code_push_failure_count }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
           GH_AW_GROUP_REPORTS: "false"
         with:
@@ -1496,7 +1346,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Resource Not Accessible By Integration Fixer"
+          GH_AW_WORKFLOW_NAME: "Resource Not Accessible By Integration Detector"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1507,20 +1357,6 @@ jobs:
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/handle_noop_message.cjs');
-            await main();
-      - name: Handle Create Pull Request Error
-        id: handle_create_pr_error
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Resource Not Accessible By Integration Fixer"
-          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/handle_create_pr_error.cjs');
             await main();
 
   pre_activation:
@@ -1548,22 +1384,19 @@ jobs:
             await main();
 
   safe_outputs:
-    needs:
-      - activation
-      - agent
+    needs: agent
     if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (needs.agent.outputs.detection_success == 'true')
     runs-on: ubuntu-slim
     permissions:
-      contents: write
+      contents: read
       issues: write
-      pull-requests: write
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-resource-not-accessible-by-integration-fixer"
-      GH_AW_WORKFLOW_NAME: "Resource Not Accessible By Integration Fixer"
+      GH_AW_WORKFLOW_NAME: "Resource Not Accessible By Integration Detector"
     outputs:
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}
@@ -1587,41 +1420,12 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs/
           find "/tmp/gh-aw/safeoutputs/" -type f -print
           echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/safeoutputs/agent_output.json" >> "$GITHUB_ENV"
-      - name: Download patch artifact
-        continue-on-error: true
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
-        with:
-          name: agent-artifacts
-          path: /tmp/gh-aw/
-      - name: Checkout repository
-        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ github.base_ref || github.ref_name }}
-          token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          persist-credentials: false
-          fetch-depth: 1
-      - name: Configure Git credentials
-        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
-        env:
-          REPO_NAME: ${{ github.repository }}
-          SERVER_URL: ${{ github.server_url }}
-          GIT_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-        run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git config --global am.keepcr true
-          # Re-authenticate git with GitHub token
-          SERVER_URL_STRIPPED="${SERVER_URL#https://}"
-          git remote set-url origin "https://x-access-token:${GIT_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git"
-          echo "Git configured with standard GitHub Actions identity"
       - name: Process Safe Outputs
         id: process_safe_outputs
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":\"${{ inputs.draft-prs }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
-          GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":false,\"expires\":168,\"max\":1,\"title_prefix\":\"${{ inputs.issue-title-prefix }} \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

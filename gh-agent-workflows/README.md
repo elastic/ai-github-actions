@@ -31,12 +31,12 @@ Pre-built workflows with domain-specific prompts. These import the same base fra
 - [Product Manager Impersonator](product-manager-impersonator/) — propose well-researched new feature ideas
 - [Refactor Opportunist](refactor-opportunist/) — pitch proven refactors with partial implementations
 - [Stale Issues](stale-issues/) — detect stale issues
+- [Resource Not Accessible By Integration Detector](resource-not-accessible-by-integration-fixer/) — detect `Resource not accessible by integration` CI errors and file one combined tracking issue
 
 **Fixers** (create PRs):
 - [Bug Exterminator](bug-exterminator/) — fix bug-hunter issues
 - [Text Beautifier](text-beautifier/) — fix text-auditor issues
 - [Code Duplication Fixer](code-duplication-fixer/) — fix code-duplication-detector issues
-- [Resource Not Accessible By Integration Fixer](resource-not-accessible-by-integration-fixer/) — detect `Resource not accessible by integration` errors and file one combined tracking issue
 
 **Research assistants**:
 - [Deep Research](deep-research/) — issue-comment deep research with web search/fetch and optional PR creation

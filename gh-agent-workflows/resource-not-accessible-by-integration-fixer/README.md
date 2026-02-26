@@ -1,4 +1,4 @@
-# Resource Not Accessible By Integration Fixer
+# Resource Not Accessible By Integration Detector
 
 Daily detector that scans for `Resource not accessible by integration` errors across long-term branches and opens one combined tracking issue.
 

@@ -96,7 +96,7 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Product Manager Impersonator](gh-agent-workflows/product-manager-impersonator.md) | Weekday schedule | Propose feature ideas from a configurable persona and scope |
 | [Project Summary](gh-agent-workflows/project-summary.md) | Daily schedule | Summarize recent activity and priorities |
 | [Release Update Check](gh-agent-workflows/release-update.md) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
-| [Resource Not Accessible By Integration Fixer](gh-agent-workflows/resource-not-accessible-by-integration-fixer.md) | Daily schedule | Detect `Resource not accessible by integration` CI errors and file one combined tracking issue |
+| [Resource Not Accessible By Integration Detector](gh-agent-workflows/resource-not-accessible-by-integration-fixer.md) | Daily schedule | Detect `Resource not accessible by integration` CI errors and file one combined tracking issue |
 | [Small Problem Fixer](gh-agent-workflows/small-problem-fixer.md) | Weekday schedule | Fix small, related issues and open a focused PR |
 | [Stale Issues](gh-agent-workflows/stale-issues.md) | Weekday schedule | Find resolved issues that can be closed |
 | [Test Improver](gh-agent-workflows/test-improver.md) | Weekly schedule | Add targeted tests and clean up redundant coverage |
