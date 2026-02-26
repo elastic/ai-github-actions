@@ -36,7 +36,7 @@ See [example.yml](example.yml) for the full workflow file.
 ## Required Secrets
 
 - `COPILOT_GITHUB_TOKEN`
-- `BUILDKITE_API_TOKEN`
+- `BUILDKITE_API_TOKEN` *(optional — omit for public pipelines; the workflow will fetch logs from public Buildkite build pages instead)*
 
 ## Safe Outputs
 

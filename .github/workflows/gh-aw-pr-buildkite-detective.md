@@ -55,7 +55,7 @@ on:
       COPILOT_GITHUB_TOKEN:
         required: true
       BUILDKITE_API_TOKEN:
-        required: true
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -80,6 +80,7 @@ mcp-servers:
 network:
   allowed:
     - "mcp.buildkite.com"
+    - "buildkite.com"
 safe-outputs:
   activation-comments: false
 strict: false
@@ -140,7 +141,9 @@ Classify each failure to guide your investigation:
 
 ### Step 2: Find the Buildkite Build
 
-> **If Buildkite MCP is unavailable** (connection error, 401, timeout): The build failure may come from GitHub checks/status contexts outside Buildkite. Fall back to analyzing the failing status/check context directly — use the GitHub API (`pull_request_read` status endpoints), `web-fetch`, or `bash` with `gh` to inspect related checks/jobs. Proceed to Step 3 using whatever evidence is available and note in your comment that Buildkite data was unavailable.
+> **If Buildkite MCP is unavailable** (connection error, 401, timeout, or empty token): Fall back to the **public pipeline** path described in Step 2b. Do not stop — public Buildkite pipelines expose build pages and logs without authentication.
+
+#### Step 2a: Via Buildkite MCP (when API token is available)
 
 1. **Resolve the pipeline**: If `${{ inputs.buildkite-pipeline }}` is provided, use it. Otherwise, call `list_pipelines` for organization `${{ inputs.buildkite-org }}` and find the pipeline whose slug matches the repository name (extract the repo name from `${{ github.repository }}`). If multiple pipelines match, prefer an exact slug match.
 2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by the failed commit SHA resolved in Step 1. If no match by SHA, use the PR's head branch (from the `pull_request_read` response in Step 1) to filter builds and select the most recent failed one.
@@ -151,6 +154,23 @@ Classify each failure to guide your investigation:
      - `search_logs` with patterns: `error|Error|ERROR`, `failed|Failed|FAILED`, `panic|exception|traceback`
      - `tail_logs` — get the last 100 lines (often contains the final error and exit code)
    - Call `list_annotations` to capture any warnings, errors, or context the pipeline attached to the build.
+
+#### Step 2b: Via public Buildkite pages (fallback when no API token)
+
+Use this path when the Buildkite MCP server is unavailable (missing token, 401, connection error).
+
+1. **Discover the Buildkite build URL** from the PR's commit statuses or check runs:
+   - Call `pull_request_read` with method `get_status` for the PR to retrieve commit status contexts.
+   - Look for status contexts or check runs whose `target_url` contains `buildkite.com`. The URL typically follows the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>`.
+   - If no Buildkite URL is found in statuses, try `web-fetch` on the PR's commits page (`https://github.com/<owner>/<repo>/pull/<number>/commits`) and search the HTML for `buildkite.com` links.
+
+2. **Fetch the public build page**: Use `web-fetch` to retrieve the Buildkite build URL found above. The page contains the build status, job list, and links to individual job logs.
+
+3. **Collect failure evidence from public pages**:
+   - Parse the fetched build page to identify failed jobs and their log URLs.
+   - For each failed job, use `web-fetch` to retrieve the job log page (append `/jobs/<job-id>/log` or follow the job link from the build page).
+   - Extract error messages, stack traces, and the final output from the fetched log content.
+   - If the pipeline is not publicly accessible (403/404), note this in your comment and proceed with whatever evidence is available from GitHub status contexts.
 
 ### Step 3: Analyze
 
