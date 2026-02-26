@@ -2,6 +2,7 @@
 safe-outputs:
   add-comment:
     max: 1
+    pull-requests: false
     issues: true
     discussions: false
 ---
@@ -13,6 +14,6 @@ safe-outputs:
 - **Links**: Max 50 URLs per comment.
 - **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.
 - **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.
-- **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
+- **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures unless it's referencing the triggering issue.
 
 If you exceed 10 mentions or 50 links, the comment will be rejected.

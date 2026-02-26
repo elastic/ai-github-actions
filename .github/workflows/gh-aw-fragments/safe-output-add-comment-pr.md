@@ -2,6 +2,7 @@
 safe-outputs:
   add-comment:
     max: 1
+    issues: false
     pull-requests: true
     discussions: false
 ---

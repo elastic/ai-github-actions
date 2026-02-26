@@ -112,7 +112,7 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ github.event.issue.number }} — ${{ github.event.issue.title }}
-- **Request**: "${{ needs.activation.outputs.text }}"
+- **Request**: "${{ steps.sanitized.outputs.text }}"
 
 ## Constraints
 

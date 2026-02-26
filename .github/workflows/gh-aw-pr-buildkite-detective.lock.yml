@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"15ce6c43e6db63bf35be21effd835f32b43e74896da77eaf23e984049468c0de"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ea98d152cecc4ba17969adf6b63c8ea83b5436d04902f073f336cf31bb05bd4c"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -1241,7 +1241,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      issues: write
       pull-requests: write
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
@@ -1358,7 +1357,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      issues: write
       pull-requests: write
     timeout-minutes: 15
     env:

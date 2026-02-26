@@ -85,11 +85,15 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | Workflow | Trigger | Description |
 | --- | --- | --- |
 | [Agent Suggestions](gh-agent-workflows/agent-suggestions.md) | Weekly schedule | Suggest new agent workflows based on repo and downstream needs |
+| [Autonomy Atomicity Analyzer](gh-agent-workflows/autonomy-atomicity-analyzer.md) | Weekday schedule | Find patterns that block concurrent development by multiple agents or developers |
 | [Breaking Change Detector](gh-agent-workflows/breaking-change-detector.md) | Weekday schedule | Detect undocumented public breaking changes |
 | [Code Simplifier](gh-agent-workflows/code-simplifier.md) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | [Downstream Health](gh-agent-workflows/downstream-health.md) | Daily schedule | Monitor downstream repo quality |
 | [Flaky Test Investigator](gh-agent-workflows/flaky-test-investigator.md) | Weekday schedule + failed CI runs | Identify repeated flaky failures and file root-cause-first triage reports |
+| [Framework Best Practices](gh-agent-workflows/framework-best-practices.md) | Weekday schedule | Find where library-native features could replace hand-rolled solutions |
+| [Information Architecture](gh-agent-workflows/information-architecture.md) | Weekday schedule | Audit UI information architecture for navigation, placement, and consistency |
 | [Performance Profiler](gh-agent-workflows/performance-profiler.md) | Weekday schedule | Profile performance hotspots |
+| [Product Manager Impersonator](gh-agent-workflows/product-manager-impersonator.md) | Weekday schedule | Propose feature ideas from a configurable persona and scope |
 | [Project Summary](gh-agent-workflows/project-summary.md) | Daily schedule | Summarize recent activity and priorities |
 | [Release Update Check](gh-agent-workflows/release-update.md) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
 | [Small Problem Fixer](gh-agent-workflows/small-problem-fixer.md) | Weekday schedule | Fix small, related issues and open a focused PR |

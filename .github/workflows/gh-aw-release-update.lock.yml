@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"827f89b7f5a80bdea850fd395211b792d19bb67b4b3525f1e1284962dcb88c72"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b67d3b9f175abb92080e3b14c0c68aa1746a7ea20d75670b70fc23fef1304cbb"}
 
 name: "Release Update Check"
 "on":
@@ -884,7 +884,9 @@ jobs:
               if (contributing) checklist.push(`Review the contributing guide (${contributing}) before opening or updating a PR.`);
               if (prTemplate) checklist.push(`Follow the PR template (${prTemplate}) for title, description, and validation notes.`);
               checklist.push('Confirm the requested task is fully completed and validated before creating or pushing PR changes.');
-              return { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+              const result = { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+              console.log(JSON.stringify(result));
+              return result;
             }
             module.exports = { execute };
           GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF

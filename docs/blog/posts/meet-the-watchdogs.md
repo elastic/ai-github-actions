@@ -30,9 +30,9 @@ This one runs on a weekly schedule and does something a little meta: it keeps th
 
 Running on a weekday schedule, the UX Design Patrol reviews UI components for design consistency, accessibility compliance, and adherence to established UX patterns. It catches the kind of drift that happens when multiple developers build features independently — slightly different button styles, inconsistent spacing, missing ARIA labels. Design systems help, but they do not enforce themselves. This agent does.
 
-## Custom Watchdog: Information Architecture
+## [Information Architecture](../../workflows/gh-agent-workflows/information-architecture.md)
 
-In our playground repo we also run an **Information Architecture** agent -- a custom [Scheduled Audit](../../workflows/gh-agent-workflows/scheduled-audit.md) configuration that evaluates whether the application's interface is logically organized, navigable, and consistent. It checks navigation flow, button placement, data presentation patterns, progressive disclosure, and empty states. This isn't a named workflow in the framework -- it's an example of what you can build with `additional-instructions` when your repo needs a domain-specific watchdog.
+The Information Architecture agent evaluates whether the application's interface is logically organized, navigable, and consistent. It traces the component tree from the top-level layout, examining navigation structure, action placement, data presentation patterns, progressive disclosure, and empty states. It only files an issue when it finds a concrete, user-impacting IA problem — something a real user would likely get confused or frustrated by. Like the other watchdogs, most runs end with `noop`.
 
 ## [Downstream Health](../../workflows/gh-agent-workflows/downstream-health.md)
 
@@ -40,7 +40,7 @@ Running on a daily schedule, the Downstream Health agent monitors the overall qu
 
 ## How They Work Together
 
-The watchdogs are not independent sentries -- they overlap intentionally. The Breaking Change Detector catches API-level regressions. The Performance Profiler catches runtime regressions. The UX Design Patrol catches visual and consistency drift. The Release Update Check keeps the tooling current so the other agents are always running the latest checks. And Downstream Health ties it all together with a broad quality signal across the repositories that depend on us. Custom watchdogs like Information Architecture extend coverage into domains specific to your project.
+The watchdogs are not independent sentries -- they overlap intentionally. The Breaking Change Detector catches API-level regressions. The Performance Profiler catches runtime regressions. The UX Design Patrol catches visual and consistency drift. The Release Update Check keeps the tooling current so the other agents are always running the latest checks. And Downstream Health ties it all together with a broad quality signal across the repositories that depend on us. Information Architecture extends coverage into the domain of UI structure and navigation.
 
 None of these agents replace human judgment. They surface the things humans would eventually notice — just weeks or months earlier, when fixing them is still cheap.
 

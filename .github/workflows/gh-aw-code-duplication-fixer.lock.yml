@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1916aa7ab7cfae85db09043ecc595e92be869f27b28ac70db44958a5d0fe71f0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c9fc297959faa74e43f0f19feb0aa061f4bfd52f5270de2aa7e445eae583b31e"}
 
 name: "Code Duplication Fixer"
 "on":
@@ -915,7 +915,9 @@ jobs:
               if (contributing) checklist.push(`Review the contributing guide (${contributing}) before opening or updating a PR.`);
               if (prTemplate) checklist.push(`Follow the PR template (${prTemplate}) for title, description, and validation notes.`);
               checklist.push('Confirm the requested task is fully completed and validated before creating or pushing PR changes.');
-              return { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+              const result = { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
+              console.log(JSON.stringify(result));
+              return result;
             }
             module.exports = { execute };
           GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF
