@@ -14,8 +14,6 @@ imports:
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
   - gh-aw-fragments/network-ecosystems.md
-features:
-  copilot-requests: true
 engine:
   id: copilot
   model: ${{ inputs.model }}
