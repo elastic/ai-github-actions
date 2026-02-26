@@ -2,8 +2,8 @@
 # Edit gh-agent-workflows/pr-buildkite-detective/example.yml and run 'make compile' to regenerate.
 name: Trigger PR Buildkite Detective
 on:
-  workflow_run:
-    workflows: ["CI", "Build", "Test"]
+  status:
+  check_run:
     types: [completed]
 
 permissions:
@@ -16,8 +16,8 @@ permissions:
 jobs:
   run:
     if: >-
-      github.event.workflow_run.conclusion == 'failure' &&
-      toJSON(github.event.workflow_run.pull_requests) != '[]'
+      (github.event_name == 'status' && github.event.state == 'failure') ||
+      (github.event_name == 'check_run' && github.event.check_run.conclusion == 'failure')
     uses: ./.github/workflows/gh-aw-pr-buildkite-detective.lock.yml
     with:
       buildkite-org: "elastic"

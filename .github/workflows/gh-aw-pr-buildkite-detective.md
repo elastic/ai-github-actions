@@ -60,7 +60,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: pr-buildkite-detective-${{ github.event.workflow_run.id }}
+  group: pr-buildkite-detective-${{ github.run_id }}
   cancel-in-progress: false
 permissions:
   actions: read
@@ -99,9 +99,10 @@ Analyze failed Buildkite CI builds for pull requests in ${{ github.repository }}
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Workflow Run ID**: ${{ github.event.workflow_run.id }}
-- **Conclusion**: ${{ github.event.workflow_run.conclusion }}
-- **Commit SHA**: ${{ github.event.workflow_run.head_sha }}
+- **Event Name**: ${{ github.event_name }}
+- **Event ID**: ${{ github.event_name == 'status' && github.event.id || github.event.check_run.id }}
+- **Failure State**: ${{ github.event_name == 'status' && github.event.state || github.event.check_run.conclusion }}
+- **Commit SHA**: ${{ github.event_name == 'status' && github.event.sha || github.event.check_run.head_sha }}
 - **Buildkite Organization**: ${{ inputs.buildkite-org }}
 
 ## Constraints
@@ -133,15 +134,16 @@ Classify each failure to guide your investigation:
 ### Step 1: Gather Context
 
 1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Identify the PRs associated with the workflow run using `github.event.workflow_run.pull_requests`. If there are none, call `noop` with message "No pull request associated with workflow run; nothing to do" and stop.
-3. For each PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status.
+2. Resolve the failed commit SHA from the triggering event (`github.event.sha` for `status`, `github.event.check_run.head_sha` for `check_run`).
+3. Call `list_pull_requests` for the repository (open PRs), then call `pull_request_read` with method `get` on candidates and keep PRs where `head.sha` matches the failed commit SHA. If none match, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
+4. For each matching PR, keep author, branches, and fork status for downstream analysis.
 
 ### Step 2: Find the Buildkite Build
 
-> **If Buildkite MCP is unavailable** (connection error, 401, timeout): The build failure may come from GitHub Actions CI, not Buildkite. Fall back to analyzing the GitHub Actions workflow run directly — use `web-fetch` to retrieve the run page, `bash` to call `gh run view`, or the GitHub API to read job logs. Proceed to Step 3 using whatever evidence is available and note in your comment that Buildkite data was unavailable.
+> **If Buildkite MCP is unavailable** (connection error, 401, timeout): The build failure may come from GitHub checks/status contexts outside Buildkite. Fall back to analyzing the failing status/check context directly — use the GitHub API (`pull_request_read` status endpoints), `web-fetch`, or `bash` with `gh` to inspect related checks/jobs. Proceed to Step 3 using whatever evidence is available and note in your comment that Buildkite data was unavailable.
 
 1. **Resolve the pipeline**: If `${{ inputs.buildkite-pipeline }}` is provided, use it. Otherwise, call `list_pipelines` for organization `${{ inputs.buildkite-org }}` and find the pipeline whose slug matches the repository name (extract the repo name from `${{ github.repository }}`). If multiple pipelines match, prefer an exact slug match.
-2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by commit SHA `${{ github.event.workflow_run.head_sha }}`. If no match by SHA, use the PR's head branch (from the `pull_request_read` response in Step 1) to filter builds and select the most recent failed one.
+2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by the failed commit SHA resolved in Step 1. If no match by SHA, use the PR's head branch (from the `pull_request_read` response in Step 1) to filter builds and select the most recent failed one.
 3. **Collect failure evidence**:
    - Call `get_build` for the matched build to get overall status and job list.
    - For each **failed** job:

@@ -4,7 +4,7 @@ Analyze failed PR checks backed by Buildkite and report findings (read-only).
 
 ## How it works
 
-Triggered automatically when a CI workflow fails on a PR. Looks up the related Buildkite build via MCP, analyzes failed jobs/logs/annotations, and posts a comment with root cause and recommended fixes. Read-only — never pushes changes.
+Triggered automatically when a commit status or check run reports a failure. Looks up the related Buildkite build via MCP, analyzes failed jobs/logs/annotations, and posts a comment with root cause and recommended fixes. Read-only — never pushes changes.
 
 ## Quick Install
 
@@ -20,7 +20,8 @@ See [example.yml](example.yml) for the full workflow file.
 
 | Event | Types | Condition |
 | --- | --- | --- |
-| `workflow_run` | `completed` | CI workflow failed and the run is associated with a PR |
+| `status` | N/A | Commit status changed to `failure` |
+| `check_run` | `completed` | Check run completed with conclusion `failure` |
 
 ## Inputs
 
