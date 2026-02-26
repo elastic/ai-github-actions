@@ -121,7 +121,7 @@ The highest risk workflows are those that trigger on external users. Most of the
 
 Labels can trigger additional workflows leading to privilege escalation issues where a user can manipulate a triage workflow to assign a label which then triggers a higher privilege workflow to run.
 
-Similarly, a workflow designed to use an LLM to assign a developer to triage an issue can be manipulated to assign CoPilot or Claude to work on the issue, leading to a privilege escalation issue, creation of a PR and potential code execution.
+Similarly, a workflow designed to use an LLM to assign a developer to triage an issue can be manipulated to assign Copilot or Claude to work on the issue, leading to a privilege escalation issue, creation of a PR, and potential code execution.
 
 ### Medium Risk: External Contributors
 
