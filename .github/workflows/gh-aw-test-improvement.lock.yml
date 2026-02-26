@@ -41,7 +41,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"83801e7e9acc5954b0b6a3ac5842532c89300a09ed7a9ab7138af32251c990ec"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0cb0e71f5f360f41d4858c9db3ca1aa5c20d667d07d3204f5c50947d71e43a0b"}
 
 name: "Test Improver"
 "on":
@@ -340,7 +340,7 @@ jobs:
           New tests that pass once may still be flaky. Before filing a PR, verify stability by running each new or modified test multiple times.
           
           1. Run each new or modified test **at least 5 times** in sequence and confirm every run passes.
-             - Use the test framework's built-in repeat/count flag when available (e.g., `go test -count=5`, `pytest -x --count 5` with `pytest-repeat`, `--repeat 5` in Jest/Vitest, `rspec --bisect` or loop in RSpec).
+             - Use the test framework's built-in repeat/count flag when available (e.g., `go test -count=5`, `pytest -x --count 5` with `pytest-repeat`, `--repeat 5` in Jest/Vitest).
              - If no built-in mechanism exists, use a simple shell loop: `for i in $(seq 1 5); do <test-command> || exit 1; done`
           2. If any run fails intermittently, investigate the root cause before proceeding. Common sources of flakiness:
              - Reliance on timing, sleep, or wall-clock assertions

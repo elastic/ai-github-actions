@@ -131,7 +131,7 @@ Identify under-tested code paths, add focused tests, and remove or consolidate d
 New tests that pass once may still be flaky. Before filing a PR, verify stability by running each new or modified test multiple times.
 
 1. Run each new or modified test **at least 5 times** in sequence and confirm every run passes.
-   - Use the test framework's built-in repeat/count flag when available (e.g., `go test -count=5`, `pytest -x --count 5` with `pytest-repeat`, `--repeat 5` in Jest/Vitest, `rspec --bisect` or loop in RSpec).
+   - Use the test framework's built-in repeat/count flag when available (e.g., `go test -count=5`, `pytest -x --count 5` with `pytest-repeat`, `--repeat 5` in Jest/Vitest).
    - If no built-in mechanism exists, use a simple shell loop: `for i in $(seq 1 5); do <test-command> || exit 1; done`
 2. If any run fails intermittently, investigate the root cause before proceeding. Common sources of flakiness:
    - Reliance on timing, sleep, or wall-clock assertions
