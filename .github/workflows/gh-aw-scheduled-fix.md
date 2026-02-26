@@ -8,7 +8,6 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
-  - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-pr.md
   - gh-aw-fragments/scheduled-fix.md
@@ -82,6 +81,19 @@ safe-outputs:
   noop:
 timeout-minutes: 90
 steps:
+  - name: List previous findings
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TITLE_PREFIX: ${{ inputs.issue-title-prefix }}
+    run: |
+      set -euo pipefail
+      gh issue list \
+        --repo "$GITHUB_REPOSITORY" \
+        --search "in:title \"$TITLE_PREFIX\"" \
+        --state all \
+        --limit 100 \
+        --json number,title,state \
+        > /tmp/previous-findings.json || { echo "::warning::Failed to fetch previous findings — dedup will be skipped"; echo "[]" > /tmp/previous-findings.json; }
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
@@ -89,12 +101,26 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
+## Previous Findings
+
+Before filing a new issue, check `/tmp/previous-findings.json` for issues this agent has already filed.
+
+- Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
+- If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
+- Only file a new issue when the finding is genuinely distinct from all previous findings.
+
 ### Candidate Search
 
-Search for open issues matching the configured label or title prefix:
+Search for open issues matching the configured title prefix:
 
 ````text
-github-search_issues: query="repo:{owner}/{repo} is:issue is:open (label:${{ inputs.issue-label }} OR in:title \"${{ inputs.issue-title-prefix }}\") sort:updated-asc"
+github-search_issues: query="repo:{owner}/{repo} is:issue is:open in:title \"${{ inputs.issue-title-prefix }}\" sort:updated-asc"
+````
+
+If `${{ inputs.issue-label }}` is not empty, also search by label:
+
+````text
+github-search_issues: query="repo:{owner}/{repo} is:issue is:open label:${{ inputs.issue-label }} sort:updated-asc"
 ````
 
 ### Implementation

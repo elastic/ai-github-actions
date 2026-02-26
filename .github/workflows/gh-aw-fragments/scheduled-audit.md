@@ -1,8 +1,4 @@
-You are an agent for ${{ github.repository }}. You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
-
-## Context
-
-- **Repository**: ${{ github.repository }}
+You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
 
 ## Constraints
 

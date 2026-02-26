@@ -10,6 +10,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -43,6 +44,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[newbie-contributor-external]')"
+        type: string
+        required: false
+        default: "[newbie-contributor-external]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -77,7 +83,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[newbie-contributor-external] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90
@@ -100,8 +106,7 @@ Review repository documentation from the perspective of an external contributor,
    - Do not assume a fixed directory structure. The repository may organize docs differently.
 2. Follow the quick start or recommended install path as far as possible without secrets, elevated privileges, or write access:
    - If a step requires secrets or admin privileges, stop and note whether the docs clearly warned about it.
-3. Check for existing open issues that already cover the same documentation gaps.
-4. Use the `elastic-docs` MCP server to cross-reference the repo's documentation against published Elastic documentation:
+3. Use the `elastic-docs` MCP server to cross-reference the repo's documentation against published Elastic documentation:
    - Call `SemanticSearch` or `FindRelatedDocs` with the project name and key concepts to find the published getting-started guide, if one exists.
    - Call `GetDocumentByUrl` to read any published pages that describe this project's setup or usage.
    - Check whether the repo's onboarding docs are consistent with what's published. Contradictions between the repo and `elastic.co/docs` are blockers for new contributors.

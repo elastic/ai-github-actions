@@ -10,6 +10,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -43,6 +44,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[stale-issues]')"
+        type: string
+        required: false
+        default: "[stale-issues]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -67,7 +73,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[stale-issues] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: true
     expires: 7d
 timeout-minutes: 60
@@ -122,7 +128,7 @@ Find open issues that are very likely already resolved and recommend them for cl
    - Run tests if applicable to verify the fix
    - Check git log for commits that reference the issue number
 
-If there isnt enough to chew on from that, investigat high-signal queries like:
+If there isn't enough from that, investigate high-signal queries like:
 ```
 github-search_issues: query="repo:{owner}/{repo} is:issue is:open in:comments (fixed OR resolved OR closed)"
 ```
@@ -171,7 +177,7 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 
 **Guidelines:**
 - Do not actually place the issue body in a block quote.
-- Cap the report at 10 issues per run. If more qualify, prefer oldest issues first — they are highest priority for cleanup.
+- Cap the report at 10 stale issues per run. If more qualify, prefer oldest issues first — they are highest priority for cleanup.
 - Within the same age tier, order by confidence level (most confident first)
 - Always include the specific evidence — don't just say "this looks resolved"
 - Link to the resolving PR, commit, or code when possible

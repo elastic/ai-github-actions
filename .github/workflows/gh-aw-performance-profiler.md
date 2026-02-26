@@ -9,9 +9,10 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
-  - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
+  - gh-aw-fragments/best-of-three-investigation.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -45,6 +46,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[performance-profiler]')"
+        type: string
+        required: false
+        default: "[performance-profiler]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -69,7 +75,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[performance-profiler] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90
@@ -101,10 +107,6 @@ Identify performance hot paths in the repository, profile the code, and report f
    - Find functions called frequently from main entry points (CLI commands, API handlers, request paths).
    - Look for loops over large data structures, repeated I/O, expensive string operations, or known anti-patterns.
    - Use `git log --since="28 days ago" --stat` to find recently changed performance-sensitive areas.
-5. Check for existing performance-related issues:
-   - Search `repo:{owner}/{repo} is:issue (label:performance OR label:perf OR in:title "performance" OR in:title "[performance-profiler]")`.
-   - If a close match exists, do not file a new issue.
-
 ### Profiling
 
 Generate concrete profiling data — do not speculate about performance based on code reading alone.
@@ -192,6 +194,6 @@ Call `noop` if any of these are true:
 
 ### Labeling
 
-- If a `performance` label exists (check with `github-get_label`), include it in the `create_issue` call. Otherwise, if `performance-profiler` exists, use that. If neither exists, rely on the `[performance-profiler]` title prefix only.
+- If a `performance` label exists (check with `github-get_label`), include it in the `create_issue` call. Otherwise, if `performance-profiler` exists, use that. If neither exists, rely on the `${{ inputs.title-prefix }}` title prefix only.
 
 ${{ inputs.additional-instructions }}

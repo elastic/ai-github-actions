@@ -11,6 +11,8 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
+  - gh-aw-fragments/best-of-three-investigation.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -44,6 +46,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[breaking-change]')"
+        type: string
+        required: false
+        default: "[breaking-change]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -68,7 +75,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[breaking-change] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90
@@ -93,7 +100,7 @@ Run `git log --since="<window>" --oneline --stat` to get a summary of recent com
 
 For each commit (or cluster of related commits):
 - Review the full diff (`git show <sha>` or `git diff <sha>^!`) to understand what changed.
-- Map commits to PRs using `github-search_pull_requests` with query `repo:elastic/ai-github-actions sha:<sha>`.
+- Map commits to PRs using `github-search_pull_requests` with query `repo:{owner}/{repo} sha:<sha>`.
 - Read the PR body and related discussion for documentation or migration notes.
 - Check for documentation updates in README, DEVELOPING, RELEASE, gh-agent-workflows/README, or any `CHANGELOG*` files (if present).
 

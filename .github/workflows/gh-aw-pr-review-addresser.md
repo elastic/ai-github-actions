@@ -8,9 +8,8 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
-  - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-add-comment.md
+  - gh-aw-fragments/safe-output-add-comment-pr.md
   - gh-aw-fragments/safe-output-push-to-pr.md
   - gh-aw-fragments/safe-output-resolve-thread.md
   - gh-aw-fragments/safe-output-reply-to-review-comment.md
@@ -48,6 +47,11 @@ on:
         type: string
         required: false
         default: ""
+      resolve-pull-request-review-thread-max:
+        description: "Maximum number of review threads the agent can resolve per run"
+        type: string
+        required: false
+        default: "10"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true

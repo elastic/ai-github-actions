@@ -10,6 +10,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -43,6 +44,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[newbie-contributor]')"
+        type: string
+        required: false
+        default: "[newbie-contributor]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -67,7 +73,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[newbie-contributor] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90
@@ -90,8 +96,6 @@ Review repository documentation from the perspective of an external contributor 
    - Do not assume a fixed directory structure. The repository may organize docs differently.
 2. Follow the quick start or recommended install path as far as possible without secrets, elevated privileges, or write access:
    - If a step requires secrets or admin privileges, stop and note whether the docs clearly warned about it.
-3. Check for existing open issues that already cover the same documentation gaps.
-
 ### What to Look For
 
 - Missing prerequisites or setup steps that would block a new contributor.

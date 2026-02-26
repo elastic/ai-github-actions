@@ -100,6 +100,27 @@ safe-outputs:
 strict: false
 timeout-minutes: 90
 steps:
+  - name: Download style guide reference pages
+    run: |
+      set -euo pipefail
+      mkdir -p /tmp/style-guide
+      urls=(
+        "https://www.elastic.co/docs/contribute-docs/style-guide"
+        "https://www.elastic.co/docs/contribute-docs/style-guide/voice-tone"
+        "https://www.elastic.co/docs/contribute-docs/style-guide/grammar-spelling"
+        "https://www.elastic.co/docs/contribute-docs/style-guide/formatting"
+        "https://www.elastic.co/docs/contribute-docs/style-guide/word-choice"
+        "https://www.elastic.co/docs/contribute-docs/style-guide/accessibility"
+        "https://www.elastic.co/docs/contribute-docs/style-guide/ui-writing"
+        "https://www.elastic.co/docs/contribute-docs/how-to/cumulative-docs/guidelines"
+        "https://www.elastic.co/docs/contribute-docs/how-to/cumulative-docs/reference"
+        "https://docs-v3-preview.elastic.dev/elastic/docs-builder/tree/main/syntax/applies"
+      )
+      for url in "${urls[@]}"; do
+        slug=$(echo "$url" | sed 's|https\?://||; s|/|_|g; s|[^a-zA-Z0-9_-]||g')
+        curl -sSfL --retry 2 --max-time 30 "$url" -o "/tmp/style-guide/${slug}.html" || echo "::warning::Failed to download ${url}"
+      done
+      echo "Downloaded $(ls /tmp/style-guide/ | wc -l) style guide pages to /tmp/style-guide/"
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
@@ -134,23 +155,13 @@ Follow these steps in order.
 
 ### Step 2: Load Review Guidelines
 
-Load the authoritative Elastic documentation guidelines **before** reviewing any files. These are your primary review criteria — do not rely on memory or assumptions about the rules.
+The style guide and `applies_to` reference pages have been pre-downloaded to `/tmp/style-guide/`. Read them from disk before reviewing any files — they are your primary review criteria.
 
-**Style guide** — Load these pages using `GetDocumentByUrl` with `includeBody: true` from the `elastic-docs` MCP server:
-
-1. `https://www.elastic.co/docs/contribute-docs/style-guide` — overview and quick reference.
-2. `https://www.elastic.co/docs/contribute-docs/style-guide/voice-tone` — voice, tone, sentence structure, active voice, "please" rule, noun/verb forms.
-3. `https://www.elastic.co/docs/contribute-docs/style-guide/grammar-spelling` — American English, capitalization, abbreviations, pronouns, punctuation, verb tense, contractions.
-4. `https://www.elastic.co/docs/contribute-docs/style-guide/formatting` — emphasis, lists, tables, numbers, code samples, line spacing.
-5. `https://www.elastic.co/docs/contribute-docs/style-guide/word-choice` — the complete avoid/caution/preferred word list.
-6. `https://www.elastic.co/docs/contribute-docs/style-guide/accessibility` — device-agnostic language, directional terms, alt text, link text, inclusivity, gender-neutral language.
-7. `https://www.elastic.co/docs/contribute-docs/style-guide/ui-writing` — UI elements, screenshots, navigation, prepositions.
-
-**`applies_to` and cumulative docs** — Load these pages:
-
-8. `https://www.elastic.co/docs/contribute-docs/how-to/cumulative-docs/guidelines` — when to tag, dimensions, lifecycle tagging rules, versioned vs. unversioned products. Use `GetDocumentByUrl` with `includeBody: true`.
-9. `https://www.elastic.co/docs/contribute-docs/how-to/cumulative-docs/reference` — complete key reference, lifecycle states, version formats. Use `GetDocumentByUrl` with `includeBody: true`.
-10. `https://docs-v3-preview.elastic.dev/elastic/docs-builder/tree/main/syntax/applies` — full `applies_to` syntax for page-level, section-level, and inline annotations, validation rules, and rendering behavior. Use `web_fetch` (this page is not in the MCP index).
+1. Run `ls /tmp/style-guide/` to list available files.
+2. Read each file to load the guidelines into your working context. The files correspond to:
+   - Style guide overview, voice and tone, grammar and spelling, formatting, word choice, accessibility, UI writing
+   - `applies_to` and cumulative docs guidelines, reference, and syntax
+3. If any page failed to download (check for warnings in the step output), fall back to loading it via `GetDocumentByUrl` from the `elastic-docs` MCP server or `web_fetch`.
 
 Retain the content of all loaded pages in your working context for the duration of the review. When you flag an issue in a later step, cite the specific rule from the loaded guidelines.
 

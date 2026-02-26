@@ -10,6 +10,8 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
+  - gh-aw-fragments/best-of-three-investigation.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -43,6 +45,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[product-manager-impersonator]')"
+        type: string
+        required: false
+        default: "[product-manager-impersonator]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -67,7 +74,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[product-manager-impersonator] "
+    title-prefix: "${{ inputs.title-prefix }} "
 timeout-minutes: 90
 steps:
   - name: Repo-specific setup
@@ -95,7 +102,7 @@ Your task is to propose **one** well-researched new feature idea for this reposi
 
 3. **Check for duplicates**
    - Search open issues for existing feature requests: `repo:{owner}/{repo} is:issue is:open (feature OR enhancement OR idea)`.
-   - Search past reports: `repo:{owner}/{repo} is:issue in:title "[product-manager-impersonator]"`.
+   - Search past reports: `repo:{owner}/{repo} is:issue in:title "${{ inputs.title-prefix }}"`.
    - If your idea duplicates an existing request, pick a different angle.
 
 ### What to Propose
@@ -140,6 +147,6 @@ If you cannot find a genuinely useful, non-duplicate idea that meets all the cri
 
 ### Labeling
 
-- If the `product-manager-impersonator` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[product-manager-impersonator]` title prefix only.
+- If the `product-manager-impersonator` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `${{ inputs.title-prefix }}` title prefix only.
 
 ${{ inputs.additional-instructions }}

@@ -7,9 +7,8 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
-  - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-add-comment.md
+  - gh-aw-fragments/safe-output-add-comment-pr.md
   - gh-aw-fragments/safe-output-push-to-pr.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -101,7 +100,7 @@ When pushing changes, the workspace already has the PR branch checked out. Make 
 1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
 2. Fetch workflow run details using `inputs.workflow-run-id`:
    ````bash
-   gh api repos/{owner}/{repo}/actions/runs/{run_id} \
+   gh api repos/${{ github.repository }}/actions/runs/{run_id} \
      --jq '{id: .id, html_url: .html_url, pull_requests: .pull_requests}'
    ````
 3. Identify the PRs associated with the workflow run from the response. If there are none, call `noop` with message "No pull request associated with workflow run; nothing to do" and stop.
@@ -109,12 +108,12 @@ When pushing changes, the workspace already has the PR branch checked out. Make 
 5. Fetch workflow run details and logs with `bash` + `gh api`:
    - List jobs and their conclusions:
      ````bash
-     gh api repos/{owner}/{repo}/actions/runs/{run_id}/jobs \
+     gh api repos/${{ github.repository }}/actions/runs/{run_id}/jobs \
        --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
      ````
    - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
      ````bash
-     gh api repos/{owner}/{repo}/actions/runs/{run_id}/logs \
+     gh api repos/${{ github.repository }}/actions/runs/{run_id}/logs \
        -H "Accept: application/vnd.github+json" \
        > /tmp/gh-aw/agent/workflow-logs-{run_id}.zip
      unzip -o /tmp/gh-aw/agent/workflow-logs-{run_id}.zip -d /tmp/gh-aw/agent/workflow-logs-{run_id}/

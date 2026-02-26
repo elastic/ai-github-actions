@@ -9,7 +9,7 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-add-comment.md
+  - gh-aw-fragments/safe-output-add-comment-issue.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -110,7 +110,19 @@ Follow these steps in order.
    - Write small test files to validate findings
    - Always explain what you're testing and why, and include command output in your response
 
-### Step 3: Formulate Response
+### Step 3: Best-of-Three Investigation
+
+1. **Spawn 3 sub-agents**. Each sub-agent receives the same Issue Triage (the full investigation task described in this prompt) and works independently.
+   - Each sub-agent should explore a different starting point or angle — e.g., different files, different heuristics, or different areas of the codebase.
+   - Each sub-agent gathers evidence, analyzes it, and produces either a candidate finding (with title, body, labels, and supporting evidence) or a recommendation to `noop`.
+
+2. **Wait for all 3 to complete.** Do not proceed until every sub-agent has returned its result.
+
+3. **Evaluate the candidates.** Based on the task
+
+4. **Select the best candidate**
+
+### Step 4: Formulate Response
 
 Provide a response with the following sections. Be concise and actionable — no filler or praise.
 

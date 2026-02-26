@@ -10,6 +10,8 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
+  - gh-aw-fragments/best-of-three-investigation.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -68,6 +70,11 @@ on:
         type: string
         required: false
         default: "low"
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[text-auditor]')"
+        type: string
+        required: false
+        default: "[text-auditor]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -92,7 +99,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[text-auditor] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90
@@ -213,6 +220,6 @@ Call `noop` if any of these are true:
 
 ### Labeling
 
-- If the `text-auditor` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `[text-auditor]` title prefix only.
+- If the `text-auditor` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `${{ inputs.title-prefix }}` title prefix only.
 
 ${{ inputs.additional-instructions }}

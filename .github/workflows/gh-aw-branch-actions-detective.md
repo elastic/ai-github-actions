@@ -9,6 +9,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -41,6 +42,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[branch-actions-detective]')"
+        type: string
+        required: false
+        default: "[branch-actions-detective]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -65,7 +71,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[branch-actions-detective] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: true
     expires: 7d
 timeout-minutes: 60
@@ -101,21 +107,16 @@ Analyze failed GitHub Actions CI runs on protected branches (e.g. `main`) in ${{
 2. Fetch workflow run details and logs with `bash` + `gh api`:
    - List jobs and their conclusions:
      ````bash
-     gh api repos/{owner}/{repo}/actions/runs/{run_id}/jobs \
+     gh api repos/${{ github.repository }}/actions/runs/{run_id}/jobs \
        --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
      ````
    - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
      ````bash
-     gh api repos/{owner}/{repo}/actions/runs/{run_id}/logs \
+     gh api repos/${{ github.repository }}/actions/runs/{run_id}/logs \
        -H "Accept: application/vnd.github+json" \
        > /tmp/gh-aw/agent/workflow-logs-{run_id}.zip
      unzip -o /tmp/gh-aw/agent/workflow-logs-{run_id}.zip -d /tmp/gh-aw/agent/workflow-logs-{run_id}/
      ````
-3. Check for existing open issues with the `[branch-actions-detective]` title prefix to avoid duplicates:
-   ````bash
-   gh api 'repos/{owner}/{repo}/issues?state=open&per_page=10' \
-     --jq '.[] | select(.title | startswith("[branch-actions-detective]")) | {number: .number, title: .title, html_url: .html_url}'
-   ````
 
 ### Step 2: Analyze
 
@@ -127,7 +128,7 @@ Analyze failed GitHub Actions CI runs on protected branches (e.g. `main`) in ${{
 
 ### Step 3: Respond
 
-**If an existing open `[branch-actions-detective]` issue tracks the same root cause:**
+**If an existing open `${{ inputs.title-prefix }}` issue tracks the same root cause:**
 Call `noop` with a message explaining that the failure is already tracked by the existing issue (include the issue number).
 
 **If this is a new or distinct failure:**

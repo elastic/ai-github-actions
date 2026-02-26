@@ -10,7 +10,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-add-comment.md
+  - gh-aw-fragments/safe-output-add-comment-issue.md
   - gh-aw-fragments/safe-output-create-pr.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/network-ecosystems.md
@@ -76,6 +76,7 @@ tools:
   web-fetch:
 safe-outputs:
   activation-comments: false
+  threat-detection: false
 strict: false
 timeout-minutes: 60
 steps:

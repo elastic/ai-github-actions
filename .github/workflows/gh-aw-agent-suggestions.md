@@ -10,6 +10,8 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
+  - gh-aw-fragments/best-of-three-investigation.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -43,6 +45,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[agent-suggestions]')"
+        type: string
+        required: false
+        default: "[agent-suggestions]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -67,7 +74,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[agent-suggestions] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90
@@ -92,7 +99,7 @@ Suggest new agent workflows that would materially improve software development f
 2. **Check for duplicates or in-flight work**
    - Search open issues for existing requests: `repo:{owner}/{repo} is:issue is:open (agent OR workflow OR automation)`.
    - Search open PRs for new workflows: `repo:{owner}/{repo} is:pr is:open (agent OR workflow)`.
-   - Search past reports: `repo:{owner}/{repo} is:issue in:title "[agent-suggestions]"`.
+   - Search past reports: `repo:{owner}/{repo} is:issue in:title "${{ inputs.title-prefix }}"`.
 
 3. **Evaluate software development needs in this repo**
    - Review open issues and PRs updated in the last 30 days for recurring work patterns (maintenance, docs, testing, releases, dependency updates).

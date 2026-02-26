@@ -11,7 +11,7 @@ imports:
   - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/review-process.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-add-comment.md
+  - gh-aw-fragments/safe-output-add-comment-pr.md
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
   - gh-aw-fragments/safe-output-push-to-pr.md

@@ -11,6 +11,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/previous-findings.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -44,6 +45,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[project-summary]')"
+        type: string
+        required: false
+        default: "[project-summary]"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -68,7 +74,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "[project-summary] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: true
     expires: 7d
 timeout-minutes: 90
@@ -85,7 +91,7 @@ Create a periodic project summary with actionable highlights from recent activit
 ### Data Gathering
 
 1. **Find the last report**
-   - Use `github-search_issues` with `repo:{owner}/{repo} is:issue in:title "[project-summary]"` sorted by `created` descending.
+   - Use `github-search_issues` with `repo:{owner}/{repo} is:issue in:title "${{ inputs.title-prefix }}"` sorted by `created` descending.
    - If a previous report exists, use its `createdAt` as the start date. Otherwise, use **14 days ago**.
 
 2. **Collect activity since the start date**
