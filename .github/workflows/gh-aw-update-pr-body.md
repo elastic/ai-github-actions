@@ -187,7 +187,7 @@ Do **not** propose changes when:
 
 **If any changes are warranted:**
 
-Call `update_pull_request` with a `replace` operation to write a body that applies all warranted changes. The updated body must:
+Call `update_pull_request` **exactly once** with a `replace` operation to write a body that applies all warranted changes. You may only call this tool once per run — additional calls will be rejected by validation. The updated body must:
 - Apply only the changes identified in Step 4 — do not make unplanned edits
 - Preserve the original structure, formatting, and wording of sections untouched by warranted changes
 - Preserve the original motivation and context (including issue links like `Fixes #N`)
