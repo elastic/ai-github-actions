@@ -15,5 +15,9 @@ jobs:
       github.event.pull_request.user.login == 'dependabot[bot]' ||
       github.event.pull_request.user.login == 'renovate[bot]'
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-dependency-review.lock.yml@v0
+    with:
+      additional-instructions: |
+        Classify every updated dependency type and analyze all of them.
+        Apply GitHub Actions and Buildkite-specific checks only when those dependency types are present.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

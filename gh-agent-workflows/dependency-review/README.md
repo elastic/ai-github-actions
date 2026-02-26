@@ -1,10 +1,10 @@
 # Dependency Review
 
-Analyze Dependabot and Renovate PRs for GitHub Actions and Buildkite dependency updates.
+Analyze Dependabot and Renovate PRs across dependency types, with deeper checks for GitHub Actions and Buildkite updates.
 
 ## How it works
 
-Triggered when Dependabot or Renovate opens or updates a PR. Analyzes each dependency update for commit verification, breaking changes, usage compatibility, and testability. Posts a structured analysis comment and optionally labels the PR `needs-human-review` or `higher-risk`.
+Triggered when Dependabot or Renovate opens or updates a PR. Classifies each dependency update type, applies shared checks (changelog, usage compatibility, and testability), and runs extra checks for GitHub Actions commit verification and Buildkite pin-format risk. Posts a structured analysis comment and optionally labels the PR `needs-human-review` or `higher-risk`.
 
 ## Quick Install
 
@@ -40,5 +40,5 @@ See [example.yml](example.yml) for the full workflow file.
 You can also analyze any dependency update PR on demand using `mention-in-pr`. Comment on the PR with:
 
 ```
-/ai Analyze this dependency update: check commit verification, changelog highlights, usage in this repo, and whether the affected workflows can be tested in PR context.
+/ai Analyze this dependency update PR across dependency types: classify each update, run applicable risk checks, summarize changelog highlights, and note testability in PR context.
 ```
