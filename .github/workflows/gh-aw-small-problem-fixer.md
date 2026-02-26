@@ -7,8 +7,8 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
-  - gh-aw-fragments/workflow-edit-guardrails.md
   - gh-aw-fragments/messages-footer.md
+  - gh-aw-fragments/safe-output-add-comment-issue.md
   - gh-aw-fragments/safe-output-create-pr.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -103,13 +103,13 @@ Find a small, clearly-scoped issue (or a very small set of related issues) and o
 2. Search for small, low-effort issues:
 
 ````text
-github-search_issues: query="repo:{owner}/{repo} is:issue is:open -label:bug-hunter -\"[bug-hunter]\" (label:\"good first issue\" OR label:small OR label:\"quick fix\" OR label:\"easy\") sort:updated-asc"
+github-search_issues: query="repo:${{ github.repository }} is:issue is:open -label:bug-hunter -\"[bug-hunter]\" (label:\"good first issue\" OR label:small OR label:\"quick fix\" OR label:\"easy\") sort:updated-asc"
 ````
 
 3. If that yields no good candidates, broaden to low-comment issues:
 
 ````text
-github-search_issues: query="repo:{owner}/{repo} is:issue is:open -label:bug-hunter -\"[bug-hunter]\" comments:0..2 sort:updated-asc"
+github-search_issues: query="repo:${{ github.repository }} is:issue is:open -label:bug-hunter -\"[bug-hunter]\" comments:0..2 sort:updated-asc"
 ````
 
 4. For each candidate, read the full issue and comments using `issue_read` (methods `get` and `get_comments`).

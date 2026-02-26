@@ -100,7 +100,7 @@ Run `git log --since="<window>" --oneline --stat` to get a summary of recent com
 
 For each commit (or cluster of related commits):
 - Review the full diff (`git show <sha>` or `git diff <sha>^!`) to understand what changed.
-- Map commits to PRs using `github-search_pull_requests` with query `repo:elastic/ai-github-actions sha:<sha>`.
+- Map commits to PRs using `github-search_pull_requests` with query `repo:{owner}/{repo} sha:<sha>`.
 - Read the PR body and related discussion for documentation or migration notes.
 - Check for documentation updates in README, DEVELOPING, RELEASE, gh-agent-workflows/README, or any `CHANGELOG*` files (if present).
 

@@ -1,12 +1,12 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.50.1
+GH_AW_VERSION := v0.50.4
 GH_AW_COMPAT_VERSION := v0.49.4
 
 # Workflows that must be compiled with the compat compiler
 # (no-sandbox workflows hit a threat-detection bug in newer versions)
-GH_AW_COMPAT_WORKFLOWS := gh-aw-mention-in-issue-no-sandbox gh-aw-mention-in-pr-no-sandbox
+GH_AW_COMPAT_WORKFLOWS := 
 
 # Helper: Detect OS and architecture (sets OS and ARCH variables)
 # Usage: $(DETECT_OS_ARCH)
@@ -154,7 +154,13 @@ compile: setup-gh-aw setup-gh-aw-compat sync
 	@echo "Compiling agentic workflows..."
 	-@.bin/gh-aw compile --action-mode release --action-tag $(GH_AW_VERSION)
 	@echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."
-	@.bin/gh-aw-compat compile --action-mode release --action-tag $(GH_AW_COMPAT_VERSION) $(GH_AW_COMPAT_WORKFLOWS)
+	if [ -n "$(GH_AW_COMPAT_WORKFLOWS)" ]; then \
+		echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."; \
+		@.bin/gh-aw-compat compile --action-mode release --action-tag $(GH_AW_COMPAT_VERSION) $(GH_AW_COMPAT_WORKFLOWS); \
+		echo "✓ Compat workflows compiled"; \
+	else \
+		echo "No compat workflows to compile"; \
+	fi
 	@./scripts/backwards-compat.sh
 
 setup-actionlint:

@@ -93,7 +93,8 @@ Fragments live in `.github/workflows/gh-aw-fragments/`. Workflows import them us
 | [gh-aw-fragments/scheduled-fix.md](../.github/workflows/gh-aw-fragments/scheduled-fix.md) | Shared scheduled fix framework (pick up issue and create PR) |
 | [gh-aw-fragments/review-process.md](../.github/workflows/gh-aw-fragments/review-process.md) | Shared code review process, comment format, severity classification, and review criteria |
 | [gh-aw-fragments/messages-footer.md](../.github/workflows/gh-aw-fragments/messages-footer.md) | Wires the `messages-footer` input to `safe-outputs.messages.footer`; consumers override the footer via the workflow input |
-| [gh-aw-fragments/safe-output-add-comment.md](../.github/workflows/gh-aw-fragments/safe-output-add-comment.md) | Limitations for `add-comment` (body length, mentions, links) |
+| [gh-aw-fragments/safe-output-add-comment-pr.md](../.github/workflows/gh-aw-fragments/safe-output-add-comment-pr.md) | Limitations for `add-comment` on pull requests (body length, mentions, links) |
+| [gh-aw-fragments/safe-output-add-comment-issue.md](../.github/workflows/gh-aw-fragments/safe-output-add-comment-issue.md) | Limitations for `add-comment` on issues (body length, mentions, links) |
 | [gh-aw-fragments/safe-output-review-comment.md](../.github/workflows/gh-aw-fragments/safe-output-review-comment.md) | Limitations for `create-pull-request-review-comment` (required fields, line rules) |
 | [gh-aw-fragments/safe-output-submit-review.md](../.github/workflows/gh-aw-fragments/safe-output-submit-review.md) | Limitations for `submit-pull-request-review` (event types, own-PR restriction) |
 | [gh-aw-fragments/safe-output-push-to-pr.md](../.github/workflows/gh-aw-fragments/safe-output-push-to-pr.md) | Limitations for `push-to-pull-request-branch` (patch size, fork restriction) |

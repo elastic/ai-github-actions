@@ -1,8 +1,4 @@
-You are an agent for ${{ github.repository }}. You run on a schedule to pick up an open issue and create a focused pull request that addresses it. Your specific assignment is described in the **Fix Assignment** section below.
-
-## Context
-
-- **Repository**: ${{ github.repository }}
+You run on a schedule to pick up an open issue and create a focused pull request that addresses it. Your specific assignment is described in the **Fix Assignment** section below.
 
 ## Constraints
 

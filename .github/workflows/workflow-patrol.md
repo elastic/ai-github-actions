@@ -10,6 +10,9 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/scheduled-audit.md
+  - gh-aw-fragments/previous-findings.md
+  - gh-aw-fragments/best-of-three-investigation.md
+  - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
   model: gpt-5.3-codex
@@ -17,6 +20,11 @@ on:
   schedule:
     - cron: "daily around 14:00 on weekdays"
   workflow_dispatch:
+    inputs:
+      title-prefix:
+        description: "Title prefix for created issues"
+        required: false
+        default: "[workflow-patrol]"
   roles: [admin, maintainer, write]
   bots:
     - "github-actions[bot]"

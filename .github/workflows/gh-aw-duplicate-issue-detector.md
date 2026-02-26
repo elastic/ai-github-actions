@@ -7,7 +7,7 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-add-comment.md
+  - gh-aw-fragments/safe-output-add-comment-issue.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -90,9 +90,9 @@ Run several targeted searches. Search **both open and closed** issues.
 
 Suggested queries (adapt based on the issue content):
 ```
-repo:{owner}/{repo} is:issue "{key term from title}"
-repo:{owner}/{repo} is:issue is:closed "{key term from title}"
-repo:{owner}/{repo} is:issue "{error message or identifier}"
+repo:${{ github.repository }} is:issue "{key term from title}"
+repo:${{ github.repository }} is:issue is:closed "{key term from title}"
+repo:${{ github.repository }} is:issue "{error message or identifier}"
 ```
 
 For each candidate result, read the title and (if promising) the body to assess similarity.

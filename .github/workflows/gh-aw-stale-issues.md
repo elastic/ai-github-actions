@@ -128,7 +128,7 @@ Find open issues that are very likely already resolved and recommend them for cl
    - Run tests if applicable to verify the fix
    - Check git log for commits that reference the issue number
 
-If there isnt enough to chew on from that, investigat high-signal queries like:
+If there isn't enough from that, investigate high-signal queries like:
 ```
 github-search_issues: query="repo:{owner}/{repo} is:issue is:open in:comments (fixed OR resolved OR closed)"
 ```

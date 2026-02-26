@@ -107,12 +107,12 @@ Analyze failed GitHub Actions CI runs on protected branches (e.g. `main`) in ${{
 2. Fetch workflow run details and logs with `bash` + `gh api`:
    - List jobs and their conclusions:
      ````bash
-     gh api repos/{owner}/{repo}/actions/runs/{run_id}/jobs \
+     gh api repos/${{ github.repository }}/actions/runs/{run_id}/jobs \
        --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
      ````
    - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
      ````bash
-     gh api repos/{owner}/{repo}/actions/runs/{run_id}/logs \
+     gh api repos/${{ github.repository }}/actions/runs/{run_id}/logs \
        -H "Accept: application/vnd.github+json" \
        > /tmp/gh-aw/agent/workflow-logs-{run_id}.zip
      unzip -o /tmp/gh-aw/agent/workflow-logs-{run_id}.zip -d /tmp/gh-aw/agent/workflow-logs-{run_id}/
