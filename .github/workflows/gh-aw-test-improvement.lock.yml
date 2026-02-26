@@ -41,7 +41,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"268cfc3d5e16d7108c5458825a159d4d643f02a8f574fb79afcf1ee8aba3e945"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0cb0e71f5f360f41d4858c9db3ca1aa5c20d667d07d3204f5c50947d71e43a0b"}
 
 name: "Test Improver"
 "on":
@@ -335,7 +335,21 @@ jobs:
           - Run the most relevant test command(s). **All tests — new and existing — must pass.** If the full suite is too heavy, run targeted tests.
           - If required commands, tests, or coverage cannot be run, call `noop`. Do not open a PR with untested test code.
           
-          ## Step 5: Quality Gate — Test Value Check
+          ## Step 5: Stability check — run new tests repeatedly
+          
+          New tests that pass once may still be flaky. Before filing a PR, verify stability by running each new or modified test multiple times.
+          
+          1. Run each new or modified test **at least 5 times** in sequence and confirm every run passes.
+             - Use the test framework's built-in repeat/count flag when available (e.g., `go test -count=5`, `pytest -x --count 5` with `pytest-repeat`, `--repeat 5` in Jest/Vitest).
+             - If no built-in mechanism exists, use a simple shell loop: `for i in $(seq 1 5); do <test-command> || exit 1; done`
+          2. If any run fails intermittently, investigate the root cause before proceeding. Common sources of flakiness:
+             - Reliance on timing, sleep, or wall-clock assertions
+             - Shared mutable state between test cases
+             - Non-deterministic iteration order (e.g., map/set ordering)
+             - Dependence on external services or network
+          3. If the test cannot be made reliably stable, do not include it in the PR. Call `noop` if no stable tests remain.
+          
+          ## Step 6: Quality Gate — Test Value Check
           
           Before creating the PR, evaluate each new test:
           
@@ -347,7 +361,7 @@ jobs:
           
           If the tests don't pass this bar, call `noop`. Low-value tests are worse than no tests — they create maintenance burden and false confidence.
           
-          ## Step 6: Create the PR
+          ## Step 7: Create the PR
           
           1. Commit the changes locally.
           2. Call `create_pull_request` with:
