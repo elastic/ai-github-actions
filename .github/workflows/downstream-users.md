@@ -43,6 +43,7 @@ network:
     - ruby
 strict: false
 safe-outputs:
+  max-patch-size: 10240
   create-pull-request:
     draft: false
   noop:

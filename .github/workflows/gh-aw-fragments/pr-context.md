@@ -73,6 +73,7 @@ steps:
         echo "$thread" >> "/tmp/pr-context/threads/${filepath}.jsonl"
       done
       # Convert per-file JSONL to proper JSON arrays
+      mkdir -p /tmp/pr-context/threads
       find /tmp/pr-context/threads -name '*.jsonl' 2>/dev/null | while IFS= read -r jsonl; do
         jq -s '.' "$jsonl" > "${jsonl%.jsonl}.json"
         rm "$jsonl"
@@ -83,7 +84,8 @@ steps:
         | jq -s 'add // []' > /tmp/pr-context/comments.json
 
       # Linked issues
-      grep -oiE '(fixes|closes|resolves)\s+#[0-9]+' /tmp/pr-context/pr.json 2>/dev/null \
+      jq -r '.body // ""' /tmp/pr-context/pr.json 2>/dev/null \
+        | grep -oiE '(fixes|closes|resolves)\s+#[0-9]+' \
         | grep -oE '[0-9]+$' \
         | sort -u \
         | while read -r issue; do
