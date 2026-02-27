@@ -11,7 +11,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/previous-findings.md
-  - gh-aw-fragments/pick-three-keep-one.md
+  - gh-aw-fragments/pick-three-keep-many.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -137,7 +137,7 @@ Analyze source code to identify semantic function clusters, misplaced functions,
    printf '%s\n' "$FILES" | xargs wc -l | sort -nr | head -200 | awk '{print $2}'
    ```
 6. For each selected file, use `get_symbols_overview` (Serena) when supported; otherwise, extract functions/methods with language-appropriate `rg` patterns and light file inspection.
-7. Use the **Pick Three, Keep One** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each searching for duplication from a different angle (e.g., one scanning different directories or modules for cross-boundary duplication, one using exact/near-exact match heuristics on function bodies, one looking for structural or semantic similarity across naming clusters). Include the file list, symbol inventory, and the full "How to Analyze" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
+7. Use the **Pick Three, Keep Many** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each searching for duplication from a different angle (e.g., one scanning different directories or modules for cross-boundary duplication, one using exact/near-exact match heuristics on function bodies, one looking for structural or semantic similarity across naming clusters). Include the file list, symbol inventory, and the full "How to Analyze" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
 
 ### How to Analyze
 

@@ -30,7 +30,7 @@
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/network-ecosystems.md
-#     - gh-aw-fragments/pick-three-keep-one.md
+#     - gh-aw-fragments/pick-three-keep-many.md
 #     - gh-aw-fragments/previous-findings.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"fbc28d044948f118f00aca4f5502d80c3d3887d1de63b67155fec57b04f6df7c"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d93d636ba529f70b8fb4893143d11651d56e57cdbd82a51e605412a283bee5f3"}
 
 name: "Text Auditor"
 "on":
@@ -131,7 +131,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
+        uses: github/gh-aw/actions/setup@3c15f58f43054a10fa3173200611a0a76182c446
         with:
           destination: /opt/gh-aw/actions
       - name: Validate COPILOT_GITHUB_TOKEN secret
@@ -197,7 +197,7 @@ jobs:
           cat "/opt/gh-aw/prompts/safe_outputs_prompt.md"
           cat << 'GH_AW_PROMPT_EOF'
           <safe-output-tools>
-          Tools: create_issue, missing_tool, missing_data
+          Tools: create_issue, missing_tool, missing_data, noop
           </safe-output-tools>
           <github-context>
           The following GitHub context information is available for this workflow:
@@ -323,25 +323,28 @@ jobs:
           - Only file a new issue when the finding is genuinely distinct from all previous findings.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          ### Pick Three, Keep One
+          ### Pick Three, Keep Many
           
-          Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return a complete candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`.
+          Parallelize your work using sub-agents. Spawn 3 sub-agents, each approaching the task from a different angle — e.g., different focus areas, different heuristics, or different parts of the codebase. Each sub-agent works independently and should return its own list of findings.
           
-          **How to spawn sub-agents:** Call `runSubagent` with `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` (unless the workflow specifies a different agent type or model). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
+          **How to spawn sub-agents:** Call `runSubagent` with `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` (unless the workflow specifies a different agent type or model). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
-          - Any relevant findings from your initial exploration (file paths, git log output, code snippets)
-          - The quality gate criteria and output format you expect
+          - Any relevant data the sub-agent needs to do its job (diffs, file contents, existing threads)
+          - The quality criteria and output format you expect
           - The specific angle that distinguishes this sub-agent from the others
           
-          Err on the side of providing too much context rather than too little. A well-informed sub-agent with a 10,000-token prompt will produce far better results than one with a 200-token prompt that has to rediscover everything from scratch.
+          Err on the side of providing too much context rather than too little. A well-informed sub-agent with a 10,000-token prompt will produce far better results than one that has to rediscover the codebase from scratch.
           
           **Wait for all 3 sub-agents to complete.** Do not proceed until every sub-agent has returned its result.
           
-          **Evaluate the candidates** by comparing evidence quality, specificity, and actionability. Prefer candidates with concrete file paths, line numbers, and verifiable evidence over general observations. If most or all sub-agents recommend `noop`, that is a strong signal to `noop`.
+          **Merge and deduplicate findings** across all sub-agents:
+          1. If multiple sub-agents flagged the same issue, keep the version with the strongest evidence and clearest explanation.
+          2. If a finding is unique to one sub-agent, include it only if it passes the quality gate on its own merits — a finding flagged by only one sub-agent deserves extra scrutiny.
+          3. Drop any finding that does not meet the verification criteria.
           
-          **Select the single best candidate** and proceed with it. Discard the others. If no candidate meets the quality gate, call `noop`.
+          **Filter aggressively for quality.** Your job as the parent agent is to be the quality gate. Sub-agents cast a wide net; you decide what's worth keeping. For each surviving finding, verify it yourself — check that file paths exist, line numbers are accurate, the problem is real, and the finding is actionable. Discard anything vague, speculative, or already addressed. If no findings survive filtering, call `noop`.
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
@@ -441,7 +444,7 @@ jobs:
              - README, CONTRIBUTING, DEVELOPING, and other markdown documentation
              - UI strings, notification templates, and user-visible configuration descriptions
              - Code comments in public APIs that appear in generated documentation
-          2. Use the **Pick Three, Keep One** pattern for the audit phase: spawn 3 `general-purpose` sub-agents, each scanning for text issues from a different angle (e.g., one focusing on different text dimensions like grammar/terminology/clarity, one scanning different file types like docs vs UI strings vs config descriptions, one checking different text surfaces like error messages vs help text vs onboarding copy). Include the list of identified text sources, the edit-level configuration, and the full "What to Look For by Dimension" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
+          2. Use the **Pick Three, Keep Many** pattern for the audit phase: spawn 3 `general-purpose` sub-agents, each scanning for text issues from a different angle (e.g., one focusing on different text dimensions like grammar/terminology/clarity, one scanning different file types like docs vs UI strings vs config descriptions, one checking different text surfaces like error messages vs help text vs onboarding copy). Include the list of identified text sources, the edit-level configuration, and the full "What to Look For by Dimension" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
           3. Read the identified files and search for text issues.
           
           ### What to Look For by Dimension
@@ -640,7 +643,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
+        uses: github/gh-aw/actions/setup@3c15f58f43054a10fa3173200611a0a76182c446
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -742,7 +745,7 @@ jobs:
               engine_name: "GitHub Copilot CLI",
               model: "${{ inputs.model }}",
               version: "",
-              agent_version: "0.0.418",
+              agent_version: "0.0.419",
               workflow_name: "Text Auditor",
               experimental: false,
               supports_tools_allowlist: true,
@@ -758,7 +761,7 @@ jobs:
               allowed_domains: ["agents-md-generator.fastmcp.app","artifacts.elastic.co","clojure","cloud.elastic.co","containers","dart","defaults","dotnet","ela.st","elastic.co","elastic.dev","elastic.github.io","elixir","fonts","github","github-actions","go","haskell","java","kotlin","linux-distros","node","node-cdns","perl","php","playwright","public-code-search.fastmcp.app","python","ruby","rust","scala","swift","terraform","www.elastic.co","zig"],
               firewall_enabled: true,
               awf_version: "v0.23.0",
-              awmg_version: "v0.1.5",
+              awmg_version: "v0.1.6",
               steps: {
                 firewall: "squid"
               },
@@ -774,7 +777,7 @@ jobs:
             // Set model as output for reuse in other steps/jobs
             core.setOutput('model', awInfo.model);
       - name: Install GitHub Copilot CLI
-        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.418
+        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.419
       - name: Install awf binary
         run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.23.0
       - name: Determine automatic lockdown mode for GitHub MCP Server
@@ -788,7 +791,7 @@ jobs:
             const determineAutomaticLockdown = require('/opt/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.23.0 ghcr.io/github/gh-aw-firewall/api-proxy:0.23.0 ghcr.io/github/gh-aw-firewall/squid:0.23.0 ghcr.io/github/gh-aw-mcpg:v0.1.5 ghcr.io/github/github-mcp-server:v0.31.0 node:lts-alpine
+        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.23.0 ghcr.io/github/gh-aw-firewall/api-proxy:0.23.0 ghcr.io/github/gh-aw-firewall/squid:0.23.0 ghcr.io/github/gh-aw-mcpg:v0.1.6 ghcr.io/github/github-mcp-server:v0.31.0 node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p /opt/gh-aw/safeoutputs
@@ -1066,7 +1069,7 @@ jobs:
           export DEBUG="*"
           
           export GH_AW_ENGINE="copilot"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.5'
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.6'
           
           mkdir -p /home/runner/.copilot
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
@@ -1421,7 +1424,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
+        uses: github/gh-aw/actions/setup@3c15f58f43054a10fa3173200611a0a76182c446
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1507,7 +1510,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
+        uses: github/gh-aw/actions/setup@3c15f58f43054a10fa3173200611a0a76182c446
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1547,7 +1550,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
+        uses: github/gh-aw/actions/setup@3c15f58f43054a10fa3173200611a0a76182c446
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact

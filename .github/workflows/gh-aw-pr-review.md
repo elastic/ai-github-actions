@@ -13,7 +13,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
-  - gh-aw-fragments/pick-three-keep-all.md
+  - gh-aw-fragments/pick-three-keep-many.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -121,7 +121,7 @@ Follow these steps in order.
 
 ### Step 2: Review Each File
 
-Follow the **Pick Three, Keep All** process above — spawn 3 `code-review` sub-agents to review the PR diff in parallel from different angles (e.g., security/input validation, logic correctness/edge cases, error handling/resource management). Include the full PR diff, file contents, repo conventions from `generate_agents_md`, the **Code Review Reference** criteria below, existing review threads, and the severity/intensity settings in each sub-agent prompt. After merging and deduplicating their findings, leave your own inline comments using the **Code Review Reference** format below.
+Follow the **Pick Three, Keep Many** process above — spawn 3 `code-review` sub-agents to review the PR diff in parallel from different angles (e.g., security/input validation, logic correctness/edge cases, error handling/resource management). Include the full PR diff, file contents, repo conventions from `generate_agents_md`, the **Code Review Reference** criteria below, existing review threads, and the severity/intensity settings in each sub-agent prompt. After merging and deduplicating their findings, leave your own inline comments using the **Code Review Reference** format below.
 
 ### Step 3: Submit the Review
 

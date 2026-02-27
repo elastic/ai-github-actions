@@ -1,6 +1,6 @@
 ### Pick Three, Keep One
 
-Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return a complete candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`.
+Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return its single best candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`. The goal is competition: 3 sub-agents each produce their best shot, and you pick the winner.
 
 **How to spawn sub-agents:** Call `runSubagent` with `agentType: "general-purpose"` and `model: "${{ inputs.model }}"` (unless the workflow specifies a different agent type or model). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
 
