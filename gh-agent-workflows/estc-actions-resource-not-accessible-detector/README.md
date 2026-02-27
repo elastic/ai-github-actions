@@ -15,8 +15,8 @@ The generated issue:
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/resource-not-accessible-by-integration-fixer/example.yml \
-  -o .github/workflows/resource-not-accessible-by-integration-fixer.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/estc-actions-resource-not-accessible-detector/example.yml \
+  -o .github/workflows/estc-actions-resource-not-accessible-detector.yml
 ```
 
 See [example.yml](example.yml) for the full workflow file.
@@ -54,15 +54,9 @@ See [example.yml](example.yml) for the full workflow file.
 | Multiple distinct workflows fail | Combined issue includes all workflows in one report |
 | Findings already tracked by an open prefixed issue | `noop` — avoid duplicate repost |
 
-## External remediation instructions
+## Remediation guidance
 
-The agent fetches remediation instructions at runtime from:
-
-```
-https://raw.githubusercontent.com/elastic/observability-cicd/main/github-actions/actionable/alerts/app/prompts/accessible-by-integration.txt
-```
-
-If the fetch fails the agent falls back to the general principle of adding the minimum required `permissions` block to the failing workflow jobs.
+The agent includes a built-in permission reference table mapping failed GitHub API operations to required `GITHUB_TOKEN` scopes. For each affected workflow it reads the source file, identifies the failing operation from log evidence, and recommends the minimum `permissions:` block to add.
 
 ## Similar behavior with base Scheduled Audit
 

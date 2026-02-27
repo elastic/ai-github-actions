@@ -60,7 +60,6 @@ nav:
               - Performance Profiler: workflows/gh-agent-workflows/performance-profiler.md
               - Project Summary: workflows/gh-agent-workflows/project-summary.md
               - Release Update Check: workflows/gh-agent-workflows/release-update.md
-              - Resource Not Accessible By Integration Fixer: workflows/gh-agent-workflows/resource-not-accessible-by-integration-fixer.md
               - Small Problem Fixer: workflows/gh-agent-workflows/small-problem-fixer.md
               - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
               - Test Improver: workflows/gh-agent-workflows/test-improver.md
@@ -70,6 +69,7 @@ nav:
           - Docs Patrol External (Elastic-specific): workflows/gh-agent-workflows/estc-docs-patrol-external.md
           - Newbie Contributor Patrol External (Elastic-specific): workflows/gh-agent-workflows/estc-newbie-contributor-patrol-external.md
           - Downstream Health (Elastic-specific): workflows/gh-agent-workflows/estc-downstream-health.md
+          - Resource Not Accessible Detector (Elastic-specific): workflows/gh-agent-workflows/estc-actions-resource-not-accessible-detector.md
   - Legacy:
       - Claude Workflows: workflows/claude-workflows.md
       - Migration Guide: migration-guide.md

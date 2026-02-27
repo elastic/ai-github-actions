@@ -64,17 +64,17 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: resource-not-accessible-by-integration-fixer
+  group: estc-actions-resource-not-accessible-detector
   cancel-in-progress: true
 permissions:
   actions: read
   contents: read
-  issues: write
+  issues: read
+  pull-requests: read
 tools:
   github:
-    toolsets: [repos, issues, search, actions]
+    toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
-  web-fetch:
 strict: false
 safe-outputs:
   activation-comments: false
@@ -141,9 +141,10 @@ steps:
           continue
         fi
 
-        match="$(grep -R -n -m 1 "Resource not accessible by integration" "$log_dir" 2>/dev/null || true)"
+        match="$(grep -R -n -m 3 "Resource not accessible by integration" "$log_dir" 2>/dev/null || true)"
         if [ -n "$match" ]; then
           evidence="${match//$'\t'/ }"
+          evidence="${evidence//$'\n'/ | }"
           printf "%s\t%s\t%s\t%s\t%s\t%s\n" "$workflow_path" "$head_branch" "$run_id" "$run_url" "$created_at" "$evidence" >> "$findings_file"
         fi
         rm -rf "$log_dir" "$zip_file"
@@ -178,8 +179,6 @@ Use the prescan output to investigate only workflows that already matched `Resou
 - **Error pattern**: `Resource not accessible by integration`
 - **Prescan summary**: `/tmp/gh-aw/agent/resource-not-accessible-summary.txt`
 - **Prescan findings**: `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`
-- **Remediation instructions URL**: `https://raw.githubusercontent.com/elastic/observability-cicd/main/github-actions/actionable/alerts/app/prompts/accessible-by-integration.txt`
-
 ## Constraints
 
 - **CAN**: Read files, search code, run commands, create one issue.
@@ -187,16 +186,34 @@ Use the prescan output to investigate only workflows that already matched `Resou
 - Only investigate workflows listed in `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`.
 - Do not file a duplicate issue if an open `${{ inputs.issue-title-prefix }}` issue already tracks the same workflows and failure pattern.
 
+## Permission reference
+
+`Resource not accessible by integration` means the `GITHUB_TOKEN` lacks a required scope. Common causes:
+
+| Failed operation | Required permission |
+| --- | --- |
+| Create/update issues | `issues: write` |
+| Create/update pull requests | `pull-requests: write` |
+| Push code or tags | `contents: write` |
+| Create releases | `contents: write` |
+| Publish packages | `packages: write` |
+| Trigger other workflows | `actions: write` |
+| Manage deployments | `deployments: write` |
+| Create/update checks | `checks: write` |
+| Comment on PRs | `pull-requests: write` |
+
+Common root causes:
+- **Missing `permissions:` block** — the workflow relies on the repo/org default token permissions which are too restrictive.
+- **Fork PRs** — `pull_request` from forks always gets a read-only token. Use `pull_request_target` (with caution) or a GitHub App token.
+- **Organization policies** — org-level settings may cap the maximum token permissions.
+
+The fix is to add an explicit `permissions:` block at the workflow or job level granting only the minimum required scopes. For each affected workflow, read its source file under `.github/workflows/`, identify the operation that failed from the evidence, and recommend the specific permission to add.
+
 ## Step 1: Gather context
 
 1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
 2. Read `/tmp/gh-aw/agent/resource-not-accessible-summary.txt`.
 3. Read `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`.
-4. Fetch remediation instructions at runtime:
-   ````
-   https://raw.githubusercontent.com/elastic/observability-cicd/main/github-actions/actionable/alerts/app/prompts/accessible-by-integration.txt
-   ````
-   If fetch fails, fall back to minimum-permissions guidance.
 
 ## Step 2: Decide whether to noop
 
@@ -205,11 +222,19 @@ Use the prescan output to investigate only workflows that already matched `Resou
 - Check open issues for `${{ inputs.issue-title-prefix }}` in the title and compare workflow paths/evidence.
 - If an existing open issue already tracks the same findings, call `noop` and reference the existing issue number.
 
-## Step 3: Produce combined analysis issue
+## Step 3: Investigate each affected workflow
+
+For each workflow in the findings file:
+1. Read the workflow source file from `.github/workflows/`.
+2. Identify which operation failed from the evidence lines.
+3. Check if the workflow already has a `permissions:` block and what scopes are granted.
+4. Determine the minimum permission fix needed.
+
+## Step 4: Produce combined analysis issue
 
 Call `create_issue` exactly once with:
 
-- **Title**: `Resource not accessible by integration across long-term branches`
+- **Title**: A short descriptive title summarizing the affected workflows (do NOT repeat the issue-title-prefix in the title)
 - **Body**:
 
   ````
@@ -232,17 +257,15 @@ Call `create_issue` exactly once with:
 
   ## Root Cause Assessment
 
-  Concisely explain why each workflow likely lacks required permissions/token scope.
+  For each workflow, explain which operation failed and why the current permissions are insufficient.
 
-  ## Remediation Guidance
+  ## Remediation
 
-  Provide concrete patch guidance per workflow using:
-  https://raw.githubusercontent.com/elastic/observability-cicd/main/github-actions/actionable/alerts/app/prompts/accessible-by-integration.txt
+  For each workflow, provide the exact `permissions:` block to add or modify. Use before/after YAML snippets. Grant only the minimum required scopes.
 
   ## Next Steps
 
-  - Recommend either applying fixes manually or enabling a fixer workflow.
-  - Note: workflow-file edits must be made under `.github/workflows/`.
+  - Apply the permission fixes manually under `.github/workflows/`.
   ````
 
 ${{ inputs.additional-instructions }}

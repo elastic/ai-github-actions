@@ -139,7 +139,6 @@ continuous_improvement_workflows=(
   breaking-change-detector
   code-duplication-detector
   update-pr-body
-  resource-not-accessible-by-integration-fixer
 )
 
 if [ -n "$workflows_csv" ]; then
