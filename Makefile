@@ -121,7 +121,8 @@ setup-gh-aw:
 		echo "Error: Go is required to install gh-aw compiler."; \
 		echo "Install Go: https://go.dev/dl/"; \
 		exit 1; \
-	elif [ -x ".bin/gh-aw" ] && .bin/gh-aw version 2>/dev/null | grep -q "$(GH_AW_VERSION)"; then \
+	elif case "$(GH_AW_VERSION)" in v*) true ;; *) false ;; esac && \
+	     [ -x ".bin/gh-aw" ] && .bin/gh-aw version 2>/dev/null | grep -q "$(GH_AW_VERSION)"; then \
 		echo "✓ gh-aw compiler already installed: $(GH_AW_VERSION)"; \
 	else \
 		echo "Installing gh-aw compiler $(GH_AW_VERSION) from github/gh-aw..."; \
@@ -136,7 +137,8 @@ setup-gh-aw-compat:
 		echo "Error: Go is required to install gh-aw compiler."; \
 		echo "Install Go: https://go.dev/dl/"; \
 		exit 1; \
-	elif [ -x ".bin/gh-aw-compat" ] && .bin/gh-aw-compat version 2>/dev/null | grep -q "$(GH_AW_COMPAT_VERSION)"; then \
+	elif case "$(GH_AW_COMPAT_VERSION)" in v*) true ;; *) false ;; esac && \
+	     [ -x ".bin/gh-aw-compat" ] && .bin/gh-aw-compat version 2>/dev/null | grep -q "$(GH_AW_COMPAT_VERSION)"; then \
 		echo "✓ gh-aw compat compiler already installed: $(GH_AW_COMPAT_VERSION)"; \
 	else \
 		echo "Installing gh-aw compat compiler $(GH_AW_COMPAT_VERSION) from github/gh-aw..."; \
