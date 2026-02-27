@@ -6,6 +6,7 @@ network:
     - defaults
     - "elastic.co"
     - "elastic.dev"
+    - "elastic.github.io"
     - github
     - clojure
     - containers
