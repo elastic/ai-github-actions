@@ -27,7 +27,7 @@ on:
         description: "Domain-specific fix instructions — appended as the Fix Assignment"
         type: string
         required: true
-      issue-title-prefix:
+      title-prefix:
         description: "Title prefix to search for in open issues, e.g. '[text-auditor]'"
         type: string
         required: true
@@ -63,7 +63,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: scheduled-fix-${{ inputs.issue-title-prefix }}
+  group: scheduled-fix-${{ inputs.title-prefix }}
   cancel-in-progress: true
 permissions:
   actions: read
@@ -84,7 +84,7 @@ steps:
   - name: List previous findings
     env:
       GH_TOKEN: ${{ github.token }}
-      TITLE_PREFIX: ${{ inputs.issue-title-prefix }}
+      TITLE_PREFIX: ${{ inputs.title-prefix }}
     run: |
       set -euo pipefail
       gh issue list \
@@ -114,7 +114,7 @@ Before filing a new issue, check `/tmp/previous-findings.json` for issues this a
 Search for open issues matching the configured title prefix:
 
 ````text
-github-search_issues: query="repo:{owner}/{repo} is:issue is:open in:title \"${{ inputs.issue-title-prefix }}\" sort:updated-asc"
+github-search_issues: query="repo:{owner}/{repo} is:issue is:open in:title \"${{ inputs.title-prefix }}\" sort:updated-asc"
 ````
 
 If `${{ inputs.issue-label }}` is not empty, also search by label:
