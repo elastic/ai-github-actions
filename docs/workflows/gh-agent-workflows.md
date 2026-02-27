@@ -127,7 +127,7 @@ These workflows are tailored for Elastic's internal tooling and documentation pl
 
 These workflows require a Copilot PAT stored as `COPILOT_GITHUB_TOKEN`.
 
-1. Create a Copilot PAT with the `copilot-requests` scope (the scope is only available for public repositories).
+1. [Create a Copilot PAT](https://github.com/settings/personal-access-tokens/new?name=COPILOT_GITHUB_TOKEN&description=GitHub+Agentic+Workflows+-+Copilot+engine+authentication&user_copilot_requests=read) with the `copilot-requests` scope (the scope is only available for public repositories). The link pre-fills the name, description, and scope. **Set the expiry to longer than the 30-day default** (e.g., 90 days or 1 year) to avoid frequent rotation.
 2. Store it as a repository secret:
 
 ````bash
