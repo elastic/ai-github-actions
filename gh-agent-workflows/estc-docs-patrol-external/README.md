@@ -1,4 +1,4 @@
-# Docs Patrol External
+# Docs Patrol External (Elastic-specific)
 
 Detect code changes that require updates to published Elastic documentation, `applies_to` tags, or backports.
 
@@ -10,8 +10,8 @@ Like Docs Patrol, but focuses on changes that require updates to published Elast
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/docs-patrol-external/example.yml \
-  -o .github/workflows/docs-patrol-external.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/estc-docs-patrol-external/example.yml \
+  -o .github/workflows/estc-docs-patrol-external.yml
 ```
 
 See [example.yml](example.yml) for the full workflow file.

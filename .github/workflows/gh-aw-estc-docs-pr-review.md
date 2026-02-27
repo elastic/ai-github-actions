@@ -1,6 +1,6 @@
 ---
 inlined-imports: true
-name: "Docs PR Review"
+name: "Estc Docs PR Review"
 description: "Docs PR review from an Elastic technical writer perspective"
 imports:
   - gh-aw-fragments/elastic-tools.md
@@ -67,7 +67,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: docs-pr-review-${{ github.event.pull_request.number }}
+  group: estc-docs-pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
   contents: read

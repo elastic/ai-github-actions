@@ -45,7 +45,6 @@ These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves 
 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
-| [Docs PR Review](gh-agent-workflows/docs-pr-review.md) | `/docs-review` on PRs | Review docs for style guide, `applies_to`, and consistency |
 | [Plan](gh-agent-workflows/plan.md) | `/plan` in issues | Triage-style planning from comments with optional issue/sub-issue creation |
 | [Mention in Issue](gh-agent-workflows/mention-in-issue.md) | `/ai` in issues | Answer questions, debug, create PRs |
 | [Mention in PR](gh-agent-workflows/mention-in-pr.md) | `/ai` in PRs | Review, fix code, push changes |
@@ -60,7 +59,6 @@ These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves 
 | [Issue Triage](gh-agent-workflows/issue-triage.md) | New issues | Investigate and provide implementation plans |
 | [Issue Fixer](gh-agent-workflows/issue-fixer.md) | New issues | Triage plus automatic draft PR for straightforward fixes |
 | [PR Actions Detective](gh-agent-workflows/pr-actions-detective.md) | Failed PR checks | Diagnose failures and recommend fixes |
-| [PR Buildkite Detective](gh-agent-workflows/pr-buildkite-detective.md) | Failed PR checks | Diagnose Buildkite failures and recommend fixes |
 | [PR Review](gh-agent-workflows/pr-review.md) | PR opened/updated | AI code review with inline comments |
 | [PR Review (Fork)](gh-agent-workflows/pr-review-fork.md) | PR opened/updated (`pull_request_target`) | AI code review for fork PRs — **private repos or trusted contributors only** |
 | [Update PR Body](gh-agent-workflows/update-pr-body.md) | PR opened / updated / ready for review | Auto-populate PR description from diff and linked issues |
@@ -76,9 +74,7 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Bug Hunter](gh-agent-workflows/bug-hunter.md) | [Bug Exterminator](gh-agent-workflows/bug-exterminator.md) | Reproducible bugs |
 | [Code Duplication Detector](gh-agent-workflows/code-duplication-detector.md) | [Code Duplication Fixer](gh-agent-workflows/code-duplication-fixer.md) | Duplicate / clustered code |
 | [Docs Patrol](gh-agent-workflows/docs-patrol.md) | — | Stale internal documentation |
-| [Docs Patrol External](gh-agent-workflows/docs-patrol-external.md) | — | Stale published Elastic docs |
 | [Newbie Contributor Patrol](gh-agent-workflows/newbie-contributor-patrol.md) | [Newbie Contributor Fixer](gh-agent-workflows/newbie-contributor-fixer.md) | Onboarding documentation gaps |
-| [Newbie Contributor Patrol External](gh-agent-workflows/newbie-contributor-patrol-external.md) | — | Cross-referencing published docs |
 | [Text Auditor](gh-agent-workflows/text-auditor.md) | [Text Beautifier](gh-agent-workflows/text-beautifier.md) | User-facing text quality |
 
 #### Standalone scheduled workflows
@@ -89,7 +85,6 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Autonomy Atomicity Analyzer](gh-agent-workflows/autonomy-atomicity-analyzer.md) | Weekday schedule | Find patterns that block concurrent development by multiple agents or developers |
 | [Breaking Change Detector](gh-agent-workflows/breaking-change-detector.md) | Weekday schedule | Detect undocumented public breaking changes |
 | [Code Simplifier](gh-agent-workflows/code-simplifier.md) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
-| [Downstream Health](gh-agent-workflows/downstream-health.md) | Daily schedule | Monitor downstream repo quality |
 | [Flaky Test Investigator](gh-agent-workflows/flaky-test-investigator.md) | Weekday schedule + failed CI runs | Identify repeated flaky failures and file root-cause-first triage reports |
 | [Framework Best Practices](gh-agent-workflows/framework-best-practices.md) | Weekday schedule | Find where library-native features could replace hand-rolled solutions |
 | [Information Architecture](gh-agent-workflows/information-architecture.md) | Weekday schedule | Audit UI information architecture for navigation, placement, and consistency |
@@ -100,6 +95,33 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Small Problem Fixer](gh-agent-workflows/small-problem-fixer.md) | Weekday schedule | Fix small, related issues and open a focused PR |
 | [Stale Issues](gh-agent-workflows/stale-issues.md) | Weekday schedule | Find resolved issues that can be closed |
 | [Test Improver](gh-agent-workflows/test-improver.md) | Weekly schedule | Add targeted tests and clean up redundant coverage |
+
+### Elastic-specific workflows
+
+These workflows are tailored for Elastic's internal tooling and documentation platform. They reference Elastic's published documentation on `elastic.co/docs`, Elastic's style guide and `applies_to` tag conventions, or Elastic-owned infrastructure (Buildkite, downstream repositories). Use these if you are working in an Elastic repository.
+
+#### Human-coordinated
+
+| Workflow | Trigger | Description |
+| --- | --- | --- |
+| [Docs PR Review (Elastic-specific)](gh-agent-workflows/estc-docs-pr-review.md) | `/docs-review` on PRs | Review docs for Elastic style guide, `applies_to`, and consistency with elastic.co/docs |
+
+#### Event-driven
+
+| Workflow | Trigger | Description |
+| --- | --- | --- |
+| [PR Buildkite Detective (Elastic-specific)](gh-agent-workflows/estc-pr-buildkite-detective.md) | Failed PR checks | Diagnose Buildkite failures and recommend fixes |
+
+#### Scheduled
+
+| Detector | Fixer | Domain |
+| --- | --- | --- |
+| [Docs Patrol External (Elastic-specific)](gh-agent-workflows/estc-docs-patrol-external.md) | — | Stale published Elastic docs |
+| [Newbie Contributor Patrol External (Elastic-specific)](gh-agent-workflows/estc-newbie-contributor-patrol-external.md) | — | Cross-referencing published Elastic docs |
+
+| Workflow | Trigger | Description |
+| --- | --- | --- |
+| [Downstream Health (Elastic-specific)](gh-agent-workflows/estc-downstream-health.md) | Daily schedule | Monitor downstream Elastic repo quality |
 
 ## Secrets
 
