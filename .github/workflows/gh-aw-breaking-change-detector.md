@@ -104,6 +104,8 @@ For each commit (or cluster of related commits):
 - Read the PR body and related discussion for documentation or migration notes.
 - Check for documentation updates in README, DEVELOPING, RELEASE, gh-agent-workflows/README, or any `CHANGELOG*` files (if present).
 
+Use the **Pick Three, Keep One** pattern for the analysis: spawn 3 `general-purpose` sub-agents, each analyzing the recent commits from a different angle (e.g., one checking workflow/action interface changes, one checking documented guarantees, one checking downstream compatibility). Include the git log output, commit diffs, repo conventions, and the full "What to Look For" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
+
 ### What to Look For
 
 Focus on clearly public interface or behavior breaks, such as:

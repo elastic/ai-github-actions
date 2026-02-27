@@ -2,7 +2,7 @@
 
 Parallelize your work using sub-agents. Spawn 3 sub-agents, each approaching the task from a different angle — e.g., different focus areas, different heuristics, or different parts of the codebase. Each sub-agent works independently and should return its own list of findings.
 
-**How to spawn sub-agents:** Call `runSubagent` with the appropriate `agentType`. Unless the workflow specifies otherwise, use `general-purpose`. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
+**How to spawn sub-agents:** Call `runSubagent` with `agentType: "general-purpose"` and `model: "${{ inputs.model }}"` (unless the workflow specifies a different agent type or model). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
 
 - The full task description and objective (restate it, don't summarize)
 - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)

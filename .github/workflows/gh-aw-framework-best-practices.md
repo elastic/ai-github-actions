@@ -105,7 +105,9 @@ Your task is to analyze the codebase, identify the frameworks and libraries in u
    - Check configuration files for unnecessary complexity.
    - Look for TODOs or workaround comments that reference library limitations that may have been resolved in the current version.
 
-3. **Check for duplicates**
+3. Use the **Pick Three, Keep One** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each searching for library underuse from a different angle (e.g., one examining reimplemented library features and deprecated API patterns, one analyzing state management and UI framework underuse, one checking build tool configuration and testing patterns). Include the tech stack inventory, dependency versions, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
+
+4. **Check for duplicates**
    - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "${{ inputs.title-prefix }}"`.
    - Review `/tmp/previous-findings.json` for issues already filed by this agent.
 

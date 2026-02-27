@@ -97,7 +97,8 @@ Find a single reproducible, user-impacting bug in the repository that can be cov
 1. Review recent changes:
    - Run `git log --since="28 days ago" --stat` and identify candidates with user-facing impact.
    - Read the diffs and related files for each candidate.
-2. Reproduce locally — this step is **mandatory**, not optional:
+2. Use the **Pick Three, Keep One** pattern for the investigation phase: spawn 3 `general-purpose` sub-agents, each searching for bugs from a different angle (e.g., different subsystems, different bug categories, different recent commits). Include the git log output, repo conventions, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
+3. Reproduce locally — this step is **mandatory**, not optional. Do this yourself (not in a sub-agent):
    - Write a **new** minimal reproduction: a small script or test case that directly triggers the specific bug you identified through code analysis. Do **not** run the existing test suite (e.g. `make test`, `pytest`, `go test ./...`) — if you did not write the test, a failure is not your finding.
    - Capture the exact steps and output from your reproduction.
    - If you cannot write a concrete reproduction that fails due to the bug, do **not** file it. Call `noop` instead.

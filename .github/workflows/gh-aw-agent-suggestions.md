@@ -101,11 +101,13 @@ Suggest new agent workflows that would materially improve software development f
    - Search open PRs for new workflows: `repo:{owner}/{repo} is:pr is:open (agent OR workflow)`.
    - Search past reports: `repo:{owner}/{repo} is:issue in:title "${{ inputs.title-prefix }}"`.
 
-3. **Evaluate software development needs in this repo**
+3. Use the **Pick Three, Keep One** pattern for the data gathering phase: spawn 3 `general-purpose` sub-agents, each investigating from a different angle (e.g., different workflow categories, different improvement types such as new workflows vs. enhancements vs. integrations, different downstream repo segments). Include the existing workflow inventory, repo conventions, and the full "What to Suggest" criteria in each sub-agent prompt. Each sub-agent should return its best candidate suggestion with evidence or recommend `noop`.
+
+4. **Evaluate software development needs in this repo**
    - Review open issues and PRs updated in the last 30 days for recurring work patterns (maintenance, docs, testing, releases, dependency updates).
    - Identify any recurring tasks that are not already covered by existing agents.
 
-4. **Evaluate downstream activity**
+5. **Evaluate downstream activity**
    - Discover downstream repos using these workflows:
      `github-search_code: query="org:elastic elastic/ai-github-actions/.github/workflows/gh-aw- language:yaml"`.
    - For 3-5 active downstream repos, review open issues and PRs updated in the last 30 days.

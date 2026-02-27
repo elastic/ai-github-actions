@@ -64,6 +64,7 @@ Check for recent gh-aw releases and determine if our workflows need upgrading or
 3. Fetch recent gh-aw releases using `gh api repos/github/gh-aw/releases?per_page=10` to get the last 10 releases. Identify all releases newer than our pinned version.
 4. If we are already on the latest release, report no findings and stop.
 5. For each newer release, read the release notes (the `body` field). Also fetch the CHANGELOG if needed: `web-fetch` from `https://raw.githubusercontent.com/github/gh-aw/main/CHANGELOG.md`.
+6. Use the **Pick Three, Keep One** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each assessing upgrade impact from a different angle (e.g., one checking for breaking changes and deprecated features we rely on, one evaluating new features and safe-output changes we should adopt, one analyzing bug fixes and security patches relevant to our workflows). Include our current workflow configurations, pinned version, release notes, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
 
 ### What to Look For
 

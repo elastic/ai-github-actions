@@ -121,7 +121,7 @@ Follow these steps in order.
 
 ### Step 2: Review Each File
 
-Follow the **Pick Three, Keep All** process above — spawn 3 `code-review` sub-agents to review the PR diff in parallel from different angles, then merge and deduplicate their findings. Use the **Code Review Reference** below as the review criteria and comment format for your final inline comments.
+Follow the **Pick Three, Keep All** process above — spawn 3 `code-review` sub-agents to review the PR diff in parallel from different angles (e.g., security/input validation, logic correctness/edge cases, error handling/resource management). Include the full PR diff, file contents, repo conventions from `generate_agents_md`, the **Code Review Reference** criteria below, existing review threads, and the severity/intensity settings in each sub-agent prompt. After merging and deduplicating their findings, leave your own inline comments using the **Code Review Reference** format below.
 
 ### Step 3: Submit the Review
 

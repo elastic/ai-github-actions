@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1a0d790e4ccbf538811153c7ae6e4181711ec8a4fd6c1b9eb3fe9ab718f2fdff"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"85df52c7c48e1c6f376a5411a36e2f16039e99da97836d1d62382e5b62302da0"}
 
 name: "Internal: Workflow Patrol"
 "on":
@@ -77,7 +77,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@a3f172723f38e69150d0fccec5133c601899c7a9
+        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
         with:
           destination: /opt/gh-aw/actions
       - name: Validate COPILOT_GITHUB_TOKEN secret
@@ -123,6 +123,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
         run: |
           bash /opt/gh-aw/actions/create_prompt_first.sh
           {
@@ -324,7 +325,7 @@ jobs:
           
           Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return a complete candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`.
           
-          **How to spawn sub-agents:** Call `runSubagent` with the appropriate `agentType`. Unless the workflow specifies otherwise, use `general-purpose`. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
+          **How to spawn sub-agents:** Call `runSubagent` with `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` (unless the workflow specifies a different agent type or model). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
@@ -369,6 +370,7 @@ jobs:
           2. Read all `.github/workflows/gh-aw-fragments/*.md` files (the shared fragments).
           3. Read all `.github/workflows/trigger-*.yml` files and all `gh-agent-workflows/*/example.yml` files.
           4. Check for open issues with the `[workflow-patrol]` title prefix to avoid duplicating already-tracked findings.
+          5. Use the **Pick Three, Keep One** pattern for the reading phase: spawn 3 `general-purpose` sub-agents, each analyzing workflows from a different angle (e.g., different workflow aspects such as triggers/permissions/naming conventions, different workflow groups such as scheduled vs. workflow_call vs. internal, different structural dimensions such as frontmatter fields vs. prompt structure vs. fragment usage). Include the full list of workflow files, fragment contents, and trigger/example files in each sub-agent prompt. Each sub-agent should return its best candidate drift finding with evidence or recommend `noop`.
           
           #### Step 2: Discover majority patterns
           
@@ -413,6 +415,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -431,6 +434,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -449,7 +453,8 @@ jobs:
                 GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: process.env.GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER,
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
-                GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE
+                GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
+                GH_AW_INPUTS_MODEL: process.env.GH_AW_INPUTS_MODEL
               }
             });
       - name: Validate prompt placeholders
@@ -495,7 +500,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@a3f172723f38e69150d0fccec5133c601899c7a9
+        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -1271,7 +1276,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@a3f172723f38e69150d0fccec5133c601899c7a9
+        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1371,7 +1376,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@a3f172723f38e69150d0fccec5133c601899c7a9
+        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact

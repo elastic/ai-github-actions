@@ -101,6 +101,7 @@ Use a lookback window of `--since="${{ inputs.lookback-window }}"` for all runs 
 1. Run `git log --since="${{ inputs.lookback-window }}" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
 2. For each commit, read the full diff to understand what user-facing patterns were added or changed.
 3. Discover existing user-facing patterns in the codebase dynamically — search for related code in source files, templates, and configuration that handles output, prompts, messages, or other user interactions.
+4. Use the **Pick Three, Keep One** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each checking for design drift from a different angle (e.g., one focusing on output/message formatting and CLI flag naming, one examining confirmation dialogs and status/state representation, one auditing color/icon/symbol usage and loading/progress indicators). Include the git log output, recent diffs, existing pattern inventory, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
 
 ### What to Look For
 

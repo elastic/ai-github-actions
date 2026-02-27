@@ -104,7 +104,9 @@ Your task is to analyze the codebase and identify concrete information architect
    - Compare similar features for layout consistency.
    - Look at how the app handles edge cases: no data, loading states, errors, onboarding.
 
-3. **Check for duplicates**
+3. Use the **Pick Three, Keep One** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each evaluating the information architecture from a different angle (e.g., one analyzing navigation flow and dead ends, one examining action/picker placement and progressive disclosure, one auditing grouping/hierarchy consistency and empty states across feature areas). Include the product context, component tree structure, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
+
+4. **Check for duplicates**
    - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "${{ inputs.title-prefix }}"`.
    - Review `/tmp/previous-findings.json` for issues already filed by this agent.
 

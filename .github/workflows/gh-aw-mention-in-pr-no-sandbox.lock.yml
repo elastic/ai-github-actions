@@ -122,7 +122,7 @@ jobs:
       title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@a3f172723f38e69150d0fccec5133c601899c7a9
+        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
         with:
           destination: /opt/gh-aw/actions
       - name: Validate COPILOT_GITHUB_TOKEN secret
@@ -651,7 +651,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@a3f172723f38e69150d0fccec5133c601899c7a9
+        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -1585,7 +1585,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@a3f172723f38e69150d0fccec5133c601899c7a9
+        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1677,7 +1677,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@a3f172723f38e69150d0fccec5133c601899c7a9
+        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
         with:
           destination: /opt/gh-aw/actions
       - name: Add eyes reaction for immediate feedback
@@ -1732,7 +1732,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@a3f172723f38e69150d0fccec5133c601899c7a9
+        uses: github/gh-aw/actions/setup@fa00c211a1435b633eb568b1b41a203486ec760d # v0.50.6
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
