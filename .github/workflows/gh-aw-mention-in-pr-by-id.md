@@ -99,7 +99,7 @@ safe-outputs:
     target: "${{ inputs.target-pr-number }}"
   push-to-pull-request-branch:
     target: "${{ inputs.target-pr-number }}"
-    github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN || secrets.GH_AW_GITHUB_TOKEN }}
+    github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 timeout-minutes: 60
 steps:
   - name: Ensure origin refs for PR patch generation
@@ -126,7 +126,7 @@ Assist with pull request #${{ inputs.target-pr-number }} on ${{ github.repositor
 
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ inputs.target-pr-number }}
-- **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Read from these files instead of calling the API.
+- **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
 - **Request**: "${{ inputs.prompt }}"
 
 ## Constraints

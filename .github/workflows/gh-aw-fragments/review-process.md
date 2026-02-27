@@ -21,13 +21,14 @@ steps:
 
       Review the PR diff file by file in your assigned order. For each changed file:
 
-      1. **Read the diff** for this file from `/tmp/pr-context/diffs/<filename>.diff` to understand what changed.
+      1. **Read the diff** for this file from `/tmp/pr-context/diffs/<filename>.diff` to understand what changed. If the diff is empty or truncated (e.g., binary files or very large changes), fall back to reading the full file from the workspace and comparing against context.
       2. **Read the full file from the workspace.** The PR branch is checked out locally — open the file directly to get complete contents with line numbers.
       3. **Check existing threads** for this file from `/tmp/pr-context/threads/<filename>.json` (if it exists). Skip issues that are already under discussion — each thread has `isResolved` and `isOutdated` fields.
       4. **Identify potential issues** matching the review criteria below.
       5. **Quick-check each issue** before including it:
          - What specific code pattern or change triggers this concern?
          - Is there an obvious guard, handler, or mitigation visible in the immediate context?
+         - Can you describe a concrete failure scenario (the `evidence` field)? If you cannot articulate what specific input or state triggers the problem, drop the finding.
          - If the issue is clearly handled, skip it. If you're unsure, include it — the parent will verify.
       6. **Add to your findings list.** Do NOT leave inline comments — you don't have that tool. Return findings in this format:
 
@@ -71,7 +72,7 @@ steps:
       - **Performance — theoretical, not practical:** Don't flag algorithmic complexity (e.g., O(n^2)) unless N is demonstrably large enough to matter in the actual usage context. "This could be slow" without evidence is not actionable.
       - **Validation — exists at another layer:** Don't flag missing input validation if it's handled by an API gateway, middleware, schema validator, or type system.
       - **Test coverage — trivial or generated code:** Don't flag missing tests for trivial getters/setters, auto-generated code, or simple delegation methods.
-      - **Style or naming — not in coding guidelines:** Don't flag naming conventions or code style unless they violate the repository's documented coding guidelines (from `/tmp/pr-context/agents.md` or CONTRIBUTING docs).
+      - **Style or naming — not in coding guidelines:** Don't flag naming conventions or code style unless they violate the repository's documented coding guidelines (from `generate_agents_md` or CONTRIBUTING docs).
 
       **Existing review threads** — check BEFORE flagging any issue:
 
@@ -88,18 +89,18 @@ steps:
 
       Determine severity AFTER investigating the issue, not before. First identify the problem and trace through the code, then assign a severity based on the evidence you found.
 
-      - CRITICAL — Must fix before merge (security vulnerabilities, data corruption, production-breaking bugs)
-      - HIGH — Should fix before merge (logic errors, missing validation, significant performance issues)
-      - MEDIUM — Address soon, non-blocking (error handling gaps, suboptimal patterns, missing edge cases)
-      - LOW — Author discretion (minor improvements, documentation gaps)
-      - NITPICK — Truly optional (stylistic preferences, alternative approaches)
+      - 🔴 CRITICAL — Must fix before merge (security vulnerabilities, data corruption, production-breaking bugs)
+      - 🟠 HIGH — Should fix before merge (logic errors, missing validation, significant performance issues)
+      - 🟡 MEDIUM — Address soon, non-blocking (error handling gaps, suboptimal patterns, missing edge cases)
+      - ⚪ LOW — Author discretion (minor improvements, documentation gaps)
+      - 💬 NITPICK — Truly optional (stylistic preferences, alternative approaches)
 
       ## Review Intensity
 
-      The review intensity defaults to `balanced`. Your prompt specifies which intensity to use.
+      The review intensity is `${{ inputs.intensity || 'balanced' }}`.
 
       - **conservative**: High evidence bar. Only flag when you can demonstrate a concrete failure scenario. If you can construct a reasonable counterargument, do not flag. Approval with zero findings is the expected outcome for most PRs.
-      - **balanced** (default): Standard evidence bar. Flag when you can point to specific code that would fail. If the issue is ambiguous, lean toward not flagging.
+      - **balanced**: Standard evidence bar. Flag when you can point to specific code that would fail. If the issue is ambiguous, lean toward not flagging.
       - **aggressive**: Lower evidence bar. Flag when evidence exists even if the failure scenario is not fully confirmed. Improvement suggestions welcome but must cite specific code.
 
       ## Calibration Examples
@@ -190,7 +191,7 @@ Only include a `suggestion` block when you can provide a concrete code fix that 
 
 ### Inline Comment Threshold
 
-The minimum severity for inline comments defaults to `low`.
+The minimum severity for inline comments is `${{ inputs.minimum_severity || 'low' }}`.
 
 Issues at or above the threshold get **inline review comments** on the specific code line. Issues below the threshold should be collected into a **collapsible section** of the review body instead — use a `<details>` block titled "Lower-priority observations (N)" with each item listing its severity, title, file:line, and why it matters.
 
@@ -247,10 +248,10 @@ Determine severity AFTER investigating the issue, not before. First identify the
 
 ### Review Intensity
 
-The review intensity defaults to `balanced`.
+The review intensity is `${{ inputs.intensity || 'balanced' }}`.
 
 - **`conservative`**: High evidence bar. Only comment when you can demonstrate a concrete failure scenario — what specific input or state triggers the bug. After identifying a potential issue, explicitly challenge your own finding: if you can construct a reasonable counterargument, do not comment. Give the author maximum benefit of the doubt. Approval with zero comments is the expected outcome for most PRs.
-- **`balanced`** (default): Standard evidence bar. Comment when you can point to specific code that would fail and have verified the issue through the full verification protocol. Give the author reasonable benefit of the doubt — if the issue is ambiguous, lean toward not commenting.
+- **`balanced`**: Standard evidence bar. Comment when you can point to specific code that would fail and have verified the issue through the full verification protocol. Give the author reasonable benefit of the doubt — if the issue is ambiguous, lean toward not commenting.
 - **`aggressive`**: Lower evidence bar. Comment when evidence exists even if the failure scenario is not fully confirmed. Improvement suggestions and alternative approaches are welcome but must still cite specific code. Do not speculate without any evidence, and do not duplicate existing threads.
 
 If the value is unrecognized, treat it as `balanced`.

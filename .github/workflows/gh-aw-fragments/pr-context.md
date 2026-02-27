@@ -13,7 +13,10 @@ steps:
         > /tmp/pr-context/pr.json
 
       # Full diff
-      gh pr diff "$PR_NUMBER" > /tmp/pr-context/pr.diff || true
+      if ! gh pr diff "$PR_NUMBER" > /tmp/pr-context/pr.diff; then
+        echo "::warning::Failed to fetch full PR diff; per-file diffs from files.json are still available."
+        : > /tmp/pr-context/pr.diff
+      fi
 
       # Changed files list (--paginate may output concatenated arrays; jq -s 'add' merges them)
       gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate \
@@ -80,7 +83,8 @@ steps:
         | jq -s 'add // []' > /tmp/pr-context/comments.json
 
       # Linked issues
-      grep -oiP '(?:fixes|closes|resolves)\s+#\K\d+' /tmp/pr-context/pr.json 2>/dev/null \
+      grep -oiE '(fixes|closes|resolves)\s+#[0-9]+' /tmp/pr-context/pr.json 2>/dev/null \
+        | grep -oE '[0-9]+$' \
         | sort -u \
         | while read -r issue; do
             gh api "repos/$GITHUB_REPOSITORY/issues/$issue" > "/tmp/pr-context/issue-${issue}.json" || true
@@ -113,4 +117,4 @@ steps:
 
 ## PR Context
 
-PR data is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files. Use these files instead of making API calls for PR metadata, diffs, reviews, comments, and linked issues.
+PR data is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files. Use these as your primary source for PR metadata, diffs, reviews, comments, and linked issues; fall back to API tools only when required data is unavailable.

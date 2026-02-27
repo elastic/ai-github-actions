@@ -116,7 +116,7 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ github.event.issue.number }} — ${{ github.event.issue.title }}
-- **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Read from these files instead of calling the API.
+- **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
 - **Request**: "${{ steps.sanitized.outputs.text }}"
 
 ## Constraints
@@ -138,6 +138,7 @@ PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md
 2. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches).
 3. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
 4. Read `/tmp/pr-context/comments.json` and `/tmp/pr-context/review_comments.json` to understand the conversation context and what's being asked.
+5. Do not modify, review, comment on, or resolve threads for any PR other than #${{ github.event.issue.number }}.
 
 ### Step 2: Handle the Request
 
@@ -146,7 +147,7 @@ Based on what's asked, do the appropriate thing:
 **If asked to review the PR:**
 - Read `/tmp/pr-context/review_comments.json` and `/tmp/pr-context/reviews.json` to check existing threads and prior reviews — do not duplicate feedback.
 - Review each changed file one at a time using diffs from `/tmp/pr-context/diffs/`. For each file:
-  1. Read the diff from `/tmp/pr-context/diffs/<filename>.diff`
+  1. Read the diff from `/tmp/pr-context/diffs/<filename>.diff`. If the diff is empty or truncated (e.g., binary files or very large changes), fall back to running `git diff` against the base branch or compare the full file against context.
   2. Read the full file from the workspace (the PR branch is checked out)
   3. Check existing threads from `/tmp/pr-context/threads/<filename>.json` (if it exists) — skip issues already flagged
   4. Identify and verify issues per the **Code Review Reference** above

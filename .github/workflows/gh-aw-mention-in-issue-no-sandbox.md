@@ -78,6 +78,7 @@ tools:
   web-fetch:
 safe-outputs:
   activation-comments: false
+  max-patch-size: 10240
   threat-detection: false
 strict: false
 timeout-minutes: 60

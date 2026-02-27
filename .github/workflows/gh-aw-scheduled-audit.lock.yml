@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"133b3c7db62e249d33a5075ad15dffc5a4e4ef8d31f07443c843a0fa9f52731c"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"94cf40207057a60016559ed389bebb6a2b93d7f246dc5726a00481a8100f2cb8"}
 
 name: "Scheduled Audit"
 "on":
@@ -301,7 +301,7 @@ jobs:
           - **Assignees**: Max 5 assignees per issue.
           - **Body**: No strict character limit beyond GitHub's API limit (~65,536 characters), but fields over 16,000 tokens are written to a file reference instead of inlined.
           - **Bot triggers**: References like `fixes #123` or `closes #456` in the body are neutralized to prevent unintended issue closures.
-          - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
+          - **Mentions**: `@mentions` in the body are neutralized (backticked).
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
@@ -543,7 +543,7 @@ jobs:
       - env:
           GH_TOKEN: ${{ github.token }}
           TITLE_PREFIX: ${{ inputs.title-prefix }}
-        if: ${{ inputs.close-older-issues != 'true' }}
+        if: ${{ !inputs.close-older-issues }}
         name: List previous findings
         run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }\n"
       - env:

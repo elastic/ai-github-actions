@@ -82,7 +82,7 @@ safe-outputs:
 timeout-minutes: 90
 steps:
   - name: List previous findings
-    if: ${{ inputs.close-older-issues != 'true' }}
+    if: ${{ !inputs.close-older-issues }}
     env:
       GH_TOKEN: ${{ github.token }}
       TITLE_PREFIX: ${{ inputs.title-prefix }}
