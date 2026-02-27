@@ -37,7 +37,11 @@
 #
 # inlined-imports: true
 #
+<<<<<<< copilot/expose-github-token-input
 # gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"604c4bb3f3a33a3fdea31d9e7433048d5483ffc156c9ee6ec75a7c9100f451eb"}
+=======
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"fb9cb61d1c7bc9a1ef3adc355056c47c15620699f4ae199addc698133f2b0298"}
+>>>>>>> main
 
 name: "Scheduled Fix"
 "on":
@@ -73,10 +77,6 @@ name: "Scheduled Fix"
         description: Label to search for in open issues
         required: false
         type: string
-      issue-title-prefix:
-        description: Title prefix to search for in open issues, e.g. '[text-auditor]'
-        required: true
-        type: string
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -92,6 +92,10 @@ name: "Scheduled Fix"
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
         required: false
         type: string
+      title-prefix:
+        description: Title prefix to search for in open issues, e.g. '[text-auditor]'
+        required: true
+        type: string
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -100,7 +104,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: scheduled-fix-${{ inputs.issue-title-prefix }}
+  group: scheduled-fix-${{ inputs.title-prefix }}
 
 run-name: "Scheduled Fix"
 
@@ -151,7 +155,7 @@ jobs:
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_955E52F5: ${{ inputs.issue-label }}
-          GH_AW_EXPR_CE96317F: ${{ inputs.issue-title-prefix }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -372,7 +376,7 @@ jobs:
           Search for open issues matching the configured title prefix:
           
           ````text
-          github-search_issues: query="repo:{owner}/{repo} is:issue is:open in:title \"__GH_AW_EXPR_CE96317F__\" sort:updated-asc"
+          github-search_issues: query="repo:{owner}/{repo} is:issue is:open in:title \"__GH_AW_EXPR_BF503D80__\" sort:updated-asc"
           ````
           
           If `__GH_AW_EXPR_955E52F5__` is not empty, also search by label:
@@ -393,7 +397,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_955E52F5: ${{ inputs.issue-label }}
-          GH_AW_EXPR_CE96317F: ${{ inputs.issue-title-prefix }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -406,7 +410,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_955E52F5: ${{ inputs.issue-label }}
-          GH_AW_EXPR_CE96317F: ${{ inputs.issue-title-prefix }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -429,7 +433,7 @@ jobs:
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
                 GH_AW_EXPR_955E52F5: process.env.GH_AW_EXPR_955E52F5,
-                GH_AW_EXPR_CE96317F: process.env.GH_AW_EXPR_CE96317F,
+                GH_AW_EXPR_BF503D80: process.env.GH_AW_EXPR_BF503D80,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -541,7 +545,7 @@ jobs:
         shell: bash
       - env:
           GH_TOKEN: ${{ github.token }}
-          TITLE_PREFIX: ${{ inputs.issue-title-prefix }}
+          TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
         run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }\n"
       - env:
