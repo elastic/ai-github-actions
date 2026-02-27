@@ -1,7 +1,7 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.50.4
+GH_AW_VERSION := 3c15f58f43054a10fa3173200611a0a76182c446 # Main on 02/27/2026
 GH_AW_COMPAT_VERSION := v0.49.4
 
 # Workflows that must be compiled with the compat compiler
@@ -121,10 +121,12 @@ setup-gh-aw:
 		echo "Error: Go is required to install gh-aw compiler."; \
 		echo "Install Go: https://go.dev/dl/"; \
 		exit 1; \
-	elif [ -x ".bin/gh-aw" ] && .bin/gh-aw version 2>/dev/null | grep -q "$(GH_AW_VERSION)"; then \
+	elif case "$(GH_AW_VERSION)" in v*) true ;; *) false ;; esac && \
+	     [ -x ".bin/gh-aw" ] && .bin/gh-aw version 2>/dev/null | grep -q "$(GH_AW_VERSION)"; then \
 		echo "✓ gh-aw compiler already installed: $(GH_AW_VERSION)"; \
 	else \
 		echo "Installing gh-aw compiler $(GH_AW_VERSION) from github/gh-aw..."; \
+		$(if $(filter v%,$(GH_AW_VERSION)),,GONOSUMDB=github.com/github/gh-aw) \
 		GOBIN="$(CURDIR)/.bin" go install github.com/github/gh-aw/cmd/gh-aw@$(GH_AW_VERSION) && \
 		echo "✓ gh-aw compiler installed: $$(.bin/gh-aw version)"; \
 	fi
@@ -136,11 +138,13 @@ setup-gh-aw-compat:
 		echo "Error: Go is required to install gh-aw compiler."; \
 		echo "Install Go: https://go.dev/dl/"; \
 		exit 1; \
-	elif [ -x ".bin/gh-aw-compat" ] && .bin/gh-aw-compat version 2>/dev/null | grep -q "$(GH_AW_COMPAT_VERSION)"; then \
+	elif case "$(GH_AW_COMPAT_VERSION)" in v*) true ;; *) false ;; esac && \
+	     [ -x ".bin/gh-aw-compat" ] && .bin/gh-aw-compat version 2>/dev/null | grep -q "$(GH_AW_COMPAT_VERSION)"; then \
 		echo "✓ gh-aw compat compiler already installed: $(GH_AW_COMPAT_VERSION)"; \
 	else \
 		echo "Installing gh-aw compat compiler $(GH_AW_COMPAT_VERSION) from github/gh-aw..."; \
 		TMPGOBIN=$$(mktemp -d) && \
+		$(if $(filter v%,$(GH_AW_COMPAT_VERSION)),,GONOSUMDB=github.com/github/gh-aw) \
 		GOBIN="$$TMPGOBIN" go install github.com/github/gh-aw/cmd/gh-aw@$(GH_AW_COMPAT_VERSION) && \
 		mv "$$TMPGOBIN/gh-aw" .bin/gh-aw-compat && \
 		rm -rf "$$TMPGOBIN" && \

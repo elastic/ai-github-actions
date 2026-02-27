@@ -8,7 +8,7 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/best-of-three-investigation.md
+  - gh-aw-fragments/pick-three-keep-one.md
   - gh-aw-fragments/safe-output-create-pr.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -50,6 +50,8 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -112,7 +114,8 @@ A simplification must clear at least one of these bars to be worth submitting:
 ## Step 1: Find candidates
 
 1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-2. Use search and file reading to identify overcomplicated code:
+2. Use the **Pick Three, Keep One** pattern for the candidate search: spawn 3 `general-purpose` sub-agents, each searching for simplification opportunities from a different angle (e.g., different complexity metrics such as cyclomatic complexity vs. nesting depth vs. function length, different modules or directories, different simplification types such as dead code removal vs. helper reuse vs. control flow flattening). Include the repo conventions, the full "Bar for merit" criteria, and the "Constraints" in each sub-agent prompt. Each sub-agent should return its best candidate simplification with file paths and evidence or recommend `noop`.
+3. Use search and file reading to identify overcomplicated code:
    - deep nesting
    - redundant conditionals
    - duplicated logic

@@ -12,7 +12,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/previous-findings.md
-  - gh-aw-fragments/best-of-three-investigation.md
+  - gh-aw-fragments/pick-three-keep-one.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -98,7 +98,9 @@ You are a senior software architect reviewing this codebase with fresh eyes. You
    - Read `README.md`, `CONTRIBUTING.md`, `DEVELOPING.md`, and any architecture docs.
    - Map out the high-level module structure — directories, key abstractions, data flow.
 
-2. **Identify structural pain points**
+2. Use the **Pick Three, Keep One** pattern for the data gathering phase: spawn 3 `general-purpose` sub-agents, each investigating from a different angle (e.g., different code quality dimensions such as complexity vs. coupling vs. cohesion, different modules or directories, different refactor signals such as duplication vs. layering violations vs. high-churn areas). Include the architecture overview, repo conventions, and the full "Noop" criteria in each sub-agent prompt. Each sub-agent should return its best candidate refactor target with evidence or recommend `noop`.
+
+3. **Identify structural pain points**
    - Look for: tangled dependencies, duplicated patterns across modules, inconsistent abstractions, overly complex indirection, modules doing too many things, or clear layering violations.
    - Review `git log --since="60 days ago" --stat` for files that frequently change together (coupling signal) or areas with high churn.
    - Check recent PRs and issues for complaints about code being "hard to change," "confusing," or "duplicated."

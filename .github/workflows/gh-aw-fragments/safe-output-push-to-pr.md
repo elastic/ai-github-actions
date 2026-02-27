@@ -2,20 +2,20 @@
 safe-inputs:
   ready-to-make-pr:
     description: "Run the PR readiness checklist before creating or updating a PR"
-    script: |
-      const fs = require('fs');
-      const find = (...paths) => paths.find(p => fs.existsSync(p)) || null;
-      const contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md');
-      const prTemplate = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md');
-      const checklist = [];
-      if (contributing) checklist.push(`Review the contributing guide (${contributing}) before opening or updating a PR.`);
-      if (prTemplate) checklist.push(`Follow the PR template (${prTemplate}) for title, description, and validation notes.`);
-      checklist.push('Confirm the requested task is fully completed and validated before creating or pushing PR changes.');
-      const result = { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
-      console.log(JSON.stringify(result));
-      return result;
+    py: |
+      import os, json
+      def find(*paths):
+          return next((p for p in paths if os.path.isfile(p)), None)
+      contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
+      pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
+      checklist = []
+      if contributing: checklist.append(f'Review the contributing guide ({contributing}) before opening or updating a PR.')
+      if pr_template: checklist.append(f'Follow the PR template ({pr_template}) for title, description, and validation notes.')
+      checklist.append('Confirm the requested task is fully completed and validated before creating or pushing PR changes.')
+      print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template}))
 safe-outputs:
   push-to-pull-request-branch:
+    github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 ---
 
 Before calling `push_to_pull_request_branch`, call `ready_to_make_pr` and apply its checklist.

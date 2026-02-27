@@ -34,7 +34,7 @@ See [example.yml](example.yml) for the full workflow file. You **must** customiz
 | Input | Description | Required | Default |
 | --- | --- | --- | --- |
 | `additional-instructions` | What the audit agent should investigate (the Report Assignment) | **Yes** | — |
-| `issue-title-prefix` | Title prefix for created issues, e.g. `[my-audit]` | **Yes** | — |
+| `title-prefix` | Title prefix for created issues, e.g. `[my-audit]` | **Yes** | — |
 | `issue-label` | Label to apply to created issues | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |

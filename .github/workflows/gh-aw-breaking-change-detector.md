@@ -12,7 +12,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/previous-findings.md
-  - gh-aw-fragments/best-of-three-investigation.md
+  - gh-aw-fragments/pick-three-keep-many.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -103,6 +103,8 @@ For each commit (or cluster of related commits):
 - Map commits to PRs using `github-search_pull_requests` with query `repo:{owner}/{repo} sha:<sha>`.
 - Read the PR body and related discussion for documentation or migration notes.
 - Check for documentation updates in README, DEVELOPING, RELEASE, gh-agent-workflows/README, or any `CHANGELOG*` files (if present).
+
+Use the **Pick Three, Keep Many** pattern for the analysis: spawn 3 `general-purpose` sub-agents, each analyzing the recent commits from a different angle (e.g., one checking workflow/action interface changes, one checking documented guarantees, one checking downstream compatibility). Include the git log output, commit diffs, repo conventions, and the full "What to Look For" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
 
 ### What to Look For
 

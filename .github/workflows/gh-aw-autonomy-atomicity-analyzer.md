@@ -11,7 +11,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/previous-findings.md
-  - gh-aw-fragments/best-of-three-investigation.md
+  - gh-aw-fragments/pick-three-keep-one.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -105,7 +105,9 @@ Your task is to analyze the codebase for autonomy and atomicity blockers — pat
    - Check for module-level mutable state (e.g., `let` declarations at module scope, mutable singletons).
    - Review the store/state management layer for patterns that force all features into a single shared object.
 
-3. **Check for duplicates**
+3. Use the **Pick Three, Keep One** pattern for the investigation phase: spawn 3 `general-purpose` sub-agents, each analyzing different blocker categories (e.g., one focusing on global mutable state and shared configuration hotspots, one scanning for manual routing/registration and god files, one examining over-broad tests and implicit ordering dependencies). Include the architecture overview, module structure, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
+
+4. **Check for duplicates**
    - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "${{ inputs.title-prefix }}"`.
    - Review `/tmp/previous-findings.json` for issues already filed by this agent.
 
