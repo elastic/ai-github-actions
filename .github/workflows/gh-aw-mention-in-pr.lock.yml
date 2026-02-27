@@ -44,7 +44,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"affe08920d1c4ba2226a98abdbbc52af6558ad956d13c6ce3a53caf8dd435957"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8d20590bf294d888940de1885bc1e17dba9d0e7a58b0808cdac0022034157222"}
 
 name: "Mention in PR"
 "on":
@@ -526,8 +526,8 @@ jobs:
           - Read `/tmp/pr-context/review_comments.json` to see open review threads and understand what needs to be addressed.
           - For each unresolved thread you address:
              - Make the code changes in the workspace.
-             - Call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
-             - If you disagree with feedback or it's unclear, reply explaining your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
+             - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
+             - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
           - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
           - Commit your changes locally, then use `push_to_pull_request_branch` to push them.
           - After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
@@ -1336,17 +1336,29 @@ jobs:
                   return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
           contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
           pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
-          # Generate diff of all local changes (committed + staged + unstaged) vs upstream
-          diff_result = run(['git', 'diff', '--merge-base', '@{upstream}'])
-          diff_text = diff_result.stdout.strip()
-          if not diff_text:
-              diff_result = run(['git', 'diff', 'HEAD'])
-              diff_text = diff_result.stdout.strip()
-          stat_result = run(['git', 'diff', '--stat', '--merge-base', '@{upstream}'])
-          stat_text = stat_result.stdout.strip()
-          if not stat_text:
-              stat_result = run(['git', 'diff', '--stat', 'HEAD'])
-              stat_text = stat_result.stdout.strip()
+          # Generate diff of all local changes vs upstream for self-review
+          # Try --merge-base (committed+staged+unstaged vs upstream), fall back to
+          # @{upstream} 2-dot (committed only), then HEAD (uncommitted only)
+          diff_text = ''
+          for diff_cmd in [
+              ['git', 'diff', '--merge-base', '@{upstream}'],
+              ['git', 'diff', '@{upstream}'],
+              ['git', 'diff', 'HEAD'],
+          ]:
+              result = run(diff_cmd)
+              if result.stdout.strip():
+                  diff_text = result.stdout.strip()
+                  break
+          stat_text = ''
+          for stat_cmd in [
+              ['git', 'diff', '--stat', '--merge-base', '@{upstream}'],
+              ['git', 'diff', '--stat', '@{upstream}'],
+              ['git', 'diff', '--stat', 'HEAD'],
+          ]:
+              result = run(stat_cmd)
+              if result.stdout.strip():
+                  stat_text = result.stdout.strip()
+                  break
           os.makedirs('/tmp/self-review', exist_ok=True)
           with open('/tmp/self-review/diff.patch', 'w') as f:
               f.write(diff_text)
@@ -1357,7 +1369,8 @@ jobs:
           if contributing: checklist.append(f'Review the contributing guide ({contributing}) before opening or updating a PR.')
           if pr_template: checklist.append(f'Follow the PR template ({pr_template}) for title, description, and validation notes.')
           checklist.append('Confirm the requested task is fully completed and validated before creating or pushing PR changes.')
-          checklist.append(f'A diff of your unpushed changes ({diff_line_count} lines) has been saved to `/tmp/self-review/diff.patch` (full diff) and `/tmp/self-review/stat.txt` (summary). Spawn a `code-review` sub-agent via `runSubagent` to review the diff against the codebase. Tell it to read `/tmp/self-review/diff.patch` and the relevant source files, and look for bugs, logic errors, missed edge cases, and style issues. If the sub-agent finds legitimate issues, fix them, commit, and call `ready_to_make_pr` again to regenerate the diff before proceeding.')
+          if diff_line_count > 0:
+              checklist.append(f'A diff of your unpushed changes ({diff_line_count} lines) has been saved to `/tmp/self-review/diff.patch` (full diff) and `/tmp/self-review/stat.txt` (summary). Spawn a `code-review` sub-agent via `runSubagent` to review the diff against the codebase. Tell it to read `/tmp/self-review/diff.patch` and the relevant source files, and look for bugs, logic errors, missed edge cases, and style issues. If the sub-agent finds legitimate issues, fix them, commit, and call `ready_to_make_pr` again to regenerate the diff before proceeding.')
           print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template, 'diff_line_count': diff_line_count}))
           
           

@@ -168,8 +168,8 @@ Based on what's asked, do the appropriate thing:
 - Read `/tmp/pr-context/review_comments.json` to see open review threads and understand what needs to be addressed.
 - For each unresolved thread you address:
    - Make the code changes in the workspace.
-   - Call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
-   - If you disagree with feedback or it's unclear, reply explaining your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
+   - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
+   - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
 - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
 - Commit your changes locally, then use `push_to_pull_request_branch` to push them.
 - After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
