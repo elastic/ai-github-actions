@@ -55,12 +55,12 @@ on:
       COPILOT_GITHUB_TOKEN:
         required: true
       BUILDKITE_API_TOKEN:
-        required: true
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: pr-buildkite-detective-${{ github.run_id }}
+  group: estc-pr-buildkite-detective-${{ github.run_id }}
   cancel-in-progress: false
 permissions:
   actions: read
@@ -80,11 +80,25 @@ mcp-servers:
 network:
   allowed:
     - "mcp.buildkite.com"
+    - "buildkite.com"
 safe-outputs:
   activation-comments: false
 strict: false
 timeout-minutes: 30
 steps:
+  - name: Resolve event context
+    run: |
+      set -euo pipefail
+      echo "BK_EVENT_NAME=$GITHUB_EVENT_NAME" >> "$GITHUB_ENV"
+      if [ "$GITHUB_EVENT_NAME" = "status" ]; then
+        echo "BK_EVENT_ID=$(jq -r '.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+        echo "BK_FAILURE_STATE=$(jq -r '.state' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+        echo "BK_COMMIT_SHA=$(jq -r '.sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+      else
+        echo "BK_EVENT_ID=$(jq -r '.check_run.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+        echo "BK_FAILURE_STATE=$(jq -r '.check_run.conclusion' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+        echo "BK_COMMIT_SHA=$(jq -r '.check_run.head_sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+      fi
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
@@ -99,10 +113,10 @@ Analyze failed Buildkite CI builds for pull requests in ${{ github.repository }}
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Event Name**: ${{ github.event_name }}
-- **Event ID**: ${{ github.event_name == 'status' && github.event.id || github.event.check_run.id }}
-- **Failure State**: ${{ github.event_name == 'status' && github.event.state || github.event.check_run.conclusion }}
-- **Commit SHA**: ${{ github.event_name == 'status' && github.event.sha || github.event.check_run.head_sha }}
+- **Event Name**: ${{ env.BK_EVENT_NAME }}
+- **Event ID**: ${{ env.BK_EVENT_ID }}
+- **Failure State**: ${{ env.BK_FAILURE_STATE }}
+- **Commit SHA**: ${{ env.BK_COMMIT_SHA }}
 - **Buildkite Organization**: ${{ inputs.buildkite-org }}
 
 ## Constraints
@@ -134,13 +148,15 @@ Classify each failure to guide your investigation:
 ### Step 1: Gather Context
 
 1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Resolve the failed commit SHA from the triggering event (`github.event.sha` for `status`, `github.event.check_run.head_sha` for `check_run`).
+2. Use the commit SHA provided in the Context section above. If it is empty, discover it from the PR's commit statuses or check runs.
 3. Call `list_pull_requests` for the repository (open PRs), then call `pull_request_read` with method `get` on candidates and keep PRs where `head.sha` matches the failed commit SHA. If none match, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
 4. For each matching PR, keep author, branches, and fork status for downstream analysis.
 
 ### Step 2: Find the Buildkite Build
 
-> **If Buildkite MCP is unavailable** (connection error, 401, timeout): The build failure may come from GitHub checks/status contexts outside Buildkite. Fall back to analyzing the failing status/check context directly — use the GitHub API (`pull_request_read` status endpoints), `web-fetch`, or `bash` with `gh` to inspect related checks/jobs. Proceed to Step 3 using whatever evidence is available and note in your comment that Buildkite data was unavailable.
+> **If Buildkite MCP is unavailable** (connection error, 401, timeout, or empty token): Proceed with the **public pipeline** fallback described in Step 2b. Public Buildkite pipelines expose build pages and logs without authentication.
+
+#### Step 2a: Via Buildkite MCP (when API token is available)
 
 1. **Resolve the pipeline**: If `${{ inputs.buildkite-pipeline }}` is provided, use it. Otherwise, call `list_pipelines` for organization `${{ inputs.buildkite-org }}` and find the pipeline whose slug matches the repository name (extract the repo name from `${{ github.repository }}`). If multiple pipelines match, prefer an exact slug match.
 2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by the failed commit SHA resolved in Step 1. If no match by SHA, use the PR's head branch (from the `pull_request_read` response in Step 1) to filter builds and select the most recent failed one.
@@ -151,6 +167,22 @@ Classify each failure to guide your investigation:
      - `search_logs` with patterns: `error|Error|ERROR`, `failed|Failed|FAILED`, `panic|exception|traceback`
      - `tail_logs` — get the last 100 lines (often contains the final error and exit code)
    - Call `list_annotations` to capture any warnings, errors, or context the pipeline attached to the build.
+
+#### Step 2b: Via public Buildkite pages (fallback when no API token)
+
+Use this path when the Buildkite MCP server is unavailable (missing token, 401, connection error).
+
+1. **Discover the Buildkite build URL** from the PR's commit statuses or check runs:
+   - Call `pull_request_read` with method `get_status` for the PR to retrieve commit status contexts.
+   - Look for status contexts or check runs whose `target_url` contains `buildkite.com`. The URL typically follows the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>`.
+
+2. **Fetch the public build page**: Use `web-fetch` to retrieve the Buildkite build URL found above. The page contains the build status, job list, and links to individual job logs.
+
+3. **Collect failure evidence from public pages**:
+   - Parse the fetched build page to identify failed jobs. Look for job links matching the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>#<job-uuid>`.
+   - For each failed job, use `web-fetch` to retrieve the job log page at `https://buildkite.com/<org>/<pipeline>/builds/<number>/jobs/<job-uuid>/log`.
+   - Extract error messages, stack traces, and the final output from the fetched log content.
+   - If the pipeline is not publicly accessible (403/404), note this in your comment and proceed with whatever evidence is available from GitHub status contexts.
 
 ### Step 3: Analyze
 

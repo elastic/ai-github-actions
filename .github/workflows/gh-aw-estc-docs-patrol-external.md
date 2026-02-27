@@ -62,7 +62,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: docs-patrol-external
+  group: estc-docs-patrol-external
   cancel-in-progress: true
 permissions:
   contents: read

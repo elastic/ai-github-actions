@@ -51,10 +51,12 @@ jobs:
             code-duplication-fixer
             code-simplifier
             docs-patrol
+            duplicate-issue-detector
             estc-docs-patrol-external
             estc-docs-pr-review
             estc-downstream-health
-            duplicate-issue-detector
+            estc-newbie-contributor-patrol-external
+            estc-pr-buildkite-detective
             flaky-test-investigator
             issue-fixer
             issue-triage
@@ -62,11 +64,9 @@ jobs:
             mention-in-pr
             newbie-contributor-fixer
             newbie-contributor-patrol
-            estc-newbie-contributor-patrol-external
             performance-profiler
             pr-actions-detective
             pr-actions-fixer
-            estc-pr-buildkite-detective
             pr-review
             project-summary
             release-update

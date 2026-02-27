@@ -56,7 +56,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: newbie-contributor-patrol-external
+  group: estc-newbie-contributor-patrol-external
   cancel-in-progress: true
 permissions:
   contents: read

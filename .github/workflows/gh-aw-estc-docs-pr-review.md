@@ -67,7 +67,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: docs-pr-review-${{ github.event.pull_request.number }}
+  group: estc-docs-pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
   contents: read

@@ -56,7 +56,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: downstream-health
+  group: estc-downstream-health
   cancel-in-progress: true
 permissions:
   actions: read
