@@ -126,6 +126,7 @@ setup-gh-aw:
 		echo "✓ gh-aw compiler already installed: $(GH_AW_VERSION)"; \
 	else \
 		echo "Installing gh-aw compiler $(GH_AW_VERSION) from github/gh-aw..."; \
+		$(if $(filter v%,$(GH_AW_VERSION)),,GONOSUMDB=github.com/github/gh-aw) \
 		GOBIN="$(CURDIR)/.bin" go install github.com/github/gh-aw/cmd/gh-aw@$(GH_AW_VERSION) && \
 		echo "✓ gh-aw compiler installed: $$(.bin/gh-aw version)"; \
 	fi
@@ -143,6 +144,7 @@ setup-gh-aw-compat:
 	else \
 		echo "Installing gh-aw compat compiler $(GH_AW_COMPAT_VERSION) from github/gh-aw..."; \
 		TMPGOBIN=$$(mktemp -d) && \
+		$(if $(filter v%,$(GH_AW_COMPAT_VERSION)),,GONOSUMDB=github.com/github/gh-aw) \
 		GOBIN="$$TMPGOBIN" go install github.com/github/gh-aw/cmd/gh-aw@$(GH_AW_COMPAT_VERSION) && \
 		mv "$$TMPGOBIN/gh-aw" .bin/gh-aw-compat && \
 		rm -rf "$$TMPGOBIN" && \
