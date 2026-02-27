@@ -60,7 +60,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: pr-buildkite-detective-${{ github.run_id }}
+  group: estc-pr-buildkite-detective-${{ github.run_id }}
   cancel-in-progress: false
 permissions:
   actions: read

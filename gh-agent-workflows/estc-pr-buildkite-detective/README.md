@@ -1,4 +1,4 @@
-# PR Buildkite Detective
+# PR Buildkite Detective (Elastic-specific)
 
 Analyze failed PR checks backed by Buildkite and report findings (read-only).
 
@@ -10,8 +10,8 @@ Triggered automatically when a commit status or check run reports a failure. Loo
 
 ````bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-buildkite-detective/example.yml \
-  -o .github/workflows/pr-buildkite-detective.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/estc-pr-buildkite-detective/example.yml \
+  -o .github/workflows/estc-pr-buildkite-detective.yml
 ````
 
 See [example.yml](example.yml) for the full workflow file.

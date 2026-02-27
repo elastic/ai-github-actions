@@ -1,4 +1,4 @@
-name: Downstream Health
+name: Estc Downstream Health
 on:
   schedule:
     - cron: "0 10 * * *"
@@ -12,6 +12,6 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-downstream-health.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-downstream-health.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

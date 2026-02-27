@@ -69,7 +69,7 @@ concurrency:
 permissions:
   actions: read
   contents: read
-  issues: read
+  issues: write
 tools:
   github:
     toolsets: [repos, issues, search, actions]

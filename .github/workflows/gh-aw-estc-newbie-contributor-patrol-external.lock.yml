@@ -21,12 +21,11 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Detect code changes that require updates to published Elastic documentation
+# Review docs from a new contributor perspective, cross-referencing published Elastic documentation
 #
 # Resolved workflow manifest:
 #   Imports:
 #     - gh-aw-fragments/elastic-tools.md
-#     - gh-aw-fragments/ensure-full-history.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
@@ -39,9 +38,9 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6e8148d197697e6bcbd937883265e67c2d25912aad7bfc2ed69da7453e45a210"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9d95dc2f68fe578ef3354c4fd2315a7108d87646632cf6d18cc9b8bf570c5666"}
 
-name: "Docs Patrol External"
+name: "Estc Newbie Contributor Patrol External"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -61,11 +60,6 @@ name: "Docs Patrol External"
         description: Allowlisted bot actor usernames (comma-separated)
         required: false
         type: string
-      lookback-window:
-        default: 7 days ago
-        description: Git lookback window for detecting recent commits (e.g. '7 days ago', '14 days ago')
-        required: false
-        type: string
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -82,8 +76,8 @@ name: "Docs Patrol External"
         required: false
         type: string
       title-prefix:
-        default: "[docs-patrol-external]"
-        description: Title prefix for created issues (e.g. '[docs-patrol-external]')
+        default: "[newbie-contributor-external]"
+        description: Title prefix for created issues (e.g. '[newbie-contributor-external]')
         required: false
         type: string
     secrets:
@@ -94,9 +88,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: docs-patrol-external
+  group: estc-newbie-contributor-patrol-external
 
-run-name: "Docs Patrol External"
+run-name: "Estc Newbie Contributor Patrol External"
 
 jobs:
   activation:
@@ -132,7 +126,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-docs-patrol-external.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-estc-newbie-contributor-patrol-external.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -144,7 +138,6 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_C9922AB3: ${{ inputs.lookback-window }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -204,9 +197,6 @@ jobs:
           
           - **`generate_agents_md`** — generates a summary of the repository's structure, conventions, and coding guidelines from AGENTS.md and related files. Call at the start of every workflow to get repo context.
           - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
-          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           
@@ -361,98 +351,59 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          Detect drift between code changes and published Elastic documentation — changes that require updates to `elastic.co/docs`, `applies_to` tags, or backports to earlier version branches.
+          Review repository documentation from the perspective of an external contributor, cross-referencing against published Elastic documentation on `elastic.co/docs`. Only file an issue for **high-impact** gaps or blockers; otherwise, report no findings.
           
           ### Data Gathering
           
-          Use a lookback window of `--since="__GH_AW_EXPR_C9922AB3__"` for all runs (scheduled and manual).
-          
-          1. Run `git log --since="__GH_AW_EXPR_C9922AB3__" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
-          2. Discover documentation files dynamically — scan the repository for common doc locations: `README.md`, `CONTRIBUTING.md`, `DEVELOPING.md`, `docs/`, `documentation/`, and any `.md` files in the repository root. Do not assume a fixed directory structure.
+          1. Discover documentation files dynamically — scan the repository for common doc locations and read all that exist:
+             - Repository root: `README.md`, `CONTRIBUTING.md`, `DEVELOPING.md`, `CHANGELOG.md`, `SECURITY.md`.
+             - Documentation directories: `docs/`, `documentation/`, `doc/`.
+             - Any other `.md` files in the repository root that appear to be contributor-facing.
+             - Do not assume a fixed directory structure. The repository may organize docs differently.
+          2. Follow the quick start or recommended install path as far as possible without secrets, elevated privileges, or write access:
+             - If a step requires secrets or admin privileges, stop and note whether the docs clearly warned about it.
+          3. Use the `elastic-docs` MCP server to cross-reference the repo's documentation against published Elastic documentation:
+             - Call `SemanticSearch` or `FindRelatedDocs` with the project name and key concepts to find the published getting-started guide, if one exists.
+             - Call `GetDocumentByUrl` to read any published pages that describe this project's setup or usage.
+             - Check whether the repo's onboarding docs are consistent with what's published. Contradictions between the repo and `elastic.co/docs` are blockers for new contributors.
           
           ### What to Look For
           
-          For each commit (or group of related commits), determine whether the changes could require updates to published Elastic documentation. Focus on:
+          - Missing prerequisites or setup steps that would block a new contributor.
+          - Inconsistent instructions between the repo's own documentation files.
+          - Contradictions between the repo's docs and published Elastic documentation on `elastic.co/docs`.
+          - Commands or file paths that do not exist in a fresh checkout.
+          - Required secrets, permissions, or roles that are not documented where the step appears.
+          - Getting-started paths that are unclear or force the contributor to guess between undocumented alternatives.
           
-          1. **Public API changes** — new, renamed, or removed functions, endpoints, CLI flags, configuration options, or workflow inputs/outputs.
-          2. **Behavioral changes** — altered defaults, changed error messages, modified control flow that affects user-facing behavior.
-          3. **New features or workflows** — anything that should be reflected in published documentation.
-          4. **Feature lifecycle changes** — features moving between lifecycle states (preview, beta, GA, deprecated, removed) that require `applies_to` tag updates.
-          5. **Version-sensitive changes** — bug fixes or behavioral changes that apply to multiple release branches and may need documentation backports.
+          ### Reporting Bar
           
-          ### How to Analyze
+          Only report **blocking** or **high-impact** documentation issues that would prevent an external contributor from getting started. Minor wording improvements, stylistic tweaks, or optional clarifications should result in a `noop`.
           
-          For each potentially impactful change:
-          - Read the full diff to understand what changed.
-          - Check whether an open issue or PR already tracks the external documentation update.
-          
-          #### Check published Elastic documentation
-          
-          Use the `elastic-docs` MCP server to check whether the change affects published documentation on `elastic.co/docs`:
-          - Call `SemanticSearch` or `FindRelatedDocs` with a description of the changed functionality to find published pages that document it.
-          - If published pages are found, check whether the code change makes them inaccurate or incomplete.
-          - Call `GetDocumentByUrl` to read specific published pages when you need to verify details.
-          
-          Only flag published docs drift when the code change **concretely contradicts** what's published. Do not flag pages that are merely related.
-          
-          #### Check `applies_to` tags
-          
-          When a code change affects feature availability or lifecycle:
-          - Check whether documentation files in the repository use `applies_to` frontmatter metadata.
-          - If they do, verify the tags still reflect reality after the code change. For example:
-            - A feature graduating from beta to GA needs its `applies_to` lifecycle updated.
-            - A feature being deprecated or removed needs corresponding tag changes.
-            - A new feature needs `applies_to` tags on its documentation page.
-          - Note the specific `applies_to` changes needed in the issue.
-          
-          #### Check backport needs
-          
-          When a code change fixes a bug or changes behavior in a way that affects documentation:
-          - Check if the change targets a release branch or is cherry-picked from one.
-          - If the fix applies to earlier versions, note whether the documentation update needs to be backported (e.g., the fix applies to both 9.x and 8.x, so docs for both versions may need updating).
-          - If the repository uses `applies_to` version ranges, note whether the version range needs adjusting.
-          
-          ### What to Skip
-          
-          - Changes with no impact on published external documentation.
-          - Changes where an open issue or PR already tracks the external documentation update.
-          - Test-only or internal-only changes.
-          - Changes where published docs are still substantially correct (e.g., a new optional parameter with a sensible default).
-          - Purely internal refactors with no user-facing impact.
-          
-          ### Quality Gate — When to Noop
-          
-          **Noop is the expected outcome most days.** Only file an issue when:
-          - Published Elastic documentation **directly contradicts** the current code behavior.
-          - An `applies_to` tag is **demonstrably incorrect** after a lifecycle change (e.g., a feature tagged as `beta` that has been promoted to `ga`).
-          - A **new public feature** has zero coverage in published documentation.
-          - A documentation backport is **concretely needed** for an earlier version branch.
-          
-          Do not file for: vague "could be improved" suggestions, minor wording drift, documentation that is slightly imprecise but still functionally correct, or speculative backport needs.
+          Contradictions between the repo and published Elastic documentation are always considered blocking.
           
           ### Issue Format
           
-          **Issue title:** Brief summary of what's out of date (e.g., "Update elastic.co docs for new CLI flag")
+          **Issue title:** New contributor docs review (external) — [brief summary]
           
           **Issue body:**
           
-          > Recent code changes require updates to published Elastic documentation.
+          > ## Summary
+          > [1-2 sentence overview of the blocking issue(s)]
           >
-          > ## Changes Requiring External Documentation Updates
+          > ## Findings
           >
-          > ### 1. [Brief description of the change]
+          > ### 1. [Brief description]
           >
-          > **Commit(s):** [SHA(s) with links]
-          > **What changed:** [Concise description of the code change]
-          > **Published docs impact:** [Which elastic.co/docs pages are affected, with URLs]
-          > **`applies_to` impact:** [If applicable — which tags need updating and why]
-          > **Backport needed:** [If applicable — which earlier versions are affected and why]
-          >
-          > ### 2. [Next change...]
+          > **Where:** [doc path + section]
+          > **Problem:** [what is missing or incorrect]
+          > **Published docs conflict:** [If applicable — which elastic.co/docs page contradicts the repo, with URL]
+          > **Impact:** [how this blocks a new contributor]
+          > **Suggested fix:** [specific change]
           >
           > ## Suggested Actions
           >
-          > - [ ] [Specific, actionable checkbox for each documentation update needed]
+          > - [ ] [Actionable checkbox for each blocking fix]
           
           __GH_AW_EXPR_49B959F1__
           
@@ -463,7 +414,6 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_C9922AB3: ${{ inputs.lookback-window }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -475,7 +425,6 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_C9922AB3: ${{ inputs.lookback-window }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -497,7 +446,6 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
-                GH_AW_EXPR_C9922AB3: process.env.GH_AW_EXPR_C9922AB3,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -541,7 +489,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawdocspatrolexternal
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawestcnewbiecontributorpatrolexternal
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       detection_conclusion: ${{ steps.detection_conclusion.outputs.conclusion }}
@@ -607,12 +555,6 @@ jobs:
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
       - env:
-          GITHUB_TOKEN: ${{ github.token }}
-          REPO_NAME: ${{ github.repository }}
-          SERVER_URL: ${{ github.server_url }}
-        name: Ensure full history
-        run: "if git rev-parse --is-shallow-repository | grep -q true; then\n  SERVER_URL_STRIPPED=\"${SERVER_URL#https://}\"\n  git remote set-url origin \"https://x-access-token:${GITHUB_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git\"\n  git fetch --unshallow --quiet\nfi"
-      - env:
           GH_TOKEN: ${{ github.token }}
           TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
@@ -662,7 +604,7 @@ jobs:
               model: "${{ inputs.model }}",
               version: "",
               agent_version: "0.0.417",
-              workflow_name: "Docs Patrol External",
+              workflow_name: "Estc Newbie Contributor Patrol External",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1009,8 +951,7 @@ jobs:
                 "tools": [
                   "SemanticSearch",
                   "GetDocumentByUrl",
-                  "FindRelatedDocs",
-                  "FindInconsistencies"
+                  "FindRelatedDocs"
                 ]
               },
               "github": {
@@ -1256,8 +1197,8 @@ jobs:
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Docs Patrol External"
-          WORKFLOW_DESCRIPTION: "Detect code changes that require updates to published Elastic documentation"
+          WORKFLOW_NAME: "Estc Newbie Contributor Patrol External"
+          WORKFLOW_DESCRIPTION: "Review docs from a new contributor perspective, cross-referencing published Elastic documentation"
           HAS_PATCH: ${{ steps.collect_output.outputs.has_patch }}
         with:
           script: |
@@ -1371,7 +1312,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
-          GH_AW_WORKFLOW_NAME: "Docs Patrol External"
+          GH_AW_WORKFLOW_NAME: "Estc Newbie Contributor Patrol External"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1384,7 +1325,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Docs Patrol External"
+          GH_AW_WORKFLOW_NAME: "Estc Newbie Contributor Patrol External"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1397,10 +1338,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Docs Patrol External"
+          GH_AW_WORKFLOW_NAME: "Estc Newbie Contributor Patrol External"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-docs-patrol-external"
+          GH_AW_WORKFLOW_ID: "gh-aw-estc-newbie-contributor-patrol-external"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
@@ -1417,7 +1358,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Docs Patrol External"
+          GH_AW_WORKFLOW_NAME: "Estc Newbie Contributor Patrol External"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1466,8 +1407,8 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-docs-patrol-external"
-      GH_AW_WORKFLOW_NAME: "Docs Patrol External"
+      GH_AW_WORKFLOW_ID: "gh-aw-estc-newbie-contributor-patrol-external"
+      GH_AW_WORKFLOW_NAME: "Estc Newbie Contributor Patrol External"
     outputs:
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}

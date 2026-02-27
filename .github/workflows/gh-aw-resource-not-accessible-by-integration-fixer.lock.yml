@@ -467,7 +467,7 @@ jobs:
     permissions:
       actions: read
       contents: read
-      issues: read
+      issues: write
     concurrency:
       group: "gh-aw-copilot-${{ github.workflow }}"
     env:
@@ -546,7 +546,7 @@ jobs:
         shell: bash
       - env:
           GH_TOKEN: ${{ github.token }}
-          TITLE_PREFIX: ${{ inputs.title-prefix }}
+          TITLE_PREFIX: ${{ inputs.issue-title-prefix }}
         name: List previous findings
         run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
       - env:
