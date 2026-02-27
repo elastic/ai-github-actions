@@ -8,8 +8,8 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
+  - gh-aw-fragments/pr-context.md
   - gh-aw-fragments/review-process.md
-  - gh-aw-fragments/review-examples.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
@@ -102,6 +102,7 @@ Review pull requests in ${{ github.repository }} and provide actionable feedback
 
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
+- **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Read from these files instead of calling the API.
 
 ## Constraints
 
@@ -113,21 +114,46 @@ Follow these steps in order.
 
 ### Step 1: Gather Context
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. Use these as additional review criteria throughout the review. If this fails, continue without it.
-2. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get the full PR details (author, description, branches).
-3. If the PR description references issues (e.g., "Fixes #123", "Closes #456"), call `issue_read` with method `get` on each linked issue to understand the motivation and acceptance criteria.
-4. Call `pull_request_read` with method `get_review_comments` to check existing review threads. Note which files already have threads and whether threads are resolved, unresolved, or outdated.
-5. Call `pull_request_read` with method `get_reviews` to see prior review submissions from this bot. Do not repeat points already made in prior reviews.
+1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. Write the result to `/tmp/pr-context/agents.md` so sub-agents can read it. If `generate_agents_md` fails, continue without it.
+2. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches).
+3. Read `/tmp/pr-context/issue-*.json` files if any exist to understand linked issue motivation and acceptance criteria.
+4. Read `/tmp/pr-context/reviews.json` to check prior review submissions from this bot. Note any prior verdicts to avoid redundant reviews.
+5. Read `/tmp/pr-context/review_comments.json` to check existing review threads. Note which files already have threads and whether they are resolved, unresolved, or outdated.
 
-### Step 2: Review Each File
+### Step 2: Sub-agent Review
 
-Follow the **Pick Three, Keep Many** process above — spawn 3 `code-review` sub-agents to review the PR diff in parallel from different angles (e.g., security/input validation, logic correctness/edge cases, error handling/resource management). Include the full PR diff, file contents, repo conventions from `generate_agents_md`, the **Code Review Reference** criteria below, existing review threads, and the severity/intensity settings in each sub-agent prompt. After merging and deduplicating their findings, leave your own inline comments using the **Code Review Reference** format below.
+**Compute file orderings:** Read `/tmp/pr-context/files.json` to get the changed file list with `additions` and `deletions` counts per file. Compute three orderings:
+- **Agent 1**: Files in alphabetical order (A → Z)
+- **Agent 2**: Files in reverse alphabetical order (Z → A)
+- **Agent 3**: Files sorted by diff size descending (largest `additions + deletions` first)
 
-### Step 3: Submit the Review
+**Spawn sub-agents:** Follow the **Pick Three, Keep Many** process — spawn 3 `code-review` sub-agents to review the PR diff in parallel. Each sub-agent prompt must include:
+- Instruction to read `/tmp/pr-context/review-instructions.md` for the review process, criteria, and calibration examples
+- Instruction to read `/tmp/pr-context/README.md` for a manifest of all available context files
+- The review intensity (`${{ inputs.intensity }}`) and minimum severity (`${{ inputs.minimum_severity }}`)
+- The ordered file list for that sub-agent (per-file diffs are at `/tmp/pr-context/diffs/<filename>.diff`)
+- Instruction to read changed files from the workspace (the PR branch is checked out)
 
-**Skip if nothing new:** If you left zero inline comments during this review AND your verdict would be the same as the most recent review from this bot (compare against `get_reviews` from Step 1), call `noop` with a message like "No new findings — prior review still applies" and stop. Do not submit a redundant review.
+Each sub-agent returns a structured findings list. They do NOT leave inline comments.
 
-After reviewing ALL files and leaving inline comments, step back and consider the PR as a whole. Call **`submit_pull_request_review`** with:
+### Step 3: Verify and Comment
+
+After merging and deduplicating sub-agent findings per the Pick Three, Keep Many process, verify each finding before leaving a comment. For every finding:
+
+1. **Read the file and surrounding context** — open the full file, not just the diff. Understand the broader code.
+2. **Construct a concrete failure scenario** — what specific input or state causes the bug? If you cannot describe one, drop the finding.
+3. **Challenge the finding** — would a senior engineer familiar with this codebase agree this is a real issue? If "probably not" or "unsure", drop it.
+4. **Check existing threads** — if this issue was already flagged in a prior review (resolved or unresolved), do not duplicate.
+
+Only leave a comment if the finding survives all four checks. Findings flagged independently by multiple sub-agents are stronger candidates. Findings from only one sub-agent deserve extra scrutiny.
+
+Leave inline comments (`create_pull_request_review_comment`) per the **Code Review Reference** above for each finding that survives verification. Comment on each file's findings before moving to the next file. If no findings survive verification, proceed directly to Step 4.
+
+### Step 4: Submit the Review
+
+**Skip if nothing new:** If you left zero inline comments during this review AND your verdict would be the same as the most recent review from this bot (compare against reviews in Step 1), call `noop` with a message like "No new findings — prior review still applies" and stop. Do not submit a redundant review.
+
+After all comments are posted, step back and consider the PR as a whole. Call **`submit_pull_request_review`** with:
 - The review type (REQUEST_CHANGES, COMMENT, or APPROVE)
 - A review body that is **only the verdict and only if the verdict is not APPROVE**. If you have cross-cutting feedback that spans multiple files or cannot be expressed as inline comments, include it here. Otherwise, leave the review body empty — your inline comments already contain the detail.
 
@@ -142,6 +168,6 @@ If you have no issues, or you have only provided NITPICK and LOW issues, submit 
 - **Intensity**: `${{ inputs.intensity }}`
 - **Minimum inline severity**: `${{ inputs.minimum_severity }}`
 
-These override the defaults defined in the Code Review Reference below.
+These override the defaults defined in the Code Review Reference above.
 
 ${{ inputs.additional-instructions }}

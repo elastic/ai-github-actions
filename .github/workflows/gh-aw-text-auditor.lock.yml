@@ -311,7 +311,7 @@ jobs:
           - **Assignees**: Max 5 assignees per issue.
           - **Body**: No strict character limit beyond GitHub's API limit (~65,536 characters), but fields over 16,000 tokens are written to a file reference instead of inlined.
           - **Bot triggers**: References like `fixes #123` or `closes #456` in the body are neutralized to prevent unintended issue closures.
-          - **Mentions**: `@mentions` in the body are neutralized (backticked) by default.
+          - **Mentions**: `@mentions` in the body are neutralized (backticked).
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## Previous Findings
@@ -327,7 +327,7 @@ jobs:
           
           Parallelize your work using sub-agents. Spawn 3 sub-agents, each approaching the task from a different angle — e.g., different focus areas, different heuristics, or different parts of the codebase. Each sub-agent works independently and should return its own list of findings.
           
-          **How to spawn sub-agents:** Call `runSubagent` with `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` (unless the workflow specifies a different agent type or model). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
+          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
