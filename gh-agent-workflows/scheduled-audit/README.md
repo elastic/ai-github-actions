@@ -35,10 +35,11 @@ See [example.yml](example.yml) for the full workflow file. You **must** customiz
 | --- | --- | --- | --- |
 | `additional-instructions` | What the audit agent should investigate (the Report Assignment) | **Yes** | — |
 | `title-prefix` | Title prefix for created issues, e.g. `[my-audit]` | **Yes** | — |
+| `close-older-issues` | Close older issues when a new one is filed. When `false` (default), the agent checks previous findings to avoid duplicates. When `true`, the previous report is replaced by the new one. | No | `false` |
 | `issue-label` | Label to apply to created issues | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 
 ## Safe Outputs
 
-- `create-issue` — file an audit report (max 1, auto-closes older reports)
+- `create-issue` — file an audit report (max 1; when `close-older-issues` is `true`, auto-closes older reports; when `false`, checks for duplicates via previous findings)
