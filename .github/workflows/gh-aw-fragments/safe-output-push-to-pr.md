@@ -12,6 +12,7 @@ safe-inputs:
       if contributing: checklist.append(f'Review the contributing guide ({contributing}) before opening or updating a PR.')
       if pr_template: checklist.append(f'Follow the PR template ({pr_template}) for title, description, and validation notes.')
       checklist.append('Confirm the requested task is fully completed and validated before creating or pushing PR changes.')
+      checklist.append('Spawn a code-review sub-agent via runSubagent to self-review your changes before pushing. Include the full diff (git diff) in the prompt along with relevant context (what was requested, which files changed, and why). The sub-agent should look for bugs, logic errors, missed edge cases, and style issues. Fix any legitimate issues it finds before proceeding.')
       print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template}))
 safe-outputs:
   push-to-pull-request-branch:

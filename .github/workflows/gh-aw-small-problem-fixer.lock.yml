@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e7fcb156e6fc7ca8913fb677d677f5554dd62356160a3f4997e2b57750f4e598"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"13a9b433cf9171a6e12b3e505c03ed415ceacb0c81e1f9412998365329ad53a2"}
 
 name: "Small Problem Fixer"
 "on":
@@ -984,6 +984,7 @@ jobs:
           if contributing: checklist.append(f'Review the contributing guide ({contributing}) before opening or updating a PR.')
           if pr_template: checklist.append(f'Follow the PR template ({pr_template}) for title, description, and validation notes.')
           checklist.append('Confirm the requested task is fully completed and validated before creating or pushing PR changes.')
+          checklist.append('Spawn a code-review sub-agent via runSubagent to self-review your changes before creating the PR. Include the full diff (git diff) in the prompt along with relevant context (what was requested, which files changed, and why). The sub-agent should look for bugs, logic errors, missed edge cases, and style issues. Fix any legitimate issues it finds before proceeding.')
           print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template}))
           
           

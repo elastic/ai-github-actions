@@ -142,7 +142,7 @@ For each unresolved review thread:
 
 ### Step 4: Resolve Addressed Threads
 
-After pushing, resolve each review thread you addressed with code changes by calling `resolve_pull_request_review_thread` with the thread's node ID (the `id` field from `get_review_comments`, e.g., `PRRT_kwDO...`). Only resolve threads you have actually addressed — do not resolve threads you skipped or disagreed with.
+After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads from any reviewer — external reviewers, bots, and your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
 
 ### Step 5: Respond
 

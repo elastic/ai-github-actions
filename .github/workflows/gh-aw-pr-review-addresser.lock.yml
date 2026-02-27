@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2ebbb62c9c192157de36a031b5f00326c4271d9663da95969d90631a39d74485"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"de4069ae09286bfdffbfe940ffb4b02a0eb7910de9917df65efd883d771b707d"}
 
 name: "PR Review Addresser"
 "on":
@@ -374,7 +374,7 @@ jobs:
           
           ### Step 4: Resolve Addressed Threads
           
-          After pushing, resolve each review thread you addressed with code changes by calling `resolve_pull_request_review_thread` with the thread's node ID (the `id` field from `get_review_comments`, e.g., `PRRT_kwDO...`). Only resolve threads you have actually addressed — do not resolve threads you skipped or disagreed with.
+          After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads from any reviewer — external reviewers, bots, and your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
           
           ### Step 5: Respond
           
@@ -1040,6 +1040,7 @@ jobs:
           if contributing: checklist.append(f'Review the contributing guide ({contributing}) before opening or updating a PR.')
           if pr_template: checklist.append(f'Follow the PR template ({pr_template}) for title, description, and validation notes.')
           checklist.append('Confirm the requested task is fully completed and validated before creating or pushing PR changes.')
+          checklist.append('Spawn a code-review sub-agent via runSubagent to self-review your changes before pushing. Include the full diff (git diff) in the prompt along with relevant context (what was requested, which files changed, and why). The sub-agent should look for bugs, logic errors, missed edge cases, and style issues. Fix any legitimate issues it finds before proceeding.')
           print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template}))
           
           
