@@ -31,7 +31,6 @@ Pre-built workflows with domain-specific prompts. These import the same base fra
 - [Product Manager Impersonator](product-manager-impersonator/) — propose well-researched new feature ideas
 - [Refactor Opportunist](refactor-opportunist/) — pitch proven refactors with partial implementations
 - [Stale Issues](stale-issues/) — detect stale issues
-
 **Fixers** (create PRs):
 - [Bug Exterminator](bug-exterminator/) — fix bug-hunter issues
 - [Text Beautifier](text-beautifier/) — fix text-auditor issues
@@ -90,4 +89,4 @@ These workflows are tailored for Elastic's internal tooling, documentation platf
 - [Docs Patrol External (Elastic-specific)](estc-docs-patrol-external/) — detect stale published Elastic documentation
 - [Newbie Contributor Patrol External (Elastic-specific)](estc-newbie-contributor-patrol-external/) — cross-reference repo docs against published Elastic documentation
 - [Downstream Health (Elastic-specific)](estc-downstream-health/) — monitor downstream Elastic repositories using AI workflows
-
+- [Resource Not Accessible Detector (Elastic-specific)](estc-actions-resource-not-accessible-detector/) — detect `Resource not accessible by integration` CI errors and file one combined tracking issue

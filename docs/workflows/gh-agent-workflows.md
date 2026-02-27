@@ -122,6 +122,7 @@ These workflows are tailored for Elastic's internal tooling and documentation pl
 | Workflow | Trigger | Description |
 | --- | --- | --- |
 | [Downstream Health (Elastic-specific)](gh-agent-workflows/estc-downstream-health.md) | Daily schedule | Monitor downstream Elastic repo quality |
+| [Resource Not Accessible Detector (Elastic-specific)](gh-agent-workflows/estc-actions-resource-not-accessible-detector.md) | Daily schedule | Detect `Resource not accessible by integration` CI errors and file one combined tracking issue |
 
 ## Secrets
 
