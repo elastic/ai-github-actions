@@ -15,9 +15,9 @@ steps:
       # Full diff
       gh pr diff "$PR_NUMBER" > /tmp/pr-context/pr.diff || true
 
-      # Changed files list
+      # Changed files list (--paginate may output concatenated arrays; jq -s 'add' merges them)
       gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate \
-        > /tmp/pr-context/files.json
+        | jq -s 'add // []' > /tmp/pr-context/files.json
 
       # Per-file diffs
       jq -c '.[]' /tmp/pr-context/files.json | while IFS= read -r entry; do
@@ -28,15 +28,56 @@ steps:
 
       # Existing reviews
       gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --paginate \
-        > /tmp/pr-context/reviews.json
+        | jq -s 'add // []' > /tmp/pr-context/reviews.json
 
-      # Existing review comments (inline threads)
-      gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/comments" --paginate \
-        > /tmp/pr-context/review_comments.json
+      # Review threads with resolution status (GraphQL — REST lacks isResolved/isOutdated)
+      gh api graphql --paginate -f query='
+        query($owner: String!, $repo: String!, $number: Int!, $endCursor: String) {
+          repository(owner: $owner, name: $repo) {
+            pullRequest(number: $number) {
+              reviewThreads(first: 100, after: $endCursor) {
+                pageInfo { hasNextPage endCursor }
+                nodes {
+                  id
+                  isResolved
+                  isOutdated
+                  isCollapsed
+                  path
+                  line
+                  startLine
+                  comments(first: 100) {
+                    nodes {
+                      id
+                      body
+                      author { login }
+                      createdAt
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ' -F owner="${GITHUB_REPOSITORY%/*}" -F repo="${GITHUB_REPOSITORY#*/}" -F "number=$PR_NUMBER" \
+        --jq '.data.repository.pullRequest.reviewThreads.nodes' \
+        | jq -s 'add // []' > /tmp/pr-context/review_comments.json
+
+      # Per-file review threads (mirrors diffs/ structure)
+      jq -c '.[]' /tmp/pr-context/review_comments.json | while IFS= read -r thread; do
+        filepath=$(echo "$thread" | jq -r '.path // empty')
+        [ -z "$filepath" ] && continue
+        mkdir -p "/tmp/pr-context/threads/$(dirname "$filepath")"
+        echo "$thread" >> "/tmp/pr-context/threads/${filepath}.jsonl"
+      done
+      # Convert per-file JSONL to proper JSON arrays
+      find /tmp/pr-context/threads -name '*.jsonl' 2>/dev/null | while IFS= read -r jsonl; do
+        jq -s '.' "$jsonl" > "${jsonl%.jsonl}.json"
+        rm "$jsonl"
+      done
 
       # PR discussion comments
       gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
-        > /tmp/pr-context/comments.json
+        | jq -s 'add // []' > /tmp/pr-context/comments.json
 
       # Linked issues
       grep -oiP '(?:fixes|closes|resolves)\s+#\K\d+' /tmp/pr-context/pr.json 2>/dev/null \
@@ -58,7 +99,8 @@ steps:
       | `files.json` | Changed files array — each entry has `filename`, `status`, `additions`, `deletions`, `patch` |
       | `diffs/<path>.diff` | Per-file diffs — one file per changed file, mirroring the repo path under `diffs/` |
       | `reviews.json` | Prior review submissions — author, state (APPROVED/CHANGES_REQUESTED/COMMENTED), body |
-      | `review_comments.json` | Inline review threads — file, line, body, author, whether resolved/outdated |
+      | `review_comments.json` | All review threads (GraphQL) — each thread has `id`, `isResolved`, `isOutdated`, `path`, `line`, and nested `comments` with body/author |
+      | `threads/<path>.json` | Per-file review threads — one file per changed file with existing threads, mirroring the repo path under `threads/` |
       | `comments.json` | PR discussion comments (not inline) |
       | `issue-{N}.json` | Linked issue details (one file per linked issue, if any) |
       | `agents.md` | Repository conventions from `generate_agents_md` (if written by agent) |

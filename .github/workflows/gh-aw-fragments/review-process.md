@@ -23,12 +23,13 @@ steps:
 
       1. **Read the diff** for this file from `/tmp/pr-context/diffs/<filename>.diff` to understand what changed.
       2. **Read the full file from the workspace.** The PR branch is checked out locally — open the file directly to get complete contents with line numbers.
-      3. **Identify potential issues** matching the review criteria below.
-      4. **Quick-check each issue** before including it:
+      3. **Check existing threads** for this file from `/tmp/pr-context/threads/<filename>.json` (if it exists). Skip issues that are already under discussion — each thread has `isResolved` and `isOutdated` fields.
+      4. **Identify potential issues** matching the review criteria below.
+      5. **Quick-check each issue** before including it:
          - What specific code pattern or change triggers this concern?
          - Is there an obvious guard, handler, or mitigation visible in the immediate context?
          - If the issue is clearly handled, skip it. If you're unsure, include it — the parent will verify.
-      5. **Add to your findings list.** Do NOT leave inline comments — you don't have that tool. Return findings in this format:
+      6. **Add to your findings list.** Do NOT leave inline comments — you don't have that tool. Return findings in this format:
 
       ```
       - file: path/to/file
@@ -42,7 +43,7 @@ steps:
 
       **Review every file in your assigned order.** Files reviewed earlier get more attention, which is why different sub-agents use different orderings.
 
-      **Check existing threads** in `/tmp/pr-context/review_comments.json` — do not flag issues that are already under discussion (resolved or unresolved). For outdated threads, only re-flag if the issue still applies to the current diff.
+      **Check existing threads** — per-file threads are at `/tmp/pr-context/threads/<filename>.json` (step 3 above). The full list is at `/tmp/pr-context/review_comments.json`. Do not flag issues that are already under discussion (resolved or unresolved). For outdated threads, only re-flag if the issue still applies to the current diff.
 
       **Return your full findings list** when done, or an empty list if no issues were found.
 

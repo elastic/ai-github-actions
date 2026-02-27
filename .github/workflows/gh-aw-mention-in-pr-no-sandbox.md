@@ -148,8 +148,9 @@ Based on what's asked, do the appropriate thing:
 - Review each changed file one at a time using diffs from `/tmp/pr-context/diffs/`. For each file:
   1. Read the diff from `/tmp/pr-context/diffs/<filename>.diff`
   2. Read the full file from the workspace (the PR branch is checked out)
-  3. Identify and verify issues per the **Code Review Reference** above
-  4. Leave inline comments (`create_pull_request_review_comment`) before moving to the next file
+  3. Check existing threads from `/tmp/pr-context/threads/<filename>.json` (if it exists) — skip issues already flagged
+  4. Identify and verify issues per the **Code Review Reference** above
+  5. Leave inline comments (`create_pull_request_review_comment`) before moving to the next file
 - After all files are reviewed, call `submit_pull_request_review`.
 - **Important**: Substantive feedback belongs in the PR review (inline comments + review submission), NOT in a reply comment. Do NOT add a separate comment after submitting the review unless the user explicitly asked for a comment or the review submission failed.
 - **Bot-authored PRs**: If the PR author is `github-actions[bot]`, you can only submit a `COMMENT` review — `APPROVE` and `REQUEST_CHANGES` will fail because GitHub does not allow bot accounts to approve or request changes on their own PRs. Use `COMMENT` and state your verdict in the review body instead.
