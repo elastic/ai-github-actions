@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"94b141c19f85e61b3ae4e0b4149e3092a708d265685e74c0bab7e62170c41900"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7fbb85c0b86e685d76459774dab1f4fdfaaacbcf37d8ac891cf4c2b07228d153"}
 
 name: "Duplicate Issue Detector"
 "on":
@@ -1180,9 +1180,7 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      discussions: write
       issues: write
-      pull-requests: write
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
       tools_reported: ${{ steps.missing_tool.outputs.tools_reported }}
@@ -1298,9 +1296,7 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      discussions: write
       issues: write
-      pull-requests: write
     timeout-minutes: 15
     env:
       GH_AW_ENGINE_ID: "copilot"
