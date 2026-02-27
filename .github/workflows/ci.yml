@@ -24,6 +24,13 @@ jobs:
         run: make setup-action-validator
       - name: Validate composite actions
         run: make lint-actions
+  check-nav-catalog:
+    name: Validate nav/catalog consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Check nav matches catalog
+        run: python3 scripts/check-nav-catalog.py
   make-compile:
     name: Verify compiled workflows
     runs-on: ubuntu-latest

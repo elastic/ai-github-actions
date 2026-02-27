@@ -223,6 +223,7 @@ lint-actions: setup-action-validator
 	done
 
 lint: lint-workflows lint-actions
+	@python3 scripts/check-nav-catalog.py
 
 docs-install:
 	@uv sync --dev
