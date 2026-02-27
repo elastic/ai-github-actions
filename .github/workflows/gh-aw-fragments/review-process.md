@@ -42,7 +42,7 @@ steps:
 
       **Review every file in your assigned order.** Files reviewed earlier get more attention, which is why different sub-agents use different orderings.
 
-      **Check existing threads** in `/tmp/pr-context/review_comments.json` — do not flag issues that are already under discussion (resolved, unresolved, or outdated).
+      **Check existing threads** in `/tmp/pr-context/review_comments.json` — do not flag issues that are already under discussion (resolved or unresolved). For outdated threads, only re-flag if the issue still applies to the current diff.
 
       **Return your full findings list** when done, or an empty list if no issues were found.
 
