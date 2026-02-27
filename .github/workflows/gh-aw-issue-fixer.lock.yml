@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8b74b6fd69a0a375ce5dce34127bda9715081e16df190ab17204dc85529a7071"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c1d07881b2bd62a50f096b162ff4d097214e25ff074e18682dfec1dc42209f9f"}
 
 name: "Issue Fixer"
 "on":
@@ -65,6 +65,11 @@ name: "Issue Fixer"
         description: Whether to create pull requests as drafts
         required: false
         type: boolean
+      github-token-for-extra-empty-commit:
+        default: ""
+        description: GitHub token for pushing an extra empty commit to allow workflows to run on bot-created PRs
+        required: false
+        type: string
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -1606,7 +1611,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":\"${{ inputs.draft-prs }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
-          GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
+          GH_AW_CI_TRIGGER_TOKEN: ${{ inputs.github-token-for-extra-empty-commit }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

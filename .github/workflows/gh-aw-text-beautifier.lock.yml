@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a84d576ef9fe7b8f6ee3f14265c08db439edbdb171c63a4df7284d82b0a5dc6c"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ea61bab621731da91adc6ac666586f3ed10250a3cb83ac7cfb88717caf42bc9e"}
 
 name: "Text Beautifier"
 "on":
@@ -65,6 +65,11 @@ name: "Text Beautifier"
         description: Whether to create pull requests as drafts
         required: false
         type: boolean
+      github-token-for-extra-empty-commit:
+        default: ""
+        description: GitHub token for pushing an extra empty commit to allow workflows to run on bot-created PRs
+        required: false
+        type: string
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -448,8 +453,6 @@ jobs:
       contents: read
       issues: read
       pull-requests: read
-    concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -1551,7 +1554,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":\"${{ inputs.draft-prs }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
-          GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
+          GH_AW_CI_TRIGGER_TOKEN: ${{ inputs.github-token-for-extra-empty-commit }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
