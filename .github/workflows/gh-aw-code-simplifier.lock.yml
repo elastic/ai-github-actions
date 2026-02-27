@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"555f2d90408b5f9107d669ede2083d9edbf4230d6249ce7a98e03da93d0cd2b9"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8830f692524187ac4e283e6fa5aec2e52671fd579e949a800f7875e5849f1163"}
 
 name: "Code Simplifier"
 "on":
@@ -942,19 +942,22 @@ jobs:
           def find(*paths):
               return next((p for p in paths if os.path.isfile(p)), None)
           def run(cmd):
-              return subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+              try:
+                  return subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+              except subprocess.TimeoutExpired:
+                  return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
           contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
           pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
-          # Generate diff of unpushed changes for self-review
-          diff_result = run(['git', 'diff', '@{upstream}...HEAD'])
+          # Generate diff of all local changes (committed + staged + unstaged) vs upstream
+          diff_result = run(['git', 'diff', '--merge-base', '@{upstream}'])
           diff_text = diff_result.stdout.strip()
           if not diff_text:
-              diff_result = run(['git', 'diff'])
+              diff_result = run(['git', 'diff', 'HEAD'])
               diff_text = diff_result.stdout.strip()
-          stat_result = run(['git', 'diff', '--stat', '@{upstream}...HEAD'])
+          stat_result = run(['git', 'diff', '--stat', '--merge-base', '@{upstream}'])
           stat_text = stat_result.stdout.strip()
           if not stat_text:
-              stat_result = run(['git', 'diff', '--stat'])
+              stat_result = run(['git', 'diff', '--stat', 'HEAD'])
               stat_text = stat_result.stdout.strip()
           os.makedirs('/tmp/self-review', exist_ok=True)
           with open('/tmp/self-review/diff.patch', 'w') as f:

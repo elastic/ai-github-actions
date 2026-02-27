@@ -145,6 +145,8 @@ For each unresolved review thread:
 
 ### Step 4: Resolve Addressed Threads
 
+Skip this step for fork PRs where you could not push.
+
 After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads from any reviewer — external reviewers, bots, and your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer. Fall back to `pull_request_read` with method `get_review_comments` if the pre-fetched data is unavailable.
 
 ### Step 5: Respond
