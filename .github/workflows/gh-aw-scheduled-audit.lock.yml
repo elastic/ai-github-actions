@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2d4e5bf57f7258448758a77aed6fc845c3e2cec37300c7ff4d9cc88d5f09cfc5"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b61730b9dbb865f232b0e2a66a45495ac14243704bc58f32f754f9ab2d770fde"}
 
 name: "Scheduled Audit"
 "on":
@@ -63,10 +63,6 @@ name: "Scheduled Audit"
         description: Label to apply to created issues (must already exist in the target repo)
         required: false
         type: string
-      issue-title-prefix:
-        description: Title prefix for created issues, e.g. '[my-audit]'
-        required: true
-        type: string
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -82,6 +78,10 @@ name: "Scheduled Audit"
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
         required: false
         type: string
+      title-prefix:
+        description: Title prefix for created issues, e.g. '[my-audit]'
+        required: true
+        type: string
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -90,7 +90,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: scheduled-audit-${{ inputs.issue-title-prefix }}
+  group: scheduled-audit-${{ inputs.title-prefix }}
 
 run-name: "Scheduled Audit"
 
@@ -512,7 +512,7 @@ jobs:
         shell: bash
       - env:
           GH_TOKEN: ${{ github.token }}
-          TITLE_PREFIX: ${{ inputs.issue-title-prefix }}
+          TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
         run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }\n"
       - env:
@@ -622,7 +622,7 @@ jobs:
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"${{ inputs.issue-title-prefix }} \".",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"${{ inputs.title-prefix }} \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -1384,7 +1384,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":false,\"expires\":168,\"max\":1,\"title_prefix\":\"${{ inputs.issue-title-prefix }} \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":false,\"expires\":168,\"max\":1,\"title_prefix\":\"${{ inputs.title-prefix }} \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

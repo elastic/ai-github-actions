@@ -27,7 +27,7 @@ on:
         description: "What the audit agent should investigate — appended as the Report Assignment"
         type: string
         required: true
-      issue-title-prefix:
+      title-prefix:
         description: "Title prefix for created issues, e.g. '[my-audit]'"
         type: string
         required: true
@@ -58,7 +58,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: scheduled-audit-${{ inputs.issue-title-prefix }}
+  group: scheduled-audit-${{ inputs.title-prefix }}
   cancel-in-progress: true
 permissions:
   actions: read
@@ -76,7 +76,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "${{ inputs.issue-title-prefix }} "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90
@@ -84,7 +84,7 @@ steps:
   - name: List previous findings
     env:
       GH_TOKEN: ${{ github.token }}
-      TITLE_PREFIX: ${{ inputs.issue-title-prefix }}
+      TITLE_PREFIX: ${{ inputs.title-prefix }}
     run: |
       set -euo pipefail
       gh issue list \
