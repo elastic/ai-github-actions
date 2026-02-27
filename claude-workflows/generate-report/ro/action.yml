@@ -80,7 +80,7 @@ inputs:
     default: ""
 
   assignee:
-    description: "Comma-separated list of github IDs to assign the issue"
+    description: "Comma-separated GitHub usernames to assign to the issue"
     required: false
     default: ""
 
