@@ -70,6 +70,7 @@ tools:
 strict: false
 safe-outputs:
   activation-comments: false
+  max-patch-size: 10240
   noop:
 timeout-minutes: 30
 steps:
