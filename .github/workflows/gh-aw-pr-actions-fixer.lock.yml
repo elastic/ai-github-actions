@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f985cb01e1a0c39f8cdb91d9203f120a3aabdd3eec81f658eae9973e3a504748"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"44052de0fb7bc94958037f154e75ce75f98ba3035bcc149d45f6967f3a6a89e8"}
 
 name: "PR Actions Fixer"
 "on":
@@ -57,6 +57,11 @@ name: "PR Actions Fixer"
       allowed-bot-users:
         default: github-actions[bot]
         description: Allowlisted bot actor usernames (comma-separated)
+        required: false
+        type: string
+      github-token-for-extra-empty-commit:
+        default: ""
+        description: GitHub token for pushing an extra empty commit to allow workflows to run on bot-created PRs
         required: false
         type: string
       messages-footer:
@@ -439,8 +444,6 @@ jobs:
       contents: read
       issues: read
       pull-requests: read
-    concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -1540,7 +1543,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"missing_data\":{},\"missing_tool\":{},\"push_to_pull_request_branch\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"if_no_changes\":\"warn\",\"max_patch_size\":1024}}"
-          GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
+          GH_AW_CI_TRIGGER_TOKEN: ${{ inputs.github-token-for-extra-empty-commit }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

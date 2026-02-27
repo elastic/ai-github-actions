@@ -42,7 +42,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e528be4cf028fd8ce8bd43491752116e4120a662d6c020e6354188155601efce"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"734a11a13a52ac6e686bd97f9fb2ef1dde1ca28c786ed0e184264bf575b7c03c"}
 
 name: "Mention in PR"
 "on":
@@ -67,6 +67,11 @@ name: "Mention in PR"
       create-pull-request-review-comment-max:
         default: "30"
         description: Maximum number of review comments the agent can create per run
+        required: false
+        type: string
+      github-token-for-extra-empty-commit:
+        default: ""
+        description: GitHub token for pushing an extra empty commit to allow workflows to run on bot-created PRs
         required: false
         type: string
       messages-footer:
@@ -1893,7 +1898,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"create_pull_request_review_comment\":{\"max\":\"${{ inputs.create-pull-request-review-comment-max }}\",\"side\":\"RIGHT\"},\"missing_data\":{},\"missing_tool\":{},\"push_to_pull_request_branch\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"if_no_changes\":\"warn\",\"max_patch_size\":1024},\"resolve_pull_request_review_thread\":{\"max\":\"${{ inputs.resolve-pull-request-review-thread-max }}\"},\"submit_pull_request_review\":{\"footer\":\"if-body\",\"max\":1}}"
-          GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.GH_AW_CI_TRIGGER_TOKEN }}
+          GH_AW_CI_TRIGGER_TOKEN: ${{ inputs.github-token-for-extra-empty-commit }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
