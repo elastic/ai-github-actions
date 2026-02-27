@@ -40,7 +40,7 @@ define download-file
 	fi
 endef
 
-.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile sync lint-workflows lint-actions docs-install docs-serve docs-build release
+.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile sync lint-workflows lint-actions test docs-install docs-serve docs-build release
 
 help:
 	@echo "This repository contains GitHub Actions workflows and gh-agent-workflows templates."
@@ -224,6 +224,9 @@ lint-actions: setup-action-validator
 
 lint: lint-workflows lint-actions
 	@python3 scripts/check-nav-catalog.py
+
+test:
+	@uv run --extra test pytest tests/ -v
 
 docs-install:
 	@uv sync --dev

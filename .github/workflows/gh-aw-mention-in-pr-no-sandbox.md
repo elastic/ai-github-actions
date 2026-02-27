@@ -17,6 +17,7 @@ imports:
   - gh-aw-fragments/safe-output-submit-review.md
   - gh-aw-fragments/safe-output-push-to-pr.md
   - gh-aw-fragments/safe-output-resolve-thread.md
+  - gh-aw-fragments/safe-output-reply-to-review-comment.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -121,7 +122,7 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 
 ## Constraints
 
-- **CAN**: Read files, search code, modify files locally, run tests and commands, leave inline review comments, submit reviews, resolve review threads, push to the PR branch (same-repo only)
+- **CAN**: Read files, search code, modify files locally, run tests and commands, leave inline review comments, submit reviews, reply to review threads, resolve review threads, push to the PR branch (same-repo only)
 - **CANNOT**: Push to fork PR branches, merge PRs, delete branches
 
 When pushing changes, the workspace already has the PR branch checked out. Make your changes, commit them locally, then use `push_to_pull_request_branch`.
@@ -158,10 +159,13 @@ Based on what's asked, do the appropriate thing:
 
 **If asked to fix code or address review feedback:**
 - Read `/tmp/pr-context/review_comments.json` to see open review threads and understand what needs to be addressed.
-- Make the changes in the workspace.
+- For each unresolved thread you address:
+   - Make the code changes in the workspace.
+   - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
+   - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
 - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
 - Commit your changes locally, then use `push_to_pull_request_branch` to push them.
-- After pushing, resolve each addressed review thread by calling `resolve_pull_request_review_thread` with the thread's node ID (the `id` field from `get_review_comments`, e.g., `PRRT_kwDO...`). Only resolve threads you have actually addressed — do not resolve threads you skipped or disagreed with.
+- After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
 - **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.
 
 **If asked a question about the code:**
@@ -178,6 +182,7 @@ If you did not submit a PR review, call `add_comment` with your response. If you
 
 **Additional tools:**
 - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
-- `resolve_pull_request_review_thread` — resolve a review thread after addressing the feedback (pass the thread's node ID)
+- `reply_to_pull_request_review_comment` — reply inline to a review comment thread to explain what you changed or why you disagree
+- `resolve_pull_request_review_thread` — resolve a review thread after addressing the feedback (pass the thread's GraphQL node ID)
 
 ${{ inputs.additional-instructions }}

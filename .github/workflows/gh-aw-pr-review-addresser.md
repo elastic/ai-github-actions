@@ -8,6 +8,7 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
+  - gh-aw-fragments/pr-context.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment-pr.md
   - gh-aw-fragments/safe-output-push-to-pr.md
@@ -118,11 +119,13 @@ Address the review feedback surgically — make only the minimum changes needed.
 
 ### Step 1: Gather Context
 
+PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files.
+
 1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get the full PR details (author, description, branches). Check whether this is a fork PR — if the head repo differs from the base repo, you cannot push changes.
-3. If the PR description references issues (e.g., "Fixes #123"), call `issue_read` with method `get` on each linked issue to understand the motivation and requirements.
-4. Call `pull_request_read` with method `get_review_comments` to get all review threads. Identify which threads are unresolved and need attention.
-5. Call `pull_request_read` with method `get_diff` to understand the current state of changes.
+2. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches). Check whether this is a fork PR — if the head repo differs from the base repo, you cannot push changes.
+3. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
+4. Read `/tmp/pr-context/review_comments.json` to get all review threads. Identify which threads are unresolved and need attention.
+5. Read `/tmp/pr-context/diffs/` to understand the current state of changes.
 
 ### Step 2: Address Each Review Thread
 
@@ -130,8 +133,8 @@ For each unresolved review thread:
 
 1. **Read and understand** the reviewer's feedback carefully.
 2. **Decide**: Is the feedback actionable? Use your judgment — don't blindly accept every suggestion.
-   - **If actionable**: Make the code change. Be surgical — change only what's needed to address the specific feedback.
-   - **If you disagree or it's unclear**: Call `reply_to_pull_request_review_comment` on the specific review comment to explain your reasoning inline. Do NOT resolve the thread — let the reviewer decide.
+   - **If actionable**: Make the code change. Be surgical — change only what's needed to address the specific feedback. If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
+   - **If you disagree or it's unclear**: Call `reply_to_pull_request_review_comment` with the comment's numeric ID to explain your reasoning inline. Do NOT resolve the thread — let the reviewer decide.
 3. **Track** which threads you addressed with code changes vs. which you replied to.
 
 ### Step 3: Validate and Push
@@ -142,7 +145,9 @@ For each unresolved review thread:
 
 ### Step 4: Resolve Addressed Threads
 
-After pushing, resolve each review thread you addressed with code changes by calling `resolve_pull_request_review_thread` with the thread's node ID (the `id` field from `get_review_comments`, e.g., `PRRT_kwDO...`). Only resolve threads you have actually addressed — do not resolve threads you skipped or disagreed with.
+Skip this step for fork PRs where you could not push.
+
+After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads from any reviewer — external reviewers, bots, and your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer. Fall back to `pull_request_read` with method `get_review_comments` if the pre-fetched data is unavailable.
 
 ### Step 5: Respond
 

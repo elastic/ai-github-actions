@@ -30,6 +30,7 @@
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/network-ecosystems.md
+#     - gh-aw-fragments/pr-context.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment-pr.md
@@ -39,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2ebbb62c9c192157de36a031b5f00326c4271d9663da95969d90631a39d74485"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9564307564f6118e5125f6b8ddff78b350665801035a5e38eb7ddb58c7372256"}
 
 name: "PR Review Addresser"
 "on":
@@ -275,6 +276,11 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
+          ## PR Context
+          
+          PR data is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files. Use these as your primary source for PR metadata, diffs, reviews, comments, and linked issues; fall back to API tools only when required data is unavailable.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
           ## Message Footer
           
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
@@ -318,7 +324,7 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF'
           ## reply-to-pull-request-review-comment Limitations
           
-          - **Required field**: `comment_id` — the ID of the review comment to reply to. This is the numeric REST comment ID from `get_review_comments`.
+          - **Required field**: `comment_id` — the numeric REST comment ID (e.g., `2481734562`). From `get_review_comments` this is the `id` field. From `/tmp/pr-context/review_comments.json` (GraphQL) this is the `databaseId` field. Do not pass GraphQL node IDs (e.g., `IC_kwDONVGiRc6...`) — those will fail.
           - **Body**: Max 65,536 characters. Keep well under this limit.
           - **Purpose**: Reply directly to a specific review comment thread to explain your reasoning when you disagree with or skip feedback. Do NOT use `add_comment` for this — use this tool to keep replies in context.
           - **Max per run**: 10 replies per workflow run.
@@ -350,11 +356,13 @@ jobs:
           
           ### Step 1: Gather Context
           
+          PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files.
+          
           1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-          2. Call `pull_request_read` with method `get` on PR #__GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__ to get the full PR details (author, description, branches). Check whether this is a fork PR — if the head repo differs from the base repo, you cannot push changes.
-          3. If the PR description references issues (e.g., "Fixes #123"), call `issue_read` with method `get` on each linked issue to understand the motivation and requirements.
-          4. Call `pull_request_read` with method `get_review_comments` to get all review threads. Identify which threads are unresolved and need attention.
-          5. Call `pull_request_read` with method `get_diff` to understand the current state of changes.
+          2. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches). Check whether this is a fork PR — if the head repo differs from the base repo, you cannot push changes.
+          3. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
+          4. Read `/tmp/pr-context/review_comments.json` to get all review threads. Identify which threads are unresolved and need attention.
+          5. Read `/tmp/pr-context/diffs/` to understand the current state of changes.
           
           ### Step 2: Address Each Review Thread
           
@@ -362,8 +370,8 @@ jobs:
           
           1. **Read and understand** the reviewer's feedback carefully.
           2. **Decide**: Is the feedback actionable? Use your judgment — don't blindly accept every suggestion.
-             - **If actionable**: Make the code change. Be surgical — change only what's needed to address the specific feedback.
-             - **If you disagree or it's unclear**: Call `reply_to_pull_request_review_comment` on the specific review comment to explain your reasoning inline. Do NOT resolve the thread — let the reviewer decide.
+             - **If actionable**: Make the code change. Be surgical — change only what's needed to address the specific feedback. If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
+             - **If you disagree or it's unclear**: Call `reply_to_pull_request_review_comment` with the comment's numeric ID to explain your reasoning inline. Do NOT resolve the thread — let the reviewer decide.
           3. **Track** which threads you addressed with code changes vs. which you replied to.
           
           ### Step 3: Validate and Push
@@ -374,7 +382,9 @@ jobs:
           
           ### Step 4: Resolve Addressed Threads
           
-          After pushing, resolve each review thread you addressed with code changes by calling `resolve_pull_request_review_thread` with the thread's node ID (the `id` field from `get_review_comments`, e.g., `PRRT_kwDO...`). Only resolve threads you have actually addressed — do not resolve threads you skipped or disagreed with.
+          Skip this step for fork PRs where you could not push.
+          
+          After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads from any reviewer — external reviewers, bots, and your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer. Fall back to `pull_request_read` with method `get_review_comments` if the pre-fetched data is unavailable.
           
           ### Step 5: Respond
           
@@ -552,6 +562,11 @@ jobs:
           chmod +x "$install_dir/uv"
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.target-pr-number || github.event.issue.number }}
+        name: Fetch PR context to disk
+        run: "set -euo pipefail\nmkdir -p /tmp/pr-context\n\n# PR metadata\ngh pr view \"$PR_NUMBER\" --json title,body,author,baseRefName,headRefName,url \\\n  > /tmp/pr-context/pr.json\n\n# Full diff\nif ! gh pr diff \"$PR_NUMBER\" > /tmp/pr-context/pr.diff; then\n  echo \"::warning::Failed to fetch full PR diff; per-file diffs from files.json are still available.\"\n  : > /tmp/pr-context/pr.diff\nfi\n\n# Changed files list (--paginate may output concatenated arrays; jq -s 'add' merges them)\ngh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files\" --paginate \\\n  | jq -s 'add // []' > /tmp/pr-context/files.json\n\n# Per-file diffs\njq -c '.[]' /tmp/pr-context/files.json | while IFS= read -r entry; do\n  filename=$(echo \"$entry\" | jq -r '.filename')\n  mkdir -p \"/tmp/pr-context/diffs/$(dirname \"$filename\")\"\n  echo \"$entry\" | jq -r '.patch // empty' > \"/tmp/pr-context/diffs/${filename}.diff\"\ndone\n\n# Existing reviews\ngh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews\" --paginate \\\n  | jq -s 'add // []' > /tmp/pr-context/reviews.json\n\n# Review threads with resolution status (GraphQL — REST lacks isResolved/isOutdated)\ngh api graphql --paginate -f query='\n  query($owner: String!, $repo: String!, $number: Int!, $endCursor: String) {\n    repository(owner: $owner, name: $repo) {\n      pullRequest(number: $number) {\n        reviewThreads(first: 100, after: $endCursor) {\n          pageInfo { hasNextPage endCursor }\n          nodes {\n            id\n            isResolved\n            isOutdated\n            isCollapsed\n            path\n            line\n            startLine\n            comments(first: 100) {\n              nodes {\n                id\n                databaseId\n                body\n                author { login }\n                createdAt\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n' -F owner=\"${GITHUB_REPOSITORY%/*}\" -F repo=\"${GITHUB_REPOSITORY#*/}\" -F \"number=$PR_NUMBER\" \\\n  --jq '.data.repository.pullRequest.reviewThreads.nodes' \\\n  | jq -s 'add // []' > /tmp/pr-context/review_comments.json\n\n# Per-file review threads (mirrors diffs/ structure)\njq -c '.[]' /tmp/pr-context/review_comments.json | while IFS= read -r thread; do\n  filepath=$(echo \"$thread\" | jq -r '.path // empty')\n  [ -z \"$filepath\" ] && continue\n  mkdir -p \"/tmp/pr-context/threads/$(dirname \"$filepath\")\"\n  echo \"$thread\" >> \"/tmp/pr-context/threads/${filepath}.jsonl\"\ndone\n# Convert per-file JSONL to proper JSON arrays\nmkdir -p /tmp/pr-context/threads\nfind /tmp/pr-context/threads -name '*.jsonl' 2>/dev/null | while IFS= read -r jsonl; do\n  jq -s '.' \"$jsonl\" > \"${jsonl%.jsonl}.json\"\n  rm \"$jsonl\"\ndone\n\n# PR discussion comments\ngh api \"repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments\" --paginate \\\n  | jq -s 'add // []' > /tmp/pr-context/comments.json\n\n# Linked issues\njq -r '.body // \"\"' /tmp/pr-context/pr.json 2>/dev/null \\\n  | grep -oiE '(fixes|closes|resolves)\\s+#[0-9]+' \\\n  | grep -oE '[0-9]+$' \\\n  | sort -u \\\n  | while read -r issue; do\n      gh api \"repos/$GITHUB_REPOSITORY/issues/$issue\" > \"/tmp/pr-context/issue-${issue}.json\" || true\n    done || true\n\n# Write manifest\ncat > /tmp/pr-context/README.md << 'MANIFEST'\n# PR Context\n\nPre-fetched PR data. All files are in `/tmp/pr-context/`.\n\n| File | Description |\n| --- | --- |\n| `pr.json` | PR metadata — title, body, author, base/head branches, URL |\n| `pr.diff` | Full unified diff of all changes |\n| `files.json` | Changed files array — each entry has `filename`, `status`, `additions`, `deletions`, `patch` |\n| `diffs/<path>.diff` | Per-file diffs — one file per changed file, mirroring the repo path under `diffs/` |\n| `reviews.json` | Prior review submissions — author, state (APPROVED/CHANGES_REQUESTED/COMMENTED), body |\n| `review_comments.json` | All review threads (GraphQL) — each thread has `id` (node ID for resolving), `isResolved`, `isOutdated`, `path`, `line`, and nested `comments` with `id`, `databaseId` (numeric REST ID for replies), body/author |\n| `threads/<path>.json` | Per-file review threads — one file per changed file with existing threads, mirroring the repo path under `threads/` |\n| `comments.json` | PR discussion comments (not inline) |\n| `issue-{N}.json` | Linked issue details (one file per linked issue, if any) |\n| `agents.md` | Repository conventions from `generate_agents_md` (if written by agent) |\n| `review-instructions.md` | Review instructions, criteria, and calibration examples (if written by review-process fragment) |\nMANIFEST\n\necho \"PR context written to /tmp/pr-context/\"\nls -la /tmp/pr-context/"
       - env:
           GITHUB_TOKEN: ${{ github.token }}
           REPO_NAME: ${{ github.repository }}
@@ -1031,16 +1046,52 @@ jobs:
               inputs = {}
           
           # User code:
-          import os, json
+          import os, json, subprocess
           def find(*paths):
               return next((p for p in paths if os.path.isfile(p)), None)
+          def run(cmd):
+              try:
+                  return subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+              except subprocess.TimeoutExpired:
+                  return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
           contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
           pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
+          # Generate diff of all local changes vs upstream for self-review
+          # Try --merge-base (committed+staged+unstaged vs upstream), fall back to
+          # @{upstream} 2-dot (committed only), then HEAD (uncommitted only)
+          diff_text = ''
+          for diff_cmd in [
+              ['git', 'diff', '--merge-base', '@{upstream}'],
+              ['git', 'diff', '@{upstream}'],
+              ['git', 'diff', 'HEAD'],
+          ]:
+              result = run(diff_cmd)
+              if result.stdout.strip():
+                  diff_text = result.stdout.strip()
+                  break
+          stat_text = ''
+          for stat_cmd in [
+              ['git', 'diff', '--stat', '--merge-base', '@{upstream}'],
+              ['git', 'diff', '--stat', '@{upstream}'],
+              ['git', 'diff', '--stat', 'HEAD'],
+          ]:
+              result = run(stat_cmd)
+              if result.stdout.strip():
+                  stat_text = result.stdout.strip()
+                  break
+          os.makedirs('/tmp/self-review', exist_ok=True)
+          with open('/tmp/self-review/diff.patch', 'w') as f:
+              f.write(diff_text)
+          with open('/tmp/self-review/stat.txt', 'w') as f:
+              f.write(stat_text)
+          diff_line_count = len(diff_text.splitlines())
           checklist = []
           if contributing: checklist.append(f'Review the contributing guide ({contributing}) before opening or updating a PR.')
           if pr_template: checklist.append(f'Follow the PR template ({pr_template}) for title, description, and validation notes.')
           checklist.append('Confirm the requested task is fully completed and validated before creating or pushing PR changes.')
-          print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template}))
+          if diff_line_count > 0:
+              checklist.append(f'A diff of your unpushed changes ({diff_line_count} lines) has been saved to `/tmp/self-review/diff.patch` (full diff) and `/tmp/self-review/stat.txt` (summary). Spawn a `code-review` sub-agent via `runSubagent` to review the diff against the codebase. Tell it to read `/tmp/self-review/diff.patch` and the relevant source files, and look for bugs, logic errors, missed edge cases, and style issues. If the sub-agent finds legitimate issues, fix them, commit, and call `ready_to_make_pr` again to regenerate the diff before proceeding.')
+          print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template, 'diff_line_count': diff_line_count}))
           
           
           GH_AW_SAFE_INPUTS_PY_READY-TO-MAKE-PR_EOF

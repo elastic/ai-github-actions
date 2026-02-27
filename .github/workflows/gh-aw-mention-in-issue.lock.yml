@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0ae9f74f88703cfd13359b3cc4b30465b644fb2b99e7841481b54147175a482f"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2ded4a298690475553c0f0f61d4fb5a3a4bb04e89d59e7559a521b9fc81abc39"}
 
 name: "Mention in Issue"
 "on":
@@ -1063,16 +1063,52 @@ jobs:
               inputs = {}
           
           # User code:
-          import os, json
+          import os, json, subprocess
           def find(*paths):
               return next((p for p in paths if os.path.isfile(p)), None)
+          def run(cmd):
+              try:
+                  return subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+              except subprocess.TimeoutExpired:
+                  return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
           contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
           pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
+          # Generate diff of all local changes vs upstream for self-review
+          # Try --merge-base (committed+staged+unstaged vs upstream), fall back to
+          # @{upstream} 2-dot (committed only), then HEAD (uncommitted only)
+          diff_text = ''
+          for diff_cmd in [
+              ['git', 'diff', '--merge-base', '@{upstream}'],
+              ['git', 'diff', '@{upstream}'],
+              ['git', 'diff', 'HEAD'],
+          ]:
+              result = run(diff_cmd)
+              if result.stdout.strip():
+                  diff_text = result.stdout.strip()
+                  break
+          stat_text = ''
+          for stat_cmd in [
+              ['git', 'diff', '--stat', '--merge-base', '@{upstream}'],
+              ['git', 'diff', '--stat', '@{upstream}'],
+              ['git', 'diff', '--stat', 'HEAD'],
+          ]:
+              result = run(stat_cmd)
+              if result.stdout.strip():
+                  stat_text = result.stdout.strip()
+                  break
+          os.makedirs('/tmp/self-review', exist_ok=True)
+          with open('/tmp/self-review/diff.patch', 'w') as f:
+              f.write(diff_text)
+          with open('/tmp/self-review/stat.txt', 'w') as f:
+              f.write(stat_text)
+          diff_line_count = len(diff_text.splitlines())
           checklist = []
           if contributing: checklist.append(f'Review the contributing guide ({contributing}) before opening or updating a PR.')
           if pr_template: checklist.append(f'Follow the PR template ({pr_template}) for title, description, and validation notes.')
           checklist.append('Confirm the requested task is fully completed and validated before creating or pushing PR changes.')
-          print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template}))
+          if diff_line_count > 0:
+              checklist.append(f'A diff of your unpushed changes ({diff_line_count} lines) has been saved to `/tmp/self-review/diff.patch` (full diff) and `/tmp/self-review/stat.txt` (summary). Spawn a `code-review` sub-agent via `runSubagent` to review the diff against the codebase. Tell it to read `/tmp/self-review/diff.patch` and the relevant source files, and look for bugs, logic errors, missed edge cases, and style issues. If the sub-agent finds legitimate issues, fix them, commit, and call `ready_to_make_pr` again to regenerate the diff before proceeding.')
+          print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template, 'diff_line_count': diff_line_count}))
           
           
           GH_AW_SAFE_INPUTS_PY_READY-TO-MAKE-PR_EOF

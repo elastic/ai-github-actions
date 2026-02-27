@@ -7,3 +7,12 @@ dependencies = [
     "mkdocs>=1.6.0,<2.0",
     "mkdocs-material>=9.5.0",
 ]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+    "pyyaml>=6.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
