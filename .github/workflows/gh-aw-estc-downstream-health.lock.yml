@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c5355799dd7d802ca80818981a617db301478c8d95d4098eba479863b27a27c0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d8c8e8c42af354024e878ef5d774b89c5dcdff2d564f1dd09dca5b4e891a8f1b"}
 
 name: "Estc Downstream Health"
 "on":
@@ -88,7 +88,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: downstream-health
+  group: estc-downstream-health
 
 run-name: "Estc Downstream Health"
 
@@ -126,7 +126,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-downstream-health.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-estc-downstream-health.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -550,7 +550,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawdownstreamhealth
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawestcdownstreamhealth
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       detection_conclusion: ${{ steps.detection_conclusion.outputs.conclusion }}
@@ -1393,7 +1393,7 @@ jobs:
           GH_AW_WORKFLOW_NAME: "Estc Downstream Health"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-downstream-health"
+          GH_AW_WORKFLOW_ID: "gh-aw-estc-downstream-health"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
@@ -1459,7 +1459,7 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-downstream-health"
+      GH_AW_WORKFLOW_ID: "gh-aw-estc-downstream-health"
       GH_AW_WORKFLOW_NAME: "Estc Downstream Health"
     outputs:
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}

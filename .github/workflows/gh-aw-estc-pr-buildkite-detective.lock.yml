@@ -36,9 +36,9 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d444744609be4f9cbfa4065a94b8b0da0423ac5d8f888702aac2cb9b97115c86"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8dc410ca5105d3a103dd4d38e78e08cfa27b6db13cbcef21bb4f63c023e9eab7"}
 
-name: "Estc PR Buildkite Detective"
+name: "PR Buildkite Detective"
 "on":
   # bots: # Bots processed as bot check in pre-activation job
   # - ${{ inputs.allowed-bot-users }} # Bots processed as bot check in pre-activation job
@@ -93,9 +93,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: false
-  group: pr-buildkite-detective-${{ github.run_id }}
+  group: estc-pr-buildkite-detective-${{ github.run_id }}
 
-run-name: "Estc PR Buildkite Detective"
+run-name: "PR Buildkite Detective"
 
 jobs:
   activation:
@@ -131,7 +131,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-pr-buildkite-detective.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-estc-pr-buildkite-detective.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -291,7 +291,7 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          # Estc PR Buildkite Detective
+          # PR Buildkite Detective
           
           Analyze failed Buildkite CI builds for pull requests in __GH_AW_GITHUB_REPOSITORY__. Identify root causes from build logs, trace failures to source code, and provide actionable fix recommendations via PR comments. This workflow is read-only.
           
@@ -502,7 +502,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawprbuildkitedetective
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawestcprbuildkitedetective
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       detection_conclusion: ${{ steps.detection_conclusion.outputs.conclusion }}
@@ -625,7 +625,7 @@ jobs:
               model: "${{ inputs.model }}",
               version: "",
               agent_version: "0.0.417",
-              workflow_name: "Estc PR Buildkite Detective",
+              workflow_name: "PR Buildkite Detective",
               experimental: false,
               supports_tools_allowlist: true,
               run_id: context.runId,
@@ -1190,7 +1190,7 @@ jobs:
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Estc PR Buildkite Detective"
+          WORKFLOW_NAME: "PR Buildkite Detective"
           WORKFLOW_DESCRIPTION: "Analyze failed Buildkite PR checks and report findings"
           HAS_PATCH: ${{ steps.collect_output.outputs.has_patch }}
         with:
@@ -1305,7 +1305,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
-          GH_AW_WORKFLOW_NAME: "Estc PR Buildkite Detective"
+          GH_AW_WORKFLOW_NAME: "PR Buildkite Detective"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1318,7 +1318,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Estc PR Buildkite Detective"
+          GH_AW_WORKFLOW_NAME: "PR Buildkite Detective"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1331,10 +1331,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Estc PR Buildkite Detective"
+          GH_AW_WORKFLOW_NAME: "PR Buildkite Detective"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-pr-buildkite-detective"
+          GH_AW_WORKFLOW_ID: "gh-aw-estc-pr-buildkite-detective"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
@@ -1351,7 +1351,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Estc PR Buildkite Detective"
+          GH_AW_WORKFLOW_NAME: "PR Buildkite Detective"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1400,8 +1400,8 @@ jobs:
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-pr-buildkite-detective"
-      GH_AW_WORKFLOW_NAME: "Estc PR Buildkite Detective"
+      GH_AW_WORKFLOW_ID: "gh-aw-estc-pr-buildkite-detective"
+      GH_AW_WORKFLOW_NAME: "PR Buildkite Detective"
     outputs:
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}
