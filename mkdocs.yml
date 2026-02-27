@@ -35,6 +35,7 @@ nav:
           - Mention in PR (no sandbox): workflows/gh-agent-workflows/mention-in-pr-no-sandbox.md
       - Event-driven:
           - Automatic Issue Triage: workflows/gh-agent-workflows/issue-triage.md
+          - Dependency Review: workflows/gh-agent-workflows/dependency-review.md
           - PR Review: workflows/gh-agent-workflows/pr-review.md
           - Duplicate Issue Detector: workflows/gh-agent-workflows/duplicate-issue-detector.md
           - Update PR Body: workflows/gh-agent-workflows/update-pr-body.md
@@ -54,10 +55,14 @@ nav:
               - Text Quality: workflows/gh-agent-workflows/text-quality.md
           - Standalone Scheduled:
               - Agent Suggestions: workflows/gh-agent-workflows/agent-suggestions.md
+              - Autonomy Atomicity Analyzer: workflows/gh-agent-workflows/autonomy-atomicity-analyzer.md
               - Breaking Change Detector: workflows/gh-agent-workflows/breaking-change-detector.md
               - Code Simplifier: workflows/gh-agent-workflows/code-simplifier.md
               - Flaky Test Investigator: workflows/gh-agent-workflows/flaky-test-investigator.md
+              - Framework Best Practices: workflows/gh-agent-workflows/framework-best-practices.md
+              - Information Architecture: workflows/gh-agent-workflows/information-architecture.md
               - Performance Profiler: workflows/gh-agent-workflows/performance-profiler.md
+              - Product Manager Impersonator: workflows/gh-agent-workflows/product-manager-impersonator.md
               - Project Summary: workflows/gh-agent-workflows/project-summary.md
               - Release Update Check: workflows/gh-agent-workflows/release-update.md
               - Small Problem Fixer: workflows/gh-agent-workflows/small-problem-fixer.md
