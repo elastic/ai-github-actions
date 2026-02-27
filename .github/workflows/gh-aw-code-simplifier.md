@@ -8,7 +8,7 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/best-of-three-investigation.md
+  - gh-aw-fragments/pick-three-keep-one.md
   - gh-aw-fragments/safe-output-create-pr.md
   - gh-aw-fragments/network-ecosystems.md
 engine:

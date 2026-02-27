@@ -25,12 +25,12 @@
 #
 # Resolved workflow manifest:
 #   Imports:
-#     - gh-aw-fragments/best-of-three-investigation.md
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/network-ecosystems.md
+#     - gh-aw-fragments/pick-three-keep-one.md
 #     - gh-aw-fragments/previous-findings.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4bf8367672c7e45b496072e4358e439529247fb3e478c2a3bfc03b76c46fa6de"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f9c23878b27e9e412a4c037956e24113947e0dd3b6f6b531a2aeb923b5dcf6c4"}
 
 name: "Product Manager Impersonator"
 "on":
@@ -304,15 +304,26 @@ jobs:
           - Only file a new issue when the finding is genuinely distinct from all previous findings.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          ### Best-of-Three Investigation
+          ### Pick Three, Keep One
           
-          For your initial investigation, use multiple sub-agents to explore the codebase and gather the best possible result. Give each sub-agent a unique instruction to explore a different starting point or angle — e.g., different starting points, different approaches, or different heuristics.
+          Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return a complete candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`.
           
-          Wait for all the sub-agents to complete. Do not proceed until every sub-agent has returned its result.
+          **How to spawn sub-agents:** Call `runSubagent` with the appropriate `agentType`. Unless the workflow specifies otherwise, use `general-purpose`. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
           
-          Evaluate the candidates by comparing evidence quality, specificity, and actionability. Prefer candidates with concrete file paths, line numbers, and verifiable evidence over general observations. If most or all sub-agents recommend `noop`, that is a strong signal to `noop`.
+          - The full task description and objective (restate it, don't summarize)
+          - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
+          - Any relevant findings from your initial exploration (file paths, git log output, code snippets)
+          - The quality gate criteria and output format you expect
+          - The specific angle that distinguishes this sub-agent from the others
           
-          Select the single best candidate and proceed with it. Discard the others. If no candidate meets the quality gate, call `noop`.
+          Err on the side of providing too much context rather than too little. A well-informed sub-agent with a 10,000-token prompt will produce far better results than one with a 200-token prompt that has to rediscover everything from scratch.
+          
+          **Wait for all 3 sub-agents to complete.** Do not proceed until every sub-agent has returned its result.
+          
+          **Evaluate the candidates** by comparing evidence quality, specificity, and actionability. Prefer candidates with concrete file paths, line numbers, and verifiable evidence over general observations. If most or all sub-agents recommend `noop`, that is a strong signal to `noop`.
+          
+          **Select the single best candidate** and proceed with it. Discard the others. If no candidate meets the quality gate, call `noop`.
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.

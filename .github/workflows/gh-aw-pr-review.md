@@ -13,6 +13,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
+  - gh-aw-fragments/pick-three-keep-all.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -120,7 +121,7 @@ Follow these steps in order.
 
 ### Step 2: Review Each File
 
-Follow the **Code Review Reference** below — review each changed file one at a time, leaving inline comments before moving to the next file.
+Follow the **Pick Three, Keep All** process above — spawn 3 `code-review` sub-agents to review the PR diff in parallel from different angles, then merge and deduplicate their findings. Use the **Code Review Reference** below as the review criteria and comment format for your final inline comments.
 
 ### Step 3: Submit the Review
 
