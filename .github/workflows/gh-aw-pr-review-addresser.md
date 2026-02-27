@@ -52,14 +52,11 @@ on:
         type: string
         required: false
         default: "10"
-      github-token-for-extra-empty-commit:
-        description: "GitHub token for pushing an extra empty commit to allow workflows to run on bot-created PRs"
-        type: string
-        required: false
-        default: ""
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
