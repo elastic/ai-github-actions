@@ -16,7 +16,7 @@ safe-inputs:
       return result;
 safe-outputs:
   push-to-pull-request-branch:
-    github-token-for-extra-empty-commit: ${{ inputs.github-token-for-extra-empty-commit }}
+    github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 ---
 
 Before calling `push_to_pull_request_branch`, call `ready_to_make_pr` and apply its checklist.

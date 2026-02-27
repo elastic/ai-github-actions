@@ -68,14 +68,11 @@ on:
         type: string
         required: false
         default: "10"
-      github-token-for-extra-empty-commit:
-        description: "GitHub token for pushing an extra empty commit to allow workflows to run on bot-created PRs"
-        type: string
-        required: false
-        default: ""
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
 concurrency:
   group: mention-pr-by-id-${{ inputs.target-pr-number }}
   cancel-in-progress: true
@@ -100,7 +97,7 @@ safe-outputs:
     target: "${{ inputs.target-pr-number }}"
   push-to-pull-request-branch:
     target: "${{ inputs.target-pr-number }}"
-    github-token-for-extra-empty-commit: ${{ inputs.github-token-for-extra-empty-commit }}
+    github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 timeout-minutes: 60
 steps:
   - name: Ensure origin refs for PR patch generation

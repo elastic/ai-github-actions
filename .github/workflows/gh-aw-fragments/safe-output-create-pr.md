@@ -17,7 +17,7 @@ safe-inputs:
 safe-outputs:
   create-pull-request:
     draft: ${{ inputs.draft-prs }}
-    github-token-for-extra-empty-commit: ${{ inputs.github-token-for-extra-empty-commit }}
+    github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 ---
 
 Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist.

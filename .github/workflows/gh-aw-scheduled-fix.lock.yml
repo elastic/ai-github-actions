@@ -37,11 +37,7 @@
 #
 # inlined-imports: true
 #
-<<<<<<< copilot/expose-github-token-input
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"604c4bb3f3a33a3fdea31d9e7433048d5483ffc156c9ee6ec75a7c9100f451eb"}
-=======
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"fb9cb61d1c7bc9a1ef3adc355056c47c15620699f4ae199addc698133f2b0298"}
->>>>>>> main
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e07dee33200f22bf75051c2c1daab80e8937f2af172bd4a136d00c1972f01f6c"}
 
 name: "Scheduled Fix"
 "on":
@@ -67,11 +63,6 @@ name: "Scheduled Fix"
         description: Whether to create pull requests as drafts
         required: false
         type: boolean
-      github-token-for-extra-empty-commit:
-        default: ""
-        description: GitHub token for pushing an extra empty commit to allow workflows to run on bot-created PRs
-        required: false
-        type: string
       issue-label:
         default: ""
         description: Label to search for in open issues
@@ -99,6 +90,8 @@ name: "Scheduled Fix"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
 
 permissions: {}
 
@@ -1575,7 +1568,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":\"${{ inputs.draft-prs }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
-          GH_AW_CI_TRIGGER_TOKEN: ${{ inputs.github-token-for-extra-empty-commit }}
+          GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

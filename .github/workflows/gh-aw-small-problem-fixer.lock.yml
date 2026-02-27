@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0c52306a33996612b3f8ed4b62ec4ead21763b8a982a1bdb2e855739b63e50c5"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2618683467da4d20a633496778a8c8abc902cf15acdaa0c18dfa0cc18b28f082"}
 
 name: "Small Problem Fixer"
 "on":
@@ -64,11 +64,6 @@ name: "Small Problem Fixer"
         description: Whether to create pull requests as drafts
         required: false
         type: boolean
-      github-token-for-extra-empty-commit:
-        default: ""
-        description: GitHub token for pushing an extra empty commit to allow workflows to run on bot-created PRs
-        required: false
-        type: string
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -87,6 +82,8 @@ name: "Small Problem Fixer"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
 
 permissions: {}
 
@@ -457,6 +454,8 @@ jobs:
       contents: read
       issues: read
       pull-requests: read
+    concurrency:
+      group: "gh-aw-copilot-${{ github.workflow }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -1597,7 +1596,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":\"${{ inputs.draft-prs }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
-          GH_AW_CI_TRIGGER_TOKEN: ${{ inputs.github-token-for-extra-empty-commit }}
+          GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
