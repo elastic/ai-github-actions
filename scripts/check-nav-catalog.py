@@ -40,17 +40,45 @@ def extract_catalog_slugs(catalog_text: str) -> set[str]:
     """
     return {
         m.group(1)
-        for m in re.finditer(r"\(gh-agent-workflows/([a-z0-9-]+)\.md\)", catalog_text)
+        for m in re.finditer(
+            r"\(gh-agent-workflows/([a-z0-9-]+)\.md(?:[?#][^)]+)?\)", catalog_text
+        )
     }
 
 
 def extract_nav_slugs(mkdocs_text: str) -> set[str]:
     """Extract workflow slugs directly referenced in the mkdocs.yml nav."""
+    lines = mkdocs_text.splitlines()
+
+    nav_start = None
+    nav_indent = 0
+    for idx, line in enumerate(lines):
+        stripped = line.lstrip()
+        if stripped.startswith("nav:"):
+            nav_start = idx + 1
+            nav_indent = len(line) - len(stripped)
+            break
+
+    if nav_start is None:
+        return set()
+
+    nav_lines: list[str] = []
+    for line in lines[nav_start:]:
+        stripped = line.lstrip()
+        if not stripped or stripped.startswith("#"):
+            nav_lines.append(line)
+            continue
+
+        indent = len(line) - len(stripped)
+        if indent <= nav_indent:
+            break
+
+        nav_lines.append(line)
+
+    nav_text = "\n".join(nav_lines)
     return {
         m.group(1)
-        for m in re.finditer(
-            r"workflows/gh-agent-workflows/([a-z0-9-]+)\.md", mkdocs_text
-        )
+        for m in re.finditer(r"workflows/gh-agent-workflows/([a-z0-9-]+)\.md", nav_text)
     }
 
 
@@ -66,7 +94,9 @@ def extract_mentioned_slugs(page_content: str) -> set[str]:
     """
     link_slugs = {
         m.group(1)
-        for m in re.finditer(r"\bgh-agent-workflows/([a-z0-9-]+)\.md\b", page_content)
+        for m in re.finditer(
+            r"\bgh-agent-workflows/([a-z0-9-]+)\.md(?:[?#][^\s)\]\"']+)?", page_content
+        )
     }
     dir_slugs = {
         m.group(1)
