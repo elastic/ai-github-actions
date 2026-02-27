@@ -41,7 +41,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"63534bda77999d6aea61353f5e9015a218d38f769cce0d8316961ad0f0864346"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4e5d1107d29decd3b6df3022c6c7de767cdddca98e3cf01106c92eb06b992ff0"}
 
 name: "PR Actions Detective"
 "on":
@@ -100,11 +100,17 @@ jobs:
     outputs:
       comment_id: ""
       comment_repo: ""
+      secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@90ebf8057e8e005103b8d123732d2c64c30e9b27 # v0.50.4
+        uses: github/gh-aw/actions/setup@3c15f58f43054a10fa3173200611a0a76182c446
         with:
           destination: /opt/gh-aw/actions
+      - name: Validate COPILOT_GITHUB_TOKEN secret
+        id: validate-secret
+        run: /opt/gh-aw/actions/validate_multi_secret.sh COPILOT_GITHUB_TOKEN 'GitHub Copilot CLI' https://github.github.com/gh-aw/reference/engines/#github-copilot-default
+        env:
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       - name: Validate context variables
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
@@ -158,7 +164,7 @@ jobs:
           cat "/opt/gh-aw/prompts/safe_outputs_prompt.md"
           cat << 'GH_AW_PROMPT_EOF'
           <safe-output-tools>
-          Tools: add_comment, missing_tool, missing_data
+          Tools: add_comment, missing_tool, missing_data, noop
           </safe-output-tools>
           <github-context>
           The following GitHub context information is available for this workflow:
@@ -433,10 +439,9 @@ jobs:
       model: ${{ steps.generate_aw_info.outputs.model }}
       output: ${{ steps.collect_output.outputs.output }}
       output_types: ${{ steps.collect_output.outputs.output_types }}
-      secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@90ebf8057e8e005103b8d123732d2c64c30e9b27 # v0.50.4
+        uses: github/gh-aw/actions/setup@3c15f58f43054a10fa3173200611a0a76182c446
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -510,7 +515,7 @@ jobs:
       - name: Checkout PR branch
         id: checkout-pr
         if: |
-          github.event.pull_request
+          (github.event.pull_request) || (github.event.issue.pull_request)
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -533,7 +538,7 @@ jobs:
               engine_name: "GitHub Copilot CLI",
               model: "${{ inputs.model }}",
               version: "",
-              agent_version: "0.0.417",
+              agent_version: "0.0.419",
               workflow_name: "PR Actions Detective",
               experimental: false,
               supports_tools_allowlist: true,
@@ -546,10 +551,10 @@ jobs:
               actor: context.actor,
               event_name: context.eventName,
               staged: false,
-              allowed_domains: ["agents-md-generator.fastmcp.app","artifacts.elastic.co","clojure","cloud.elastic.co","containers","dart","defaults","dotnet","ela.st","elastic.co","elastic.dev","elixir","fonts","github","github-actions","go","haskell","java","kotlin","linux-distros","node","node-cdns","perl","php","playwright","public-code-search.fastmcp.app","python","ruby","rust","scala","swift","terraform","www.elastic.co","zig"],
+              allowed_domains: ["agents-md-generator.fastmcp.app","artifacts.elastic.co","clojure","cloud.elastic.co","containers","dart","defaults","dotnet","ela.st","elastic.co","elastic.dev","elastic.github.io","elixir","fonts","github","github-actions","go","haskell","java","kotlin","linux-distros","node","node-cdns","perl","php","playwright","public-code-search.fastmcp.app","python","ruby","rust","scala","swift","terraform","www.elastic.co","zig"],
               firewall_enabled: true,
               awf_version: "v0.23.0",
-              awmg_version: "v0.1.5",
+              awmg_version: "v0.1.6",
               steps: {
                 firewall: "squid"
               },
@@ -564,13 +569,8 @@ jobs:
             
             // Set model as output for reuse in other steps/jobs
             core.setOutput('model', awInfo.model);
-      - name: Validate COPILOT_GITHUB_TOKEN secret
-        id: validate-secret
-        run: /opt/gh-aw/actions/validate_multi_secret.sh COPILOT_GITHUB_TOKEN 'GitHub Copilot CLI' https://github.github.com/gh-aw/reference/engines/#github-copilot-default
-        env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       - name: Install GitHub Copilot CLI
-        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.417
+        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.419
       - name: Install awf binary
         run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.23.0
       - name: Determine automatic lockdown mode for GitHub MCP Server
@@ -584,7 +584,7 @@ jobs:
             const determineAutomaticLockdown = require('/opt/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.23.0 ghcr.io/github/gh-aw-firewall/api-proxy:0.23.0 ghcr.io/github/gh-aw-firewall/squid:0.23.0 ghcr.io/github/gh-aw-mcpg:v0.1.5 ghcr.io/github/github-mcp-server:v0.31.0 node:lts-alpine
+        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.23.0 ghcr.io/github/gh-aw-firewall/api-proxy:0.23.0 ghcr.io/github/gh-aw-firewall/squid:0.23.0 ghcr.io/github/gh-aw-mcpg:v0.1.6 ghcr.io/github/github-mcp-server:v0.31.0 node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p /opt/gh-aw/safeoutputs
@@ -827,7 +827,7 @@ jobs:
           export DEBUG="*"
           
           export GH_AW_ENGINE="copilot"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.5'
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.6'
           
           mkdir -p /home/runner/.copilot
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
@@ -893,7 +893,7 @@ jobs:
         run: |
           set -o pipefail
           # shellcheck disable=SC1003
-          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains "*.docker.com,*.docker.io,*.githubusercontent.com,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org" --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.23.0 --skip-pull --enable-api-proxy \
+          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains "*.docker.com,*.docker.io,*.githubusercontent.com,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,elastic.github.io,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org" --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.23.0 --skip-pull --enable-api-proxy \
             -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --allow-all-tools --allow-all-paths --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
@@ -902,9 +902,11 @@ jobs:
           GH_AW_MCP_CONFIG: /home/runner/.copilot/mcp-config.json
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GITHUB_API_URL: ${{ github.api_url }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_STEP_SUMMARY: ${{ env.GITHUB_STEP_SUMMARY }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
           XDG_CONFIG_HOME: /home/runner
@@ -974,7 +976,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_ALLOWED_DOMAINS: "*.docker.com,*.docker.io,*.githubusercontent.com,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org"
+          GH_AW_ALLOWED_DOMAINS: "*.docker.com,*.docker.io,*.githubusercontent.com,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,elastic.github.io,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
         with:
@@ -1119,8 +1121,10 @@ jobs:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           COPILOT_MODEL: ${{ inputs.model }}
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GITHUB_API_URL: ${{ github.api_url }}
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_STEP_SUMMARY: ${{ env.GITHUB_STEP_SUMMARY }}
           GITHUB_WORKSPACE: ${{ github.workspace }}
           XDG_CONFIG_HOME: /home/runner
@@ -1178,7 +1182,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@90ebf8057e8e005103b8d123732d2c64c30e9b27 # v0.50.4
+        uses: github/gh-aw/actions/setup@3c15f58f43054a10fa3173200611a0a76182c446
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1228,7 +1232,7 @@ jobs:
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-pr-actions-detective"
-          GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.agent.outputs.secret_verification_result }}
+          GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.activation.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
           GH_AW_GROUP_REPORTS: "false"
@@ -1264,7 +1268,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@90ebf8057e8e005103b8d123732d2c64c30e9b27 # v0.50.4
+        uses: github/gh-aw/actions/setup@3c15f58f43054a10fa3173200611a0a76182c446
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1304,7 +1308,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@90ebf8057e8e005103b8d123732d2c64c30e9b27 # v0.50.4
+        uses: github/gh-aw/actions/setup@3c15f58f43054a10fa3173200611a0a76182c446
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1323,6 +1327,9 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
+          GH_AW_ALLOWED_DOMAINS: "*.docker.com,*.docker.io,*.githubusercontent.com,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,elastic.github.io,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org"
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_API_URL: ${{ github.api_url }}
           GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}

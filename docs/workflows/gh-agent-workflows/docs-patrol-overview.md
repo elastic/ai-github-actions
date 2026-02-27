@@ -2,7 +2,7 @@
 
 Detect code changes that require documentation updates — both internal and published.
 
-Two variants cover different documentation scopes: **Docs Patrol** checks internal documentation (READMEs, CONTRIBUTING, etc.) against recent code changes, while **Docs Patrol External** focuses on published Elastic documentation on `elastic.co/docs`. Both scan recent commits for public API or behavioral changes not reflected in documentation. Most runs end with `noop`.
+Two variants cover different documentation scopes: **Docs Patrol** checks internal documentation (READMEs, CONTRIBUTING, etc.) against recent code changes, while **Docs Patrol External (Elastic-specific)** focuses on published Elastic documentation on `elastic.co/docs`. Both scan recent commits for public API or behavioral changes not reflected in documentation. Most runs end with `noop`.
 
 ## Quick install
 
@@ -20,8 +20,8 @@ mkdir -p .github/workflows && curl -sL \
 mkdir -p .github/workflows && \
 curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/docs-patrol/example.yml \
   -o .github/workflows/docs-patrol.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/docs-patrol-external/example.yml \
-  -o .github/workflows/docs-patrol-external.yml
+curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/estc-docs-patrol-external/example.yml \
+  -o .github/workflows/estc-docs-patrol-external.yml
 ```
 
 ---
@@ -72,7 +72,7 @@ jobs:
 
 ---
 
-## Docs Patrol External
+## Docs Patrol External (Elastic-specific)
 
 Like Docs Patrol, but focuses on changes that require updates to published Elastic documentation on `elastic.co/docs`. Also flags features that need `applies_to` tag updates or documentation backports to earlier release branches.
 
@@ -98,7 +98,7 @@ Like Docs Patrol, but focuses on changes that require updates to published Elast
 ### Example workflow
 
 ```yaml
-name: Docs Patrol External
+name: Docs Patrol External (Elastic-specific)
 on:
   schedule:
     - cron: "0 14 * * 1-5"
@@ -111,7 +111,7 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-docs-patrol-external.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-docs-patrol-external.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

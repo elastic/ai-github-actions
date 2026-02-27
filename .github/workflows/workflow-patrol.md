@@ -11,7 +11,7 @@ imports:
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/previous-findings.md
-  - gh-aw-fragments/best-of-three-investigation.md
+  - gh-aw-fragments/pick-three-keep-one.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -79,6 +79,7 @@ Shared fragments live in `.github/workflows/gh-aw-fragments/`.
 2. Read all `.github/workflows/gh-aw-fragments/*.md` files (the shared fragments).
 3. Read all `.github/workflows/trigger-*.yml` files and all `gh-agent-workflows/*/example.yml` files.
 4. Check for open issues with the `[workflow-patrol]` title prefix to avoid duplicating already-tracked findings.
+5. Use the **Pick Three, Keep One** pattern for the reading phase: spawn 3 `general-purpose` sub-agents, each analyzing workflows from a different angle (e.g., different workflow aspects such as triggers/permissions/naming conventions, different workflow groups such as scheduled vs. workflow_call vs. internal, different structural dimensions such as frontmatter fields vs. prompt structure vs. fragment usage). Include the full list of workflow files, fragment contents, and trigger/example files in each sub-agent prompt. Each sub-agent should return its best candidate drift finding with evidence or recommend `noop`.
 
 #### Step 2: Discover majority patterns
 

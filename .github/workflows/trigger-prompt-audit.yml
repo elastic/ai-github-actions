@@ -1,0 +1,98 @@
+name: Trigger Prompt Audit
+on:
+  schedule:
+    - cron: "0 11 * * 1" # Mondays at 11:00 UTC
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-scheduled-audit.lock.yml
+    with:
+      title-prefix: "[prompt-audit]"
+      close-older-issues: true
+      setup-commands: |
+        bash "$GITHUB_WORKSPACE/scripts/extract-lockfile-prompts.sh"
+      additional-instructions: |
+        ## Report Assignment: Compiled Prompt Audit
+
+        Audit the compiled agent prompts for this repository's agentic workflows. Prompts have been extracted from `.lock.yml` files and written to `/tmp/prompt-audit/`.
+
+        ### Data Gathering
+
+        1. Read `/tmp/prompt-audit/README.md` for a manifest of all extracted prompt files and their line counts.
+        2. Group the prompts into families by reading the filenames:
+           - **PR workflows**: `pr-review`, `mention-in-pr`, `mention-in-pr-no-sandbox`, `mention-in-pr-by-id`, `pr-review-addresser`, `pr-actions-detective`, `pr-actions-fixer`, `estc-docs-pr-review`, `estc-pr-buildkite-detective`
+           - **Issue workflows**: `mention-in-issue`, `mention-in-issue-no-sandbox`, `issue-triage`, `issue-fixer`
+           - **Scheduled audits/detectors**: `scheduled-audit`, `bug-hunter`, `docs-patrol`, `breaking-change-detector`, `code-duplication-detector`, `stale-issues`, `text-auditor`, `dependency-review`, `framework-best-practices`, etc.
+           - **Fixers/improvers**: `scheduled-fix`, `code-simplifier`, `code-duplication-fixer`, `small-problem-fixer`, `test-improver`, `text-beautifier`, `newbie-contributor-fixer`, `refactor-opportunist`, etc.
+           - **Other**: `plan`, `deep-research`, `project-summary`, `update-pr-body`, etc.
+        3. Read each prompt file. Focus on families with multiple similar workflows first (PR workflows, issue workflows).
+
+        ### What to Look For
+
+        Audit for these categories, in priority order:
+
+        **Critical — must fix:**
+        1. **Conflicting instructions** — One section of the prompt says to do X while another section says to do the opposite or something incompatible. Example: one section says "do NOT leave inline comments" while another says "leave inline comments for each finding."
+        2. **Impossible instructions** — The prompt tells the agent to use a tool that is not listed in the `<safe-output-tools>` section, or references data paths that no step produces.
+        3. **Stale references** — File paths, tool names, field names, or API responses that don't match what the workflow actually provides. Example: referencing `review_comments.json` as having `isResolved` fields when it actually comes from a different data source.
+
+        **High — should fix:**
+        4. **Confusing directives** — Instructions that are ambiguous, self-contradictory, or hard for an LLM to follow. Sections where the intended behavior is unclear even after reading carefully.
+        5. **Redundant instructions** — The same instruction or guidance repeated verbatim or near-verbatim in multiple sections of the same prompt. This wastes tokens and creates drift risk when one copy is updated but not the other.
+        6. **Performance-degrading patterns** — Instructions that tell the agent to make API calls when equivalent data is already available on disk, or that require unnecessary steps.
+
+        **Medium — nice to fix:**
+        7. **Cross-workflow drift** — Workflows that should be nearly identical (e.g., `mention-in-pr` vs `mention-in-pr-no-sandbox`) have diverged in ways that seem unintentional. Only flag if the difference could cause behavioral problems.
+        8. **Fragment ordering issues** — Content that references concepts defined later in the prompt, or assumes context that hasn't been established yet.
+
+        ### Notation
+
+        When referencing issues, use the format: `<workflow-name>.prompt.md` line N. Quote the conflicting text.
+
+        ### What to Skip
+
+        - **Runtime includes** (`<!-- [RUNTIME INCLUDE: ... ] -->`) — these are platform files we don't control. Ignore them.
+        - **Template markers** (`__GH_AW_*__`, `{{#if ...}}`) — these are expected. Don't flag them as issues.
+        - **Style preferences** — Don't flag writing style, formatting choices, or markdown conventions unless they cause actual confusion.
+        - **Backwards-compat duplicates** — Files like `breaking-change-detect` and `breaking-change-detector` are expected duplicates (old name + new name). Skip these pairs.
+        - **Intentional differences** — `mention-in-pr-no-sandbox` has `sandbox: agent: false` and different safe-output settings by design. Only flag differences that seem accidental.
+
+        ### Issue Format
+
+        ```
+        ## Prompt Audit Findings
+
+        ### Critical
+
+        #### 1. [Brief title]
+        **Workflow(s):** `workflow-name.prompt.md`
+        **Evidence:** Quote the conflicting/broken text with line references
+        **Impact:** What goes wrong for the agent
+        **Suggested fix:** How to resolve it
+
+        ### High
+
+        #### 2. [Brief title]
+        ...
+
+        ### Medium
+
+        #### 3. [Brief title]
+        ...
+
+        ## Summary
+
+        Audited N prompt files across M workflow families.
+        - Critical: N findings
+        - High: N findings
+        - Medium: N findings
+        ```
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

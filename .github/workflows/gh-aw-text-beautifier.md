@@ -52,6 +52,8 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -71,6 +73,7 @@ tools:
 strict: false
 safe-outputs:
   activation-comments: false
+  max-patch-size: 10240
   noop:
 timeout-minutes: 90
 steps:

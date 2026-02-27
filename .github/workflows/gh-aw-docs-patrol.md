@@ -12,6 +12,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/previous-findings.md
+  - gh-aw-fragments/pick-three-keep-many.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -110,6 +111,10 @@ For each commit (or group of related commits), determine whether the changes cou
 4. **Dependency or tooling changes** — version bumps, new dependencies, changed build/test commands
 5. **Structural changes** — moved, renamed, or deleted files that are referenced in documentation
 6. **Configuration changes** — new environment variables, changed file formats, altered directory structures
+
+### Parallel Analysis
+
+Use the **Pick Three, Keep Many** pattern for the analysis: spawn 3 `general-purpose` sub-agents, each analyzing the recent commits from a different angle (e.g., one checking public API and behavioral changes, one checking structural and configuration changes, one checking new features and dependency updates). Include the git log output, commit diffs, documentation file inventory, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
 
 ### How to Analyze
 

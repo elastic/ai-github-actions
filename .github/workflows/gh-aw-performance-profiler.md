@@ -12,7 +12,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/previous-findings.md
-  - gh-aw-fragments/best-of-three-investigation.md
+  - gh-aw-fragments/pick-three-keep-one.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -103,7 +103,8 @@ Identify performance hot paths in the repository, profile the code, and report f
    - **Rust**: Search for `#[bench]` or criterion benchmarks.
    - **Java**: Search for JMH benchmarks or `@Benchmark` annotations.
 3. If existing benchmarks are found, run them and capture baseline results.
-4. If no existing benchmarks exist, identify likely hot paths:
+4. Use the **Pick Three, Keep One** pattern for the data gathering phase: spawn 3 `general-purpose` sub-agents, each searching for performance opportunities from a different angle (e.g., different performance dimensions such as CPU-bound vs. memory-allocation vs. I/O-bound paths, different code paths or entry points, different bottleneck types such as algorithmic complexity vs. redundant work vs. expensive serialization). Include the language/build system info, existing benchmark results, and the full "What to Report" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate hot path with evidence or recommend `noop`.
+5. If no existing benchmarks exist, identify likely hot paths:
    - Find functions called frequently from main entry points (CLI commands, API handlers, request paths).
    - Look for loops over large data structures, repeated I/O, expensive string operations, or known anti-patterns.
    - Use `git log --since="28 days ago" --stat` to find recently changed performance-sensitive areas.

@@ -55,6 +55,8 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:
@@ -76,6 +78,7 @@ tools:
   web-fetch:
 safe-outputs:
   activation-comments: false
+  max-patch-size: 10240
   threat-detection: false
 strict: false
 timeout-minutes: 60

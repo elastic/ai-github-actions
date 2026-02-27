@@ -63,8 +63,6 @@ safe-outputs:
   activation-comments: false
   noop:
     report-as-issue: false
-  add-comment:
-    max: 1
 ---
 
 # Duplicate Issue Detector

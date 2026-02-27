@@ -18,8 +18,8 @@ cd "$REPO_ROOT"
 
 # Workflows that are not dogfooded in this repository.
 EXCLUDED_WORKFLOWS=(
-  "docs-patrol-external"
-  "newbie-contributor-patrol-external"
+  "estc-docs-patrol-external"
+  "estc-newbie-contributor-patrol-external"
   "flaky-test-investigator"
   "issue-fixer"
   "mention-in-issue-no-sandbox"

@@ -9,7 +9,7 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-create-issue.md
+  - gh-aw-fragments/safe-output-scheduled-audit-issue.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -27,7 +27,7 @@ on:
         description: "What the audit agent should investigate — appended as the Report Assignment"
         type: string
         required: true
-      issue-title-prefix:
+      title-prefix:
         description: "Title prefix for created issues, e.g. '[my-audit]'"
         type: string
         required: true
@@ -41,6 +41,11 @@ on:
         type: string
         required: false
         default: ""
+      close-older-issues:
+        description: "Close older issues when a new one is filed. When false (default), previous findings are checked to avoid duplicates. When true, the previous report is replaced by the new one."
+        type: boolean
+        required: false
+        default: false
       allowed-bot-users:
         description: "Allowlisted bot actor usernames (comma-separated)"
         type: string
@@ -58,7 +63,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: scheduled-audit-${{ inputs.issue-title-prefix }}
+  group: scheduled-audit-${{ inputs.title-prefix }}
   cancel-in-progress: true
 permissions:
   actions: read
@@ -74,17 +79,13 @@ strict: false
 safe-outputs:
   activation-comments: false
   noop:
-  create-issue:
-    max: 1
-    title-prefix: "${{ inputs.issue-title-prefix }} "
-    close-older-issues: false
-    expires: 7d
 timeout-minutes: 90
 steps:
   - name: List previous findings
+    if: ${{ !inputs.close-older-issues }}
     env:
       GH_TOKEN: ${{ github.token }}
-      TITLE_PREFIX: ${{ inputs.issue-title-prefix }}
+      TITLE_PREFIX: ${{ inputs.title-prefix }}
     run: |
       set -euo pipefail
       gh issue list \
@@ -103,11 +104,13 @@ steps:
 
 ## Previous Findings
 
-Before filing a new issue, check `/tmp/previous-findings.json` for issues this agent has already filed.
+When `close-older-issues` is `false` (current: `${{ inputs.close-older-issues }}`), check `/tmp/previous-findings.json` for issues this agent has already filed before filing a new one.
 
 - Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
 - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
 - Only file a new issue when the finding is genuinely distinct from all previous findings.
+
+When `close-older-issues` is `true`, the previous findings check is not needed — any older open issue is automatically closed when a new one is filed.
 
 ### Labeling
 

@@ -11,7 +11,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/previous-findings.md
-  - gh-aw-fragments/best-of-three-investigation.md
+  - gh-aw-fragments/pick-three-keep-many.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -105,7 +105,9 @@ Your task is to analyze the codebase, identify the frameworks and libraries in u
    - Check configuration files for unnecessary complexity.
    - Look for TODOs or workaround comments that reference library limitations that may have been resolved in the current version.
 
-3. **Check for duplicates**
+3. Use the **Pick Three, Keep Many** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each searching for library underuse from a different angle (e.g., one examining reimplemented library features and deprecated API patterns, one analyzing state management and UI framework underuse, one checking build tool configuration and testing patterns). Include the tech stack inventory, dependency versions, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
+
+4. **Check for duplicates**
    - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "${{ inputs.title-prefix }}"`.
    - Review `/tmp/previous-findings.json` for issues already filed by this agent.
 

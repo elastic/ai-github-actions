@@ -9,6 +9,7 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/workflow-edit-guardrails.md
+  - gh-aw-fragments/pr-context.md
   - gh-aw-fragments/review-process.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment-pr.md
@@ -63,6 +64,8 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:
@@ -85,6 +88,7 @@ tools:
 safe-outputs:
   activation-comments: false
   threat-detection: false
+  max-patch-size: 10240
 strict: false
 timeout-minutes: 60
 steps:
@@ -112,6 +116,7 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ github.event.issue.number }} — ${{ github.event.issue.title }}
+- **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
 - **Request**: "${{ steps.sanitized.outputs.text }}"
 
 ## Constraints
@@ -127,24 +132,32 @@ Understand the request, investigate the code, and respond appropriately.
 
 ### Step 1: Gather Context
 
+PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files.
+
 1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Call `pull_request_read` with method `get` on PR #${{ github.event.issue.number }} to get the full PR details (author, description, branches).
-3. If the PR description references issues (e.g., "Fixes #123"), call `issue_read` with method `get` on each linked issue to understand the motivation and requirements.
-4. Read the comment thread to understand what's being asked. Use `pull_request_read` with methods like `get_review_comments` and `get_comments` to see the full conversation context.
+2. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches).
+3. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
+4. Read `/tmp/pr-context/comments.json` and `/tmp/pr-context/review_comments.json` to understand the conversation context and what's being asked.
+5. Do not modify, review, comment on, or resolve threads for any PR other than #${{ github.event.issue.number }}.
 
 ### Step 2: Handle the Request
 
 Based on what's asked, do the appropriate thing:
 
 **If asked to review the PR:**
-- First, call `pull_request_read` with methods `get_review_comments` and `get_reviews` to check existing threads and prior reviews — do not duplicate feedback.
-- Follow the **Code Review Reference** below — review each changed file one at a time, leaving inline comments before moving to the next file.
+- Read `/tmp/pr-context/review_comments.json` and `/tmp/pr-context/reviews.json` to check existing threads and prior reviews — do not duplicate feedback.
+- Review each changed file one at a time using diffs from `/tmp/pr-context/diffs/`. For each file:
+  1. Read the diff from `/tmp/pr-context/diffs/<filename>.diff`. If the diff is empty or truncated (e.g., binary files or very large changes), fall back to running `git diff` against the base branch or compare the full file against context.
+  2. Read the full file from the workspace (the PR branch is checked out)
+  3. Check existing threads from `/tmp/pr-context/threads/<filename>.json` (if it exists) — skip issues already flagged
+  4. Identify and verify issues per the **Code Review Reference** above
+  5. Leave inline comments (`create_pull_request_review_comment`) before moving to the next file
 - After all files are reviewed, call `submit_pull_request_review`.
 - **Important**: Substantive feedback belongs in the PR review (inline comments + review submission), NOT in a reply comment. Do NOT add a separate comment after submitting the review unless the user explicitly asked for a comment or the review submission failed.
 - **Bot-authored PRs**: If the PR author is `github-actions[bot]`, you can only submit a `COMMENT` review — `APPROVE` and `REQUEST_CHANGES` will fail because GitHub does not allow bot accounts to approve or request changes on their own PRs. Use `COMMENT` and state your verdict in the review body instead.
 
 **If asked to fix code or address review feedback:**
-- Call `pull_request_read` with method `get_review_comments` to see open review threads and understand what needs to be addressed.
+- Read `/tmp/pr-context/review_comments.json` to see open review threads and understand what needs to be addressed.
 - Make the changes in the workspace.
 - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
 - Commit your changes locally, then use `push_to_pull_request_branch` to push them.

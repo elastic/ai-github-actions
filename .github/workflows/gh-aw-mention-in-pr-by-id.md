@@ -9,6 +9,7 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/workflow-edit-guardrails.md
+  - gh-aw-fragments/pr-context.md
   - gh-aw-fragments/review-process.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment-pr.md
@@ -71,6 +72,8 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
 concurrency:
   group: mention-pr-by-id-${{ inputs.target-pr-number }}
   cancel-in-progress: true
@@ -87,6 +90,7 @@ tools:
 strict: false
 safe-outputs:
   activation-comments: false
+  max-patch-size: 10240
   add-comment:
     target: "${{ inputs.target-pr-number }}"
   create-pull-request-review-comment:
@@ -95,6 +99,7 @@ safe-outputs:
     target: "${{ inputs.target-pr-number }}"
   push-to-pull-request-branch:
     target: "${{ inputs.target-pr-number }}"
+    github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 timeout-minutes: 60
 steps:
   - name: Ensure origin refs for PR patch generation
@@ -121,6 +126,7 @@ Assist with pull request #${{ inputs.target-pr-number }} on ${{ github.repositor
 
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ inputs.target-pr-number }}
+- **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
 - **Request**: "${{ inputs.prompt }}"
 
 ## Constraints
@@ -131,7 +137,7 @@ Assist with pull request #${{ inputs.target-pr-number }} on ${{ github.repositor
 ## Instructions
 
 1. Call `generate_agents_md` to get repository conventions.
-2. Call `pull_request_read` with method `get` on PR #${{ inputs.target-pr-number }} to collect PR context.
+2. Read `/tmp/pr-context/pr.json` for PR details. Read `/tmp/pr-context/README.md` for a manifest of all pre-fetched PR context.
 3. Handle the request in `${{ inputs.prompt }}` with focused changes and evidence.
 4. Do not modify, review, comment on, or resolve threads for any PR other than #${{ inputs.target-pr-number }}.
 5. Use safe outputs only against PR #${{ inputs.target-pr-number }}.

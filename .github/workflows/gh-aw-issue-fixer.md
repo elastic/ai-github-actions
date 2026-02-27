@@ -51,6 +51,9 @@ on:
         type: boolean
         required: false
         default: true
+    secrets:
+      EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:
@@ -70,6 +73,7 @@ tools:
   web-fetch:
 safe-outputs:
   activation-comments: false
+  max-patch-size: 10240
 strict: false
 timeout-minutes: 60
 steps:
