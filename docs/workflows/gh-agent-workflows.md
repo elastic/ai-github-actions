@@ -54,6 +54,7 @@ These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves 
 
 | Workflow | Trigger | Description |
 | --- | --- | --- |
+| [Dependency Review](gh-agent-workflows/dependency-review.md) | Dependabot/Renovate PRs | Analyze dependency updates across ecosystems with changelog, compatibility, and risk checks |
 | [Duplicate Issue Detector](gh-agent-workflows/duplicate-issue-detector.md) | New issues | Detect duplicate issues and comment with links |
 | [Issue Triage](gh-agent-workflows/issue-triage.md) | New issues | Investigate and provide implementation plans |
 | [Issue Fixer](gh-agent-workflows/issue-fixer.md) | New issues | Triage plus automatic draft PR for straightforward fixes |
