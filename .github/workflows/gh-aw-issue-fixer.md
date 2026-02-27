@@ -51,11 +51,9 @@ on:
         type: boolean
         required: false
         default: true
-      github-token-for-extra-empty-commit:
-        description: "GitHub token for pushing an extra empty commit to allow workflows to run on bot-created PRs"
-        type: string
+    secrets:
+      EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
-        default: ""
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:

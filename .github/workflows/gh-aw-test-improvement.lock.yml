@@ -41,7 +41,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"481aa71422028cd2fe216c4107fc157ee77e343f1c9c5ab1b41a4717812a4c0f"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1244dc2cb3f02b8e7df6a306b2927fbebd4b8caaad1eac514cf6d943d39a2bbd"}
 
 name: "Test Improver"
 "on":
@@ -68,11 +68,6 @@ name: "Test Improver"
         description: Whether to create pull requests as drafts
         required: false
         type: boolean
-      github-token-for-extra-empty-commit:
-        default: ""
-        description: GitHub token for pushing an extra empty commit to allow workflows to run on bot-created PRs
-        required: false
-        type: string
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -91,6 +86,8 @@ name: "Test Improver"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
 
 permissions: {}
 
@@ -456,6 +453,8 @@ jobs:
       contents: read
       issues: read
       pull-requests: read
+    concurrency:
+      group: "gh-aw-copilot-${{ github.workflow }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -895,7 +894,7 @@ jobs:
                   "properties": {},
                   "type": "object"
                 },
-                "handler": "ready-to-make-pr.cjs",
+                "handler": "ready-to-make-pr.py",
                 "timeout": 60
               }
             ]
@@ -920,22 +919,36 @@ jobs:
           
       - name: Setup Safe Inputs Tool Files
         run: |
-          cat > /opt/gh-aw/safe-inputs/ready-to-make-pr.cjs << 'GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF'
-            async function execute(inputs) {
-              const fs = require('fs');
-              const find = (...paths) => paths.find(p => fs.existsSync(p)) || null;
-              const contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md');
-              const prTemplate = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md');
-              const checklist = [];
-              if (contributing) checklist.push(`Review the contributing guide (${contributing}) before opening or updating a PR.`);
-              if (prTemplate) checklist.push(`Follow the PR template (${prTemplate}) for title, description, and validation notes.`);
-              checklist.push('Confirm the requested task is fully completed and validated before creating or pushing PR changes.');
-              const result = { status: 'ok', checklist, contributing_guide: contributing, pr_template: prTemplate };
-              console.log(JSON.stringify(result));
-              return result;
-            }
-            module.exports = { execute };
-          GH_AW_SAFE_INPUTS_JS_READY-TO-MAKE-PR_EOF
+          cat > /opt/gh-aw/safe-inputs/ready-to-make-pr.py << 'GH_AW_SAFE_INPUTS_PY_READY-TO-MAKE-PR_EOF'
+          #!/usr/bin/env python3
+          # Auto-generated safe-input tool: ready-to-make-pr
+          # Run the PR readiness checklist before creating or updating a PR
+          
+          import json
+          import os
+          import sys
+          
+          # Read inputs from stdin (JSON format)
+          try:
+              inputs = json.loads(sys.stdin.read()) if not sys.stdin.isatty() else {}
+          except (json.JSONDecodeError, Exception):
+              inputs = {}
+          
+          # User code:
+          import os, json
+          def find(*paths):
+              return next((p for p in paths if os.path.isfile(p)), None)
+          contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
+          pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
+          checklist = []
+          if contributing: checklist.append(f'Review the contributing guide ({contributing}) before opening or updating a PR.')
+          if pr_template: checklist.append(f'Follow the PR template ({pr_template}) for title, description, and validation notes.')
+          checklist.append('Confirm the requested task is fully completed and validated before creating or pushing PR changes.')
+          print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template}))
+          
+          
+          GH_AW_SAFE_INPUTS_PY_READY-TO-MAKE-PR_EOF
+          chmod +x /opt/gh-aw/safe-inputs/ready-to-make-pr.py
           
       - name: Generate Safe Inputs MCP Server Config
         id: safe-inputs-config
@@ -1557,7 +1570,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_pull_request\":{\"base_branch\":\"${{ github.base_ref || github.ref_name }}\",\"draft\":\"${{ inputs.draft-prs }}\",\"max\":1,\"max_patch_size\":1024},\"missing_data\":{},\"missing_tool\":{}}"
-          GH_AW_CI_TRIGGER_TOKEN: ${{ inputs.github-token-for-extra-empty-commit }}
+          GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
