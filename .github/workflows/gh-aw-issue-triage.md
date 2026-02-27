@@ -10,6 +10,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment-issue.md
+  - gh-aw-fragments/pick-three-keep-one.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -102,27 +103,16 @@ Follow these steps in order.
 ### Step 2: Investigate the Codebase
 
 1. Read the issue description carefully to understand the request or problem.
-2. Explore the relevant parts of the codebase using `grep` and file reading.
-3. Run tests or commands in the workspace to verify reported bugs when possible:
+2. Use the **Pick Three, Keep One** pattern for the investigation phase: spawn 3 `general-purpose` sub-agents, each exploring the codebase from a different angle (e.g., different areas of the codebase related to the issue, different hypotheses about root cause, different related issues/PRs). Include the issue description, repo conventions, and the full context from Step 1 in each sub-agent prompt. Each sub-agent should return its best findings with file paths and evidence, or recommend `noop`.
+3. Explore the relevant parts of the codebase using `grep` and file reading.
+4. Run tests or commands in the workspace to verify reported bugs when possible:
    - Run existing tests to confirm reported behavior
    - Execute scripts to understand current behavior
    - Run linters or static analysis if relevant
    - Write small test files to validate findings
    - Always explain what you're testing and why, and include command output in your response
 
-### Step 3: Best-of-Three Investigation
-
-1. **Spawn 3 sub-agents**. Each sub-agent receives the same Issue Triage (the full investigation task described in this prompt) and works independently.
-   - Each sub-agent should explore a different starting point or angle — e.g., different files, different heuristics, or different areas of the codebase.
-   - Each sub-agent gathers evidence, analyzes it, and produces either a candidate finding (with title, body, labels, and supporting evidence) or a recommendation to `noop`.
-
-2. **Wait for all 3 to complete.** Do not proceed until every sub-agent has returned its result.
-
-3. **Evaluate the candidates.** Based on the task
-
-4. **Select the best candidate**
-
-### Step 4: Formulate Response
+### Step 3: Formulate Response
 
 Provide a response with the following sections. Be concise and actionable — no filler or praise.
 
