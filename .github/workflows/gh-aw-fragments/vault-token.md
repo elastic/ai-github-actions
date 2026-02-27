@@ -1,5 +1,6 @@
 ---
 safe-outputs:
+  id-token: write
   steps:
     - name: Create ephemeral token
       if: ${{ inputs.token-policy != '' }}
