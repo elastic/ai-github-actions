@@ -131,7 +131,7 @@ For each unresolved review thread:
 1. **Read and understand** the reviewer's feedback carefully.
 2. **Decide**: Is the feedback actionable? Use your judgment — don't blindly accept every suggestion.
    - **If actionable**: Make the code change. Be surgical — change only what's needed to address the specific feedback.
-   - **If you disagree or it's unclear**: Call `reply_to_pull_request_review_comment` on the specific review comment to explain your reasoning inline. Do NOT resolve the thread — let the reviewer decide.
+   - **If you disagree or it's unclear**: Call `reply_to_pull_request_review_comment` with the comment's numeric ID to explain your reasoning inline. Do NOT resolve the thread — let the reviewer decide.
 3. **Track** which threads you addressed with code changes vs. which you replied to.
 
 ### Step 3: Validate and Push

@@ -51,6 +51,7 @@ steps:
                   comments(first: 100) {
                     nodes {
                       id
+                      databaseId
                       body
                       author { login }
                       createdAt
@@ -105,7 +106,7 @@ steps:
       | `files.json` | Changed files array — each entry has `filename`, `status`, `additions`, `deletions`, `patch` |
       | `diffs/<path>.diff` | Per-file diffs — one file per changed file, mirroring the repo path under `diffs/` |
       | `reviews.json` | Prior review submissions — author, state (APPROVED/CHANGES_REQUESTED/COMMENTED), body |
-      | `review_comments.json` | All review threads (GraphQL) — each thread has `id`, `isResolved`, `isOutdated`, `path`, `line`, and nested `comments` with body/author |
+      | `review_comments.json` | All review threads (GraphQL) — each thread has `id` (node ID for resolving), `isResolved`, `isOutdated`, `path`, `line`, and nested `comments` with `id`, `databaseId` (numeric REST ID for replies), body/author |
       | `threads/<path>.json` | Per-file review threads — one file per changed file with existing threads, mirroring the repo path under `threads/` |
       | `comments.json` | PR discussion comments (not inline) |
       | `issue-{N}.json` | Linked issue details (one file per linked issue, if any) |

@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"18502e4d1b8b3bfb1cf45a9071998bffaf1c1c5938e87c165f4c378deae29586"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6d5f7d4ee20ad51a2d5278505ca87512d9ec5d091a7556ec8f5fec0e264dc008"}
 
 name: "Internal: Downstream Users"
 "on":
@@ -881,7 +881,7 @@ jobs:
           if contributing: checklist.append(f'Review the contributing guide ({contributing}) before opening or updating a PR.')
           if pr_template: checklist.append(f'Follow the PR template ({pr_template}) for title, description, and validation notes.')
           checklist.append('Confirm the requested task is fully completed and validated before creating or pushing PR changes.')
-          checklist.append('Spawn a code-review sub-agent via runSubagent to self-review your changes before creating the PR. Include the full diff (git diff) in the prompt along with relevant context (what was requested, which files changed, and why). The sub-agent should look for bugs, logic errors, missed edge cases, and style issues. Fix any legitimate issues it finds before proceeding.')
+          checklist.append('Spawn a code-review sub-agent via runSubagent to self-review your changes before creating the PR. Include the full patch in the prompt (git diff for uncommitted changes, or git diff HEAD~1 if already committed) along with relevant context (what was requested, which files changed, and why). The sub-agent should look for bugs, logic errors, missed edge cases, and style issues. Fix any legitimate issues it finds before proceeding.')
           print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template}))
           
           

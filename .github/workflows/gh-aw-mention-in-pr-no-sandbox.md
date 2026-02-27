@@ -161,7 +161,7 @@ Based on what's asked, do the appropriate thing:
 - Read `/tmp/pr-context/review_comments.json` to see open review threads and understand what needs to be addressed.
 - For each unresolved thread you address:
    - Make the code changes in the workspace.
-   - Call `reply_to_pull_request_review_comment` on the thread's comment to briefly explain what you changed.
+   - Call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
    - If you disagree with feedback or it's unclear, reply explaining your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
 - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
 - Commit your changes locally, then use `push_to_pull_request_branch` to push them.

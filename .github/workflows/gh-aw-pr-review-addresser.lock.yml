@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"de4069ae09286bfdffbfe940ffb4b02a0eb7910de9917df65efd883d771b707d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3e6b93ed9fc8e3a5a20369bd267b31418033f61ff8c10da2a0dfa82c7f3f875e"}
 
 name: "PR Review Addresser"
 "on":
@@ -318,7 +318,7 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF'
           ## reply-to-pull-request-review-comment Limitations
           
-          - **Required field**: `comment_id` — the ID of the review comment to reply to. This is the numeric REST comment ID from `get_review_comments`.
+          - **Required field**: `comment_id` — the numeric REST comment ID (e.g., `2481734562`). From `get_review_comments` this is the `id` field. From `/tmp/pr-context/review_comments.json` (GraphQL) this is the `databaseId` field. Do not pass GraphQL node IDs (e.g., `IC_kwDONVGiRc6...`) — those will fail.
           - **Body**: Max 65,536 characters. Keep well under this limit.
           - **Purpose**: Reply directly to a specific review comment thread to explain your reasoning when you disagree with or skip feedback. Do NOT use `add_comment` for this — use this tool to keep replies in context.
           - **Max per run**: 10 replies per workflow run.
@@ -363,7 +363,7 @@ jobs:
           1. **Read and understand** the reviewer's feedback carefully.
           2. **Decide**: Is the feedback actionable? Use your judgment — don't blindly accept every suggestion.
              - **If actionable**: Make the code change. Be surgical — change only what's needed to address the specific feedback.
-             - **If you disagree or it's unclear**: Call `reply_to_pull_request_review_comment` on the specific review comment to explain your reasoning inline. Do NOT resolve the thread — let the reviewer decide.
+             - **If you disagree or it's unclear**: Call `reply_to_pull_request_review_comment` with the comment's numeric ID to explain your reasoning inline. Do NOT resolve the thread — let the reviewer decide.
           3. **Track** which threads you addressed with code changes vs. which you replied to.
           
           ### Step 3: Validate and Push
