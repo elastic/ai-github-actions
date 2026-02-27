@@ -81,7 +81,6 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 - `breaking-change-detector`
 - `code-duplication-detector`
 - `update-pr-body`
-<<<<<<< HEAD
 - `resource-not-accessible-by-integration-fixer`
 
 ## Elastic-specific Workflows
