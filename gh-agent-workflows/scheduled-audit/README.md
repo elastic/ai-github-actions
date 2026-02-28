@@ -43,3 +43,61 @@ See [example.yml](example.yml) for the full workflow file. You **must** customiz
 ## Safe Outputs
 
 - `create-issue` — file an audit report (max 1; when `close-older-issues` is `true`, auto-closes older reports; when `false`, checks for duplicates via previous findings)
+
+The reusable workflow also exposes `process_safe_outputs_temporary_id_map` as a job output. You can use it to detect which issues were created in this run and immediately chain a fixer job in the same workflow run.
+
+## Same-run fixer handoff (recommended)
+
+If your repository blocks `issues.opened` follow-up workflows from bot-created issues, run your fixer as a downstream job in the same workflow run:
+
+````yaml
+name: Scheduled Audit + Fix
+on:
+  schedule:
+    - cron: "0 11 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  audit:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-scheduled-audit.lock.yml@v0
+    with:
+      title-prefix: "[my-audit]"
+      issue-label: "my-audit"
+      additional-instructions: |
+        Describe what the audit agent should investigate here.
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+  extract-created-issues:
+    runs-on: ubuntu-latest
+    needs: audit
+    outputs:
+      created_issue_numbers: ${{ steps.extract.outputs.created_issue_numbers }}
+    steps:
+      - id: extract
+        env:
+          TEMP_ID_MAP: ${{ needs.audit.outputs.process_safe_outputs_temporary_id_map }}
+        run: |
+          set -euo pipefail
+          created_issue_numbers="$(jq -c 'to_entries | map(.value | capture("#(?<n>[0-9]+)$").n | tonumber)' <<< "${TEMP_ID_MAP:-{}}")"
+          echo "created_issue_numbers=$created_issue_numbers" >> "$GITHUB_OUTPUT"
+
+  fix:
+    needs: [audit, extract-created-issues]
+    if: ${{ needs.extract-created-issues.outputs.created_issue_numbers != '[]' }}
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-scheduled-fix.lock.yml@v0
+    with:
+      title-prefix: "[my-audit]"
+      issue-label: "my-audit"
+      additional-instructions: |
+        Prioritize these newly created issues from this run:
+        ${{ needs.extract-created-issues.outputs.created_issue_numbers }}
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+````
