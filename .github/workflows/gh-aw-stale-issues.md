@@ -83,15 +83,18 @@ safe-outputs:
     expires: 7d
   add-labels:
     max: 10
+    target: "*"
     allowed:
       - "${{ inputs.stale-label }}"
   remove-labels:
     max: 10
+    target: "*"
     allowed:
       - "${{ inputs.stale-label }}"
   close-issue:
     max: 10
-    required_labels:
+    target: "*"
+    required-labels:
       - "${{ inputs.stale-label }}"
 timeout-minutes: 60
 steps:
