@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b12f8da03f4f92ec82e6567f0492a9a5289486ab806edc78692288d2472197f8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5553c98188b98ce05aca8133aa9b11f130b4bfc3fbeb117c444da5ce65543c91"}
 
 name: "Text Beautifier"
 "on":
@@ -944,7 +944,7 @@ jobs:
               except subprocess.TimeoutExpired:
                   return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
           
-          # --- Guard: detect merge commits ---
+          # Guard: detect merge commits
           # Find the fork point with the upstream branch to scope the check
           upstream_sha = ''
           for ref in ['@{upstream}', 'origin/HEAD', 'origin/main']:

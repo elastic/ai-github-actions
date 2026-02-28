@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"05f95a5583fe87b419ce91babee4470e61dc8e38b690f8cfb0d327576c6bdd46"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3948810d4d9b4b8eccb8d7fa41a55369ed66b59821f3193038f5f1b4e14bf1ac"}
 
 name: "PR Review Addresser"
 "on":
@@ -1058,7 +1058,7 @@ jobs:
               except subprocess.TimeoutExpired:
                   return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
           
-          # --- Guard: detect history rewrites and merge commits ---
+          # Guard: detect history rewrites and merge commits
           pr_json_path = '/tmp/pr-context/pr.json'
           if os.path.isfile(pr_json_path):
               with open(pr_json_path) as f:

@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"56ffeeeb47252fb1cc3a8b75178e9c6f97a33a7f6fb82f53dd2ce084d85df4d5"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a2b480df98fe924dccae1ea22c4330d416d7cbd9bbfb9367ba1df6cedb576511"}
 
 name: "Gh Aw Bug Exterminator"
 "on":
@@ -933,7 +933,7 @@ jobs:
               except subprocess.TimeoutExpired:
                   return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
           
-          # --- Guard: detect merge commits ---
+          # Guard: detect merge commits
           # Find the fork point with the upstream branch to scope the check
           upstream_sha = ''
           for ref in ['@{upstream}', 'origin/HEAD', 'origin/main']:

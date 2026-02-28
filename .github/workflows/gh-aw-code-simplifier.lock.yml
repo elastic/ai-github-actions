@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"95b8c433cc8d86f8ac6b7d628f2df4d4295627e128cbc061b01b7ae458a755c9"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4e1adfae148ee8b5f62112a63e914f9ca815233d1dd0ff515f563e2e1d90a44c"}
 
 name: "Code Simplifier"
 "on":
@@ -950,7 +950,7 @@ jobs:
               except subprocess.TimeoutExpired:
                   return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
           
-          # --- Guard: detect merge commits ---
+          # Guard: detect merge commits
           # Find the fork point with the upstream branch to scope the check
           upstream_sha = ''
           for ref in ['@{upstream}', 'origin/HEAD', 'origin/main']:

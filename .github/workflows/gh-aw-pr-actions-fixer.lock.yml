@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"706d5729d0afe6acf1a5efc3d1a5e5c125ff4a4b9b0000fe5bd6d4cd6d6ffa16"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"47dd01faf769b21aa06f536959bc654b370dbac9708994d87022ffbf87e494e9"}
 
 name: "PR Actions Fixer"
 "on":
@@ -949,7 +949,7 @@ jobs:
               except subprocess.TimeoutExpired:
                   return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
           
-          # --- Guard: detect history rewrites and merge commits ---
+          # Guard: detect history rewrites and merge commits
           pr_json_path = '/tmp/pr-context/pr.json'
           if os.path.isfile(pr_json_path):
               with open(pr_json_path) as f:

@@ -12,7 +12,7 @@ safe-inputs:
           except subprocess.TimeoutExpired:
               return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
 
-      # --- Guard: detect merge commits ---
+      # Guard: detect merge commits
       # Find the fork point with the upstream branch to scope the check
       upstream_sha = ''
       for ref in ['@{upstream}', 'origin/HEAD', 'origin/main']:

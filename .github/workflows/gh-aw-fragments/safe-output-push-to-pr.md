@@ -12,7 +12,7 @@ safe-inputs:
           except subprocess.TimeoutExpired:
               return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
 
-      # --- Guard: detect history rewrites and merge commits ---
+      # Guard: detect history rewrites and merge commits
       pr_json_path = '/tmp/pr-context/pr.json'
       if os.path.isfile(pr_json_path):
           with open(pr_json_path) as f:

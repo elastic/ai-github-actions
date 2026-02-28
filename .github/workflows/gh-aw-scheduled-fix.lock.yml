@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a690c02c6c714a6cf2f8f98decf62577aecd3cfe3ebbf77bfb3ef092ce5b83d2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f59e0e683d81777293efe24ff400ef10f4d3180df1bada82315ab80420c478cf"}
 
 name: "Scheduled Fix"
 "on":
@@ -959,7 +959,7 @@ jobs:
               except subprocess.TimeoutExpired:
                   return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
           
-          # --- Guard: detect merge commits ---
+          # Guard: detect merge commits
           # Find the fork point with the upstream branch to scope the check
           upstream_sha = ''
           for ref in ['@{upstream}', 'origin/HEAD', 'origin/main']:

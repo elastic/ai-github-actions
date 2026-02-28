@@ -117,11 +117,18 @@ class TestExtraction:
         assert "import" in code
         assert "json.dumps" in code
 
-    def test_fragments_have_identical_py(self):
-        """The two fragments should have identical Python logic."""
+    def test_fragments_share_common_logic(self):
+        """Both fragments should share the same diff/checklist logic (tail portion)."""
         push_code = extract_py_block(PUSH_FRAGMENT)
         create_code = extract_py_block(CREATE_FRAGMENT)
-        assert push_code == create_code
+        # The push fragment has an extra ancestry check; both share the
+        # contributing/diff/checklist logic from "contributing = find(...)" onward.
+        common_marker = "contributing = find("
+        assert common_marker in push_code
+        assert common_marker in create_code
+        push_tail = push_code[push_code.index(common_marker):]
+        create_tail = create_code[create_code.index(common_marker):]
+        assert push_tail == create_tail
 
 
 # ---------------------------------------------------------------------------
@@ -368,3 +375,156 @@ class TestSelfReviewGating:
         assert count > 0
         # The line count should appear in the checklist text
         assert f"({count} lines)" in " ".join(output["checklist"])
+
+
+# ---------------------------------------------------------------------------
+# Push fragment: history rewrite and merge commit guards
+# ---------------------------------------------------------------------------
+
+
+def _get_head_sha(repo: Path) -> str:
+    """Get the current HEAD commit SHA."""
+    result = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=str(repo),
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return result.stdout.strip()
+
+
+def _write_pr_json(head_sha: str) -> None:
+    """Write a minimal pr.json with the given headRefOid."""
+    os.makedirs("/tmp/pr-context", exist_ok=True)
+    with open("/tmp/pr-context/pr.json", "w") as f:
+        json.dump({"headRefOid": head_sha}, f)
+
+
+def _cleanup_pr_json() -> None:
+    """Remove pr.json so it doesn't leak between tests."""
+    try:
+        os.remove("/tmp/pr-context/pr.json")
+    except FileNotFoundError:
+        pass
+
+
+class TestPushGuards:
+    """Test the ancestry and merge-commit guards in the push fragment."""
+
+    @pytest.fixture
+    def py_code(self):
+        return extract_py_block(PUSH_FRAGMENT)
+
+    @pytest.fixture(autouse=True)
+    def cleanup(self):
+        yield
+        _cleanup_pr_json()
+
+    def test_no_pr_json_passes(self, py_code, tmp_path):
+        """Without pr.json the guard is skipped — should succeed."""
+        _cleanup_pr_json()
+        repo = make_git_repo(tmp_path, with_upstream=True)
+        output = run_py_in_repo(py_code, str(repo))
+        assert output["status"] == "ok"
+
+    def test_normal_commit_passes(self, py_code, tmp_path):
+        """A regular commit on top of the PR head should pass."""
+        repo = make_git_repo(tmp_path, with_upstream=True)
+        head_sha = _get_head_sha(repo)
+        _write_pr_json(head_sha)
+
+        # Add a normal commit
+        (repo / "new.txt").write_text("new\n")
+        subprocess.run(["git", "add", "new.txt"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "add new"], cwd=str(repo), check=True, capture_output=True)
+
+        output = run_py_in_repo(py_code, str(repo))
+        assert output["status"] == "ok"
+
+    def test_history_rewrite_detected(self, py_code, tmp_path):
+        """If HEAD diverges from PR head (rebase), guard should error."""
+        repo = make_git_repo(tmp_path, with_upstream=True)
+
+        # Record the initial head
+        initial_sha = _get_head_sha(repo)
+
+        # Make a second commit, then record that as PR head
+        (repo / "a.txt").write_text("a\n")
+        subprocess.run(["git", "add", "a.txt"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "second"], cwd=str(repo), check=True, capture_output=True)
+        pr_head = _get_head_sha(repo)
+
+        # Now reset back to initial — simulates a rebase that dropped the PR head
+        subprocess.run(["git", "reset", "--hard", initial_sha], cwd=str(repo), check=True, capture_output=True)
+        (repo / "b.txt").write_text("b\n")
+        subprocess.run(["git", "add", "b.txt"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "diverged"], cwd=str(repo), check=True, capture_output=True)
+
+        _write_pr_json(pr_head)
+        output = run_py_in_repo(py_code, str(repo))
+        assert output["status"] == "error"
+        assert "History rewrite" in output["error"]
+
+    def test_merge_commit_detected(self, py_code, tmp_path):
+        """A merge commit after the PR head should be detected."""
+        repo = make_git_repo(tmp_path, with_upstream=True)
+        pr_head = _get_head_sha(repo)
+        _write_pr_json(pr_head)
+
+        # Create a side branch and merge it — produces a merge commit
+        subprocess.run(["git", "checkout", "-b", "side"], cwd=str(repo), check=True, capture_output=True)
+        (repo / "side.txt").write_text("side\n")
+        subprocess.run(["git", "add", "side.txt"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "side"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(["git", "checkout", "main"], cwd=str(repo), check=True, capture_output=True)
+        (repo / "main2.txt").write_text("main2\n")
+        subprocess.run(["git", "add", "main2.txt"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "main2"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(["git", "merge", "side", "--no-edit"], cwd=str(repo), check=True, capture_output=True)
+
+        output = run_py_in_repo(py_code, str(repo))
+        assert output["status"] == "error"
+        assert "Merge commit" in output["error"]
+
+
+# ---------------------------------------------------------------------------
+# Create fragment: merge commit guard
+# ---------------------------------------------------------------------------
+
+
+class TestCreateGuards:
+    """Test the merge-commit guard in the create fragment."""
+
+    @pytest.fixture
+    def py_code(self):
+        return extract_py_block(CREATE_FRAGMENT)
+
+    def test_normal_commit_passes(self, py_code, tmp_path):
+        """Regular commits should pass the create guard."""
+        repo = make_git_repo(tmp_path, with_upstream=True)
+        (repo / "new.txt").write_text("new\n")
+        subprocess.run(["git", "add", "new.txt"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "add new"], cwd=str(repo), check=True, capture_output=True)
+
+        output = run_py_in_repo(py_code, str(repo))
+        assert output["status"] == "ok"
+
+    def test_merge_commit_detected(self, py_code, tmp_path):
+        """A merge commit should be detected by the create guard."""
+        repo = make_git_repo(tmp_path, with_upstream=True)
+
+        # Create a side branch and merge it
+        subprocess.run(["git", "checkout", "-b", "side"], cwd=str(repo), check=True, capture_output=True)
+        (repo / "side.txt").write_text("side\n")
+        subprocess.run(["git", "add", "side.txt"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "side"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(["git", "checkout", "main"], cwd=str(repo), check=True, capture_output=True)
+        (repo / "main2.txt").write_text("main2\n")
+        subprocess.run(["git", "add", "main2.txt"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(["git", "commit", "-m", "main2"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(["git", "merge", "side", "--no-edit"], cwd=str(repo), check=True, capture_output=True)
+
+        output = run_py_in_repo(py_code, str(repo))
+        assert output["status"] == "error"
+        assert "Merge commit" in output["error"]
