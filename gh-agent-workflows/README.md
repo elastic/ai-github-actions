@@ -30,7 +30,8 @@ Pre-built workflows with domain-specific prompts. These import the same base fra
 - [Docs Patrol](docs-patrol/) — detect stale documentation
 - [Product Manager Impersonator](product-manager-impersonator/) — propose well-researched new feature ideas
 - [Refactor Opportunist](refactor-opportunist/) — pitch proven refactors with partial implementations
-- [Stale Issues](stale-issues/) — detect stale issues
+- [Stale Issues Investigator](stale-issues-investigator/) — detect stale issues
+- [Stale Issues Remediator](stale-issues-remediator/) — process and close stale issues
 - [Test Coverage Detector](test-coverage-detector/) — find under-tested code paths
 **Fixers** (create PRs):
 - [Bug Exterminator](bug-exterminator/) — fix bug-hunter issues
@@ -76,7 +77,8 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 - `product-manager-impersonator`
 - `refactor-opportunist`
 - `small-problem-fixer`
-- `stale-issues`
+- `stale-issues-investigator`
+- `stale-issues-remediator`
 - `test-coverage-detector`
 - `test-improver`
 - `breaking-change-detector`
