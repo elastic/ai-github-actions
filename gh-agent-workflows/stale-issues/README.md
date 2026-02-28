@@ -13,7 +13,7 @@ A scripted prep step runs before the agent starts, dumping all stale-labeled iss
 
 ## Investigation strategy
 
-The agent starts with high-signal candidates (linked PRs, resolution language in comments, and long-stale updates) and includes coverage stats in no-op runs (total open issues, candidate count, analyzed count).
+A prescan step fetches up to 500 open issues (sorted by least recently updated) into a local index file before the agent starts, giving it an immediate view of the most likely stale candidates. The agent then starts with high-signal candidates (linked PRs, resolution language in comments, and long-stale updates) and includes coverage stats in no-op runs (total open issues, candidate count, analyzed count).
 
 ## Quick Install
 

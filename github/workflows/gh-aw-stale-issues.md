@@ -44,11 +44,6 @@ on:
         type: string
         required: false
         default: ""
-      stale-label:
-        description: "Label used to mark stale issues"
-        type: string
-        required: false
-        default: "stale"
       title-prefix:
         description: "Title prefix for created issues (e.g. '[stale-issues]')"
         type: string
@@ -81,59 +76,8 @@ safe-outputs:
     title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: true
     expires: 7d
-  add-labels:
-    max: 10
-    target: "*"
-    allowed:
-      - "${{ inputs.stale-label }}"
-  remove-labels:
-    max: 10
-    target: "*"
-    allowed:
-      - "${{ inputs.stale-label }}"
-  close-issue:
-    max: 10
-    target: "*"
-    required-labels:
-      - "${{ inputs.stale-label }}"
 timeout-minutes: 60
 steps:
-  - name: Collect stale-labeled issues
-    env:
-      GH_TOKEN: ${{ github.token }}
-      STALE_LABEL: ${{ inputs.stale-label }}
-    run: |
-      set -euo pipefail
-
-      # Fetch all open issues carrying the stale label
-      gh issue list \
-        --repo "$GITHUB_REPOSITORY" \
-        --label "$STALE_LABEL" \
-        --state open \
-        --limit 200 \
-        --json number,title,updatedAt,labels,createdAt \
-        > /tmp/stale-labeled-issues.json || { echo "::warning::Failed to fetch stale-labeled issues"; echo "[]" > /tmp/stale-labeled-issues.json; }
-
-      echo "Stale-labeled issues: $(jq length /tmp/stale-labeled-issues.json)"
-
-      # For each stale-labeled issue, grab recent comments and label timeline events.
-      jq -c '.[]' /tmp/stale-labeled-issues.json | while IFS= read -r issue; do
-        num=$(echo "$issue" | jq -r '.number')
-        gh issue view "$num" \
-          --repo "$GITHUB_REPOSITORY" \
-          --json comments \
-          --jq '.comments[-5:] | .[] | {author: .author.login, createdAt: .createdAt, body: .body[0:500]}' \
-          2>/dev/null || true
-      done | jq -s '.' > /tmp/stale-recent-comments.json || echo "[]" > /tmp/stale-recent-comments.json
-
-      # Fetch label add/remove events for each stale-labeled issue (for 30-day expiry)
-      jq -r '.[].number' /tmp/stale-labeled-issues.json | while IFS= read -r num; do
-        gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$num/events" \
-          --jq --arg lbl "$STALE_LABEL" \
-          '[.[] | select((.event=="labeled" or .event=="unlabeled") and .label.name==$lbl) | {number: '"$num"', event: .event, created_at: .created_at}]' \
-          2>/dev/null || echo "[]"
-      done | jq -s 'add // []' > /tmp/stale-label-events.json || echo "[]" > /tmp/stale-label-events.json
-
   - name: Prescan open issues
     env:
       GH_TOKEN: ${{ github.token }}
@@ -149,7 +93,7 @@ steps:
         --search "sort:updated-asc" \
         --json number,title,updatedAt,createdAt,labels \
         --jq '.[] | [.number, .title, .updatedAt, .createdAt, ([.labels[].name] | join(","))] | @tsv' \
-        >> "$issues_file" || { echo "::warning::Failed to fetch open issues"; }
+        >> "$issues_file" 2>/dev/null || true
 
       count="$(tail -n +2 "$issues_file" | wc -l | tr -d ' ')"
       echo "Prescanned ${count} open issues into ${issues_file}"
@@ -160,44 +104,15 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-Find open issues that are very likely already resolved. This workflow operates in two phases:
-
-1. **Close phase** — Close issues that have carried the `${{ inputs.stale-label }}` label for 30+ days without the label being removed.
-2. **Tag phase** — Label newly identified stale candidates with the `${{ inputs.stale-label }}` label and file a report.
-
-Run both phases on every invocation, starting with the close phase.
-
-### Phase 1: Process stale-labeled issues
-
-A prep step has already fetched stale-labeled issues to `/tmp/stale-labeled-issues.json` (fields: number, title, updatedAt, labels, createdAt), recent comments to `/tmp/stale-recent-comments.json`, and label timeline events to `/tmp/stale-label-events.json` (each entry has `number`, `event` ("labeled"/"unlabeled"), and `created_at`). Start by reading these files to get an overview.
-
-Then search for open issues labeled `${{ inputs.stale-label }}`:
-```text
-github-search_issues: query="repo:{owner}/{repo} is:issue is:open label:\"${{ inputs.stale-label }}\""
-```
-
-For each result, fetch the full comment thread via `issue_read` with method `get_comments` and check for two things:
-
-1. **"Not stale" objections** — If any comment posted **after** the `${{ inputs.stale-label }}` label was most recently added contains phrases like "not stale", "still relevant", "still needed", "still an issue", or "still a problem" (case-insensitive), call `remove_labels` to remove the `${{ inputs.stale-label }}` label from the issue.
-   Skip this issue from closure — the objection overrides the stale determination.
-
-2. **30-day expiry** — For issues with no such objection, compute the last labeled timestamp from `/tmp/stale-label-events.json` (find the most recent `"labeled"` event after any later `"unlabeled"` event for that issue number). If the label was added **30 or more days ago**, close the issue using `close_issue` with a comment explaining:
-
-   > This issue was labeled `${{ inputs.stale-label }}` on [date] and has had no further activity for 30 days. Closing automatically. If this issue is still relevant, please reopen it.
-
-   Skip issues where the label was added fewer than 30 days ago.
-
-### Phase 2: Identify and tag new stale candidates
+Find open issues that are very likely already resolved and recommend them for closure. You do NOT close issues yourself — you file a report listing candidates with evidence.
 
 ### Data Gathering
 
 0. **Read the prescanned issue index**
 
-   A prescan step has already fetched open issues (sorted by least recently updated) into `/tmp/gh-aw/agent/open-issues.tsv` with columns: number, title, updated_at, created_at, label_names. Start by reading this file:
+   A prescan step has already fetched open issues (sorted by least recently updated) into `/tmp/gh-aw/agent/open-issues.tsv` with columns: number, title, updated_at, created_at, label_names. Read this file with the built-in file-reading tools:
 
-   ```bash
-   cat /tmp/gh-aw/agent/open-issues.tsv
-   ```
+   `/tmp/gh-aw/agent/open-issues.tsv`
 
    Use this as your initial candidate pool. Issues at the top of the file (oldest `updated_at`) are the most likely stale candidates. Skip issues whose labels include `epic`, `tracking`, `umbrella`, or similar meta-labels.
 
@@ -255,7 +170,6 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 
 ### What to Skip
 
-- Issues already labeled `${{ inputs.stale-label }}` — they are already tracked and will be closed automatically after 30 days
 - Issues with recent activity (comments in the last 14 days) — someone is still working on them
 - Issues labeled `epic`, `tracking`, `umbrella`, or similar meta-labels — these are intentionally kept open
 - Issues where the resolution is ambiguous or you aren't sure
@@ -263,10 +177,6 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 - Issues with open/unmerged PRs linked — work may still be in progress
 
 **When in doubt, skip the issue.** False positives waste maintainer time and erode trust in the report. Only include issues where you are highly confident they are resolved.
-
-### Labeling
-
-For each issue included in the report, call `add_labels` with the `${{ inputs.stale-label }}` label on that issue. This starts the 30-day grace period — maintainers can remove the label to prevent automatic closure.
 
 ### Issue Format
 
@@ -298,6 +208,6 @@ For each issue included in the report, call `add_labels` with the `${{ inputs.st
 - Within the same age tier, order by confidence level (most confident first)
 - Always include the specific evidence — don't just say "this looks resolved"
 - Link to the resolving PR, commit, or code when possible
-- If no issues qualify for tagging or closing, call `noop` with message "No stale issues found — reviewed {analyzed_count}/{candidate_count} candidates ({total_open} open issues total), closed {closed_count} previously stale issues"
+- If no issues qualify, call `noop` with message "No stale issues found — reviewed {analyzed_count}/{candidate_count} candidates ({total_open} open issues total)"
 
 ${{ inputs.additional-instructions }}
