@@ -100,7 +100,7 @@ Identify under-tested code paths that would benefit from focused tests and file 
    - If coverage tooling is not available, use code analysis to identify untested code paths.
 3. Review recent changes:
    - Run `git log --since="28 days ago" --stat` and identify recent changes without corresponding test updates.
-4. Use the **Pick Three, Keep One** pattern for the investigation phase: spawn 3 `general-purpose` sub-agents, each searching for test gaps from a different angle (e.g., one analyzing coverage reports, one reviewing recent commits for missing tests, one examining error paths and edge cases in public APIs). Include the repo conventions, coverage data, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
+4. Use the **Pick Three, Keep One** pattern for the investigation phase: spawn 3 `general-purpose` sub-agents (with `model: "${{ inputs.model }}"`), each searching for test gaps from a different angle (e.g., one analyzing coverage reports, one reviewing recent commits for missing tests, one examining error paths and edge cases in public APIs). Include the repo conventions, coverage data, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
 
 ### What to Look For
 

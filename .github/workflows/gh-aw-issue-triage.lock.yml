@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4d1f8d46281d03cee75d906281b5fe60ea685f2f86592b11bca6fd662f5c379d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6227f2450c473e46b71a8d20452fb03f5bb53c7266cf958db488f20e722d68d7"}
 
 name: "Issue Triage"
 "on":
@@ -286,7 +286,7 @@ jobs:
           
           Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return its single best candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`. The goal is competition: 3 sub-agents each produce their best shot, and you pick the winner.
           
-          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
+          **How to spawn sub-agents:** Call `runSubagent` with `model: "__GH_AW_INPUTS_MODEL__"` and the `agentType` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` if not specified). Always pass the model explicitly. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
@@ -333,7 +333,7 @@ jobs:
           ### Step 2: Investigate the Codebase
           
           1. Read the issue description carefully to understand the request or problem.
-          2. Use the **Pick Three, Keep One** pattern for the investigation phase: spawn 3 `general-purpose` sub-agents, each exploring the codebase from a different angle (e.g., different areas of the codebase related to the issue, different hypotheses about root cause, different related issues/PRs). Include the issue description, repo conventions, and the full context from Step 1 in each sub-agent prompt. Each sub-agent should return its best findings with file paths and evidence, or recommend `noop`.
+          2. Use the **Pick Three, Keep One** pattern for the investigation phase: spawn 3 `general-purpose` sub-agents (with `model: "__GH_AW_INPUTS_MODEL__"`), each exploring the codebase from a different angle (e.g., different areas of the codebase related to the issue, different hypotheses about root cause, different related issues/PRs). Include the issue description, repo conventions, and the full context from Step 1 in each sub-agent prompt. Each sub-agent should return its best findings with file paths and evidence, or recommend `noop`.
           3. Explore the relevant parts of the codebase using `grep` and file reading.
           4. Run tests or commands in the workspace to verify reported bugs when possible:
              - Run existing tests to confirm reported behavior

@@ -114,7 +114,7 @@ For each commit (or group of related commits), determine whether the changes cou
 
 ### Parallel Analysis
 
-Use the **Pick Three, Keep Many** pattern for the analysis: spawn 3 `general-purpose` sub-agents, each analyzing the recent commits from a different angle (e.g., one checking public API and behavioral changes, one checking structural and configuration changes, one checking new features and dependency updates). Include the git log output, commit diffs, documentation file inventory, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
+Use the **Pick Three, Keep Many** pattern for the analysis: spawn 3 `general-purpose` sub-agents (with `model: "${{ inputs.model }}"`), each analyzing the recent commits from a different angle (e.g., one checking public API and behavioral changes, one checking structural and configuration changes, one checking new features and dependency updates). Include the git log output, commit diffs, documentation file inventory, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
 
 ### How to Analyze
 

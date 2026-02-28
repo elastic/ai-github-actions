@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"663006e2be2eb3c4e93a986e98470d787539ad5563b4b7985f41d7b45244684a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d8b22c5a2f7f1f3c5955650fff35940e861d1aa99138e298f7abdd4c6fa8c4e2"}
 
 name: "Agent Suggestions"
 "on":
@@ -297,7 +297,7 @@ jobs:
           
           Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return its single best candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`. The goal is competition: 3 sub-agents each produce their best shot, and you pick the winner.
           
-          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
+          **How to spawn sub-agents:** Call `runSubagent` with `model: "__GH_AW_INPUTS_MODEL__"` and the `agentType` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` if not specified). Always pass the model explicitly. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
@@ -397,7 +397,7 @@ jobs:
              - Search open PRs for new workflows: `repo:{owner}/{repo} is:pr is:open (agent OR workflow)`.
              - Search past reports: `repo:{owner}/{repo} is:issue in:title "__GH_AW_EXPR_BF503D80__"`.
           
-          3. Use the **Pick Three, Keep One** pattern for the data gathering phase: spawn 3 `general-purpose` sub-agents, each investigating from a different angle (e.g., different workflow categories, different improvement types such as new workflows vs. enhancements vs. integrations, different downstream repo segments). Include the existing workflow inventory, repo conventions, and the full "What to Suggest" criteria in each sub-agent prompt. Each sub-agent should return its best candidate suggestion with evidence or recommend `noop`.
+          3. Use the **Pick Three, Keep One** pattern for the data gathering phase: spawn 3 `general-purpose` sub-agents (with `model: "__GH_AW_INPUTS_MODEL__"`), each investigating from a different angle (e.g., different workflow categories, different improvement types such as new workflows vs. enhancements vs. integrations, different downstream repo segments). Include the existing workflow inventory, repo conventions, and the full "What to Suggest" criteria in each sub-agent prompt. Each sub-agent should return its best candidate suggestion with evidence or recommend `noop`.
           
           4. **Evaluate software development needs in this repo**
              - Review open issues and PRs updated in the last 30 days for recurring work patterns (maintenance, docs, testing, releases, dependency updates).

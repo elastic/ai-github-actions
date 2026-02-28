@@ -127,7 +127,7 @@ Follow these steps in order.
 - **Agent 2**: `/tmp/pr-context/file_order_za.txt` — reverse alphabetical (Z → A)
 - **Agent 3**: `/tmp/pr-context/file_order_largest.txt` — by diff size descending
 
-**Spawn sub-agents:** Follow the **Pick Three, Keep Many** process — spawn 3 `code-review` sub-agents to review the PR diff in parallel. Each sub-agent prompt must include:
+**Spawn sub-agents:** Follow the **Pick Three, Keep Many** process — spawn 3 `code-review` sub-agents (with `model: "${{ inputs.model }}"`) to review the PR diff in parallel. Each sub-agent prompt must include:
 - Instruction to read `/tmp/pr-context/review-instructions.md` for the review process, criteria, and calibration examples
 - Instruction to read `/tmp/pr-context/README.md` for a manifest of all available context files
 - The review intensity (`${{ inputs.intensity }}`) and minimum severity (`${{ inputs.minimum_severity }}`)

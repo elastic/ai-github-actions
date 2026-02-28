@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e75ea16f83e2b2e6404e905c76277dc8063a40b7f61b1b746be3e3786170152a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2e1300954c70323a9f30e4beb02316b4674ea68656ff15ac7f819a08eb30a204"}
 
 name: "Internal: Upgrade Check"
 "on":
@@ -325,7 +325,7 @@ jobs:
           
           Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return its single best candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`. The goal is competition: 3 sub-agents each produce their best shot, and you pick the winner.
           
-          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
+          **How to spawn sub-agents:** Call `runSubagent` with `model: "__GH_AW_INPUTS_MODEL__"` and the `agentType` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` if not specified). Always pass the model explicitly. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
@@ -355,7 +355,7 @@ jobs:
           3. Fetch recent gh-aw releases using `gh api repos/github/gh-aw/releases?per_page=10` to get the last 10 releases. Identify all releases newer than our pinned version.
           4. If we are already on the latest release, report no findings and stop.
           5. For each newer release, read the release notes (the `body` field). Also fetch the CHANGELOG if needed: `web-fetch` from `https://raw.githubusercontent.com/github/gh-aw/main/CHANGELOG.md`.
-          6. Use the **Pick Three, Keep One** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each assessing upgrade impact from a different angle (e.g., one checking for breaking changes and deprecated features we rely on, one evaluating new features and safe-output changes we should adopt, one analyzing bug fixes and security patches relevant to our workflows). Include our current workflow configurations, pinned version, release notes, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
+          6. Use the **Pick Three, Keep One** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents (with `model: "gpt-5.3-codex"`), each assessing upgrade impact from a different angle (e.g., one checking for breaking changes and deprecated features we rely on, one evaluating new features and safe-output changes we should adopt, one analyzing bug fixes and security patches relevant to our workflows). Include our current workflow configurations, pinned version, release notes, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
           
           ### What to Look For
           

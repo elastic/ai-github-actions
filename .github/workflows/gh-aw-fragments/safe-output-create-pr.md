@@ -76,7 +76,7 @@ safe-outputs:
     github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 ---
 
-Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist.
+Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist. When the checklist asks you to spawn a `code-review` sub-agent, always pass `model: "${{ inputs.model }}"` to `runSubagent`.
 
 ## create-pull-request Limitations
 

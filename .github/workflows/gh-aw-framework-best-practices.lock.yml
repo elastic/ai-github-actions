@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a506c3d1c642f61a259db6ab04065cb100d171c09a0591c909e0ac78db642d8b"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1596ba42eb9c0eae9b7dbf10a2bde0b931d3670ca74e9d49edfead47ce01e1de"}
 
 name: "Framework Best Practices"
 "on":
@@ -297,7 +297,7 @@ jobs:
           
           Parallelize your work using sub-agents. Spawn 3 sub-agents, each approaching the task from a different angle — e.g., different focus areas, different heuristics, or different parts of the codebase. Each sub-agent works independently and should return its own list of findings.
           
-          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
+          **How to spawn sub-agents:** Call `runSubagent` with `model: "__GH_AW_INPUTS_MODEL__"` and the `agentType` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` if not specified). Always pass the model explicitly. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
@@ -406,7 +406,7 @@ jobs:
              - Check configuration files for unnecessary complexity.
              - Look for TODOs or workaround comments that reference library limitations that may have been resolved in the current version.
           
-          3. Use the **Pick Three, Keep Many** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each searching for library underuse from a different angle (e.g., one examining reimplemented library features and deprecated API patterns, one analyzing state management and UI framework underuse, one checking build tool configuration and testing patterns). Include the tech stack inventory, dependency versions, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
+          3. Use the **Pick Three, Keep Many** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents (with `model: "__GH_AW_INPUTS_MODEL__"`), each searching for library underuse from a different angle (e.g., one examining reimplemented library features and deprecated API patterns, one analyzing state management and UI framework underuse, one checking build tool configuration and testing patterns). Include the tech stack inventory, dependency versions, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
           
           4. **Check for duplicates**
              - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "__GH_AW_EXPR_BF503D80__"`.

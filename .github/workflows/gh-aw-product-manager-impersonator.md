@@ -116,7 +116,7 @@ Your task is to propose **one** well-researched new feature idea for this reposi
    - Check issues and PRs updated in the last 30 days for feature requests, common pain points, and areas of active development.
    - Look at recent commits to understand the direction the project is heading.
 
-3. Use the **Pick Three, Keep One** pattern for the ideation phase: spawn 3 `general-purpose` sub-agents, each brainstorming from a different angle (e.g., different user personas or stakeholder perspectives, different product areas or subsystems, different improvement types such as usability vs. new capabilities vs. developer experience). Include the project context, recent activity, persona (if set), idea-size, and the full "What to Propose" criteria in each sub-agent prompt. Each sub-agent should return its best feature idea with evidence or recommend `noop`.
+3. Use the **Pick Three, Keep One** pattern for the ideation phase: spawn 3 `general-purpose` sub-agents (with `model: "${{ inputs.model }}"`), each brainstorming from a different angle (e.g., different user personas or stakeholder perspectives, different product areas or subsystems, different improvement types such as usability vs. new capabilities vs. developer experience). Include the project context, recent activity, persona (if set), idea-size, and the full "What to Propose" criteria in each sub-agent prompt. Each sub-agent should return its best feature idea with evidence or recommend `noop`.
 
 4. **Check for duplicates**
    - Search open issues for existing feature requests: `repo:{owner}/{repo} is:issue is:open (feature OR enhancement OR idea)`.

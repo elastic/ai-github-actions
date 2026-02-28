@@ -163,6 +163,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
         run: |
           bash /opt/gh-aw/actions/create_prompt_first.sh
           {
@@ -285,7 +286,7 @@ jobs:
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist.
+          Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist. When the checklist asks you to spawn a `code-review` sub-agent, always pass `model: "__GH_AW_INPUTS_MODEL__"` to `runSubagent`.
           
           ## create-pull-request Limitations
           
@@ -394,6 +395,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_955E52F5: ${{ inputs.issue-label }}
           GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
@@ -418,6 +420,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
         with:
           script: |
@@ -441,6 +444,7 @@ jobs:
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
+                GH_AW_INPUTS_MODEL: process.env.GH_AW_INPUTS_MODEL,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
               }
             });

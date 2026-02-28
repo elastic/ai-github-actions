@@ -186,6 +186,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
           GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         run: |
           bash /opt/gh-aw/actions/create_prompt_first.sh
@@ -442,7 +443,7 @@ jobs:
           **Do NOT** describe what the PR does, list the files you reviewed, summarize inline comments, or restate prior review feedback. The PR author already knows what their PR does. Your inline comments already contain all the detail. The review body exists solely to communicate the approve/request-changes decision and important/critical feedback that cannot be covered in inline comments.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          Before calling `push_to_pull_request_branch`, call `ready_to_push_to_pr` and apply its checklist.
+          Before calling `push_to_pull_request_branch`, call `ready_to_push_to_pr` and apply its checklist. When the checklist asks you to spawn a `code-review` sub-agent, always pass `model: "__GH_AW_INPUTS_MODEL__"` to `runSubagent`.
           
           ## push-to-pull-request-branch Limitations
           
@@ -561,6 +562,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_8D9F5797: ${{ inputs.intensity || 'balanced' }}
           GH_AW_EXPR_7B543459: ${{ inputs.minimum_severity || 'low' }}
+          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
           GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
           GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
           GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
@@ -590,6 +592,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
           GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         with:
@@ -616,6 +619,7 @@ jobs:
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
+                GH_AW_INPUTS_MODEL: process.env.GH_AW_INPUTS_MODEL,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
                 GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: process.env.GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT
               }

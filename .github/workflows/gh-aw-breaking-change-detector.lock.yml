@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cc2e60978c9dcb4c8c9bc7d737396ea679c08f1ffb7ed291d7bd18ba366370a1"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d78f31f2c4d26b60c930d5a92390e8af34272129a0e4312b8d24e652be67fba8"}
 
 name: "Breaking Change Detector"
 "on":
@@ -300,7 +300,7 @@ jobs:
           
           Parallelize your work using sub-agents. Spawn 3 sub-agents, each approaching the task from a different angle — e.g., different focus areas, different heuristics, or different parts of the codebase. Each sub-agent works independently and should return its own list of findings.
           
-          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
+          **How to spawn sub-agents:** Call `runSubagent` with `model: "__GH_AW_INPUTS_MODEL__"` and the `agentType` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` if not specified). Always pass the model explicitly. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
@@ -405,7 +405,7 @@ jobs:
           - Read the PR body and related discussion for documentation or migration notes.
           - Check for documentation updates in README, DEVELOPING, RELEASE, gh-agent-workflows/README, or any `CHANGELOG*` files (if present).
           
-          Use the **Pick Three, Keep Many** pattern for the analysis: spawn 3 `general-purpose` sub-agents, each analyzing the recent commits from a different angle (e.g., one checking workflow/action interface changes, one checking documented guarantees, one checking downstream compatibility). Include the git log output, commit diffs, repo conventions, and the full "What to Look For" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
+          Use the **Pick Three, Keep Many** pattern for the analysis: spawn 3 `general-purpose` sub-agents (with `model: "__GH_AW_INPUTS_MODEL__"`), each analyzing the recent commits from a different angle (e.g., one checking workflow/action interface changes, one checking documented guarantees, one checking downstream compatibility). Include the git log output, commit diffs, repo conventions, and the full "What to Look For" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
           
           ### What to Look For
           

@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c7aa3089b1a1e91cdb2926949a8bfa5ae113adc7b4c4622c32a2f3b8759c0298"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"72d9fd4a5ac612c3f61c768bec5f743725c1947cc2ca66044992372e022898fe"}
 
 name: "Product Manager Impersonator"
 "on":
@@ -309,7 +309,7 @@ jobs:
           
           Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return its single best candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`. The goal is competition: 3 sub-agents each produce their best shot, and you pick the winner.
           
-          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
+          **How to spawn sub-agents:** Call `runSubagent` with `model: "__GH_AW_INPUTS_MODEL__"` and the `agentType` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` if not specified). Always pass the model explicitly. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
@@ -416,7 +416,7 @@ jobs:
              - Check issues and PRs updated in the last 30 days for feature requests, common pain points, and areas of active development.
              - Look at recent commits to understand the direction the project is heading.
           
-          3. Use the **Pick Three, Keep One** pattern for the ideation phase: spawn 3 `general-purpose` sub-agents, each brainstorming from a different angle (e.g., different user personas or stakeholder perspectives, different product areas or subsystems, different improvement types such as usability vs. new capabilities vs. developer experience). Include the project context, recent activity, persona (if set), idea-size, and the full "What to Propose" criteria in each sub-agent prompt. Each sub-agent should return its best feature idea with evidence or recommend `noop`.
+          3. Use the **Pick Three, Keep One** pattern for the ideation phase: spawn 3 `general-purpose` sub-agents (with `model: "__GH_AW_INPUTS_MODEL__"`), each brainstorming from a different angle (e.g., different user personas or stakeholder perspectives, different product areas or subsystems, different improvement types such as usability vs. new capabilities vs. developer experience). Include the project context, recent activity, persona (if set), idea-size, and the full "What to Propose" criteria in each sub-agent prompt. Each sub-agent should return its best feature idea with evidence or recommend `noop`.
           
           4. **Check for duplicates**
              - Search open issues for existing feature requests: `repo:{owner}/{repo} is:issue is:open (feature OR enhancement OR idea)`.

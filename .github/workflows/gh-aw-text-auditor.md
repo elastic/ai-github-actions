@@ -140,7 +140,7 @@ Level semantics:
    - README, CONTRIBUTING, DEVELOPING, and other markdown documentation
    - UI strings, notification templates, and user-visible configuration descriptions
    - Code comments in public APIs that appear in generated documentation
-2. Use the **Pick Three, Keep Many** pattern for the audit phase: spawn 3 `general-purpose` sub-agents, each scanning for text issues from a different angle (e.g., one focusing on different text dimensions like grammar/terminology/clarity, one scanning different file types like docs vs UI strings vs config descriptions, one checking different text surfaces like error messages vs help text vs onboarding copy). Include the list of identified text sources, the edit-level configuration, and the full "What to Look For by Dimension" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
+2. Use the **Pick Three, Keep Many** pattern for the audit phase: spawn 3 `general-purpose` sub-agents (with `model: "${{ inputs.model }}"`), each scanning for text issues from a different angle (e.g., one focusing on different text dimensions like grammar/terminology/clarity, one scanning different file types like docs vs UI strings vs config descriptions, one checking different text surfaces like error messages vs help text vs onboarding copy). Include the list of identified text sources, the edit-level configuration, and the full "What to Look For by Dimension" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
 3. Read the identified files and search for text issues.
 
 ### What to Look For by Dimension

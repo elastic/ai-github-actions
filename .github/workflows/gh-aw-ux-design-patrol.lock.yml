@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"16221bcf878646b93d83835c6227d99642c02431790b86a5b9778afd36247f7f"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d456be73a17757803ed970ca48d6bd461238b7517f4f58ad8ff3a429ef8e79de"}
 
 name: "UX Design Patrol"
 "on":
@@ -306,7 +306,7 @@ jobs:
           
           Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return its single best candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`. The goal is competition: 3 sub-agents each produce their best shot, and you pick the winner.
           
-          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
+          **How to spawn sub-agents:** Call `runSubagent` with `model: "__GH_AW_INPUTS_MODEL__"` and the `agentType` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` if not specified). Always pass the model explicitly. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
@@ -400,7 +400,7 @@ jobs:
           1. Run `git log --since="__GH_AW_EXPR_C9922AB3__" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
           2. For each commit, read the full diff to understand what user-facing patterns were added or changed.
           3. Discover existing user-facing patterns in the codebase dynamically — search for related code in source files, templates, and configuration that handles output, prompts, messages, or other user interactions.
-          4. Use the **Pick Three, Keep One** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each checking for design drift from a different angle (e.g., one focusing on output/message formatting and CLI flag naming, one examining confirmation dialogs and status/state representation, one auditing color/icon/symbol usage and loading/progress indicators). Include the git log output, recent diffs, existing pattern inventory, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
+          4. Use the **Pick Three, Keep One** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents (with `model: "__GH_AW_INPUTS_MODEL__"`), each checking for design drift from a different angle (e.g., one focusing on output/message formatting and CLI flag naming, one examining confirmation dialogs and status/state representation, one auditing color/icon/symbol usage and loading/progress indicators). Include the git log output, recent diffs, existing pattern inventory, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
           
           ### What to Look For
           

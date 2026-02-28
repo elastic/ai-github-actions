@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c68271d69b8bd050f23795aae51ccea0574d633d75c2e81d42cf12db9929e038"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ac9a6114ac5697c62845bcb2b4d4a28d96ba16e5019bb505bb8a684b4dc8618c"}
 
 name: "Performance Profiler"
 "on":
@@ -301,7 +301,7 @@ jobs:
           
           Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return its single best candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`. The goal is competition: 3 sub-agents each produce their best shot, and you pick the winner.
           
-          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
+          **How to spawn sub-agents:** Call `runSubagent` with `model: "__GH_AW_INPUTS_MODEL__"` and the `agentType` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` if not specified). Always pass the model explicitly. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
@@ -402,7 +402,7 @@ jobs:
              - **Rust**: Search for `#[bench]` or criterion benchmarks.
              - **Java**: Search for JMH benchmarks or `@Benchmark` annotations.
           3. If existing benchmarks are found, run them and capture baseline results.
-          4. Use the **Pick Three, Keep One** pattern for the data gathering phase: spawn 3 `general-purpose` sub-agents, each searching for performance opportunities from a different angle (e.g., different performance dimensions such as CPU-bound vs. memory-allocation vs. I/O-bound paths, different code paths or entry points, different bottleneck types such as algorithmic complexity vs. redundant work vs. expensive serialization). Include the language/build system info, existing benchmark results, and the full "What to Report" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate hot path with evidence or recommend `noop`.
+          4. Use the **Pick Three, Keep One** pattern for the data gathering phase: spawn 3 `general-purpose` sub-agents (with `model: "__GH_AW_INPUTS_MODEL__"`), each searching for performance opportunities from a different angle (e.g., different performance dimensions such as CPU-bound vs. memory-allocation vs. I/O-bound paths, different code paths or entry points, different bottleneck types such as algorithmic complexity vs. redundant work vs. expensive serialization). Include the language/build system info, existing benchmark results, and the full "What to Report" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate hot path with evidence or recommend `noop`.
           5. If no existing benchmarks exist, identify likely hot paths:
              - Find functions called frequently from main entry points (CLI commands, API handlers, request paths).
              - Look for loops over large data structures, repeated I/O, expensive string operations, or known anti-patterns.

@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6138d73dad21c897fd905116ef5d1ca73d766e44210d2eec4392d076babbace0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b0131189301f57eacc44d42c0c3ea42a0a382420882e1d87ad199d3bed1118d5"}
 
 name: "Code Simplifier"
 "on":
@@ -280,7 +280,7 @@ jobs:
           
           Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return its single best candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`. The goal is competition: 3 sub-agents each produce their best shot, and you pick the winner.
           
-          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
+          **How to spawn sub-agents:** Call `runSubagent` with `model: "__GH_AW_INPUTS_MODEL__"` and the `agentType` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` if not specified). Always pass the model explicitly. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
@@ -298,7 +298,7 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist.
+          Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist. When the checklist asks you to spawn a `code-review` sub-agent, always pass `model: "__GH_AW_INPUTS_MODEL__"` to `runSubagent`.
           
           ## create-pull-request Limitations
           
@@ -348,7 +348,7 @@ jobs:
           ## Step 1: Find candidates
           
           1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-          2. Use the **Pick Three, Keep One** pattern for the candidate search: spawn 3 `general-purpose` sub-agents, each searching for simplification opportunities from a different angle (e.g., different complexity metrics such as cyclomatic complexity vs. nesting depth vs. function length, different modules or directories, different simplification types such as dead code removal vs. helper reuse vs. control flow flattening). Include the repo conventions, the full "Bar for merit" criteria, and the "Constraints" in each sub-agent prompt. Each sub-agent should return its best candidate simplification with file paths and evidence or recommend `noop`.
+          2. Use the **Pick Three, Keep One** pattern for the candidate search: spawn 3 `general-purpose` sub-agents (with `model: "__GH_AW_INPUTS_MODEL__"`), each searching for simplification opportunities from a different angle (e.g., different complexity metrics such as cyclomatic complexity vs. nesting depth vs. function length, different modules or directories, different simplification types such as dead code removal vs. helper reuse vs. control flow flattening). Include the repo conventions, the full "Bar for merit" criteria, and the "Constraints" in each sub-agent prompt. Each sub-agent should return its best candidate simplification with file paths and evidence or recommend `noop`.
           3. Use search and file reading to identify overcomplicated code:
              - deep nesting
              - redundant conditionals

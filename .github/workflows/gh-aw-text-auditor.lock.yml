@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a3a55d646f184e99b809a64db2b29f46c01c532b4a17d91aa4e5882dae038c6a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f1bf593b798866cceb46cbd4bf61c05c178455cbb4eee5c455803de96b58c6ce"}
 
 name: "Text Auditor"
 "on":
@@ -327,7 +327,7 @@ jobs:
           
           Parallelize your work using sub-agents. Spawn 3 sub-agents, each approaching the task from a different angle — e.g., different focus areas, different heuristics, or different parts of the codebase. Each sub-agent works independently and should return its own list of findings.
           
-          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
+          **How to spawn sub-agents:** Call `runSubagent` with `model: "__GH_AW_INPUTS_MODEL__"` and the `agentType` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` if not specified). Always pass the model explicitly. Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
@@ -444,7 +444,7 @@ jobs:
              - README, CONTRIBUTING, DEVELOPING, and other markdown documentation
              - UI strings, notification templates, and user-visible configuration descriptions
              - Code comments in public APIs that appear in generated documentation
-          2. Use the **Pick Three, Keep Many** pattern for the audit phase: spawn 3 `general-purpose` sub-agents, each scanning for text issues from a different angle (e.g., one focusing on different text dimensions like grammar/terminology/clarity, one scanning different file types like docs vs UI strings vs config descriptions, one checking different text surfaces like error messages vs help text vs onboarding copy). Include the list of identified text sources, the edit-level configuration, and the full "What to Look For by Dimension" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
+          2. Use the **Pick Three, Keep Many** pattern for the audit phase: spawn 3 `general-purpose` sub-agents (with `model: "__GH_AW_INPUTS_MODEL__"`), each scanning for text issues from a different angle (e.g., one focusing on different text dimensions like grammar/terminology/clarity, one scanning different file types like docs vs UI strings vs config descriptions, one checking different text surfaces like error messages vs help text vs onboarding copy). Include the list of identified text sources, the edit-level configuration, and the full "What to Look For by Dimension" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
           3. Read the identified files and search for text issues.
           
           ### What to Look For by Dimension
