@@ -111,8 +111,6 @@ Automatically address review feedback on pull requests in ${{ github.repository 
 - **CAN**: Read files, search code, modify files locally, run tests and commands, reply to review comments, push to the PR branch (same-repo only), resolve review threads
 - **CANNOT**: Push to fork PR branches, merge PRs, delete branches, modify `.github/workflows/` files
 
-When pushing changes, the workspace already has the PR branch checked out. Make your changes, commit them locally, then use `push_to_pull_request_branch`.
-
 ## Instructions
 
 Address the review feedback surgically — make only the minimum changes needed.
@@ -140,7 +138,7 @@ For each unresolved review thread:
 ### Step 3: Validate and Push
 
 1. Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the changes and include results. If required commands cannot be run, explain why and do not push changes.
-2. Commit your changes locally with a descriptive message, then use `push_to_pull_request_branch` to push them.
+2. Use `push_to_pull_request_branch` to push your changes.
 3. **Fork PRs**: If this is a fork PR, you cannot push. Reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation.
 
 ### Step 4: Resolve Addressed Threads

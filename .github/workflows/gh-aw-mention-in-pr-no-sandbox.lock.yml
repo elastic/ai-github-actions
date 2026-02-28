@@ -44,7 +44,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"37eed9452f2bf3443bda29742805f3e384dcd059772d5238c9aa7c0737a31c4a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6982acd5f0acad3aff5893a6795ea36a25ff3c68fd584b2e152ec7182388db35"}
 
 name: "Mention in PR (no sandbox)"
 "on":
@@ -452,11 +452,11 @@ jobs:
           - **Branch**: Pushes to the PR's head branch. The workspace must have the PR branch checked out.
           - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
           
-          Trying to resolve merge conflicts? Do NOT create merge commits (commits with multiple parents) — `push_to_pull_request_branch` uses `git format-patch` which breaks on merge commits. This means: no `git merge`, no `git rebase`, no `git commit-tree` with multiple `-p` flags. Instead:
-          1. Use `git diff HEAD...origin/<base-branch>` (base branch from `/tmp/pr-context/pr.json` field `baseRefName`) to see what the base branch changed in the conflicting files
+          Trying to resolve merge conflicts? Do not use `git merge` or `git rebase` — `push_to_pull_request_branch` uses `git format-patch` which requires single-parent commits. Instead:
+          1. Compare with the base branch (from `/tmp/pr-context/pr.json` field `baseRefName`) to see what changed in the conflicting files
           2. Edit the files directly to incorporate the changes from the base branch
           3. Commit the changes as regular (single-parent) commits
-          4. Once you are done with all of your changes on this branch, call `ready_to_push_to_pr` and then `push_to_pull_request_branch` to push
+          4. Call `ready_to_push_to_pr` (which will catch any merge commits) and then `push_to_pull_request_branch` to push
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## resolve-pull-request-review-thread Limitations
@@ -492,8 +492,6 @@ jobs:
           
           - **CAN**: Read files, search code, modify files locally, run tests and commands, leave inline review comments, submit reviews, reply to review threads, resolve review threads, push to the PR branch (same-repo only)
           - **CANNOT**: Push to fork PR branches, merge PRs, delete branches
-          
-          When pushing changes, the workspace already has the PR branch checked out. Make your changes, commit them locally, then use `push_to_pull_request_branch`.
           
           ## Instructions
           
@@ -532,7 +530,7 @@ jobs:
              - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
              - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
           - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
-          - Commit your changes locally, then use `push_to_pull_request_branch` to push them.
+          - Use `push_to_pull_request_branch` to push your changes.
           - After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
           - **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.
           
