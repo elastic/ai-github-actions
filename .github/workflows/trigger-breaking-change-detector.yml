@@ -5,6 +5,15 @@ on:
   schedule:
     - cron: "0 13 * * 1-5"
   workflow_dispatch:
+    inputs:
+      issue-labels:
+        description: "Comma-separated labels to apply when creating an issue"
+        required: false
+        default: "breaking-change,ai:fix-ready"
+      assign-to:
+        description: "Comma-separated GitHub usernames to assign when creating an issue"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -14,5 +23,10 @@ permissions:
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-breaking-change-detector.lock.yml
+    with:
+      additional-instructions: |
+        When calling create_issue, apply these labels:
+        `${{ inputs.issue-labels || 'breaking-change,ai:fix-ready' }}`
+        If `${{ inputs.assign-to || '' }}` is non-empty, set create_issue assignees to those usernames.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
