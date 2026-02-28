@@ -93,7 +93,7 @@ steps:
         --search "sort:updated-asc" \
         --json number,title,updatedAt,createdAt,labels \
         --jq '.[] | [.number, .title, .updatedAt, .createdAt, ([.labels[].name] | join(","))] | @tsv' \
-        >> "$issues_file" 2>/dev/null || true
+        >> "$issues_file" || { echo "::warning::Failed to fetch open issues"; }
 
       count="$(tail -n +2 "$issues_file" | wc -l | tr -d ' ')"
       echo "Prescanned ${count} open issues into ${issues_file}"
@@ -112,7 +112,7 @@ Find open issues that are very likely already resolved and recommend them for cl
 
    A prescan step has already fetched open issues (sorted by least recently updated) into `/tmp/gh-aw/agent/open-issues.tsv` with columns: number, title, updated_at, created_at, label_names. Start by reading this file:
 
-   ```
+   ```bash
    cat /tmp/gh-aw/agent/open-issues.tsv
    ```
 
