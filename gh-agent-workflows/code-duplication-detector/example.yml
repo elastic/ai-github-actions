@@ -3,15 +3,6 @@ on:
   schedule:
     - cron: "0 12 * * 1-5"
   workflow_dispatch:
-    inputs:
-      allowed-labels:
-        description: "Comma-separated labels the agent is allowed to apply to created issues (leave empty to skip labeling)"
-        required: false
-        default: "code-duplication,ai:fix-ready"
-      allowed-assignees:
-        description: "Comma-separated GitHub usernames the agent is allowed to assign to created issues (leave empty to skip assigning)"
-        required: false
-        default: ""
 
 permissions:
   contents: read
@@ -23,8 +14,5 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-duplication-detector.lock.yml@v0
     with:
       languages: "go,python,typescript"
-      additional-instructions: |
-        When calling create_issue, apply these labels: `${{ inputs.allowed-labels || 'code-duplication,ai:fix-ready' }}`.
-        If `${{ inputs.allowed-assignees || '' }}` is non-empty, assign the issue to those usernames.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

@@ -41,7 +41,12 @@ See [example.yml](example.yml) for the full workflow file.
 
 ## Labeling and assigning created issues
 
-The bundled [example.yml](example.yml) includes `workflow_dispatch` inputs `allowed-labels` and `allowed-assignees` that define which labels and assignees the agent may use when calling `create_issue`. These are passed into `additional-instructions` as allowlists — customize the defaults or provide your own `additional-instructions` to control labeling and assignment behavior.
+If you want detector-to-fixer handoff via labels, add these optional `workflow_dispatch` inputs to your local workflow copy and reference them from `additional-instructions`:
+
+| Option | Description (with usage tips) | Suggested default |
+| --- | --- | --- |
+| `allowed-labels` | Comma-separated labels the agent is allowed to apply when it calls `create_issue`. Tip: include both a detector label and your handoff label (for example `ai:fix-ready`) so Issue Fixer can trigger from a labeled issue. Leave empty to skip labeling. | `resource-not-accessible-by-integration,ai:fix-ready` |
+| `allowed-assignees` | Comma-separated GitHub usernames the agent is allowed to assign on created issues. Tip: keep this list small so assignment stays predictable. Leave empty to skip assigning. | `""` |
 
 ## Safe Outputs
 
