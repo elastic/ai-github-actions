@@ -1,0 +1,28 @@
+name: Extract Created Issues
+
+on:
+  workflow_call:
+    inputs:
+      process_safe_outputs_temporary_id_map:
+        description: JSON map emitted by scheduled-audit safe outputs processing.
+        required: false
+        type: string
+        default: "{}"
+    outputs:
+      created_issue_numbers:
+        description: JSON array of issue numbers created in the current run.
+        value: ${{ jobs.extract.outputs.created_issue_numbers }}
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    outputs:
+      created_issue_numbers: ${{ steps.extract.outputs.created_issue_numbers }}
+    steps:
+      - id: extract
+        env:
+          TEMP_ID_MAP: ${{ inputs.process_safe_outputs_temporary_id_map }}
+        run: |
+          set -euo pipefail
+          created_issue_numbers="$(jq -c 'to_entries | map(.value | capture("#(?<n>[0-9]+)$").n | tonumber)' <<< "${TEMP_ID_MAP:-{}}")"
+          echo "created_issue_numbers=$created_issue_numbers" >> "$GITHUB_OUTPUT"

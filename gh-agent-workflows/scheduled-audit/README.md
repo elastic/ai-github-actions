@@ -48,7 +48,7 @@ The reusable workflow also exposes `process_safe_outputs_temporary_id_map` as a 
 
 ## Same-run fixer handoff (recommended)
 
-If your repository blocks `issues.opened` follow-up workflows from bot-created issues, run your fixer as a downstream job in the same workflow run:
+If your repository blocks `issues.opened` follow-up workflows from bot-created issues, run your fixer as a downstream job in the same workflow run. Use the reusable extractor workflow to derive created issue numbers from `process_safe_outputs_temporary_id_map`.
 
 ````yaml
 name: Scheduled Audit + Fix
@@ -75,18 +75,10 @@ jobs:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   extract-created-issues:
-    runs-on: ubuntu-latest
     needs: audit
-    outputs:
-      created_issue_numbers: ${{ steps.extract.outputs.created_issue_numbers }}
-    steps:
-      - id: extract
-        env:
-          TEMP_ID_MAP: ${{ needs.audit.outputs.process_safe_outputs_temporary_id_map }}
-        run: |
-          set -euo pipefail
-          created_issue_numbers="$(jq -c 'to_entries | map(.value | capture("#(?<n>[0-9]+)$").n | tonumber)' <<< "${TEMP_ID_MAP:-{}}")"
-          echo "created_issue_numbers=$created_issue_numbers" >> "$GITHUB_OUTPUT"
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-extract-created-issues.yml@v0
+    with:
+      process_safe_outputs_temporary_id_map: ${{ needs.audit.outputs.process_safe_outputs_temporary_id_map }}
 
   fix:
     needs: [audit, extract-created-issues]
