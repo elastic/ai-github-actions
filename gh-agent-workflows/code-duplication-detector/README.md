@@ -33,6 +33,10 @@ See [example.yml](example.yml) for the full workflow file.
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 
+## Labeling created issues
+
+The bundled [example.yml](example.yml) includes a `workflow_dispatch` input named `issue-labels` and passes it into `additional-instructions` so created issues can be labeled (for example, `code-duplication,ai:fix-ready`).
+
 ## Safe Outputs
 
 - `create-issue` — file a refactoring report (max 1, auto-closes older reports)

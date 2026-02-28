@@ -8,6 +8,10 @@ on:
         description: "Number of look-back days for failed-run scan"
         required: false
         default: "1"
+      issue-labels:
+        description: "Comma-separated labels to apply when creating an issue"
+        required: false
+        default: "resource-not-accessible-by-integration,ai:fix-ready"
 
 permissions:
   actions: read
@@ -20,5 +24,8 @@ jobs:
     with:
       long-term-branches: ""
       look-back-days: ${{ inputs.look-back-days || 1 }}
+      additional-instructions: |
+        When calling create_issue, apply these labels:
+        `${{ inputs.issue-labels || 'resource-not-accessible-by-integration,ai:fix-ready' }}`
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

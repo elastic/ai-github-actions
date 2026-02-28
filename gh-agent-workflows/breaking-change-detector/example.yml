@@ -3,6 +3,11 @@ on:
   schedule:
     - cron: "0 13 * * 1-5"
   workflow_dispatch:
+    inputs:
+      issue-labels:
+        description: "Comma-separated labels to apply when creating an issue"
+        required: false
+        default: "breaking-change,ai:fix-ready"
 
 permissions:
   contents: read
@@ -12,5 +17,9 @@ permissions:
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-breaking-change-detector.lock.yml@v0
+    with:
+      additional-instructions: |
+        When calling create_issue, apply these labels:
+        `${{ inputs.issue-labels || 'breaking-change,ai:fix-ready' }}`
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

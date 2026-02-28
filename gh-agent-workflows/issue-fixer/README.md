@@ -16,6 +16,18 @@ mkdir -p .github/workflows && curl -sL \
 
 See [example.yml](example.yml) for the full workflow file.
 
+### Label-driven auto-fix handoff
+
+Use this variant when you want detector-created issues to trigger a fix only after a specific label is applied:
+
+```bash
+mkdir -p .github/workflows && curl -sL \
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/issue-fixer/example-label-trigger.yml \
+  -o .github/workflows/issue-fixer-from-label.yml
+```
+
+See [example-label-trigger.yml](example-label-trigger.yml) for a generic label-driven auto-fix workflow.
+
 ## Trigger
 
 | Event | Types |

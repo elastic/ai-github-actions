@@ -1,0 +1,22 @@
+name: Issue Fixer From Label
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  actions: read
+  contents: read
+  discussions: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  run:
+    if: github.event.label.name == 'ai:fix-ready'
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-fixer.lock.yml@v0
+    with:
+      additional-instructions: |
+        Only create a PR when the triggering issue is ready for implementation.
+        The required trigger label is `ai:fix-ready`.
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
