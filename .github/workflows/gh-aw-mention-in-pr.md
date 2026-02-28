@@ -178,11 +178,11 @@ Based on what's asked, do the appropriate thing. **Requests can combine multiple
 **If asked to fix merge conflicts:**
 - Check via `pull_request_read` (method `get`) whether this is a fork PR. If so, reply that you cannot push to fork branches and suggest the author resolve locally.
 - Read `/tmp/pr-context/pr.json` for the head and base branch names.
-- Do NOT use `git merge` or `git rebase` — `push_to_pull_request_branch` cannot handle merge commits. Instead, resolve conflicts manually:
+- Do NOT create merge commits — `push_to_pull_request_branch` generates patches via `git format-patch`, which breaks on merge commits (commits with multiple parents). This means: no `git merge`, no `git rebase`, no `git commit-tree` with multiple `-p` flags. Instead, resolve conflicts manually:
   1. Fetch the base branch: `git fetch origin "<base-branch>"`
-  2. Identify conflicting files by comparing the PR branch and the base: `git diff origin/"<base-branch>" -- <file>`
+  2. Use `git merge-tree` or `git diff origin/"<base-branch>"` to identify conflicting files and understand both sides.
   3. Edit each conflicting file directly to incorporate the changes from the base branch, producing the correct merged result.
-  4. Commit the resolved changes as a regular commit.
+  4. Commit the resolved changes as a regular (single-parent) commit.
 - If conflicts are too complex to resolve confidently (large structural changes, binary files, ambiguous intent), reply explaining what you found and suggest the author resolve locally. Do NOT push a bad resolution or proceed with other requested work that depends on a clean merge.
 - If the request includes additional work (code fixes, review feedback), complete all of it before pushing — `push_to_pull_request_branch` can only be called once. Resolve merge conflicts first, then make other requested changes on top, then push everything together.
 - Push via `push_to_pull_request_branch` and reply summarizing what was resolved and how conflicts were handled.
