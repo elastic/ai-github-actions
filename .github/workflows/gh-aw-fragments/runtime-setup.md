@@ -50,4 +50,16 @@ steps:
       cp "$UV_PATH" "$install_dir/uv"
       chmod +x "$install_dir/uv"
       echo "$install_dir" >> "$GITHUB_PATH"
+  
+  - name: Configure Copilot CLI settings
+    shell: bash
+    run: |
+      set -euo pipefail
+      mkdir -p ~/.copilot
+      CONFIG="$HOME/.copilot/config.json"
+      if [ -f "$CONFIG" ]; then
+          jq '. + {"chat.customAgentInSubagent.enabled": true}' "$CONFIG" > "$CONFIG.tmp" && mv "$CONFIG.tmp" "$CONFIG"
+      else
+          echo '{"chat.customAgentInSubagent.enabled":true}' > "$CONFIG"
+      fi
 ---

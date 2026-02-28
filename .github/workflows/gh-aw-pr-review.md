@@ -122,16 +122,16 @@ Follow these steps in order.
 
 ### Step 2: Sub-agent Review
 
-**Compute file orderings:** Read `/tmp/pr-context/files.json` to get the changed file list with `additions` and `deletions` counts per file. Compute three orderings:
-- **Agent 1**: Files in alphabetical order (A → Z)
-- **Agent 2**: Files in reverse alphabetical order (Z → A)
-- **Agent 3**: Files sorted by diff size descending (largest `additions + deletions` first)
+**File orderings are pre-computed** at `/tmp/pr-context/`:
+- **Agent 1**: `/tmp/pr-context/file_order_az.txt` — alphabetical (A → Z)
+- **Agent 2**: `/tmp/pr-context/file_order_za.txt` — reverse alphabetical (Z → A)
+- **Agent 3**: `/tmp/pr-context/file_order_largest.txt` — by diff size descending
 
 **Spawn sub-agents:** Follow the **Pick Three, Keep Many** process — spawn 3 `code-review` sub-agents to review the PR diff in parallel. Each sub-agent prompt must include:
 - Instruction to read `/tmp/pr-context/review-instructions.md` for the review process, criteria, and calibration examples
 - Instruction to read `/tmp/pr-context/README.md` for a manifest of all available context files
 - The review intensity (`${{ inputs.intensity }}`) and minimum severity (`${{ inputs.minimum_severity }}`)
-- The ordered file list for that sub-agent (per-file diffs are at `/tmp/pr-context/diffs/<filename>.diff`)
+- The path to that sub-agent's file ordering (e.g., `/tmp/pr-context/file_order_az.txt`) — tell it to read the file for its ordered list (per-file diffs are at `/tmp/pr-context/diffs/<filename>.diff`)
 - Instruction to read changed files from the workspace (the PR branch is checked out)
 
 Each sub-agent returns a structured findings list. They do NOT leave inline comments.
