@@ -93,7 +93,7 @@ steps:
         --search "sort:updated-asc" \
         --json number,title,updatedAt,createdAt,labels \
         --jq '.[] | [.number, .title, .updatedAt, .createdAt, ([.labels[].name] | join(","))] | @tsv' \
-        >> "$issues_file" || { echo "::warning::Failed to fetch open issues"; }
+        >> "$issues_file" 2>/dev/null || true
 
       count="$(tail -n +2 "$issues_file" | wc -l | tr -d ' ')"
       echo "Prescanned ${count} open issues into ${issues_file}"
@@ -110,11 +110,9 @@ Find open issues that are very likely already resolved and recommend them for cl
 
 0. **Read the prescanned issue index**
 
-   A prescan step has already fetched open issues (sorted by least recently updated) into `/tmp/gh-aw/agent/open-issues.tsv` with columns: number, title, updated_at, created_at, label_names. Start by reading this file:
+   A prescan step has already fetched open issues (sorted by least recently updated) into `/tmp/gh-aw/agent/open-issues.tsv` with columns: number, title, updated_at, created_at, label_names. Read this file with the built-in file-reading tools:
 
-   ```bash
-   cat /tmp/gh-aw/agent/open-issues.tsv
-   ```
+   `/tmp/gh-aw/agent/open-issues.tsv`
 
    Use this as your initial candidate pool. Issues at the top of the file (oldest `updated_at`) are the most likely stale candidates. Skip issues whose labels include `epic`, `tracking`, `umbrella`, or similar meta-labels.
 
