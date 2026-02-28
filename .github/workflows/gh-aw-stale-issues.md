@@ -128,7 +128,7 @@ steps:
 
       # Fetch label add/remove events for each stale-labeled issue (for 30-day expiry)
       jq -r '.[].number' /tmp/stale-labeled-issues.json | while IFS= read -r num; do
-        gh api "repos/$GITHUB_REPOSITORY/issues/$num/events" \
+        gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$num/events" \
           --jq --arg lbl "$STALE_LABEL" \
           '[.[] | select((.event=="labeled" or .event=="unlabeled") and .label.name==$lbl) | {number: '"$num"', event: .event, created_at: .created_at}]' \
           2>/dev/null || echo "[]"
