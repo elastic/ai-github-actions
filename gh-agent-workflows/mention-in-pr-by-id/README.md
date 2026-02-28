@@ -28,4 +28,5 @@ See [example.yml](example.yml) for the full workflow file.
 - `create-pull-request-review-comment` — inline review comments on the targeted PR
 - `submit-pull-request-review` — submit a review on the targeted PR
 - `push-to-pull-request-branch` — push code changes to the targeted PR branch
+- `create-pull-request` — create a new PR with changes (used for fork PRs where pushing is not possible)
 - `resolve-pull-request-review-thread` — resolve threads on the targeted PR

@@ -16,6 +16,7 @@ imports:
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
   - gh-aw-fragments/safe-output-push-to-pr.md
+  - gh-aw-fragments/safe-output-create-pr.md
   - gh-aw-fragments/safe-output-resolve-thread.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -59,6 +60,11 @@ on:
         type: string
         required: false
         default: ""
+      draft-prs:
+        description: "Whether to create pull requests as drafts"
+        type: boolean
+        required: false
+        default: true
       create-pull-request-review-comment-max:
         description: "Maximum number of review comments the agent can create per run"
         type: string
@@ -100,6 +106,8 @@ safe-outputs:
   push-to-pull-request-branch:
     target: "${{ inputs.target-pr-number }}"
     github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
+  create-pull-request:
+    github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 timeout-minutes: 60
 steps:
   - name: Ensure origin refs for PR patch generation
@@ -131,7 +139,7 @@ Assist with pull request #${{ inputs.target-pr-number }} on ${{ github.repositor
 
 ## Constraints
 
-- **CAN**: Read files, search code, modify files locally, run tests and commands, leave inline review comments, submit reviews, resolve review threads, push to the PR branch (same-repo only)
+- **CAN**: Read files, search code, modify files locally, run tests and commands, leave inline review comments, submit reviews, resolve review threads, push to the PR branch (same-repo only), create a PR (for fork PRs)
 - **CANNOT**: Push to fork PR branches, merge PRs, delete branches
 
 ## Instructions

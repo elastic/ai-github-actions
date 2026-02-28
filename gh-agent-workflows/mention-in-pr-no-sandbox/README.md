@@ -34,6 +34,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `draft-prs` | Whether to create pull requests as drafts | No | `true` |
 
 ## Safe Outputs
 
@@ -41,4 +42,5 @@ See [example.yml](example.yml) for the full workflow file.
 - `create-pull-request-review-comment` — inline review comments
 - `submit-pull-request-review` — submit a review
 - `push-to-pull-request-branch` — push code changes to the PR branch
+- `create-pull-request` — create a new PR with changes (used for fork PRs where pushing is not possible)
 - `resolve-pull-request-review-thread` — resolve review threads

@@ -16,6 +16,7 @@ imports:
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
   - gh-aw-fragments/safe-output-push-to-pr.md
+  - gh-aw-fragments/safe-output-create-pr.md
   - gh-aw-fragments/safe-output-resolve-thread.md
   - gh-aw-fragments/safe-output-reply-to-review-comment.md
   - gh-aw-fragments/network-ecosystems.md
@@ -62,6 +63,11 @@ on:
         type: string
         required: false
         default: ""
+      draft-prs:
+        description: "Whether to create pull requests as drafts"
+        type: boolean
+        required: false
+        default: true
       create-pull-request-review-comment-max:
         description: "Maximum number of review comments the agent can create per run"
         type: string
@@ -130,7 +136,7 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 
 ## Constraints
 
-- **CAN**: Read files, search code, modify files locally, run tests and commands, leave inline review comments, submit reviews, reply to review threads, resolve review threads, push to the PR branch (same-repo only)
+- **CAN**: Read files, search code, modify files locally, run tests and commands, leave inline review comments, submit reviews, reply to review threads, resolve review threads, push to the PR branch (same-repo only), create a PR (for fork PRs)
 - **CANNOT**: Push to fork PR branches, merge PRs, delete branches
 
 When pushing changes, the workspace already has the PR branch checked out. Make your changes, commit them locally, then use `push_to_pull_request_branch`.
@@ -174,10 +180,10 @@ Based on what's asked, do the appropriate thing. **Requests can combine multiple
 - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
 - Commit your changes locally, then use `push_to_pull_request_branch` to push them.
 - After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
-- **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.
+- **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push to the fork branch. Instead, make your changes, commit locally, and use `create_pull_request` to open a new PR in the base repo with the changes. In the PR description, reference the original fork PR (e.g., "Addresses feedback from #123"). Then reply on the original PR explaining that you created a new PR with the changes since you cannot push to fork branches.
 
 **If asked to fix merge conflicts:**
-- Check via `pull_request_read` (method `get`) whether this is a fork PR. If so, reply that you cannot push to fork branches and suggest the author resolve locally.
+- Check via `pull_request_read` (method `get`) whether this is a fork PR. If so, reply that you cannot push to fork branches and suggest the author resolve locally. You may also create a new PR with the resolved changes using `create_pull_request` if the conflicts are straightforward.
 - Read `/tmp/pr-context/pr.json` for the head and base branch names.
 - Do NOT create merge commits — `push_to_pull_request_branch` generates patches via `git format-patch`, which breaks on merge commits (commits with multiple parents). This means: no `git merge`, no `git rebase`, no `git commit-tree` with multiple `-p` flags. Instead, resolve conflicts manually:
   1. Fetch the base branch: `git fetch origin "<base-branch>"`
@@ -202,6 +208,7 @@ If you did not submit a PR review, call `add_comment` with your response. If you
 
 **Additional tools:**
 - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
+- `create_pull_request` — create a new PR with your changes (use for fork PRs where pushing is not possible)
 - `reply_to_pull_request_review_comment` — reply inline to a review comment thread to explain what you changed or why you disagree
 - `resolve_pull_request_review_thread` — resolve a review thread after addressing the feedback (pass the thread's GraphQL node ID)
 
