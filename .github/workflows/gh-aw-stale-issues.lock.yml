@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b672a020c3fd8665736edd72974d72f93e7a5f6a56654918c6e7567d602a7404"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5cbd7f8998ac8ed8103c55a10f32999fe8793793b354eb13c8ae19ba8df57233"}
 
 name: "Stale Issues"
 "on":
@@ -375,8 +375,8 @@ jobs:
           A prep step has already fetched stale-labeled issues to `/tmp/stale-labeled-issues.json` (fields: number, title, updatedAt, labels, createdAt), recent comments to `/tmp/stale-recent-comments.json`, and label timeline events to `/tmp/stale-label-events.json` (each entry has `number`, `event` ("labeled"/"unlabeled"), and `created_at`). Start by reading these files to get an overview.
           
           Then search for open issues labeled `__GH_AW_EXPR_AACB8011__`:
-          ```
-          github-search_issues: query="repo:{owner}/{repo} is:issue is:open label:__GH_AW_EXPR_AACB8011__"
+          ```text
+          github-search_issues: query="repo:{owner}/{repo} is:issue is:open label:\"__GH_AW_EXPR_AACB8011__\""
           ```
           
           For each result, fetch the full comment thread via `issue_read` with method `get_comments` and check for two things:

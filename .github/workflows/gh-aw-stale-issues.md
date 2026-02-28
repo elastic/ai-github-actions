@@ -153,8 +153,8 @@ Run both phases on every invocation, starting with the close phase.
 A prep step has already fetched stale-labeled issues to `/tmp/stale-labeled-issues.json` (fields: number, title, updatedAt, labels, createdAt), recent comments to `/tmp/stale-recent-comments.json`, and label timeline events to `/tmp/stale-label-events.json` (each entry has `number`, `event` ("labeled"/"unlabeled"), and `created_at`). Start by reading these files to get an overview.
 
 Then search for open issues labeled `${{ inputs.stale-label }}`:
-```
-github-search_issues: query="repo:{owner}/{repo} is:issue is:open label:${{ inputs.stale-label }}"
+```text
+github-search_issues: query="repo:{owner}/{repo} is:issue is:open label:\"${{ inputs.stale-label }}\""
 ```
 
 For each result, fetch the full comment thread via `issue_read` with method `get_comments` and check for two things:
