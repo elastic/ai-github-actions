@@ -44,7 +44,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"fd9dbb36c623bbd3a7915d705999722975a8a43cc6bd7b2b1a23996593caaf34"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"37eed9452f2bf3443bda29742805f3e384dcd059772d5238c9aa7c0737a31c4a"}
 
 name: "Mention in PR (no sandbox)"
 "on":
@@ -442,7 +442,7 @@ jobs:
           **Do NOT** describe what the PR does, list the files you reviewed, summarize inline comments, or restate prior review feedback. The PR author already knows what their PR does. Your inline comments already contain all the detail. The review body exists solely to communicate the approve/request-changes decision and important/critical feedback that cannot be covered in inline comments.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          Before calling `push_to_pull_request_branch`, call `ready_to_make_pr` and apply its checklist.
+          Before calling `push_to_pull_request_branch`, call `ready_to_push_to_pr` and apply its checklist.
           
           ## push-to-pull-request-branch Limitations
           
@@ -456,7 +456,7 @@ jobs:
           1. Use `git diff HEAD...origin/<base-branch>` (base branch from `/tmp/pr-context/pr.json` field `baseRefName`) to see what the base branch changed in the conflicting files
           2. Edit the files directly to incorporate the changes from the base branch
           3. Commit the changes as regular (single-parent) commits
-          4. Use push_to_pull_request_branch to push
+          4. Once you are done with all of your changes on this branch, call `ready_to_push_to_pr` and then `push_to_pull_request_branch` to push
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## resolve-pull-request-review-thread Limitations
@@ -1279,13 +1279,13 @@ jobs:
             "logDir": "/opt/gh-aw/safe-inputs/logs",
             "tools": [
               {
-                "name": "ready-to-make-pr",
-                "description": "Run the PR readiness checklist before creating or updating a PR",
+                "name": "ready-to-push-to-pr",
+                "description": "Run the PR readiness checklist before pushing to a PR",
                 "inputSchema": {
                   "properties": {},
                   "type": "object"
                 },
-                "handler": "ready-to-make-pr.py",
+                "handler": "ready-to-push-to-pr.py",
                 "timeout": 60
               }
             ]
@@ -1310,10 +1310,10 @@ jobs:
           
       - name: Setup Safe Inputs Tool Files
         run: |
-          cat > /opt/gh-aw/safe-inputs/ready-to-make-pr.py << 'GH_AW_SAFE_INPUTS_PY_READY-TO-MAKE-PR_EOF'
+          cat > /opt/gh-aw/safe-inputs/ready-to-push-to-pr.py << 'GH_AW_SAFE_INPUTS_PY_READY-TO-PUSH-TO-PR_EOF'
           #!/usr/bin/env python3
-          # Auto-generated safe-input tool: ready-to-make-pr
-          # Run the PR readiness checklist before creating or updating a PR
+          # Auto-generated safe-input tool: ready-to-push-to-pr
+          # Run the PR readiness checklist before pushing to a PR
           
           import json
           import os
@@ -1349,6 +1349,9 @@ jobs:
                       raise SystemExit(0)
                   # Check 2: no merge commits (multiple parents) since PR head
                   log = run(['git', 'rev-list', '--min-parents=2', f'{pr_head_sha}..HEAD'])
+                  if log.returncode != 0:
+                      print(json.dumps({'status': 'error', 'error': f'Failed to check for merge commits (git rev-list exited {log.returncode}): {log.stderr.strip()}. Cannot verify commit history is safe for push.'}))
+                      raise SystemExit(0)
                   merge_shas = log.stdout.strip()
                   if merge_shas:
                       print(json.dumps({'status': 'error', 'error': f'Merge commit(s) detected: {merge_shas.splitlines()[0][:12]}... push_to_pull_request_branch uses git format-patch which breaks on merge commits. Fix: run `git reset --hard {pr_head_sha}` to restore the PR branch, then re-apply your changes as direct file edits (no git merge/rebase/commit-tree with multiple -p flags) and commit as regular single-parent commits.'}))
@@ -1390,12 +1393,12 @@ jobs:
           if pr_template: checklist.append(f'Follow the PR template ({pr_template}) for title, description, and validation notes.')
           checklist.append('Confirm the requested task is fully completed and validated before creating or pushing PR changes.')
           if diff_line_count > 0:
-              checklist.append(f'A diff of your unpushed changes ({diff_line_count} lines) has been saved to `/tmp/self-review/diff.patch` (full diff) and `/tmp/self-review/stat.txt` (summary). Spawn a `code-review` sub-agent via `runSubagent` to review the diff against the codebase. Tell it to read `/tmp/self-review/diff.patch` and the relevant source files, and look for bugs, logic errors, missed edge cases, and style issues. If the sub-agent finds legitimate issues, fix them, commit, and call `ready_to_make_pr` again to regenerate the diff before proceeding.')
+              checklist.append(f'A diff of your unpushed changes ({diff_line_count} lines) has been saved to `/tmp/self-review/diff.patch` (full diff) and `/tmp/self-review/stat.txt` (summary). Spawn a `code-review` sub-agent via `runSubagent` to review the diff against the codebase. Tell it to read `/tmp/self-review/diff.patch` and the relevant source files, and look for bugs, logic errors, missed edge cases, and style issues. If the sub-agent finds legitimate issues, fix them, commit, and call `ready_to_push_to_pr` again to regenerate the diff before proceeding.')
           print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template, 'diff_line_count': diff_line_count}))
           
           
-          GH_AW_SAFE_INPUTS_PY_READY-TO-MAKE-PR_EOF
-          chmod +x /opt/gh-aw/safe-inputs/ready-to-make-pr.py
+          GH_AW_SAFE_INPUTS_PY_READY-TO-PUSH-TO-PR_EOF
+          chmod +x /opt/gh-aw/safe-inputs/ready-to-push-to-pr.py
           
       - name: Generate Safe Inputs MCP Server Config
         id: safe-inputs-config

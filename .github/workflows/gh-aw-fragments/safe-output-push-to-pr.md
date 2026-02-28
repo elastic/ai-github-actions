@@ -1,7 +1,7 @@
 ---
 safe-inputs:
-  ready-to-make-pr:
-    description: "Run the PR readiness checklist before creating or updating a PR"
+  ready-to-push-to-pr:
+    description: "Run the PR readiness checklist before pushing to a PR"
     py: |
       import os, json, subprocess
       def find(*paths):
@@ -26,6 +26,9 @@ safe-inputs:
                   raise SystemExit(0)
               # Check 2: no merge commits (multiple parents) since PR head
               log = run(['git', 'rev-list', '--min-parents=2', f'{pr_head_sha}..HEAD'])
+              if log.returncode != 0:
+                  print(json.dumps({'status': 'error', 'error': f'Failed to check for merge commits (git rev-list exited {log.returncode}): {log.stderr.strip()}. Cannot verify commit history is safe for push.'}))
+                  raise SystemExit(0)
               merge_shas = log.stdout.strip()
               if merge_shas:
                   print(json.dumps({'status': 'error', 'error': f'Merge commit(s) detected: {merge_shas.splitlines()[0][:12]}... push_to_pull_request_branch uses git format-patch which breaks on merge commits. Fix: run `git reset --hard {pr_head_sha}` to restore the PR branch, then re-apply your changes as direct file edits (no git merge/rebase/commit-tree with multiple -p flags) and commit as regular single-parent commits.'}))
@@ -67,14 +70,14 @@ safe-inputs:
       if pr_template: checklist.append(f'Follow the PR template ({pr_template}) for title, description, and validation notes.')
       checklist.append('Confirm the requested task is fully completed and validated before creating or pushing PR changes.')
       if diff_line_count > 0:
-          checklist.append(f'A diff of your unpushed changes ({diff_line_count} lines) has been saved to `/tmp/self-review/diff.patch` (full diff) and `/tmp/self-review/stat.txt` (summary). Spawn a `code-review` sub-agent via `runSubagent` to review the diff against the codebase. Tell it to read `/tmp/self-review/diff.patch` and the relevant source files, and look for bugs, logic errors, missed edge cases, and style issues. If the sub-agent finds legitimate issues, fix them, commit, and call `ready_to_make_pr` again to regenerate the diff before proceeding.')
+          checklist.append(f'A diff of your unpushed changes ({diff_line_count} lines) has been saved to `/tmp/self-review/diff.patch` (full diff) and `/tmp/self-review/stat.txt` (summary). Spawn a `code-review` sub-agent via `runSubagent` to review the diff against the codebase. Tell it to read `/tmp/self-review/diff.patch` and the relevant source files, and look for bugs, logic errors, missed edge cases, and style issues. If the sub-agent finds legitimate issues, fix them, commit, and call `ready_to_push_to_pr` again to regenerate the diff before proceeding.')
       print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template, 'diff_line_count': diff_line_count}))
 safe-outputs:
   push-to-pull-request-branch:
     github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 ---
 
-Before calling `push_to_pull_request_branch`, call `ready_to_make_pr` and apply its checklist.
+Before calling `push_to_pull_request_branch`, call `ready_to_push_to_pr` and apply its checklist.
 
 ## push-to-pull-request-branch Limitations
 
@@ -88,4 +91,4 @@ Trying to resolve merge conflicts? Do NOT create merge commits (commits with mul
 1. Use `git diff HEAD...origin/<base-branch>` (base branch from `/tmp/pr-context/pr.json` field `baseRefName`) to see what the base branch changed in the conflicting files
 2. Edit the files directly to incorporate the changes from the base branch
 3. Commit the changes as regular (single-parent) commits
-4. Use push_to_pull_request_branch to push
+4. Once you are done with all of your changes on this branch, call `ready_to_push_to_pr` and then `push_to_pull_request_branch` to push

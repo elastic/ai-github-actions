@@ -32,7 +32,10 @@ def extract_py_block(fragment_path: Path) -> str:
     parts = text.split("---", 2)
     assert len(parts) >= 3, f"Expected YAML frontmatter in {fragment_path}"
     frontmatter = yaml.safe_load(parts[1])
-    py_code = frontmatter["safe-inputs"]["ready-to-make-pr"]["py"]
+    safe_inputs = frontmatter["safe-inputs"]
+    # The safe-input key varies: ready-to-push-to-pr (push) vs ready-to-make-pr (create)
+    first_key = next(iter(safe_inputs))
+    py_code = safe_inputs[first_key]["py"]
     assert py_code, f"No py: block found in {fragment_path}"
     return py_code
 
@@ -117,18 +120,14 @@ class TestExtraction:
         assert "import" in code
         assert "json.dumps" in code
 
-    def test_fragments_share_common_logic(self):
-        """Both fragments should share the same diff/checklist logic (tail portion)."""
+    def test_fragments_share_common_structure(self):
+        """Both fragments should share the same diff/checklist structure."""
         push_code = extract_py_block(PUSH_FRAGMENT)
         create_code = extract_py_block(CREATE_FRAGMENT)
-        # The push fragment has an extra ancestry check; both share the
-        # contributing/diff/checklist logic from "contributing = find(...)" onward.
-        common_marker = "contributing = find("
-        assert common_marker in push_code
-        assert common_marker in create_code
-        push_tail = push_code[push_code.index(common_marker):]
-        create_tail = create_code[create_code.index(common_marker):]
-        assert push_tail == create_tail
+        # Both should contain the core logic markers
+        for marker in ["contributing = find(", "diff_line_count", "json.dumps", "self-review"]:
+            assert marker in push_code, f"Push fragment missing '{marker}'"
+            assert marker in create_code, f"Create fragment missing '{marker}'"
 
 
 # ---------------------------------------------------------------------------

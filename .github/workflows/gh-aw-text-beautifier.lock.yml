@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2c23a606f6c9943ca7855f938da18eb419deb3009ec006a572d96c01241d8a83"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9316e7680e177a5213dbd790b69a0d8cea2738c8f8df76699ce73478b1aaa446"}
 
 name: "Text Beautifier"
 "on":
@@ -956,6 +956,9 @@ jobs:
               print(json.dumps({'status': 'error', 'error': 'Unable to determine upstream fork point for merge-commit validation. Fix: ensure remotes are fetched and a tracking branch is set (e.g., `git branch --set-upstream-to origin/<default-branch>`), then rerun ready_to_make_pr.'}))
               raise SystemExit(0)
           log = run(['git', 'rev-list', '--min-parents=2', f'{upstream_sha}..HEAD'])
+          if log.returncode != 0:
+              print(json.dumps({'status': 'error', 'error': f'Failed to check for merge commits (git rev-list exited {log.returncode}): {log.stderr.strip()}. Cannot verify commit history is safe for PR creation.'}))
+              raise SystemExit(0)
           merge_shas = log.stdout.strip()
           if merge_shas:
               print(json.dumps({'status': 'error', 'error': f'Merge commit(s) detected: {merge_shas.splitlines()[0][:12]}... create_pull_request uses git format-patch which breaks on merge commits. Fix: re-apply your changes as direct file edits (no git merge/rebase/commit-tree with multiple -p flags) and commit as regular single-parent commits.'}))
