@@ -34,3 +34,7 @@ See [example.yml](example.yml) for the full workflow file.
 ## Safe Outputs
 
 - `create-pull-request` — open a PR with test improvements
+
+## Pairing
+
+This workflow is the read-write companion to [Test Coverage Detector](../test-coverage-detector/). The detector finds test coverage gaps; the improver adds the tests.

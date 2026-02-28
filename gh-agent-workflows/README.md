@@ -31,10 +31,12 @@ Pre-built workflows with domain-specific prompts. These import the same base fra
 - [Product Manager Impersonator](product-manager-impersonator/) — propose well-researched new feature ideas
 - [Refactor Opportunist](refactor-opportunist/) — pitch proven refactors with partial implementations
 - [Stale Issues](stale-issues/) — detect stale issues
+- [Test Coverage Detector](test-coverage-detector/) — find under-tested code paths
 **Fixers** (create PRs):
 - [Bug Exterminator](bug-exterminator/) — fix bug-hunter issues
 - [Text Beautifier](text-beautifier/) — fix text-auditor issues
 - [Code Duplication Fixer](code-duplication-fixer/) — fix code-duplication-detector issues
+- [Test Improver](test-improver/) — fix test-coverage-detector issues
 
 **Event-driven** (comment on PRs):
 - [Dependency Review](dependency-review/) — analyze Dependabot/Renovate dependency update PRs across ecosystems (GitHub Actions, Go, npm, Python, Java, Buildkite)
@@ -75,6 +77,7 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 - `refactor-opportunist`
 - `small-problem-fixer`
 - `stale-issues`
+- `test-coverage-detector`
 - `test-improver`
 - `breaking-change-detector`
 - `code-duplication-detector`

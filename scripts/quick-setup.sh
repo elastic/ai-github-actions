@@ -136,6 +136,7 @@ continuous_improvement_workflows=(
   small-problem-fixer
   stale-issues-investigator
   stale-issues-remediator
+  test-coverage-detector
   test-improver
   breaking-change-detector
   code-duplication-detector

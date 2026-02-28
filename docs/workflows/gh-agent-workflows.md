@@ -26,7 +26,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 The quick setup script includes two opinionated sets:
 
 - **Starter repo operations set (default):** `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
-- **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `bug-exterminator`, `code-simplifier`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues-investigator`, `stale-issues-remediator`, `test-improver`, `breaking-change-detector`, `code-duplication-detector`, `update-pr-body`
+- **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `bug-exterminator`, `code-simplifier`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues-investigator`, `stale-issues-remediator`, `test-coverage-detector`, `test-improver`, `breaking-change-detector`, `code-duplication-detector`, `update-pr-body`
 
 ## Available workflows
 
@@ -76,6 +76,7 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Docs Patrol](gh-agent-workflows/docs-patrol.md) | — | Stale internal documentation |
 | [Newbie Contributor Patrol](gh-agent-workflows/newbie-contributor-patrol.md) | [Newbie Contributor Fixer](gh-agent-workflows/newbie-contributor-fixer.md) | Onboarding documentation gaps |
 | [Stale Issues Investigator](gh-agent-workflows/stale-issues-investigator.md) | [Stale Issues Remediator](gh-agent-workflows/stale-issues-remediator.md) | Stale issue lifecycle |
+| [Test Coverage Detector](gh-agent-workflows/test-coverage.md) | [Test Improver](gh-agent-workflows/test-coverage.md#test-improver-fixer) | Test coverage gaps |
 | [Text Auditor](gh-agent-workflows/text-auditor.md) | [Text Beautifier](gh-agent-workflows/text-beautifier.md) | User-facing text quality |
 
 #### Standalone scheduled workflows

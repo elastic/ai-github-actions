@@ -74,6 +74,7 @@ jobs:
             scheduled-fix
             small-problem-fixer
             stale-issues
+            test-coverage-detector
             test-improver
             text-auditor
             text-beautifier
