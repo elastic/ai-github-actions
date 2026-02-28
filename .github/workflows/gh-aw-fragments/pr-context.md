@@ -29,6 +29,14 @@ steps:
         echo "$entry" | jq -r '.patch // empty' > "/tmp/pr-context/diffs/${filename}.diff"
       done
 
+      # File orderings for sub-agent review (3 strategies)
+      jq -r '[.[] | .filename] | sort | .[]' /tmp/pr-context/files.json \
+        > /tmp/pr-context/file_order_az.txt
+      jq -r '[.[] | .filename] | sort | reverse | .[]' /tmp/pr-context/files.json \
+        > /tmp/pr-context/file_order_za.txt
+      jq -r '[.[] | {filename, size: ((.additions // 0) + (.deletions // 0))}] | sort_by(-.size) | .[].filename' /tmp/pr-context/files.json \
+        > /tmp/pr-context/file_order_largest.txt
+
       # Existing reviews
       gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --paginate \
         | jq -s 'add // []' > /tmp/pr-context/reviews.json
@@ -105,6 +113,9 @@ steps:
       | `pr.diff` | Full unified diff of all changes |
       | `files.json` | Changed files array — each entry has `filename`, `status`, `additions`, `deletions`, `patch` |
       | `diffs/<path>.diff` | Per-file diffs — one file per changed file, mirroring the repo path under `diffs/` |
+      | `file_order_az.txt` | Changed files sorted alphabetically (A→Z), one filename per line |
+      | `file_order_za.txt` | Changed files sorted reverse-alphabetically (Z→A), one filename per line |
+      | `file_order_largest.txt` | Changed files sorted by diff size descending (largest first), one filename per line |
       | `reviews.json` | Prior review submissions — author, state (APPROVED/CHANGES_REQUESTED/COMMENTED), body |
       | `review_comments.json` | All review threads (GraphQL) — each thread has `id` (node ID for resolving), `isResolved`, `isOutdated`, `path`, `line`, and nested `comments` with `id`, `databaseId` (numeric REST ID for replies), body/author |
       | `threads/<path>.json` | Per-file review threads — one file per changed file with existing threads, mirroring the repo path under `threads/` |
