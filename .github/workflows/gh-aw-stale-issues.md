@@ -95,8 +95,8 @@ steps:
 
 Find open issues that are very likely already resolved. This workflow operates in two phases:
 
-1. **Tag phase** — Label newly identified stale candidates with the `stale` label and file a report.
-2. **Close phase** — Close issues that have carried the `stale` label for 30+ days without the label being removed.
+1. **Close phase** — Close issues that have carried the `stale` label for 30+ days without the label being removed.
+2. **Tag phase** — Label newly identified stale candidates with the `stale` label and file a report.
 
 Run both phases on every invocation, starting with the close phase.
 
