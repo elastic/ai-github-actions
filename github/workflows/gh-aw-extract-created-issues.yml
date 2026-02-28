@@ -24,5 +24,5 @@ jobs:
           TEMP_ID_MAP: ${{ inputs.process_safe_outputs_temporary_id_map }}
         run: |
           set -euo pipefail
-          created_issue_numbers="$(jq -c 'to_entries | map(.value | capture("#(?<n>[0-9]+)$").n | tonumber)' <<< "${TEMP_ID_MAP:-{}}")"
+          created_issue_numbers="$(jq -c 'to_entries | map(.value | capture("#(?<n>[0-9]+)$").n | tonumber)' <<< "${TEMP_ID_MAP:-"{}"}")"
           echo "created_issue_numbers=$created_issue_numbers" >> "$GITHUB_OUTPUT"
