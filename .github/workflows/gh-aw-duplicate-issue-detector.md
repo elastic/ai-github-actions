@@ -57,12 +57,37 @@ permissions:
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search]
+  bash: true
 strict: false
 timeout-minutes: 30
 safe-outputs:
   activation-comments: false
   noop:
     report-as-issue: false
+steps:
+  - name: Prescan issue index
+    env:
+      GH_TOKEN: ${{ github.token }}
+    run: |
+      set -euo pipefail
+      mkdir -p /tmp/gh-aw/agent
+
+      issues_file="/tmp/gh-aw/agent/issues-index.tsv"
+      printf "number\ttitle\tstate\n" > "$issues_file"
+
+      # Newest 500 issues (most likely to match recent duplicates)
+      gh search issues --repo "$GITHUB_REPOSITORY" --sort created --order desc --limit 500 --json number,title,state \
+        --jq '.[] | [.number, .title, .state] | @tsv' >> "$issues_file" 2>/dev/null || true
+
+      # Oldest 500 issues (covers long-standing items)
+      gh search issues --repo "$GITHUB_REPOSITORY" --sort created --order asc --limit 500 --json number,title,state \
+        --jq '.[] | [.number, .title, .state] | @tsv' >> "$issues_file" 2>/dev/null || true
+
+      # Deduplicate (newest and oldest may overlap for repos with <1000 issues)
+      awk -F'\t' '!seen[$1]++' "$issues_file" > "${issues_file}.tmp" && mv "${issues_file}.tmp" "$issues_file"
+
+      count="$(tail -n +2 "$issues_file" | wc -l | tr -d ' ')"
+      echo "Prescanned ${count} issues into ${issues_file}"
 ---
 
 # Duplicate Issue Detector
@@ -82,9 +107,19 @@ Read the issue title and body carefully. Identify:
 - The core problem or request (in one sentence)
 - Key terms, error messages, component names, or identifiers you can use as search queries
 
-### Step 2: Search for Duplicates
+### Step 2: Scan the Issue Index
 
-Run several targeted searches. Search **both open and closed** issues.
+A prescan step has already fetched issue numbers, titles, and states into `/tmp/gh-aw/agent/issues-index.tsv`. Start by reading this file:
+
+```
+cat /tmp/gh-aw/agent/issues-index.tsv
+```
+
+Scan the titles for obvious matches against the key terms you identified in Step 1. Note any promising candidate issue numbers — you will verify them in the next step.
+
+### Step 3: Search for Duplicates
+
+Run several targeted searches to complement the index scan. Search **both open and closed** issues.
 
 Suggested queries (adapt based on the issue content):
 ```
@@ -93,9 +128,9 @@ repo:${{ github.repository }} is:issue is:closed "{key term from title}"
 repo:${{ github.repository }} is:issue "{error message or identifier}"
 ```
 
-For each candidate result, read the title and (if promising) the body to assess similarity.
+For each candidate result (from the index scan or from search), read the title and (if promising) the body to assess similarity.
 
-### Step 3: Evaluate Candidates
+### Step 4: Evaluate Candidates
 
 **Related issues detection setting**: ${{ inputs.detect-related-issues }}
 
@@ -116,7 +151,7 @@ Classify each promising candidate into one of the categories below. If related i
 - It is closed as "won't fix" or "invalid" with no useful discussion
 - You are uncertain — when in doubt, skip it; prefer **Related** over **Duplicate** for borderline cases
 
-### Step 4: Post Result
+### Step 5: Post Result
 
 Post **exactly one** `add_comment` call (or `noop` if nothing is found). Do not call `add_comment` more than once.
 

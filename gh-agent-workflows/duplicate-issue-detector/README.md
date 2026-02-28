@@ -4,7 +4,7 @@ Check whether a newly opened issue is a duplicate of, or highly related to, an e
 
 ## How it works
 
-When a new issue is opened, searches both open and closed issues using multiple targeted queries derived from the issue title and body. Posts a notice on the issue when a strong duplicate match is found, or a lighter "highly related" notice when issues are closely related but distinct.
+When a new issue is opened, a prescan step fetches the newest 500 and oldest 500 issues (number, title, state) into a local index file. The agent then scans this index for obvious title matches before running targeted search queries against both open and closed issues. Posts a notice on the issue when a strong duplicate match is found, or a lighter "highly related" notice when issues are closely related but distinct.
 
 ## Quick Install
 

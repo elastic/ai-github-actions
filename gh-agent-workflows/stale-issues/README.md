@@ -4,7 +4,7 @@ Find open issues that appear to already be resolved and recommend closing them.
 
 ## Investigation strategy
 
-The agent starts with high-signal candidates (linked PRs, resolution language in comments, and long-stale updates) and includes coverage stats in no-op runs (total open issues, candidate count, analyzed count).
+A prescan step fetches open issues (sorted by least recently updated) into a local index file before the agent starts, giving it an immediate view of the most likely stale candidates. The agent then starts with high-signal candidates (linked PRs, resolution language in comments, and long-stale updates) and includes coverage stats in no-op runs (total open issues, candidate count, analyzed count).
 
 ## Quick Install
 

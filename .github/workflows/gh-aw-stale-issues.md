@@ -78,6 +78,24 @@ safe-outputs:
     expires: 7d
 timeout-minutes: 60
 steps:
+  - name: Prescan open issues
+    env:
+      GH_TOKEN: ${{ github.token }}
+    run: |
+      set -euo pipefail
+      mkdir -p /tmp/gh-aw/agent
+
+      issues_file="/tmp/gh-aw/agent/open-issues.tsv"
+      printf "number\ttitle\tupdated_at\tcreated_at\tlabel_names\n" > "$issues_file"
+
+      # Fetch open issues sorted by least recently updated (most likely stale first)
+      gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 200 \
+        --json number,title,updatedAt,createdAt,labels \
+        --jq 'sort_by(.updatedAt) | .[] | [.number, .title, .updatedAt, .createdAt, ([.labels[].name] | join(","))] | @tsv' \
+        >> "$issues_file" 2>/dev/null || true
+
+      count="$(tail -n +2 "$issues_file" | wc -l | tr -d ' ')"
+      echo "Prescanned ${count} open issues into ${issues_file}"
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
@@ -88,6 +106,16 @@ steps:
 Find open issues that are very likely already resolved and recommend them for closure. You do NOT close issues yourself — you file a report listing candidates with evidence.
 
 ### Data Gathering
+
+0. **Read the prescanned issue index**
+
+   A prescan step has already fetched open issues (sorted by least recently updated) into `/tmp/gh-aw/agent/open-issues.tsv` with columns: number, title, updated_at, created_at, label_names. Start by reading this file:
+
+   ```
+   cat /tmp/gh-aw/agent/open-issues.tsv
+   ```
+
+   Use this as your initial candidate pool. Issues at the top of the file (oldest `updated_at`) are the most likely stale candidates. Skip issues whose labels include `epic`, `tracking`, `umbrella`, or similar meta-labels.
 
 1. **Build a candidate set (progressive age tiers)**
 
