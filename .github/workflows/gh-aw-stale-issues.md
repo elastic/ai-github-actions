@@ -113,15 +113,13 @@ steps:
 
       echo "Stale-labeled issues: $(jq length /tmp/stale-labeled-issues.json)"
 
-      # For each stale-labeled issue, check for recent comments that may be objections.
-      # An issue is an objection candidate if it has any comment newer than the issue's updatedAt
-      # (conservative heuristic — the agent will do the precise label-date check).
+      # For each stale-labeled issue, grab the last 5 comments for the agent to check for objections.
       jq -c '.[]' /tmp/stale-labeled-issues.json | while IFS= read -r issue; do
         num=$(echo "$issue" | jq -r '.number')
         gh issue view "$num" \
           --repo "$GITHUB_REPOSITORY" \
           --json comments \
-          --jq '.comments[-5:] | .[] | {author: .author.login, createdAt: .createdAt, body: .body[0:200]}' \
+          --jq '.comments[-5:] | .[] | {author: .author.login, createdAt: .createdAt, body: .body[0:500]}' \
           2>/dev/null || true
       done | jq -s '.' > /tmp/stale-recent-comments.json || echo "[]" > /tmp/stale-recent-comments.json
 
