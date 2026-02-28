@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"067ef5b1714251b55aa9fc1316a2fda34c0f3af4158afe58b21c4637ae7f99c0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d2c2b776d3dee5aa475d84d57680bab8f10089e1b661026e268673e5b6c052d0"}
 
 name: "PR Actions Fixer"
 "on":
@@ -297,11 +297,11 @@ jobs:
           - **Branch**: Pushes to the PR's head branch. The workspace must have the PR branch checked out.
           - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
           
-          Trying to resolve merge conflicts? Do NOT create merge commits (commits with multiple parents) — `push_to_pull_request_branch` uses `git format-patch` which breaks on merge commits. This means: no `git merge`, no `git rebase`, no `git commit-tree` with multiple `-p` flags. Instead:
-          1. Use `git diff HEAD...origin/<base-branch>` (base branch from `/tmp/pr-context/pr.json` field `baseRefName`) to see what the base branch changed in the conflicting files
+          Trying to resolve merge conflicts? Do not use `git merge` or `git rebase` — `push_to_pull_request_branch` uses `git format-patch` which requires single-parent commits. Instead:
+          1. Compare with the base branch (from `/tmp/pr-context/pr.json` field `baseRefName`) to see what changed in the conflicting files
           2. Edit the files directly to incorporate the changes from the base branch
           3. Commit the changes as regular (single-parent) commits
-          4. Once you are done with all of your changes on this branch, call `ready_to_push_to_pr` and then `push_to_pull_request_branch` to push
+          4. Call `ready_to_push_to_pr` (which will catch any merge commits) and then `push_to_pull_request_branch` to push
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           
@@ -320,8 +320,6 @@ jobs:
           
           - **CAN**: Read files, search code, modify files locally, run tests and commands, comment on PRs, push changes to same-repo PR branches
           - **CANNOT**: Push to fork PR branches, merge PRs, or modify `.github/workflows/`
-          
-          When pushing changes, the workspace already has the PR branch checked out. Make your changes, run tests, commit them locally, then use `push_to_pull_request_branch`.
           
           ## Instructions
           
@@ -352,7 +350,7 @@ jobs:
           ### Step 2: Analyze and Fix
           
           - Identify the failing job/step and summarize the root cause.
-          - If the fix is straightforward and safe, implement it locally, run tests, commit, and push to the PR branch.
+          - If the fix is straightforward and safe, implement it locally, run tests, and push to the PR branch.
           - If the fix is risky or requires broader refactoring, propose a concrete remediation plan instead of pushing.
           - If the PR is from a fork, do not push; provide patch guidance in the comment.
           
