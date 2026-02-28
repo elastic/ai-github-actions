@@ -117,7 +117,7 @@ For each result, fetch the full comment thread via `issue_read` with method `get
    Call `remove_labels` to remove the `stale` label from the issue.
    Skip this issue from closure — the objection overrides the stale determination.
 
-2. **30-day expiry** — For issues with no such objection, check when the `stale` label was added. If the label was added **30 or more days ago** and has not been removed and re-added since, close the issue using `close-issue` with a comment explaining:
+2. **30-day expiry** — For issues with no such objection, check when the `stale` label was added. If the label was added **30 or more days ago** and has not been removed and re-added since, close the issue using `close_issue` with a comment explaining:
 
    > This issue was labeled `stale` on [date] and has had no further activity for 30 days. Closing automatically. If this issue is still relevant, please reopen it.
 
