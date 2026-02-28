@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2bece55b2b8814c1825118bea95b6f469ade271740670ab968ba72dc20f1d2f1"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1312ccbd59331ffc0e162f94cf8d33a317d0063f31387469a734d2faa75885a4"}
 
 name: "Stale Issues"
 "on":
@@ -361,6 +361,16 @@ jobs:
           
           ### Data Gathering
           
+          0. **Read the prescanned issue index**
+          
+             A prescan step has already fetched open issues (sorted by least recently updated) into `/tmp/gh-aw/agent/open-issues.tsv` with columns: number, title, updated_at, created_at, label_names. Start by reading this file:
+          
+             ```
+             cat /tmp/gh-aw/agent/open-issues.tsv
+             ```
+          
+             Use this as your initial candidate pool. Issues at the top of the file (oldest `updated_at`) are the most likely stale candidates. Skip issues whose labels include `epic`, `tracking`, `umbrella`, or similar meta-labels.
+          
           1. **Build a candidate set (progressive age tiers)**
           
              Start with the oldest issues and work toward newer ones. Run high-signal queries first, then fill with dormant-issue queries tier by tier until you have at least 10 candidates or exhaust all tiers.
@@ -611,6 +621,10 @@ jobs:
           TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
         run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        name: Prescan open issues
+        run: "set -euo pipefail\nmkdir -p /tmp/gh-aw/agent\n\nissues_file=\"/tmp/gh-aw/agent/open-issues.tsv\"\nprintf \"number\\ttitle\\tupdated_at\\tcreated_at\\tlabel_names\\n\" > \"$issues_file\"\n\n# Fetch open issues sorted by least recently updated (server-side sort)\ngh issue list --repo \"$GITHUB_REPOSITORY\" --state open --limit 200 \\\n  --search \"sort:updated-asc\" \\\n  --json number,title,updatedAt,createdAt,labels \\\n  --jq '.[] | [.number, .title, .updatedAt, .createdAt, ([.labels[].name] | join(\",\"))] | @tsv' \\\n  >> \"$issues_file\" 2>/dev/null || true\n\ncount=\"$(tail -n +2 \"$issues_file\" | wc -l | tr -d ' ')\"\necho \"Prescanned ${count} open issues into ${issues_file}\"\n"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

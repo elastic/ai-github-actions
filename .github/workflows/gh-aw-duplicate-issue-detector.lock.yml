@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7fbb85c0b86e685d76459774dab1f4fdfaaacbcf37d8ac891cf4c2b07228d153"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"901155712571e8be8dec308242b271140da435f48a22577e3e0238c4b3e05ab5"}
 
 name: "Duplicate Issue Detector"
 "on":
@@ -304,9 +304,19 @@ jobs:
           - The core problem or request (in one sentence)
           - Key terms, error messages, component names, or identifiers you can use as search queries
           
-          ### Step 2: Search for Duplicates
+          ### Step 2: Scan the Issue Index
           
-          Run several targeted searches. Search **both open and closed** issues.
+          A prescan step has already fetched issue numbers, titles, and states into `/tmp/gh-aw/agent/issues-index.tsv`. Start by reading this file:
+          
+          ```
+          cat /tmp/gh-aw/agent/issues-index.tsv
+          ```
+          
+          Scan the titles for obvious matches against the key terms you identified in Step 1. Note any promising candidate issue numbers — you will verify them in the next step.
+          
+          ### Step 3: Search for Duplicates
+          
+          Run several targeted searches to complement the index scan. Search **both open and closed** issues.
           
           Suggested queries (adapt based on the issue content):
           ```
@@ -315,9 +325,9 @@ jobs:
           repo:__GH_AW_GITHUB_REPOSITORY__ is:issue "{error message or identifier}"
           ```
           
-          For each candidate result, read the title and (if promising) the body to assess similarity.
+          For each candidate result (from the index scan or from search), read the title and (if promising) the body to assess similarity.
           
-          ### Step 3: Evaluate Candidates
+          ### Step 4: Evaluate Candidates
           
           **Related issues detection setting**: __GH_AW_EXPR_7ADFD0BD__
           
@@ -338,7 +348,7 @@ jobs:
           - It is closed as "won't fix" or "invalid" with no useful discussion
           - You are uncertain — when in doubt, skip it; prefer **Related** over **Duplicate** for borderline cases
           
-          ### Step 4: Post Result
+          ### Step 5: Post Result
           
           Post **exactly one** `add_comment` call (or `noop` if nothing is found). Do not call `add_comment` more than once.
           
@@ -511,6 +521,11 @@ jobs:
           persist-credentials: false
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        name: Prescan issue index
+        run: "set -euo pipefail\nmkdir -p /tmp/gh-aw/agent\n\nissues_file=\"/tmp/gh-aw/agent/issues-index.tsv\"\nprintf \"number\\ttitle\\tstate\\n\" > \"$issues_file\"\n\n# Newest 500 issues (most likely to match recent duplicates)\ngh search issues --repo \"$GITHUB_REPOSITORY\" --sort created --order desc --limit 500 --json number,title,state \\\n  --jq '.[] | [.number, .title, .state] | @tsv' >> \"$issues_file\" 2>/dev/null || true\n\n# Oldest 500 issues (covers long-standing items)\ngh search issues --repo \"$GITHUB_REPOSITORY\" --sort created --order asc --limit 500 --json number,title,state \\\n  --jq '.[] | [.number, .title, .state] | @tsv' >> \"$issues_file\" 2>/dev/null || true\n\n# Deduplicate (newest and oldest may overlap for repos with <1000 issues)\nawk -F'\\t' '!seen[$1]++' \"$issues_file\" > \"${issues_file}.tmp\" && mv \"${issues_file}.tmp\" \"$issues_file\"\n\ncount=\"$(tail -n +2 \"$issues_file\" | wc -l | tr -d ' ')\"\necho \"Prescanned ${count} issues into ${issues_file}\""
+
       - name: Configure Git credentials
         env:
           REPO_NAME: ${{ github.repository }}

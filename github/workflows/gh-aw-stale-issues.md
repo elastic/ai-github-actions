@@ -88,10 +88,11 @@ steps:
       issues_file="/tmp/gh-aw/agent/open-issues.tsv"
       printf "number\ttitle\tupdated_at\tcreated_at\tlabel_names\n" > "$issues_file"
 
-      # Fetch open issues sorted by least recently updated (most likely stale first)
+      # Fetch open issues sorted by least recently updated (server-side sort)
       gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 500 \
+        --search "sort:updated-asc" \
         --json number,title,updatedAt,createdAt,labels \
-        --jq 'sort_by(.updatedAt) | .[] | [.number, .title, .updatedAt, .createdAt, ([.labels[].name] | join(","))] | @tsv' \
+        --jq '.[] | [.number, .title, .updatedAt, .createdAt, ([.labels[].name] | join(","))] | @tsv' \
         >> "$issues_file" 2>/dev/null || true
 
       count="$(tail -n +2 "$issues_file" | wc -l | tr -d ' ')"

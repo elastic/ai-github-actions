@@ -57,6 +57,7 @@ permissions:
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search]
+  bash: true
 strict: false
 timeout-minutes: 30
 safe-outputs:
