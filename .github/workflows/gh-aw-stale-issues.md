@@ -44,6 +44,11 @@ on:
         type: string
         required: false
         default: ""
+      stale-label:
+        description: "Label used to mark stale issues"
+        type: string
+        required: false
+        default: "stale"
       title-prefix:
         description: "Title prefix for created issues (e.g. '[stale-issues]')"
         type: string
@@ -79,13 +84,47 @@ safe-outputs:
   add-labels:
     max: 10
     allowed:
-      - "stale"
+      - "${{ inputs.stale-label }}"
+  remove-labels:
+    max: 10
+    allowed:
+      - "${{ inputs.stale-label }}"
   close-issue:
     max: 10
     required_labels:
-      - "stale"
+      - "${{ inputs.stale-label }}"
 timeout-minutes: 60
 steps:
+  - name: Collect stale-labeled issues
+    env:
+      GH_TOKEN: ${{ github.token }}
+      STALE_LABEL: ${{ inputs.stale-label }}
+    run: |
+      set -euo pipefail
+
+      # Fetch all open issues carrying the stale label
+      gh issue list \
+        --repo "$GITHUB_REPOSITORY" \
+        --label "$STALE_LABEL" \
+        --state open \
+        --limit 200 \
+        --json number,title,updatedAt,labels,createdAt \
+        > /tmp/stale-labeled-issues.json || { echo "::warning::Failed to fetch stale-labeled issues"; echo "[]" > /tmp/stale-labeled-issues.json; }
+
+      echo "Stale-labeled issues: $(jq length /tmp/stale-labeled-issues.json)"
+
+      # For each stale-labeled issue, check for recent comments that may be objections.
+      # An issue is an objection candidate if it has any comment newer than the issue's updatedAt
+      # (conservative heuristic — the agent will do the precise label-date check).
+      jq -c '.[]' /tmp/stale-labeled-issues.json | while IFS= read -r issue; do
+        num=$(echo "$issue" | jq -r '.number')
+        gh issue view "$num" \
+          --repo "$GITHUB_REPOSITORY" \
+          --json comments \
+          --jq '.comments[-5:] | .[] | {author: .author.login, createdAt: .createdAt, body: .body[0:200]}' \
+          2>/dev/null || true
+      done | jq -s '.' > /tmp/stale-recent-comments.json || echo "[]" > /tmp/stale-recent-comments.json
+
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
@@ -95,31 +134,30 @@ steps:
 
 Find open issues that are very likely already resolved. This workflow operates in two phases:
 
-1. **Close phase** — Close issues that have carried the `stale` label for 30+ days without the label being removed.
-2. **Tag phase** — Label newly identified stale candidates with the `stale` label and file a report.
+1. **Close phase** — Close issues that have carried the `${{ inputs.stale-label }}` label for 30+ days without the label being removed.
+2. **Tag phase** — Label newly identified stale candidates with the `${{ inputs.stale-label }}` label and file a report.
 
 Run both phases on every invocation, starting with the close phase.
 
 ### Phase 1: Process stale-labeled issues
 
-Search for open issues labeled `stale`:
+A prep step has already fetched stale-labeled issues to `/tmp/stale-labeled-issues.json` (fields: number, title, updatedAt, labels, createdAt) and recent comments to `/tmp/stale-recent-comments.json`. Start by reading these files to get an overview.
+
+Then search for open issues labeled `${{ inputs.stale-label }}`:
 ```
-github-search_issues: query="repo:{owner}/{repo} is:issue is:open label:stale"
+github-search_issues: query="repo:{owner}/{repo} is:issue is:open label:${{ inputs.stale-label }}"
 ```
 
 For each result, fetch the full comment thread via `issue_read` with method `get_comments` and check for two things:
 
-1. **"Not stale" objections** — If any comment posted **after** the `stale` label was most recently added contains phrases like "not stale", "still relevant", "still needed", "still an issue", or "still a problem" (case-insensitive), remove the `stale` label:
-   ```bash
-   gh issue edit {issue_number} --remove-label stale --repo {owner}/{repo}
-   ```
+1. **"Not stale" objections** — If any comment posted **after** the `${{ inputs.stale-label }}` label was most recently added contains phrases like "not stale", "still relevant", "still needed", "still an issue", or "still a problem" (case-insensitive), call `remove_labels` to remove the `${{ inputs.stale-label }}` label from the issue.
    Skip this issue from closure — the objection overrides the stale determination.
 
-2. **30-day expiry** — For issues with no such objection, check when the `stale` label was added. If the label was added **30 or more days ago** and has not been removed and re-added since, close the issue using `close-issue` with a comment explaining:
+2. **30-day expiry** — For issues with no such objection, check when the `${{ inputs.stale-label }}` label was added. If the label was added **30 or more days ago** and has not been removed and re-added since, close the issue using `close-issue` with a comment explaining:
 
-   > This issue was labeled `stale` on [date] and has had no further activity for 30 days. Closing automatically. If this issue is still relevant, please reopen it.
+   > This issue was labeled `${{ inputs.stale-label }}` on [date] and has had no further activity for 30 days. Closing automatically. If this issue is still relevant, please reopen it.
 
-   If the `stale` label was removed and re-added, use the most recent addition date. Skip issues where the label was added fewer than 30 days ago.
+   If the `${{ inputs.stale-label }}` label was removed and re-added, use the most recent addition date. Skip issues where the label was added fewer than 30 days ago.
 
 ### Phase 2: Identify and tag new stale candidates
 
@@ -179,7 +217,7 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 
 ### What to Skip
 
-- Issues already labeled `stale` — they are already tracked and will be closed automatically after 30 days
+- Issues already labeled `${{ inputs.stale-label }}` — they are already tracked and will be closed automatically after 30 days
 - Issues with recent activity (comments in the last 14 days) — someone is still working on them
 - Issues labeled `epic`, `tracking`, `umbrella`, or similar meta-labels — these are intentionally kept open
 - Issues where the resolution is ambiguous or you aren't sure
@@ -190,7 +228,7 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 
 ### Labeling
 
-For each issue included in the report, call `add_labels` with the `stale` label on that issue. This starts the 30-day grace period — maintainers can remove the label to prevent automatic closure.
+For each issue included in the report, call `add_labels` with the `${{ inputs.stale-label }}` label on that issue. This starts the 30-day grace period — maintainers can remove the label to prevent automatic closure.
 
 ### Issue Format
 

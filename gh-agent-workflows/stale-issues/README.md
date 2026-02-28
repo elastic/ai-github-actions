@@ -6,8 +6,10 @@ Find open issues that appear to already be resolved, label them as `stale`, and 
 
 The workflow runs in two phases on every invocation:
 
-1. **Close phase** — Issues labeled `stale` are checked for objections (comments like "not stale" or "still relevant"); if found, the workflow removes the label via the `remove-labels` safe output. Otherwise, issues that have carried the `stale` label for 30+ days are automatically closed. Maintainers can also remove the `stale` label at any time during the grace period to prevent closure.
-2. **Tag phase** — The agent investigates open issues for evidence of resolution (linked PRs, code evidence, conversation consensus). Newly identified candidates are labeled `stale` and included in a summary report issue.
+1. **Close phase** — Issues labeled with the configured stale label are checked for objections (comments like "not stale" or "still relevant"); if found, the label is removed via the `remove-labels` safe output. Otherwise, issues that have carried the label for 30+ days are automatically closed. Maintainers can also remove the label at any time during the grace period to prevent closure.
+2. **Tag phase** — The agent investigates open issues for evidence of resolution (linked PRs, code evidence, conversation consensus). Newly identified candidates are labeled and included in a summary report issue.
+
+A scripted prep step runs before the agent starts, dumping all stale-labeled issues and their recent comments to `/tmp/stale-labeled-issues.json` and `/tmp/stale-recent-comments.json`. This gives the agent deterministic inputs and avoids redundant API calls.
 
 ## Investigation strategy
 
@@ -47,10 +49,11 @@ mkdir -p .github/workflows && curl -sL \
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `stale-label` | Label used to mark stale issues | No | `stale` |
 
 ## Safe Outputs
 
 - `create-issue` — file a stale issues report (max 1, auto-closes older reports)
-- `add-labels` — apply the `stale` label to issues identified as likely resolved
-- `remove-labels` — remove the `stale` label when a fresh objection indicates an issue is still active
-- `close-issue` — close issues that have been labeled `stale` for 30+ days
+- `add-labels` — apply the stale label to issues identified as likely resolved
+- `remove-labels` — remove the stale label when a fresh objection indicates an issue is still active
+- `close-issue` — close issues that have been labeled stale for 30+ days
