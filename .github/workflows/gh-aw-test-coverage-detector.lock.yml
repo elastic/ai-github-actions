@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"39d5552e5088485de158b6f9b3cee1d6e50f2af425a6c5ef4fcc5e54a10ec29d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"793ab0aeb5b5cb5e21e05aeaa49c2a5dfc723a38276086c6b71ea20aa6ff0d71"}
 
 name: "Test Coverage Detector"
 "on":
@@ -403,7 +403,7 @@ jobs:
           - **Error paths**: exception handling, validation failures, and edge cases that are not exercised by any test.
           - **Recent changes without tests**: code modified in the last 28 days where no corresponding test was added or updated.
           - **Critical business logic**: core algorithms, data transformations, or state machines with insufficient coverage.
-          - **Trace to user-facing behavior.** For every candidate, answer: "What end-to-one user action would exercise this code path?" Only report gaps that map to a concrete user scenario.
+          - **Trace to user-facing behavior.** For every candidate, answer: "What end-to-end user action would exercise this code path?" Only report gaps that map to a concrete user scenario.
           
           ### What to Skip
           

@@ -108,7 +108,7 @@ Identify under-tested code paths that would benefit from focused tests and file 
 - **Error paths**: exception handling, validation failures, and edge cases that are not exercised by any test.
 - **Recent changes without tests**: code modified in the last 28 days where no corresponding test was added or updated.
 - **Critical business logic**: core algorithms, data transformations, or state machines with insufficient coverage.
-- **Trace to user-facing behavior.** For every candidate, answer: "What end-to-one user action would exercise this code path?" Only report gaps that map to a concrete user scenario.
+- **Trace to user-facing behavior.** For every candidate, answer: "What end-to-end user action would exercise this code path?" Only report gaps that map to a concrete user scenario.
 
 ### What to Skip
 
