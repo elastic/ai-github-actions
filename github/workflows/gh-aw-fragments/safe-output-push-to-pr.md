@@ -102,8 +102,8 @@ Before calling `push_to_pull_request_branch`, call `ready_to_push_to_pr` and app
 - **Branch**: Pushes to the PR's head branch. The workspace must have the PR branch checked out.
 - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
 
-Trying to resolve merge conflicts? Do NOT create merge commits (commits with multiple parents) — `push_to_pull_request_branch` uses `git format-patch` which breaks on merge commits. This means: no `git merge`, no `git rebase`, no `git commit-tree` with multiple `-p` flags. Instead:
-1. Use `git diff HEAD...origin/<base-branch>` (base branch from `/tmp/pr-context/pr.json` field `baseRefName`) to see what the base branch changed in the conflicting files
+Trying to resolve merge conflicts? Do not use `git merge` or `git rebase` — `push_to_pull_request_branch` uses `git format-patch` which requires single-parent commits. Instead:
+1. Compare with the base branch (from `/tmp/pr-context/pr.json` field `baseRefName`) to see what changed in the conflicting files
 2. Edit the files directly to incorporate the changes from the base branch
 3. Commit the changes as regular (single-parent) commits
-4. Once you are done with all of your changes on this branch, call `ready_to_push_to_pr` and then `push_to_pull_request_branch` to push
+4. Call `ready_to_push_to_pr` (which will catch any merge commits) and then `push_to_pull_request_branch` to push

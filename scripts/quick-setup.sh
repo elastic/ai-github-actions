@@ -134,7 +134,8 @@ continuous_improvement_workflows=(
   product-manager-impersonator
   refactor-opportunist
   small-problem-fixer
-  stale-issues
+  stale-issues-investigator
+  stale-issues-remediator
   test-coverage-detector
   test-improver
   breaking-change-detector
