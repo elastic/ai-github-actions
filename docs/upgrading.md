@@ -2,6 +2,27 @@
 
 > **Migrating from Claude Workflows?** See the [Migration Guide](migration-guide.md) for step-by-step instructions on migrating from legacy Claude Composite Actions to GitHub Agent Workflows.
 
+## gh-aw compiler v0.51.0
+
+Compiler upgrade with new features and bug fixes. No breaking changes — recompile your workflows to pick up improvements.
+
+### New features
+
+- **Workflow outputs from safe-outputs** — Detector workflows now expose `created_issue_number` and `created_issue_url` as `workflow_call` outputs. Fixer workflows expose `created_pr_number` and `created_pr_url`. This enables [detector/fixer chaining](workflows/detector-fixer-chaining.md) in a single action run.
+- **Agent failure issues auto-labeled** — Issues created on agent failure are automatically tagged with the `agentic-workflows` label.
+- **Guard policies** — New guard policy configuration with schema validation (adopt when you define policies).
+- **MCP Gateway tuning** — `payloadPathPrefix` and `payloadSizeThreshold` settings available for fine-grained MCP gateway control.
+
+### Bug fixes
+
+- Checkout `token` field corrected (`checkout.github-token` → `checkout.token`)
+- Activation job `/tmp/gh-aw` directory reliably created before writing `aw_info.json`
+- Emoji ZWJ sequences no longer trigger false positives in the unicode-abuse scanner
+- MCP gateway config validation fixed (undeclared `payloadSizeThreshold` field removed)
+- Missing `cross-repo` and `auth` properties restored to safe output schemas
+- Activation job `contents: read` permission added
+- Report template headers normalized to `h3+` levels
+
 ## v0.2.x → Latest (breaking changes)
 
 - `stale-issues` was split: rename to `stale-issues-investigator` and add `stale-issues-remediator` if you want automatic objection handling + auto-close.
