@@ -1,15 +1,10 @@
-# Stale Issues
+# Stale Issues Investigator
 
-Find open issues that appear to already be resolved, label them as `stale`, and automatically close them after a 30-day grace period.
+Find open issues that appear to already be resolved, label them as `stale`, and file a report.
 
 ## How it works
 
-The workflow runs in two phases on every invocation:
-
-1. **Close phase** — Issues labeled with the configured stale label are checked for objections (comments like "not stale" or "still relevant"); if found, the label is removed via the `remove-labels` safe output. Otherwise, issues that have carried the label for 30+ days are automatically closed. Maintainers can also remove the label at any time during the grace period to prevent closure.
-2. **Tag phase** — The agent investigates open issues for evidence of resolution (linked PRs, code evidence, conversation consensus). Newly identified candidates are labeled and included in a summary report issue.
-
-A scripted prep step runs before the agent starts, dumping all stale-labeled issues and their recent comments to `/tmp/stale-labeled-issues.json` and `/tmp/stale-recent-comments.json`. This gives the agent deterministic inputs and avoids redundant API calls.
+The agent investigates open issues for evidence of resolution (linked PRs, code evidence, conversation consensus). Newly identified candidates are labeled with the configured stale label and included in a summary report issue.
 
 ## Investigation strategy
 
@@ -19,8 +14,8 @@ A prescan step fetches up to 500 open issues (sorted by least recently updated) 
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues/example.yml \
-  -o .github/workflows/stale-issues.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues-investigator/example.yml \
+  -o .github/workflows/stale-issues-investigator.yml
 ```
 
 See [example.yml](example.yml) for the full workflow file.
@@ -55,5 +50,7 @@ mkdir -p .github/workflows && curl -sL \
 
 - `create-issue` — file a stale issues report (max 1, auto-closes older reports)
 - `add-labels` — apply the stale label to issues identified as likely resolved
-- `remove-labels` — remove the stale label when a fresh objection indicates an issue is still active
-- `close-issue` — close issues that have been labeled stale for 30+ days
+
+## Pairing
+
+This workflow is the investigation companion to [Stale Issues Remediator](../stale-issues-remediator/). The investigator finds and labels stale candidates; the remediator handles objections and closes expired ones. Install both for a fully autonomous stale-issue lifecycle, or use the investigator alone for human-in-the-loop review.

@@ -2,6 +2,44 @@
 
 > **Migrating from Claude Workflows?** See the [Migration Guide](migration-guide.md) for step-by-step instructions on migrating from legacy Claude Composite Actions to GitHub Agent Workflows.
 
+## Stale issues split
+
+### Workflow rename
+
+The `stale-issues` workflow has been renamed to `stale-issues-investigator` and its remediation features have been split into a new companion workflow, `stale-issues-remediator`. A backwards-compatibility copy is provided for the old name and will be removed in a future release.
+
+| Old name | New name | Compat copy? |
+| --- | --- | --- |
+| `stale-issues` | `stale-issues-investigator` | Yes |
+
+**How to update:** In your trigger workflow file, change the `uses:` line:
+
+```yaml
+# Before
+uses: elastic/ai-github-actions/.github/workflows/gh-aw-stale-issues.lock.yml@v0
+
+# After
+uses: elastic/ai-github-actions/.github/workflows/gh-aw-stale-issues-investigator.lock.yml@v0
+```
+
+### New workflow — Stale Issues Remediator
+
+The remediation phase (objection handling, 30-day auto-close) is now a separate workflow: `stale-issues-remediator`. Install it alongside the investigator for a fully autonomous stale-issue lifecycle.
+
+### All backwards-compatibility copies
+
+These old workflow names are maintained as full file copies with a deprecation header. They will be removed in a future release — migrate to the new names now.
+
+| Old name | New name | Since |
+| --- | --- | --- |
+| `breaking-change-detect` | `breaking-change-detector` | v0.2.6 |
+| `docs-drift` | `docs-patrol` | v0.2.6 |
+| `pr-ci-detective` | `pr-actions-detective` | v0.2.6 |
+| `test-improvement` | `test-improver` | v0.2.6 |
+| `stale-issues` | `stale-issues-investigator` | v0.2.7 |
+
+---
+
 ## v0.2.5 → v0.2.6
 
 ### Breaking changes — workflow renames
