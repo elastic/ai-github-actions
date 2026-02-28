@@ -8,12 +8,12 @@ on:
         description: "Number of look-back days for failed-run scan"
         required: false
         default: "1"
-      issue-labels:
-        description: "Comma-separated labels to apply when creating an issue"
+      allowed-labels:
+        description: "Comma-separated labels the agent is allowed to apply to created issues (leave empty to skip labeling)"
         required: false
         default: "resource-not-accessible-by-integration,ai:fix-ready"
-      assign-to:
-        description: "Comma-separated GitHub usernames to assign when creating an issue"
+      allowed-assignees:
+        description: "Comma-separated GitHub usernames the agent is allowed to assign to created issues (leave empty to skip assigning)"
         required: false
         default: ""
 
@@ -29,8 +29,7 @@ jobs:
       long-term-branches: ""
       look-back-days: ${{ inputs.look-back-days || 1 }}
       additional-instructions: |
-        When calling create_issue, apply these labels:
-        `${{ inputs.issue-labels || 'resource-not-accessible-by-integration,ai:fix-ready' }}`
-        If `${{ inputs.assign-to || '' }}` is non-empty, set create_issue assignees to those usernames.
+        When calling create_issue, apply these labels: `${{ inputs.allowed-labels || 'resource-not-accessible-by-integration,ai:fix-ready' }}`.
+        If `${{ inputs.allowed-assignees || '' }}` is non-empty, assign the issue to those usernames.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

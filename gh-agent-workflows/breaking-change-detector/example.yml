@@ -4,12 +4,12 @@ on:
     - cron: "0 13 * * 1-5"
   workflow_dispatch:
     inputs:
-      issue-labels:
-        description: "Comma-separated labels to apply when creating an issue"
+      allowed-labels:
+        description: "Comma-separated labels the agent is allowed to apply to created issues (leave empty to skip labeling)"
         required: false
         default: "breaking-change,ai:fix-ready"
-      assign-to:
-        description: "Comma-separated GitHub usernames to assign when creating an issue"
+      allowed-assignees:
+        description: "Comma-separated GitHub usernames the agent is allowed to assign to created issues (leave empty to skip assigning)"
         required: false
         default: ""
 
@@ -23,8 +23,7 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-breaking-change-detector.lock.yml@v0
     with:
       additional-instructions: |
-        When calling create_issue, apply these labels:
-        `${{ inputs.issue-labels || 'breaking-change,ai:fix-ready' }}`
-        If `${{ inputs.assign-to || '' }}` is non-empty, set create_issue assignees to those usernames.
+        When calling create_issue, apply these labels: `${{ inputs.allowed-labels || 'breaking-change,ai:fix-ready' }}`.
+        If `${{ inputs.allowed-assignees || '' }}` is non-empty, assign the issue to those usernames.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

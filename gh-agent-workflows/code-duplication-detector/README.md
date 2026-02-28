@@ -33,10 +33,9 @@ See [example.yml](example.yml) for the full workflow file.
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 
-## Labeling created issues
+## Labeling and assigning created issues
 
-The bundled [example.yml](example.yml) includes `workflow_dispatch` inputs named `issue-labels` and `assign-to`, then passes them into `additional-instructions` so created issues can be labeled (for example, `code-duplication,ai:fix-ready`) and optionally assigned (for example, `octocat` or `copilot`).
-These are instruction-level hints (not create-issue safe-output policy settings), so the agent still chooses whether to include them when calling `create_issue`.
+The bundled [example.yml](example.yml) includes `workflow_dispatch` inputs `allowed-labels` and `allowed-assignees` that define which labels and assignees the agent may use when calling `create_issue`. These are passed into `additional-instructions` as allowlists — customize the defaults or provide your own `additional-instructions` to control labeling and assignment behavior.
 
 ## Safe Outputs
 
