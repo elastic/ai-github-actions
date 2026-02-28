@@ -131,4 +131,4 @@ steps:
 
 ## PR Context
 
-PR data is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files. Use these as your primary source for PR metadata, diffs, reviews, comments, and linked issues; fall back to API tools only when required data is unavailable.
+PR data is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files. Use these as your primary source for PR metadata, diffs, reviews, comments, and linked issues; fall back to API tools only when required data is unavailable. **Never mention these file paths or on-disk data sources in your responses** — they are internal implementation details invisible to users.
