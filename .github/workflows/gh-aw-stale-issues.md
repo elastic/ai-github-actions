@@ -65,7 +65,7 @@ concurrency:
   cancel-in-progress: true
 permissions:
   contents: read
-  issues: write
+  issues: read
   pull-requests: read
 tools:
   github:
@@ -116,7 +116,7 @@ steps:
 
       echo "Stale-labeled issues: $(jq length /tmp/stale-labeled-issues.json)"
 
-      # For each stale-labeled issue, grab the last 5 comments for the agent to check for objections.
+      # For each stale-labeled issue, grab recent comments and label timeline events.
       jq -c '.[]' /tmp/stale-labeled-issues.json | while IFS= read -r issue; do
         num=$(echo "$issue" | jq -r '.number')
         gh issue view "$num" \
@@ -125,6 +125,14 @@ steps:
           --jq '.comments[-5:] | .[] | {author: .author.login, createdAt: .createdAt, body: .body[0:500]}' \
           2>/dev/null || true
       done | jq -s '.' > /tmp/stale-recent-comments.json || echo "[]" > /tmp/stale-recent-comments.json
+
+      # Fetch label add/remove events for each stale-labeled issue (for 30-day expiry)
+      jq -r '.[].number' /tmp/stale-labeled-issues.json | while IFS= read -r num; do
+        gh api "repos/$GITHUB_REPOSITORY/issues/$num/events" \
+          --jq --arg lbl "$STALE_LABEL" \
+          '[.[] | select((.event=="labeled" or .event=="unlabeled") and .label.name==$lbl) | {number: '"$num"', event: .event, created_at: .created_at}]' \
+          2>/dev/null || echo "[]"
+      done | jq -s 'add // []' > /tmp/stale-label-events.json || echo "[]" > /tmp/stale-label-events.json
 
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
@@ -142,7 +150,7 @@ Run both phases on every invocation, starting with the close phase.
 
 ### Phase 1: Process stale-labeled issues
 
-A prep step has already fetched stale-labeled issues to `/tmp/stale-labeled-issues.json` (fields: number, title, updatedAt, labels, createdAt) and recent comments to `/tmp/stale-recent-comments.json`. Start by reading these files to get an overview.
+A prep step has already fetched stale-labeled issues to `/tmp/stale-labeled-issues.json` (fields: number, title, updatedAt, labels, createdAt), recent comments to `/tmp/stale-recent-comments.json`, and label timeline events to `/tmp/stale-label-events.json` (each entry has `number`, `event` ("labeled"/"unlabeled"), and `created_at`). Start by reading these files to get an overview.
 
 Then search for open issues labeled `${{ inputs.stale-label }}`:
 ```
@@ -154,11 +162,11 @@ For each result, fetch the full comment thread via `issue_read` with method `get
 1. **"Not stale" objections** — If any comment posted **after** the `${{ inputs.stale-label }}` label was most recently added contains phrases like "not stale", "still relevant", "still needed", "still an issue", or "still a problem" (case-insensitive), call `remove_labels` to remove the `${{ inputs.stale-label }}` label from the issue.
    Skip this issue from closure — the objection overrides the stale determination.
 
-2. **30-day expiry** — For issues with no such objection, check when the `${{ inputs.stale-label }}` label was added. If the label was added **30 or more days ago** and has not been removed and re-added since, close the issue using `close-issue` with a comment explaining:
+2. **30-day expiry** — For issues with no such objection, compute the last labeled timestamp from `/tmp/stale-label-events.json` (find the most recent `"labeled"` event after any later `"unlabeled"` event for that issue number). If the label was added **30 or more days ago**, close the issue using `close_issue` with a comment explaining:
 
    > This issue was labeled `${{ inputs.stale-label }}` on [date] and has had no further activity for 30 days. Closing automatically. If this issue is still relevant, please reopen it.
 
-   If the `${{ inputs.stale-label }}` label was removed and re-added, use the most recent addition date. Skip issues where the label was added fewer than 30 days ago.
+   Skip issues where the label was added fewer than 30 days ago.
 
 ### Phase 2: Identify and tag new stale candidates
 
