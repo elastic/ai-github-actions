@@ -12,6 +12,10 @@ on:
         description: "Comma-separated labels to apply when creating an issue"
         required: false
         default: "resource-not-accessible-by-integration,ai:fix-ready"
+      assign-to:
+        description: "Comma-separated GitHub usernames to assign when creating an issue"
+        required: false
+        default: ""
 
 permissions:
   actions: read
@@ -27,5 +31,6 @@ jobs:
       additional-instructions: |
         When calling create_issue, apply these labels:
         `${{ inputs.issue-labels || 'resource-not-accessible-by-integration,ai:fix-ready' }}`
+        If `${{ inputs.assign-to || '' }}` is non-empty, set create_issue assignees to those usernames.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

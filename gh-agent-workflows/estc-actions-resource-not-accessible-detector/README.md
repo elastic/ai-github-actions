@@ -41,7 +41,7 @@ See [example.yml](example.yml) for the full workflow file.
 
 ## Labeling created issues
 
-The bundled [example.yml](example.yml) includes a `workflow_dispatch` input named `issue-labels` and passes it into `additional-instructions` so created issues can be labeled (for example, `resource-not-accessible-by-integration,ai:fix-ready`).
+The bundled [example.yml](example.yml) includes `workflow_dispatch` inputs named `issue-labels` and `assign-to`, then passes them into `additional-instructions` so created issues can be labeled (for example, `resource-not-accessible-by-integration,ai:fix-ready`) and optionally assigned (for example, `octocat` or `copilot`).
 
 ## Safe Outputs
 
