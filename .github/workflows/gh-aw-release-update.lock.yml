@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"85a99e6d4dafa3f0dc4211e76df3cfe1eb8e942f35d264440861fd9e7f08a70e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8cd4174059c7370c709de611a34239bf5b5af6aa8ea6dd50de69e299931220fa"}
 
 name: "Release Update Check"
 "on":
@@ -88,7 +88,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: release-update
+  group: ${{ github.workflow }}-release-update
 
 run-name: "Release Update Check"
 

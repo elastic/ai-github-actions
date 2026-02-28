@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"12692d7c7baa56ee3760b0b5beaca26eca375a1aabc74e386eb5db9af8c66db6"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"08ab74a6a2896ff84b15a75384c068804f94b5be3ad49c8e176d4fa7b7c8f27b"}
 
 name: "Estc Docs PR Review"
 "on":
@@ -97,7 +97,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: estc-docs-pr-review-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-estc-docs-pr-review-${{ github.event.pull_request.number }}
 
 run-name: "Estc Docs PR Review"
 
@@ -563,7 +563,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-docs-pr-review-${{ github.event.pull_request.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-docs-pr-review-${{ github.event.pull_request.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8ba11cfdc9733793c22bca88f72a87eae3a1ef37234e52be8fc706977d6a4071"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c41c1c182fe2a9bdf64e734fd9add9cb55f916666262ef89d491d31a17c288c2"}
 
 name: "Refactor Opportunist"
 "on":
@@ -90,7 +90,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: refactor-opportunist
+  group: ${{ github.workflow }}-refactor-opportunist
 
 run-name: "Refactor Opportunist"
 

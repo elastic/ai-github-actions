@@ -43,7 +43,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8eaf0ee006b4e1a7ed22d3c143762af9f6f68663ee2d39b0826a601d7d9f06ce"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3380718b7637f543b06f1560af5f1a0bc4956ba6ca0c2688835694427410f69a"}
 
 name: "Mention in PR by ID"
 "on":
@@ -102,7 +102,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: mention-pr-by-id-${{ inputs.target-pr-number }}
+  group: ${{ github.workflow }}-mention-pr-by-id-${{ inputs.target-pr-number }}
 
 run-name: "Mention in PR by ID"
 
@@ -571,7 +571,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-mention-pr-by-id-${{ inputs.target-pr-number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-by-id-${{ inputs.target-pr-number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

@@ -29,7 +29,7 @@ on:
   bots:
     - "github-actions[bot]"
 concurrency:
-  group: workflow-patrol
+  group: ${{ github.workflow }}-workflow-patrol
   cancel-in-progress: true
 permissions:
   contents: read

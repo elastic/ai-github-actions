@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b7ffa4522d17935ff9504389b1630d15645277cec6e90b6659e0477947a0564d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"25bae9ee2fd2dabab0dc8a0da329870ef5cca4dc68cc68765b1c4ae7c9547686"}
 
 name: "Estc Newbie Contributor Patrol External"
 "on":
@@ -88,7 +88,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: estc-newbie-contributor-patrol-external
+  group: ${{ github.workflow }}-estc-newbie-contributor-patrol-external
 
 run-name: "Estc Newbie Contributor Patrol External"
 

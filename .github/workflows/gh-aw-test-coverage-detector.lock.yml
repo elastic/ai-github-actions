@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"793ab0aeb5b5cb5e21e05aeaa49c2a5dfc723a38276086c6b71ea20aa6ff0d71"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"08ad3400fb43110249656035b12673f63a74f2f3ee2a7a52d11579a12a47af78"}
 
 name: "Test Coverage Detector"
 "on":
@@ -89,7 +89,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: test-coverage-detector
+  group: ${{ github.workflow }}-test-coverage-detector
 
 run-name: "Test Coverage Detector"
 

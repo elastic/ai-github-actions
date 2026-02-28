@@ -41,7 +41,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"58c69adeec2e628be014d2bcc28e1a56ab85b69fe0c0bed36e88cb1fcd0ee6cb"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2636e6e504e1842e1eb957daf386ea09189f3af35dc3a264e4079796de6e581f"}
 
 name: "PR Actions Detective"
 "on":
@@ -86,7 +86,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: false
-  group: pr-actions-detective-${{ github.event.workflow_run.id }}
+  group: ${{ github.workflow }}-pr-actions-detective-${{ github.event.workflow_run.id }}
 
 run-name: "PR Actions Detective"
 

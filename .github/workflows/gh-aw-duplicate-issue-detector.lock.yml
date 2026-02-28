@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"99ba5e7df56edd7374202a687bfa59fcc774700a3ad91222f8db229a43ea5dca"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cfcf3d7441c35e747e21b2be0239d6cbe014338a821542f996f886ece70170cf"}
 
 name: "Duplicate Issue Detector"
 "on":
@@ -79,7 +79,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: duplicate-issue-detector-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-duplicate-issue-detector-${{ github.event.issue.number }}
 
 run-name: "Duplicate Issue Detector"
 
@@ -491,7 +491,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-duplicate-issue-detector-${{ github.event.issue.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-duplicate-issue-detector-${{ github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

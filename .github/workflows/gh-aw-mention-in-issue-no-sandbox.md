@@ -18,7 +18,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-mention-issue-no-sandbox-${{ github.event.issue.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-mention-issue-no-sandbox-${{ github.event.issue.number }}"
 on:
   workflow_call:
     inputs:
@@ -62,7 +62,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: mention-issue-no-sandbox-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-mention-issue-no-sandbox-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
   actions: read

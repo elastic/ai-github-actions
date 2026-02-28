@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"48a3e323229dc2b434ab6c1d1f6a1f2ec4aa544cd16acfd50b0eedfea4ccbcc2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0a3772d00132d2172eee1149c9b498c772fc922167fe52813341d1a17412f7b2"}
 
 name: "Gh Aw Bug Exterminator"
 "on":
@@ -89,7 +89,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: bug-exterminator
+  group: ${{ github.workflow }}-bug-exterminator
 
 run-name: "Gh Aw Bug Exterminator"
 

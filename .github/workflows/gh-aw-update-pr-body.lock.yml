@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a4b89690f8c885ed2c8157657b3fc60a9554de563b6cd35ca60821dd565ade6c"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4ee20384906d76d93bb18f7718f2236ca7a42b567a3a4afc1d73a5667107e895"}
 
 name: "Update PR Body"
 "on":
@@ -95,7 +95,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: update-pr-body-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-update-pr-body-${{ github.event.pull_request.number }}
 
 run-name: "Update PR Body"
 
@@ -499,7 +499,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-update-pr-body-${{ github.event.pull_request.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-update-pr-body-${{ github.event.pull_request.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

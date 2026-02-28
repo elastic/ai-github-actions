@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"72bed0d881392eaeea8e1b2e3666c59039eb2ca935bd1ec3f609e4d056f36fd1"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"12d9f4aa55de5b7038e979965cd3cfd405adac4cac8af9a3f8bf86669e39ba7f"}
 
 name: "Branch Actions Detective"
 "on":
@@ -87,7 +87,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: false
-  group: branch-actions-detective-${{ github.event.workflow_run.id }}
+  group: ${{ github.workflow }}-branch-actions-detective-${{ github.event.workflow_run.id }}
 
 run-name: "Branch Actions Detective"
 

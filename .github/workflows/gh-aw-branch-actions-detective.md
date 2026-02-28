@@ -54,7 +54,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: branch-actions-detective-${{ github.event.workflow_run.id }}
+  group: ${{ github.workflow }}-branch-actions-detective-${{ github.event.workflow_run.id }}
   cancel-in-progress: false
 permissions:
   actions: read

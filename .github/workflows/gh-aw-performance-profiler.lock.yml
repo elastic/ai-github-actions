@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c68271d69b8bd050f23795aae51ccea0574d633d75c2e81d42cf12db9929e038"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1374cf602e1d83af594cd0be0b85d385ae2398f5e81ed49964623072daf4ffe3"}
 
 name: "Performance Profiler"
 "on":
@@ -90,7 +90,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: performance-profiler
+  group: ${{ github.workflow }}-performance-profiler
 
 run-name: "Performance Profiler"
 

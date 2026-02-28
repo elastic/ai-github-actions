@@ -19,7 +19,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-pr-review-addresser-${{ github.event.pull_request.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-pr-review-addresser-${{ github.event.pull_request.number }}"
 on:
   workflow_call:
     inputs:
@@ -62,7 +62,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: pr-review-addresser-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-pr-review-addresser-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 permissions:
   actions: read

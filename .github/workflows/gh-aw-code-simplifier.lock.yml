@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6138d73dad21c897fd905116ef5d1ca73d766e44210d2eec4392d076babbace0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"629a36e1205ac0846a504ca442ffd0d052a7e10da309f8cf486578817559b8e1"}
 
 name: "Code Simplifier"
 "on":
@@ -89,7 +89,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: code-simplifier
+  group: ${{ github.workflow }}-code-simplifier
 
 run-name: "Code Simplifier"
 

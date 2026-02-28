@@ -56,7 +56,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: code-simplifier
+  group: ${{ github.workflow }}-code-simplifier
   cancel-in-progress: true
 permissions:
   actions: read

@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"663006e2be2eb3c4e93a986e98470d787539ad5563b4b7985f41d7b45244684a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"36c30bad301c81f613b6630b83797c507a9f332b7b1bf305380cba9a4fd5e92b"}
 
 name: "Agent Suggestions"
 "on":
@@ -89,7 +89,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: agent-suggestions
+  group: ${{ github.workflow }}-agent-suggestions
 
 run-name: "Agent Suggestions"
 

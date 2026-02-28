@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ea1641e3df830eb0fbe1e25a76febf6da49ece76cf133d8cc1c9d7231d7282af"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"623fcfef6432451f8b4f60a5be6617296247e24b4b7ccaad61033e001541be9b"}
 
 name: "Project Summary"
 "on":
@@ -89,7 +89,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: project-summary
+  group: ${{ github.workflow }}-project-summary
 
 run-name: "Project Summary"
 

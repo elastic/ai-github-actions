@@ -43,7 +43,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"85b70f2a1d0dab221bf216ec7f1c32e5af66a49d3695e65458b6bf36520de15c"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"21c938f9c93eee458bba0d53d652fe8760583ea3173bafb40820d880fe517b1e"}
 
 name: "Stale Issues Investigator"
 "on":
@@ -98,7 +98,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: stale-issues-investigator
+  group: ${{ github.workflow }}-stale-issues-investigator
 
 run-name: "Stale Issues Investigator"
 

@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a506c3d1c642f61a259db6ab04065cb100d171c09a0591c909e0ac78db642d8b"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d40e51cc3421862fdc61e96607cd36b1b8394633f403e9e7d7a2707573801de0"}
 
 name: "Framework Best Practices"
 "on":
@@ -89,7 +89,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: framework-best-practices
+  group: ${{ github.workflow }}-framework-best-practices
 
 run-name: "Framework Best Practices"
 

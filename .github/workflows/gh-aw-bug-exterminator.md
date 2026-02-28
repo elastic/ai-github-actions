@@ -56,7 +56,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: bug-exterminator
+  group: ${{ github.workflow }}-bug-exterminator
   cancel-in-progress: true
 permissions:
   actions: read

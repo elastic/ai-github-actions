@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c7aa3089b1a1e91cdb2926949a8bfa5ae113adc7b4c4622c32a2f3b8759c0298"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"22dd40796a5fa4e2399d8af08bec589e9299f90d6699f4894154cc4770ac7daa"}
 
 name: "Product Manager Impersonator"
 "on":
@@ -99,7 +99,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: product-manager-impersonator-${{ inputs.title-prefix }}
+  group: ${{ github.workflow }}-product-manager-impersonator-${{ inputs.title-prefix }}
 
 run-name: "Product Manager Impersonator"
 

@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d2c2b776d3dee5aa475d84d57680bab8f10089e1b661026e268673e5b6c052d0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"298b77fb909370a57fe73a3b3bbaabfbd71ca475536eda404975e44f38ab7fa1"}
 
 name: "PR Actions Fixer"
 "on":
@@ -88,7 +88,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: false
-  group: pr-actions-fixer-${{ inputs.workflow-run-id }}
+  group: ${{ github.workflow }}-pr-actions-fixer-${{ inputs.workflow-run-id }}
 
 run-name: "PR Actions Fixer"
 

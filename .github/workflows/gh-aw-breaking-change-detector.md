@@ -58,7 +58,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: breaking-change-detector
+  group: ${{ github.workflow }}-breaking-change-detector
   cancel-in-progress: true
 permissions:
   contents: read

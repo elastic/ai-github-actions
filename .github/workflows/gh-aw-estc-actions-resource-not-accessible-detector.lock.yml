@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"34a006295a5d6282e25f7b0ef67380b1d110647c8b80fe09cf4a59b935b40b98"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6bc77aa8bd60a9a20aa6b2988051ae2cd993582d3539e7118127e43fd9246513"}
 
 name: "Resource Not Accessible By Integration Detector"
 "on":
@@ -97,7 +97,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: estc-actions-resource-not-accessible-detector
+  group: ${{ github.workflow }}-estc-actions-resource-not-accessible-detector
 
 run-name: "Resource Not Accessible By Integration Detector"
 

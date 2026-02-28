@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c9e19ea7a2dc5f7377cf623b671a9325b3243378e58e67f00306865a804638d2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"60132038002dc1d0a6316d6f3c87490b6b01d478f693746385b05ab8ea079e77"}
 
 name: "Deep Research"
 "on":
@@ -80,7 +80,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: deep-research-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-deep-research-${{ github.event.issue.number }}
 
 run-name: "Deep Research"
 
@@ -429,7 +429,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-gemini-deep-research-${{ github.event.issue.number }}"
+      group: "gh-aw-gemini-${{ github.workflow }}-deep-research-${{ github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

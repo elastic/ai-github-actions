@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b7c9de1e3fc79e70e5a30793b21f3748781fbe7926225724bb1fa576e3e92ae3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c5e5a35f457d46094b82c0ffa3164337ed6bdae6472b7f4a2d800ef8eb4fb916"}
 
 name: "Code Duplication Detector"
 "on":
@@ -99,7 +99,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: code-duplication-detector
+  group: ${{ github.workflow }}-code-duplication-detector
 
 run-name: "Code Duplication Detector"
 

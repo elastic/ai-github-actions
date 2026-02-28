@@ -61,7 +61,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: stale-issues-investigator
+  group: ${{ github.workflow }}-stale-issues-investigator
   cancel-in-progress: true
 permissions:
   contents: read

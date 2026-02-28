@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"ea15e8f22f140545f52922d4b8053a1d4c7395e7f1002fe94b991bfd88ceac89"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b7cf842a4d9f8ec356e887fe15510a6c84a2025145873005fc52e48c7e3117a0"}
 
 name: "Bug Hunter"
 "on":
@@ -90,7 +90,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: bug-hunter
+  group: ${{ github.workflow }}-bug-hunter
 
 run-name: "Bug Hunter"
 

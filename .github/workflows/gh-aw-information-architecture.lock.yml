@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d8e316890682ffe0175df845ff2c5867d7a460d202081145e97783f83058bc61"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d978c6dbce791dcec470192e30d44e7ea9cb33e324e43a686ab40dd7961a8e14"}
 
 name: "Information Architecture"
 "on":
@@ -89,7 +89,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: information-architecture
+  group: ${{ github.workflow }}-information-architecture
 
 run-name: "Information Architecture"
 

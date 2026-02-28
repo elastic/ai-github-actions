@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3cf02cf2d15257dd0f3bcc7743fc8dc021f4b1276a1fefeb7968c36fff013ed8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0aabffb6ce355881ccfe9aacb7a874d249d59d28b16bc5b5935be97bb22612d3"}
 
 name: "Autonomy Atomicity Analyzer"
 "on":
@@ -89,7 +89,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: autonomy-atomicity-analyzer
+  group: ${{ github.workflow }}-autonomy-atomicity-analyzer
 
 run-name: "Autonomy Atomicity Analyzer"
 

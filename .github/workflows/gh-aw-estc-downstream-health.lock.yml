@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"21c08a060fd9e852e76f9b6cfa749e3e4f7e125630a27f4e8daef7c57909f4ff"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"79e00e93ad8119fa2b3e519fc0c1061999a59db3dc73734bf65e2cdcedd2e2e3"}
 
 name: "Estc Downstream Health"
 "on":
@@ -88,7 +88,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: estc-downstream-health
+  group: ${{ github.workflow }}-estc-downstream-health
 
 run-name: "Estc Downstream Health"
 

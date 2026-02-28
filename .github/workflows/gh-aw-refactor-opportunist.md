@@ -58,7 +58,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: refactor-opportunist
+  group: ${{ github.workflow }}-refactor-opportunist
   cancel-in-progress: true
 permissions:
   actions: read

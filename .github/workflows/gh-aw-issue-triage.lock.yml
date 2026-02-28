@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4d1f8d46281d03cee75d906281b5fe60ea685f2f86592b11bca6fd662f5c379d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b198ea3a89c59d56d3ff3acb71615c1a123e0c93d8288028d56a86160639f204"}
 
 name: "Issue Triage"
 "on":
@@ -82,7 +82,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: issue-triage-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-issue-triage-${{ github.event.issue.number }}
 
 run-name: "Issue Triage"
 
@@ -484,7 +484,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-issue-triage-${{ github.event.issue.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-issue-triage-${{ github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

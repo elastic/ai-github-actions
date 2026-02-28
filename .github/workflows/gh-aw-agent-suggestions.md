@@ -57,7 +57,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: agent-suggestions
+  group: ${{ github.workflow }}-agent-suggestions
   cancel-in-progress: true
 permissions:
   contents: read

@@ -56,7 +56,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: estc-downstream-health
+  group: ${{ github.workflow }}-estc-downstream-health
   cancel-in-progress: true
 permissions:
   actions: read

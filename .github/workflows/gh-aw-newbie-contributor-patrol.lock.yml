@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"878a5e48cc3df644fd1a36b790e6eb19efb2f7938d744bfd0ab337c98409619f"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"06259a70f1e35fae92419e444034acf23dccb98af6d0e37ed86116dee94e34e2"}
 
 name: "Newbie Contributor Patrol"
 "on":
@@ -88,7 +88,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: newbie-contributor-patrol
+  group: ${{ github.workflow }}-newbie-contributor-patrol
 
 run-name: "Newbie Contributor Patrol"
 

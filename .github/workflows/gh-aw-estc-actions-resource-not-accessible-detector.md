@@ -64,7 +64,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: estc-actions-resource-not-accessible-detector
+  group: ${{ github.workflow }}-estc-actions-resource-not-accessible-detector
   cancel-in-progress: true
 permissions:
   actions: read

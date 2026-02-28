@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"25c6c9d0ef8b46a82822e917434f9cb53eb104e30f688ebca3bfcaa769488aaf"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1c561aa18aab76d8510e430d5a5a4c1ce22a1cf0d66c32b8353ea5b10e9e2b28"}
 
 name: "Internal: Agent Deep Dive"
 "on":
@@ -63,7 +63,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: agent-deep-dive
+  group: ${{ github.workflow }}-agent-deep-dive
 
 run-name: "Internal: Agent Deep Dive"
 

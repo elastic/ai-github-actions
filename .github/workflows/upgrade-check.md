@@ -29,7 +29,7 @@ on:
   bots:
     - "github-actions[bot]"
 concurrency:
-  group: upgrade-check
+  group: ${{ github.workflow }}-upgrade-check
   cancel-in-progress: true
 permissions:
   contents: read

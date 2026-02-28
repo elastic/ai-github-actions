@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5a57dde9ff3d0576701b09a47766052d6412d8c58ebea4896ff41a4b8e1975d0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"639d20e625bdf362e5e690e812052ba140799d50984096906124b6dcb164574f"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -93,7 +93,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: false
-  group: estc-pr-buildkite-detective-${{ github.run_id }}
+  group: ${{ github.workflow }}-estc-pr-buildkite-detective-${{ github.run_id }}
 
 run-name: "PR Buildkite Detective"
 

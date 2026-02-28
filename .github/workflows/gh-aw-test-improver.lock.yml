@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"341673b6d22586c36cdb7edda52391d0620d0de567ee8751cfa21ff206917051"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1b55c6bcc09d69a69075ad5bfc9f79977b9e25b8b43ee87eb2559ea136b82a39"}
 
 name: "Test Improver"
 "on":
@@ -88,7 +88,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: test-improver
+  group: ${{ github.workflow }}-test-improver
 
 run-name: "Test Improver"
 

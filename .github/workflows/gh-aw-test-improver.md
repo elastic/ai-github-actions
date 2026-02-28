@@ -56,7 +56,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: test-improver
+  group: ${{ github.workflow }}-test-improver
   cancel-in-progress: true
 permissions:
   actions: read

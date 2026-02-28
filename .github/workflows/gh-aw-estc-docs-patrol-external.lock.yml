@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9201a43ea2c6da9afdc3599346e1f2cb5e50656f0c8a11781588c87a4bac5ae2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0167a60f93bab7174f9e7acf412ab9c101c855de82e481017539bd635c841b8b"}
 
 name: "Estc Docs Patrol External"
 "on":
@@ -94,7 +94,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: estc-docs-patrol-external
+  group: ${{ github.workflow }}-estc-docs-patrol-external
 
 run-name: "Estc Docs Patrol External"
 

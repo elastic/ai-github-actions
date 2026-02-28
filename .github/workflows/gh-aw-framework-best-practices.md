@@ -57,7 +57,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: framework-best-practices
+  group: ${{ github.workflow }}-framework-best-practices
   cancel-in-progress: true
 permissions:
   contents: read

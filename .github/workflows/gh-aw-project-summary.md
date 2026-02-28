@@ -57,7 +57,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: project-summary
+  group: ${{ github.workflow }}-project-summary
   cancel-in-progress: true
 permissions:
   contents: read

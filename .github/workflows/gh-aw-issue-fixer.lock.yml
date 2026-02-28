@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"19f326850a01fe8800486e3839057f314a1a2ff0afb9b9b3196aff2a3d7b5d92"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"041435fe5acc257c775e905b4654e3dc106d09d87abc5beabb20658125f901b6"}
 
 name: "Issue Fixer"
 "on":
@@ -88,7 +88,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: issue-fixer-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-issue-fixer-${{ github.event.issue.number }}
 
 run-name: "Issue Fixer"
 
@@ -457,7 +457,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-issue-fixer-${{ github.event.issue.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-issue-fixer-${{ github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

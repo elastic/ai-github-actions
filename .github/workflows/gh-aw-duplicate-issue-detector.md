@@ -12,7 +12,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-duplicate-issue-detector-${{ github.event.issue.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-duplicate-issue-detector-${{ github.event.issue.number }}"
 on:
   workflow_call:
     inputs:
@@ -48,7 +48,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: duplicate-issue-detector-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-duplicate-issue-detector-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
   contents: read

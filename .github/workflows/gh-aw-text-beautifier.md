@@ -58,7 +58,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: text-beautifier
+  group: ${{ github.workflow }}-text-beautifier
   cancel-in-progress: true
 permissions:
   actions: read

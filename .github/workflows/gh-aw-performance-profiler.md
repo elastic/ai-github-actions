@@ -58,7 +58,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: performance-profiler
+  group: ${{ github.workflow }}-performance-profiler
   cancel-in-progress: true
 permissions:
   contents: read
