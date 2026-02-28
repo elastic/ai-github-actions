@@ -12,6 +12,21 @@ safe-inputs:
           except subprocess.TimeoutExpired:
               return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
 
+      # Guard: fail early on prohibited workflow file changes
+      changed_files = []
+      for names_cmd in [
+          ['git', 'diff', '--name-only', '--merge-base', '@{upstream}'],
+          ['git', 'diff', '--name-only', '@{upstream}'],
+          ['git', 'diff', '--name-only', 'HEAD'],
+      ]:
+          names = run(names_cmd)
+          if names.stdout.strip():
+              changed_files = [line.strip() for line in names.stdout.splitlines() if line.strip()]
+              break
+      if any(path.startswith('.github/workflows/') for path in changed_files):
+          print(json.dumps({'status': 'error', 'error': 'Changes under .github/workflows/ detected in your local branch. push_to_pull_request_branch will reject these changes. Fix: move proposed workflow edits to matching paths under `github/workflows/` (without the leading dot), then ask a maintainer to relocate them to `.github/workflows/`.'}))
+          raise SystemExit(0)
+
       # Guard: detect history rewrites and merge commits
       pr_json_path = '/tmp/pr-context/pr.json'
       if os.path.isfile(pr_json_path):
