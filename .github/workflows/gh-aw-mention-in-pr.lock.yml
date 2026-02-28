@@ -44,7 +44,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cda6a28c3dcf5a152d2329e660999407d7f6c601c5d0797350b7783ddd4ac4b7"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6c993989c5542e01f4c2ab3a0f4de5322c78a0a29f2a93f87ca68fb54610077f"}
 
 name: "Mention in PR"
 "on":
@@ -184,7 +184,6 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_770EE58B: ${{ inputs.prompt || steps.sanitized.outputs.text }}
           GH_AW_EXPR_7B543459: ${{ inputs.minimum_severity || 'low' }}
           GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
           GH_AW_EXPR_8D9F5797: ${{ inputs.intensity || 'balanced' }}
@@ -198,6 +197,8 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_PROMPT: ${{ inputs.prompt }}
+          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         run: |
           bash /opt/gh-aw/actions/create_prompt_first.sh
           {
@@ -497,7 +498,8 @@ jobs:
           - **Repository**: __GH_AW_GITHUB_REPOSITORY__
           - **PR**: #__GH_AW_EXPR_95B47D04__ — __GH_AW_GITHUB_EVENT_ISSUE_TITLE__
           - **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
-          - **Request**: "__GH_AW_EXPR_770EE58B__"
+          - **Request**: "__GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT__"
+          - **Explicit prompt**: "__GH_AW_INPUTS_PROMPT__"
           
           ## Constraints
           
@@ -590,8 +592,9 @@ jobs:
           GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_770EE58B: ${{ inputs.prompt || steps.sanitized.outputs.text }}
+          GH_AW_INPUTS_PROMPT: ${{ inputs.prompt }}
           GH_AW_EXPR_95B47D04: ${{ inputs.target-pr-number || github.event.issue.number }}
+          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -603,7 +606,6 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_770EE58B: ${{ inputs.prompt || steps.sanitized.outputs.text }}
           GH_AW_EXPR_7B543459: ${{ inputs.minimum_severity || 'low' }}
           GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
           GH_AW_EXPR_8D9F5797: ${{ inputs.intensity || 'balanced' }}
@@ -617,7 +619,9 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_PROMPT: ${{ inputs.prompt }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
+          GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -630,7 +634,6 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
-                GH_AW_EXPR_770EE58B: process.env.GH_AW_EXPR_770EE58B,
                 GH_AW_EXPR_7B543459: process.env.GH_AW_EXPR_7B543459,
                 GH_AW_EXPR_7F2A702A: process.env.GH_AW_EXPR_7F2A702A,
                 GH_AW_EXPR_8D9F5797: process.env.GH_AW_EXPR_8D9F5797,
@@ -644,7 +647,9 @@ jobs:
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
-                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
+                GH_AW_INPUTS_PROMPT: process.env.GH_AW_INPUTS_PROMPT,
+                GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
+                GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: process.env.GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT
               }
             });
       - name: Validate prompt placeholders
