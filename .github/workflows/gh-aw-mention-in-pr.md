@@ -150,7 +150,7 @@ PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md
 
 ### Step 2: Handle the Request
 
-Based on what's asked, do the appropriate thing:
+Based on what's asked, do the appropriate thing. **Requests can combine multiple actions** (e.g., "fix merge conflicts and address the review feedback"). When they do, handle them in this order: merge conflicts first, then code changes/review feedback, then push once at the end. Do not push between steps — batch all changes into a single push.
 
 **If asked to review the PR:**
 - Read `/tmp/pr-context/review_comments.json` and `/tmp/pr-context/reviews.json` to check existing threads and prior reviews — do not duplicate feedback.
@@ -174,6 +174,19 @@ Based on what's asked, do the appropriate thing:
 - Commit your changes locally, then use `push_to_pull_request_branch` to push them.
 - After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
 - **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.
+
+**If asked to fix merge conflicts:**
+- Check via `pull_request_read` (method `get`) whether this is a fork PR. If so, reply that you cannot push to fork branches and suggest the author resolve locally.
+- Read `/tmp/pr-context/pr.json` for the head and base branch names.
+- Fetch the base branch and merge it into the PR branch:
+  ```bash
+  git fetch origin <base-branch>
+  git merge origin/<base-branch>
+  ```
+- If there are conflicts, resolve them: read each conflicted file, understand both sides' intent using the PR diffs and base branch changes, edit to produce the correct result, and stage. After all conflicts are resolved, verify no conflict markers remain and run lint/build/test if applicable, then complete the merge with `git commit --no-edit`.
+- If conflicts are too complex to resolve confidently (large structural changes, binary files, ambiguous intent), reply explaining what you found and suggest the author resolve locally. Do NOT push a bad resolution or proceed with other requested work that depends on a clean merge.
+- If the request includes additional work (code fixes, review feedback), do that now before pushing — merge conflicts should always be resolved first, then other changes made on top, with a single push at the end.
+- Push via `push_to_pull_request_branch` and reply summarizing what was merged and how conflicts were resolved.
 
 **If asked a question about the code:**
 - Find the relevant code and explain it.
