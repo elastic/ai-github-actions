@@ -18,6 +18,9 @@ cd "$REPO_ROOT"
 
 # Workflows that are not dogfooded in this repository.
 EXCLUDED_WORKFLOWS=(
+  "bug-exterminator"
+  "code-duplication-fixer"
+  "code-simplifier"
   "estc-actions-resource-not-accessible-detector"
   "estc-docs-patrol-external"
   "estc-newbie-contributor-patrol-external"
@@ -25,11 +28,17 @@ EXCLUDED_WORKFLOWS=(
   "issue-fixer"
   "mention-in-issue-no-sandbox"
   "mention-in-pr-no-sandbox"
+  "newbie-contributor-fixer"
   "performance-profiler"
+  "pr-actions-fixer"
+  "pr-review-addresser"
   "pr-review-fork"
   "release-update"
   "scheduled-audit"
   "scheduled-fix"
+  "small-problem-fixer"
+  "test-improver"
+  "text-beautifier"
 )
 
 echo "Syncing workflow files..."
@@ -75,6 +84,15 @@ for f in gh-agent-workflows/*/example.yml; do
     echo "  ✓ gh-agent-workflows/$dir/example.yml → $target (with dogfood overrides)"
   else
     echo "  ✓ gh-agent-workflows/$dir/example.yml → $target"
+  fi
+
+  # Inject EXTRA_COMMIT_GITHUB_TOKEN secret for lock workflows that accept it.
+  # This token enables commits made by workflows to trigger downstream CI runs.
+  lockfile=".github/workflows/gh-aw-${dir}.lock.yml"
+  if [[ -f "$lockfile" ]] && grep -q "EXTRA_COMMIT_GITHUB_TOKEN" "$lockfile"; then
+    sed '/COPILOT_GITHUB_TOKEN:/a\
+      EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
+    echo "    + injected EXTRA_COMMIT_GITHUB_TOKEN secret"
   fi
 done
 
