@@ -47,6 +47,7 @@ nav:
           - Scheduled Audit: workflows/gh-agent-workflows/scheduled-audit.md
           - Scheduled Fix: workflows/gh-agent-workflows/scheduled-fix.md
       - Scheduled:
+          - Detector / Fixer Chaining: workflows/detector-fixer-chaining.md
           - Detector / Fixer Pairs:
               - Bug Hunting: workflows/gh-agent-workflows/bugs.md
               - Code Duplication: workflows/gh-agent-workflows/code-duplication.md

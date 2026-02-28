@@ -69,6 +69,8 @@ These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves 
 
 Many scheduled workflows follow a **detector / fixer** pattern: the detector finds issues and files reports, then the fixer picks up those reports and creates PRs to resolve them. Install both for a fully autonomous loop, or use the detector alone for human-in-the-loop review.
 
+**Single-run chaining:** Instead of running detector and fixer on separate schedules, you can chain them in one workflow run so the fixer acts immediately on findings. See [Detector / Fixer Chaining](detector-fixer-chaining.md).
+
 | Detector | Fixer | Domain |
 | --- | --- | --- |
 | [Bug Hunter](gh-agent-workflows/bug-hunter.md) | [Bug Exterminator](gh-agent-workflows/bug-exterminator.md) | Reproducible bugs |
