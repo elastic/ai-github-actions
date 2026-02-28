@@ -59,7 +59,7 @@ jobs:
         ### What to Skip
 
         - **Runtime includes** (`<!-- [RUNTIME INCLUDE: ... ] -->`) — these are platform files we don't control. Ignore them.
-        - **Template markers** (`__GH_AW_*__`, `{{#if ...}}`) — these are expected. Don't flag them as issues.
+        - **Template markers** (placeholder patterns and template syntax, e.g. `{{#if ...}}`) — these are expected. Don't flag them as issues.
         - **Style preferences** — Don't flag writing style, formatting choices, or markdown conventions unless they cause actual confusion.
         - **Backwards-compat duplicates** — Files like `breaking-change-detect` and `breaking-change-detector` are expected duplicates (old name + new name). Skip these pairs.
         - **Intentional differences** — `mention-in-pr-no-sandbox` has `sandbox: agent: false` and different safe-output settings by design. Only flag differences that seem accidental.

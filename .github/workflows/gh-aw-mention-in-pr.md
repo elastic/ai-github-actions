@@ -125,7 +125,8 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ inputs.target-pr-number || github.event.issue.number }} — ${{ github.event.issue.title }}
 - **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
-- **Request**: "${{ inputs.prompt || steps.sanitized.outputs.text }}"
+- **Request**: "${{ steps.sanitized.outputs.text }}"
+- **Explicit prompt**: "${{ inputs.prompt }}"
 
 ## Constraints
 
