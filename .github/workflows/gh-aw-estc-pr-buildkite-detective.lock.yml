@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"42e634b12d0e689011ec9326d55cb3312faab79b5c7452ed01375f2d67f1ed7a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5a57dde9ff3d0576701b09a47766052d6412d8c58ebea4896ff41a4b8e1975d0"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -564,13 +564,16 @@ jobs:
           WORKSPACE: ${{ github.workspace }}
         if: hashFiles('pyproject.toml', 'uv.lock') != ''
         name: Expose uv in workspace
-        run: |-
+        run: |
           set -euo pipefail
           install_dir="$WORKSPACE/.gh-aw-tools/bin"
           mkdir -p "$install_dir"
           cp "$UV_PATH" "$install_dir/uv"
           chmod +x "$install_dir/uv"
           echo "$install_dir" >> "$GITHUB_PATH"
+        shell: bash
+      - name: Configure Copilot CLI settings
+        run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi"
         shell: bash
       - name: Resolve event context
         run: |

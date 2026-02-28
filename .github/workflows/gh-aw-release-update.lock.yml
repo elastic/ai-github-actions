@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0b6237e0806733f975c6d12c6f256274868588e757ee89bcafc8a9bc8fdd5efd"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"540fed2332d999fe5901bc59a882c439fe966cffe03b7910e56f993df13555e6"}
 
 name: "Release Update Check"
 "on":
@@ -483,13 +483,16 @@ jobs:
           WORKSPACE: ${{ github.workspace }}
         if: hashFiles('pyproject.toml', 'uv.lock') != ''
         name: Expose uv in workspace
-        run: |-
+        run: |
           set -euo pipefail
           install_dir="$WORKSPACE/.gh-aw-tools/bin"
           mkdir -p "$install_dir"
           cp "$UV_PATH" "$install_dir/uv"
           chmod +x "$install_dir/uv"
           echo "$install_dir" >> "$GITHUB_PATH"
+        shell: bash
+      - name: Configure Copilot CLI settings
+        run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi"
         shell: bash
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}

@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"98d361cdb91c9fdd42daa8e6d3936f57e422549d7dffdc9f1edafbdb2ba94257"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"12692d7c7baa56ee3760b0b5beaca26eca375a1aabc74e386eb5db9af8c66db6"}
 
 name: "Estc Docs PR Review"
 "on":
@@ -629,13 +629,16 @@ jobs:
           WORKSPACE: ${{ github.workspace }}
         if: hashFiles('pyproject.toml', 'uv.lock') != ''
         name: Expose uv in workspace
-        run: |-
+        run: |
           set -euo pipefail
           install_dir="$WORKSPACE/.gh-aw-tools/bin"
           mkdir -p "$install_dir"
           cp "$UV_PATH" "$install_dir/uv"
           chmod +x "$install_dir/uv"
           echo "$install_dir" >> "$GITHUB_PATH"
+        shell: bash
+      - name: Configure Copilot CLI settings
+        run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi"
         shell: bash
       - name: Download style guide reference pages
         run: "set -euo pipefail\nmkdir -p /tmp/style-guide\nurls=(\n  \"https://www.elastic.co/docs/contribute-docs/style-guide\"\n  \"https://www.elastic.co/docs/contribute-docs/style-guide/voice-tone\"\n  \"https://www.elastic.co/docs/contribute-docs/style-guide/grammar-spelling\"\n  \"https://www.elastic.co/docs/contribute-docs/style-guide/formatting\"\n  \"https://www.elastic.co/docs/contribute-docs/style-guide/word-choice\"\n  \"https://www.elastic.co/docs/contribute-docs/style-guide/accessibility\"\n  \"https://www.elastic.co/docs/contribute-docs/style-guide/ui-writing\"\n  \"https://www.elastic.co/docs/contribute-docs/how-to/cumulative-docs/guidelines\"\n  \"https://www.elastic.co/docs/contribute-docs/how-to/cumulative-docs/reference\"\n  \"https://docs-v3-preview.elastic.dev/elastic/docs-builder/tree/main/syntax/applies\"\n)\nfor url in \"${urls[@]}\"; do\n  slug=$(echo \"$url\" | sed 's|https\\?://||; s|/|_|g; s|[^a-zA-Z0-9_-]||g')\n  curl -sSfL --retry 2 --max-time 30 \"$url\" -o \"/tmp/style-guide/${slug}.html\" || echo \"::warning::Failed to download ${url}\"\ndone\necho \"Downloaded $(ls /tmp/style-guide/ | wc -l) style guide pages to /tmp/style-guide/\"\n"
