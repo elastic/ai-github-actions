@@ -93,7 +93,7 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Project Summary](gh-agent-workflows/project-summary.md) | Daily schedule | Summarize recent activity and priorities |
 | [Release Update Check](gh-agent-workflows/release-update.md) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
 | [Small Problem Fixer](gh-agent-workflows/small-problem-fixer.md) | Weekday schedule | Fix small, related issues and open a focused PR |
-| [Stale Issues](gh-agent-workflows/stale-issues.md) | Weekday schedule | Find resolved issues that can be closed |
+| [Stale Issues](gh-agent-workflows/stale-issues.md) | Weekday schedule | Label resolved issues as stale, then auto-close after 30 days |
 | [Test Improver](gh-agent-workflows/test-improver.md) | Weekly schedule | Add targeted tests and clean up redundant coverage |
 
 ### Elastic-specific workflows

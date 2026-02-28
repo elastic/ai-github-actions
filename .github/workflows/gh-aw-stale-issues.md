@@ -60,7 +60,7 @@ concurrency:
   cancel-in-progress: true
 permissions:
   contents: read
-  issues: read
+  issues: write
   pull-requests: read
 tools:
   github:
@@ -76,6 +76,14 @@ safe-outputs:
     title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: true
     expires: 7d
+  add-labels:
+    max: 10
+    allowed:
+      - "stale"
+  close-issue:
+    max: 10
+    required_labels:
+      - "stale"
 timeout-minutes: 60
 steps:
   - name: Repo-specific setup
@@ -85,7 +93,27 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-Find open issues that are very likely already resolved and recommend them for closure. You do NOT close issues yourself — you file a report listing candidates with evidence.
+Find open issues that are very likely already resolved. This workflow operates in two phases:
+
+1. **Tag phase** — Label newly identified stale candidates with the `stale` label and file a report.
+2. **Close phase** — Close issues that have carried the `stale` label for 30+ days without the label being removed.
+
+Run both phases on every invocation, starting with the close phase.
+
+### Phase 1: Close stale-labeled issues older than 30 days
+
+Search for open issues labeled `stale`:
+```
+github-search_issues: query="repo:{owner}/{repo} is:issue is:open label:stale"
+```
+
+For each result, check the issue timeline (via `issue_read` with method `get_comments`) to find when the `stale` label was added. If the label was added **30 or more days ago** and has not been removed and re-added since, close the issue using `close-issue` with a comment explaining:
+
+> This issue was labeled `stale` on [date] and has had no further activity for 30 days. Closing automatically. If this issue is still relevant, please reopen it.
+
+If the `stale` label was removed and re-added, use the most recent addition date. Skip issues where the label was added fewer than 30 days ago.
+
+### Phase 2: Identify and tag new stale candidates
 
 ### Data Gathering
 
@@ -143,6 +171,7 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 
 ### What to Skip
 
+- Issues already labeled `stale` — they are already tracked and will be closed automatically after 30 days
 - Issues with recent activity (comments in the last 14 days) — someone is still working on them
 - Issues labeled `epic`, `tracking`, `umbrella`, or similar meta-labels — these are intentionally kept open
 - Issues where the resolution is ambiguous or you aren't sure
@@ -150,6 +179,10 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 - Issues with open/unmerged PRs linked — work may still be in progress
 
 **When in doubt, skip the issue.** False positives waste maintainer time and erode trust in the report. Only include issues where you are highly confident they are resolved.
+
+### Labeling
+
+For each issue included in the report, call `add_labels` with the `stale` label on that issue. This starts the 30-day grace period — maintainers can remove the label to prevent automatic closure.
 
 ### Issue Format
 
@@ -181,6 +214,6 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 - Within the same age tier, order by confidence level (most confident first)
 - Always include the specific evidence — don't just say "this looks resolved"
 - Link to the resolving PR, commit, or code when possible
-- If no issues qualify, call `noop` with message "No stale issues found — reviewed {analyzed_count}/{candidate_count} candidates ({total_open} open issues total)"
+- If no issues qualify for tagging or closing, call `noop` with message "No stale issues found — reviewed {analyzed_count}/{candidate_count} candidates ({total_open} open issues total), closed {closed_count} previously stale issues"
 
 ${{ inputs.additional-instructions }}
