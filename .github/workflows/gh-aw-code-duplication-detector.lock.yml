@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b7c9de1e3fc79e70e5a30793b21f3748781fbe7926225724bb1fa576e3e92ae3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"95f541a6a5739e3a5cac6e6ededb4f44e2b881126fdf3a6c321122c538500aa8"}
 
 name: "Code Duplication Detector"
 "on":
@@ -56,9 +56,19 @@ name: "Code Duplication Detector"
         description: Repo-specific instructions appended to the agent prompt
         required: false
         type: string
+      allowed-assignees:
+        default: ""
+        description: Comma-separated GitHub usernames the agent may assign to created issues (leave empty to skip assigning)
+        required: false
+        type: string
       allowed-bot-users:
         default: github-actions[bot]
         description: Allowlisted bot actor usernames (comma-separated)
+        required: false
+        type: string
+      allowed-labels:
+        default: ""
+        description: Comma-separated labels the agent may apply to created issues (leave empty to skip labeling)
         required: false
         type: string
       file-globs:

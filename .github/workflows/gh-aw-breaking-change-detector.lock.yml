@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cc2e60978c9dcb4c8c9bc7d737396ea679c08f1ffb7ed291d7bd18ba366370a1"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"20e81d06ccadb6a3d7f0f61e1764de87325fbc0f38044587b640cc089b58daa1"}
 
 name: "Breaking Change Detector"
 "on":
@@ -57,9 +57,19 @@ name: "Breaking Change Detector"
         description: Repo-specific instructions appended to the agent prompt
         required: false
         type: string
+      allowed-assignees:
+        default: ""
+        description: Comma-separated GitHub usernames the agent may assign to created issues (leave empty to skip assigning)
+        required: false
+        type: string
       allowed-bot-users:
         default: github-actions[bot]
         description: Allowlisted bot actor usernames (comma-separated)
+        required: false
+        type: string
+      allowed-labels:
+        default: ""
+        description: Comma-separated labels the agent may apply to created issues (leave empty to skip labeling)
         required: false
         type: string
       messages-footer:

@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"34a006295a5d6282e25f7b0ef67380b1d110647c8b80fe09cf4a59b935b40b98"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"99a26e30488af4c64dc770d3c4de1402f901e65587a68af05131df76257e6907"}
 
 name: "Resource Not Accessible By Integration Detector"
 "on":
@@ -54,9 +54,19 @@ name: "Resource Not Accessible By Integration Detector"
         description: Repo-specific instructions appended to the agent prompt
         required: false
         type: string
+      allowed-assignees:
+        default: ""
+        description: Comma-separated GitHub usernames the agent may assign to created issues (leave empty to skip assigning)
+        required: false
+        type: string
       allowed-bot-users:
         default: github-actions[bot]
         description: Allowlisted bot actor usernames (comma-separated)
+        required: false
+        type: string
+      allowed-labels:
+        default: ""
+        description: Comma-separated labels the agent may apply to created issues (leave empty to skip labeling)
         required: false
         type: string
       issue-title-prefix:
@@ -497,8 +507,6 @@ jobs:
       contents: read
       issues: read
       pull-requests: read
-    concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

@@ -60,6 +60,16 @@ on:
         type: string
         required: false
         default: "[refactor]"
+      allowed-labels:
+        description: "Comma-separated labels the agent may apply to created issues (leave empty to skip labeling)"
+        type: string
+        required: false
+        default: ""
+      allowed-assignees:
+        description: "Comma-separated GitHub usernames the agent may assign to created issues (leave empty to skip assigning)"
+        type: string
+        required: false
+        default: ""
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
