@@ -75,7 +75,7 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Code Duplication Detector](gh-agent-workflows/code-duplication-detector.md) | [Code Duplication Fixer](gh-agent-workflows/code-duplication-fixer.md) | Duplicate / clustered code |
 | [Docs Patrol](gh-agent-workflows/docs-patrol.md) | — | Stale internal documentation |
 | [Newbie Contributor Patrol](gh-agent-workflows/newbie-contributor-patrol.md) | [Newbie Contributor Fixer](gh-agent-workflows/newbie-contributor-fixer.md) | Onboarding documentation gaps |
-| [Test Coverage Detector](gh-agent-workflows/test-coverage-detector.md) | [Test Improver](gh-agent-workflows/test-improver.md) | Test coverage gaps |
+| [Test Coverage Detector](gh-agent-workflows/test-coverage.md) | [Test Improver](gh-agent-workflows/test-coverage.md#test-improver-fixer) | Test coverage gaps |
 | [Text Auditor](gh-agent-workflows/text-auditor.md) | [Text Beautifier](gh-agent-workflows/text-beautifier.md) | User-facing text quality |
 
 #### Standalone scheduled workflows
