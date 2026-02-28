@@ -9,7 +9,7 @@ steps:
       mkdir -p /tmp/pr-context
 
       # PR metadata
-      gh pr view "$PR_NUMBER" --json title,body,author,baseRefName,headRefName,url \
+      gh pr view "$PR_NUMBER" --json title,body,author,baseRefName,headRefName,headRefOid,url \
         > /tmp/pr-context/pr.json
 
       # Full diff
@@ -109,7 +109,7 @@ steps:
 
       | File | Description |
       | --- | --- |
-      | `pr.json` | PR metadata — title, body, author, base/head branches, URL |
+      | `pr.json` | PR metadata — title, body, author, base/head branches, head commit SHA (`headRefOid`), URL |
       | `pr.diff` | Full unified diff of all changes |
       | `files.json` | Changed files array — each entry has `filename`, `status`, `additions`, `deletions`, `patch` |
       | `diffs/<path>.diff` | Per-file diffs — one file per changed file, mirroring the repo path under `diffs/` |
