@@ -18,6 +18,9 @@ cd "$REPO_ROOT"
 
 # Workflows that are not dogfooded in this repository.
 EXCLUDED_WORKFLOWS=(
+  "bug-exterminator"
+  "code-duplication-fixer"
+  "code-simplifier"
   "estc-actions-resource-not-accessible-detector"
   "estc-docs-patrol-external"
   "estc-newbie-contributor-patrol-external"
@@ -25,11 +28,17 @@ EXCLUDED_WORKFLOWS=(
   "issue-fixer"
   "mention-in-issue-no-sandbox"
   "mention-in-pr-no-sandbox"
+  "newbie-contributor-fixer"
   "performance-profiler"
+  "pr-actions-fixer"
+  "pr-review-addresser"
   "pr-review-fork"
   "release-update"
   "scheduled-audit"
   "scheduled-fix"
+  "small-problem-fixer"
+  "test-improver"
+  "text-beautifier"
 )
 
 echo "Syncing workflow files..."
