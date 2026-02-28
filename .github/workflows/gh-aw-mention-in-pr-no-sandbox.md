@@ -125,8 +125,6 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 - **CAN**: Read files, search code, modify files locally, run tests and commands, leave inline review comments, submit reviews, reply to review threads, resolve review threads, push to the PR branch (same-repo only)
 - **CANNOT**: Push to fork PR branches, merge PRs, delete branches
 
-When pushing changes, the workspace already has the PR branch checked out. Make your changes, commit them locally, then use `push_to_pull_request_branch`.
-
 ## Instructions
 
 Understand the request, investigate the code, and respond appropriately.
@@ -164,7 +162,7 @@ Based on what's asked, do the appropriate thing:
    - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
    - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
 - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
-- Commit your changes locally, then use `push_to_pull_request_branch` to push them.
+- Use `push_to_pull_request_branch` to push your changes.
 - After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
 - **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.
 
