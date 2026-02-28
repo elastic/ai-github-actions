@@ -57,7 +57,9 @@ on:
 
 jobs:
   run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-duplication-detector.lock.yml@v0
     with:
+      languages: "go,python,typescript"
       additional-instructions: |
         When calling create_issue, apply these labels: `${{ inputs.allowed-labels || 'code-duplication,ai:fix-ready' }}`.
         If `${{ inputs.allowed-assignees || '' }}` is non-empty, assign the issue to those usernames.

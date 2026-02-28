@@ -63,7 +63,10 @@ on:
 
 jobs:
   run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-actions-resource-not-accessible-detector.lock.yml@v0
     with:
+      long-term-branches: ""
+      look-back-days: ${{ inputs.look-back-days || 1 }}
       additional-instructions: |
         When calling create_issue, apply these labels: `${{ inputs.allowed-labels || 'resource-not-accessible-by-integration,ai:fix-ready' }}`.
         If `${{ inputs.allowed-assignees || '' }}` is non-empty, assign the issue to those usernames.

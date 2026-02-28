@@ -55,6 +55,7 @@ on:
 
 jobs:
   run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-breaking-change-detector.lock.yml@v0
     with:
       additional-instructions: |
         When calling create_issue, apply these labels: `${{ inputs.allowed-labels || 'breaking-change,ai:fix-ready' }}`.
