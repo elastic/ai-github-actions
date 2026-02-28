@@ -48,6 +48,27 @@ If you want detector-to-fixer handoff via labels, add these optional `workflow_d
 | `allowed-labels` | Comma-separated labels the agent is allowed to apply when it calls `create_issue`. Tip: include both a detector label and your handoff label (for example `ai:fix-ready`) so Issue Fixer can trigger from a labeled issue. Leave empty to skip labeling. | `resource-not-accessible-by-integration,ai:fix-ready` |
 | `allowed-assignees` | Comma-separated GitHub usernames the agent is allowed to assign on created issues. Tip: keep this list small so assignment stays predictable. Leave empty to skip assigning. | `""` |
 
+```yaml
+on:
+  workflow_dispatch:
+    inputs:
+      allowed-labels:
+        description: "Comma-separated labels to allow on created issues"
+        required: false
+        default: "resource-not-accessible-by-integration,ai:fix-ready"
+      allowed-assignees:
+        description: "Comma-separated assignees to allow on created issues"
+        required: false
+        default: ""
+
+jobs:
+  run:
+    with:
+      additional-instructions: |
+        When calling create_issue, apply these labels: `${{ inputs.allowed-labels || 'resource-not-accessible-by-integration,ai:fix-ready' }}`.
+        If `${{ inputs.allowed-assignees || '' }}` is non-empty, assign the issue to those usernames.
+```
+
 ## Safe Outputs
 
 - `create-issue` — open one combined issue with analysis for all affected workflows
