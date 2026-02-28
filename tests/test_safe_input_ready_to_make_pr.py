@@ -535,3 +535,50 @@ class TestCreateGuards:
         output = run_py_in_repo(py_code, str(repo))
         assert output["status"] == "error"
         assert "upstream" in output["error"].lower()
+
+    def test_master_default_branch_no_tracking(self, py_code, tmp_path):
+        """origin/master fallback should work when upstream tracking and origin/HEAD are absent."""
+        repo = tmp_path / "repo"
+        repo.mkdir()
+
+        def git(*args):
+            subprocess.run(
+                ["git"] + list(args),
+                cwd=str(repo),
+                capture_output=True,
+                check=True,
+            )
+
+        git("init", "-b", "master")
+        git("config", "user.email", "test@test.com")
+        git("config", "user.name", "Test")
+
+        (repo / "file.txt").write_text("hello\n")
+        git("add", "file.txt")
+        git("commit", "-m", "init")
+
+        # Create a bare remote and push
+        remote = tmp_path / "remote.git"
+        subprocess.run(
+            ["git", "clone", "--bare", str(repo), str(remote)],
+            capture_output=True,
+            check=True,
+        )
+        git("remote", "add", "origin", str(remote))
+        git("push", "-u", "origin", "master")
+
+        # Remove upstream tracking and origin/HEAD to simulate the bug scenario
+        git("branch", "--unset-upstream")
+        subprocess.run(
+            ["git", "-C", str(repo), "update-ref", "-d", "refs/remotes/origin/HEAD"],
+            capture_output=True,
+            text=True,
+        )
+
+        # Add a commit so there's something to detect
+        (repo / "new.txt").write_text("new\n")
+        git("add", "new.txt")
+        git("commit", "-m", "add new")
+
+        output = run_py_in_repo(py_code, str(repo))
+        assert output["status"] == "ok"
