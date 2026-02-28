@@ -48,14 +48,14 @@ The reusable workflow also exposes `process_safe_outputs_temporary_id_map` as a 
 
 ## Same-run fixer handoff (recommended)
 
-If your repository blocks `issues.opened` follow-up workflows from bot-created issues, run your fixer as a downstream job in the same workflow run. Use the reusable extractor workflow to derive created issue numbers from `process_safe_outputs_temporary_id_map`.
+If your repository blocks `issues.opened` follow-up workflows from bot-created issues, run your fixer as a downstream job in the same workflow run. Use the reusable extractor workflow to derive created issue numbers (and other safe-output changes) from `process_safe_outputs_temporary_id_map`.
 
 First, install the reusable extractor workflow into your repository:
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/github/workflows/gh-aw-extract-created-issues.yml \
-  -o .github/workflows/gh-aw-extract-created-issues.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/github/workflows/gh-aw-extract-safe-outputs-changes.yml \
+  -o .github/workflows/gh-aw-extract-safe-outputs-changes.yml
 ```
 
 ````yaml
@@ -82,22 +82,22 @@ jobs:
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
-  extract-created-issues:
+  extract-safe-outputs-changes:
     needs: audit
-    uses: ./.github/workflows/gh-aw-extract-created-issues.yml
+    uses: ./.github/workflows/gh-aw-extract-safe-outputs-changes.yml
     with:
       process_safe_outputs_temporary_id_map: ${{ needs.audit.outputs.process_safe_outputs_temporary_id_map }}
 
   fix:
-    needs: [audit, extract-created-issues]
-    if: ${{ needs.extract-created-issues.outputs.created_issue_numbers != '[]' }}
+    needs: [audit, extract-safe-outputs-changes]
+    if: ${{ needs.extract-safe-outputs-changes.outputs.created_issue_numbers != '[]' }}
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-scheduled-fix.lock.yml@v0
     with:
       title-prefix: "[my-audit]"
       issue-label: "my-audit"
       additional-instructions: |
         Prioritize these newly created issues from this run:
-        ${{ needs.extract-created-issues.outputs.created_issue_numbers }}
+        ${{ needs.extract-safe-outputs-changes.outputs.created_issue_numbers }}
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ````

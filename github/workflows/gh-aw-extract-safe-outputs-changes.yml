@@ -1,0 +1,63 @@
+name: Extract Safe Outputs Changes
+
+on:
+  workflow_call:
+    inputs:
+      process_safe_outputs_temporary_id_map:
+        description: JSON map emitted by safe outputs processing.
+        required: false
+        type: string
+        default: "{}"
+    outputs:
+      changes:
+        description: JSON array of extracted changes with inferred type metadata.
+        value: ${{ jobs.extract.outputs.changes }}
+      created_issue_numbers:
+        description: JSON array of issue numbers created in the current run.
+        value: ${{ jobs.extract.outputs.created_issue_numbers }}
+      created_pull_request_numbers:
+        description: JSON array of pull request numbers created in the current run.
+        value: ${{ jobs.extract.outputs.created_pull_request_numbers }}
+      added_labels:
+        description: JSON array of labels added in the current run.
+        value: ${{ jobs.extract.outputs.added_labels }}
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    outputs:
+      changes: ${{ steps.extract.outputs.changes }}
+      created_issue_numbers: ${{ steps.extract.outputs.created_issue_numbers }}
+      created_pull_request_numbers: ${{ steps.extract.outputs.created_pull_request_numbers }}
+      added_labels: ${{ steps.extract.outputs.added_labels }}
+    steps:
+      - id: extract
+        env:
+          TEMP_ID_MAP: ${{ inputs.process_safe_outputs_temporary_id_map }}
+        run: |
+          set -euo pipefail
+          changes="$(jq -c '
+            to_entries
+            | map(
+                . as $entry
+                | ($entry.value | tostring) as $value
+                | if ($value | test("^#(?<n>[0-9]+)$")) then
+                    {temporary_id: $entry.key, value: $value, type: "issue", number: ($value | capture("^#(?<n>[0-9]+)$").n | tonumber)}
+                  elif ($value | test("/issues/(?<n>[0-9]+)$")) then
+                    {temporary_id: $entry.key, value: $value, type: "issue", number: ($value | capture("/issues/(?<n>[0-9]+)$").n | tonumber)}
+                  elif ($value | test("/pull/(?<n>[0-9]+)$")) then
+                    {temporary_id: $entry.key, value: $value, type: "pull_request", number: ($value | capture("/pull/(?<n>[0-9]+)$").n | tonumber)}
+                  elif ($value | test("^label:(?<name>.+)$")) then
+                    {temporary_id: $entry.key, value: $value, type: "label", label: ($value | capture("^label:(?<name>.+)$").name)}
+                  else
+                    {temporary_id: $entry.key, value: $value, type: "unknown"}
+                  end
+              )
+          ' <<< "${TEMP_ID_MAP:-"{}"}")"
+          created_issue_numbers="$(jq -c '[.[] | select(.type == "issue") | .number] | unique' <<< "$changes")"
+          created_pull_request_numbers="$(jq -c '[.[] | select(.type == "pull_request") | .number] | unique' <<< "$changes")"
+          added_labels="$(jq -c '[.[] | select(.type == "label") | .label] | unique' <<< "$changes")"
+          echo "changes=$changes" >> "$GITHUB_OUTPUT"
+          echo "created_issue_numbers=$created_issue_numbers" >> "$GITHUB_OUTPUT"
+          echo "created_pull_request_numbers=$created_pull_request_numbers" >> "$GITHUB_OUTPUT"
+          echo "added_labels=$added_labels" >> "$GITHUB_OUTPUT"
