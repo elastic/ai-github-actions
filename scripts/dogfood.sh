@@ -76,6 +76,14 @@ for f in gh-agent-workflows/*/example.yml; do
   else
     echo "  ✓ gh-agent-workflows/$dir/example.yml → $target"
   fi
+
+  # Inject EXTRA_COMMIT_GITHUB_TOKEN secret for lock workflows that accept it.
+  # This token enables commits made by workflows to trigger downstream CI runs.
+  lockfile=".github/workflows/gh-aw-${dir}.lock.yml"
+  if [[ -f "$lockfile" ]] && grep -q "EXTRA_COMMIT_GITHUB_TOKEN" "$lockfile"; then
+    sed -i '/COPILOT_GITHUB_TOKEN:/a\      EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}' "$target"
+    echo "    + injected EXTRA_COMMIT_GITHUB_TOKEN secret"
+  fi
 done
 
 echo "✓ Sync complete"

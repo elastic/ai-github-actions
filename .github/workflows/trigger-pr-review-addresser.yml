@@ -26,3 +26,4 @@ jobs:
       allowed-bot-users: "coderabbitai[bot],github-actions[bot],copilot"
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
