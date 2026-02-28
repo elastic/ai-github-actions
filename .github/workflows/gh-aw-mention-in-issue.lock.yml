@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a12d6e3fd649bf1f5b3f2e87c73b47e239f61dd2ab38981e95e282fe0e86cde9"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"13ba73c6ccffccc91d6878e8fd94697098aaa96b76585a5ab7d70278341dcc46"}
 
 name: "Mention in Issue"
 "on":
@@ -1095,8 +1095,8 @@ jobs:
           contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
           pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
           # Generate diff of all local changes vs upstream for self-review
-          # Try --merge-base (committed+staged+unstaged vs upstream), fall back to
-          # @{upstream} 2-dot (committed only), then HEAD (uncommitted only)
+          # Try --merge-base (vs common ancestor), fall back to
+          # @{upstream} 2-dot (vs upstream tip), then HEAD (uncommitted only)
           diff_text = ''
           for diff_cmd in [
               ['git', 'diff', '--merge-base', '@{upstream}'],

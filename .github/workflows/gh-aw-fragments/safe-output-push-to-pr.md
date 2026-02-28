@@ -34,8 +34,8 @@ safe-inputs:
       contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
       pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
       # Generate diff of all local changes vs upstream for self-review
-      # Try --merge-base (committed+staged+unstaged vs upstream), fall back to
-      # @{upstream} 2-dot (committed only), then HEAD (uncommitted only)
+      # Try --merge-base (vs common ancestor), fall back to
+      # @{upstream} 2-dot (vs upstream tip), then HEAD (uncommitted only)
       diff_text = ''
       for diff_cmd in [
           ['git', 'diff', '--merge-base', '@{upstream}'],
@@ -85,7 +85,7 @@ Before calling `push_to_pull_request_branch`, call `ready_to_make_pr` and apply 
 - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
 
 Trying to resolve merge conflicts? Do NOT create merge commits (commits with multiple parents) — `push_to_pull_request_branch` uses `git format-patch` which breaks on merge commits. This means: no `git merge`, no `git rebase`, no `git commit-tree` with multiple `-p` flags. Instead:
-1. Use `git merge-tree` or `git diff` to compare the conflicting files between this PR branch and the PR base branch (read from `/tmp/pr-context/pr.json`)
+1. Use `git diff HEAD...origin/<base-branch>` (base branch from `/tmp/pr-context/pr.json` field `baseRefName`) to see what the base branch changed in the conflicting files
 2. Edit the files directly to incorporate the changes from the base branch
 3. Commit the changes as regular (single-parent) commits
 4. Use push_to_pull_request_branch to push

@@ -32,8 +32,8 @@ safe-inputs:
       contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
       pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
       # Generate diff of all local changes vs upstream for self-review
-      # Try --merge-base (committed+staged+unstaged vs upstream), fall back to
-      # @{upstream} 2-dot (committed only), then HEAD (uncommitted only)
+      # Try --merge-base (vs common ancestor), fall back to
+      # @{upstream} 2-dot (vs upstream tip), then HEAD (uncommitted only)
       diff_text = ''
       for diff_cmd in [
           ['git', 'diff', '--merge-base', '@{upstream}'],
