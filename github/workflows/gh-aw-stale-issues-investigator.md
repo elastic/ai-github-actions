@@ -1,7 +1,7 @@
 ---
 inlined-imports: true
-name: "Stale Issues"
-description: "Find open issues that appear to already be resolved and recommend closing them"
+name: "Stale Issues Investigator"
+description: "Find open issues that appear to already be resolved, label them as stale, and file a report"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
@@ -44,6 +44,11 @@ on:
         type: string
         required: false
         default: ""
+      stale-label:
+        description: "Label used to mark stale issues"
+        type: string
+        required: false
+        default: "stale"
       title-prefix:
         description: "Title prefix for created issues (e.g. '[stale-issues]')"
         type: string
@@ -56,7 +61,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: stale-issues
+  group: stale-issues-investigator
   cancel-in-progress: true
 permissions:
   contents: read
@@ -75,7 +80,12 @@ safe-outputs:
     max: 1
     title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: true
-    expires: 7d
+    expires: 2d
+  add-labels:
+    max: 10
+    target: "*"
+    allowed:
+      - "${{ inputs.stale-label }}"
 timeout-minutes: 60
 steps:
   - name: Prescan open issues
@@ -104,7 +114,7 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-Find open issues that are very likely already resolved and recommend them for closure. You do NOT close issues yourself — you file a report listing candidates with evidence.
+Find open issues that are very likely already resolved, label them as stale candidates, and file a report.
 
 ### Data Gathering
 
@@ -170,6 +180,7 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 
 ### What to Skip
 
+- Issues already labeled `${{ inputs.stale-label }}` — they are already tracked and will be processed by the remediator
 - Issues with recent activity (comments in the last 14 days) — someone is still working on them
 - Issues labeled `epic`, `tracking`, `umbrella`, or similar meta-labels — these are intentionally kept open
 - Issues where the resolution is ambiguous or you aren't sure
@@ -177,6 +188,10 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 - Issues with open/unmerged PRs linked — work may still be in progress
 
 **When in doubt, skip the issue.** False positives waste maintainer time and erode trust in the report. Only include issues where you are highly confident they are resolved.
+
+### Labeling
+
+For each issue included in the report, call `add_labels` with the `${{ inputs.stale-label }}` label on that issue. This starts a 30-day grace period — maintainers can remove the label to prevent automatic closure by the remediator.
 
 ### Issue Format
 

@@ -1,6 +1,10 @@
-# Stale Issues
+# Stale Issues Investigator
 
-Find open issues that appear to already be resolved and recommend closing them.
+Find open issues that appear to already be resolved, label them as `stale`, and file a report.
+
+## How it works
+
+The agent investigates open issues for evidence of resolution (linked PRs, code evidence, conversation consensus). Newly identified candidates are labeled with the configured stale label and included in a summary report issue.
 
 ## Investigation strategy
 
@@ -10,8 +14,8 @@ A prescan step fetches up to 500 open issues (sorted by least recently updated) 
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues/example.yml \
-  -o .github/workflows/stale-issues.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues-investigator/example.yml \
+  -o .github/workflows/stale-issues-investigator.yml
 ```
 
 See [example.yml](example.yml) for the full workflow file.
@@ -40,7 +44,13 @@ mkdir -p .github/workflows && curl -sL \
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `stale-label` | Label used to mark stale issues | No | `stale` |
 
 ## Safe Outputs
 
 - `create-issue` — file a stale issues report (max 1, auto-closes older reports)
+- `add-labels` — apply the stale label to issues identified as likely resolved
+
+## Pairing
+
+This workflow is the investigation companion to [Stale Issues Remediator](../stale-issues-remediator/). The investigator finds and labels stale candidates; the remediator handles objections and closes expired ones. Install both for a fully autonomous stale-issue lifecycle, or use the investigator alone for human-in-the-loop review.
