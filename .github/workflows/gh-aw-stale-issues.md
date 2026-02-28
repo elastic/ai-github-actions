@@ -89,7 +89,7 @@ steps:
       printf "number\ttitle\tupdated_at\tcreated_at\tlabel_names\n" > "$issues_file"
 
       # Fetch open issues sorted by least recently updated (server-side sort)
-      gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 200 \
+      gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 500 \
         --search "sort:updated-asc" \
         --json number,title,updatedAt,createdAt,labels \
         --jq '.[] | [.number, .title, .updatedAt, .createdAt, ([.labels[].name] | join(","))] | @tsv' \
