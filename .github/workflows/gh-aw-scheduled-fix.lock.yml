@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"18eac1fd19c9aa09b0f306acbbc1b3a08d4f214f087b25be62fb8b5b8a947e7d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a690c02c6c714a6cf2f8f98decf62577aecd3cfe3ebbf77bfb3ef092ce5b83d2"}
 
 name: "Scheduled Fix"
 "on":
@@ -958,6 +958,22 @@ jobs:
                   return subprocess.run(cmd, capture_output=True, text=True, timeout=60)
               except subprocess.TimeoutExpired:
                   return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
+          
+          # --- Guard: detect merge commits ---
+          # Find the fork point with the upstream branch to scope the check
+          upstream_sha = ''
+          for ref in ['@{upstream}', 'origin/HEAD', 'origin/main']:
+              r = run(['git', 'merge-base', 'HEAD', ref])
+              if r.returncode == 0 and r.stdout.strip():
+                  upstream_sha = r.stdout.strip()
+                  break
+          if upstream_sha:
+              log = run(['git', 'rev-list', '--min-parents=2', f'{upstream_sha}..HEAD'])
+              merge_shas = log.stdout.strip()
+              if merge_shas:
+                  print(json.dumps({'status': 'error', 'error': f'Merge commit(s) detected: {merge_shas.splitlines()[0][:12]}... create_pull_request uses git format-patch which breaks on merge commits. Fix: re-apply your changes as direct file edits (no git merge/rebase/commit-tree with multiple -p flags) and commit as regular single-parent commits.'}))
+                  raise SystemExit(0)
+          
           contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
           pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
           # Generate diff of all local changes vs upstream for self-review

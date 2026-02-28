@@ -11,6 +11,26 @@ safe-inputs:
               return subprocess.run(cmd, capture_output=True, text=True, timeout=60)
           except subprocess.TimeoutExpired:
               return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
+
+      # --- Guard: detect history rewrites and merge commits ---
+      pr_json_path = '/tmp/pr-context/pr.json'
+      if os.path.isfile(pr_json_path):
+          with open(pr_json_path) as f:
+              pr_data = json.load(f)
+          pr_head_sha = pr_data.get('headRefOid', '')
+          if pr_head_sha:
+              # Check 1: PR head must be an ancestor of HEAD (no rebase/reset)
+              anc = run(['git', 'merge-base', '--is-ancestor', pr_head_sha, 'HEAD'])
+              if anc.returncode != 0:
+                  print(json.dumps({'status': 'error', 'error': f'History rewrite detected: the original PR head ({pr_head_sha[:12]}) is not an ancestor of HEAD. This means git rebase, reset, or cherry-pick rewrote history. push_to_pull_request_branch will fail. Fix: reset to the PR head with `git checkout {pr_head_sha}`, re-apply your changes as direct file edits, and commit as regular commits.'}))
+                  raise SystemExit(0)
+              # Check 2: no merge commits (multiple parents) since PR head
+              log = run(['git', 'rev-list', '--min-parents=2', f'{pr_head_sha}..HEAD'])
+              merge_shas = log.stdout.strip()
+              if merge_shas:
+                  print(json.dumps({'status': 'error', 'error': f'Merge commit(s) detected: {merge_shas.splitlines()[0][:12]}... push_to_pull_request_branch uses git format-patch which breaks on merge commits. Fix: reset to the PR head with `git checkout {pr_head_sha}`, re-apply your changes as direct file edits (no git merge/rebase/commit-tree with multiple -p flags), and commit as regular single-parent commits.'}))
+                  raise SystemExit(0)
+
       contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
       pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
       # Generate diff of all local changes vs upstream for self-review
@@ -62,7 +82,6 @@ Before calling `push_to_pull_request_branch`, call `ready_to_make_pr` and apply 
 - **Fork PRs**: Cannot push to fork PR branches. Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, explain that you cannot push and suggest the author apply changes themselves.
 - **Committed changes required**: You must have locally committed changes before calling push. Uncommitted or staged-only changes will fail.
 - **Branch**: Pushes to the PR's head branch. The workspace must have the PR branch checked out.
-- **No history rewrites before push**: Read the original PR head SHA from `/tmp/pr-context/pr.json` and run `git merge-base --is-ancestor "<pr-head-sha>" HEAD` before calling push. If this fails, do not call `push_to_pull_request_branch`; explain that local history was rewritten (for example by rebase/reset/cherry-pick flows) and re-apply the needed changes as direct file edits on top of the existing PR head.
 - You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
 
 Trying to resolve merge conflicts? Do NOT create merge commits (commits with multiple parents) — `push_to_pull_request_branch` uses `git format-patch` which breaks on merge commits. This means: no `git merge`, no `git rebase`, no `git commit-tree` with multiple `-p` flags. Instead:
