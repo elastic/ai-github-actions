@@ -6,7 +6,7 @@ Find open issues that appear to already be resolved, label them as `stale`, and 
 
 The workflow runs in two phases on every invocation:
 
-1. **Close phase** — Issues that have carried the `stale` label for 30+ days are automatically closed. Maintainers can remove the `stale` label at any time during the grace period to prevent closure.
+1. **Close phase** — Issues labeled `stale` are checked for objections (comments like "not stale" or "still relevant"); if found, the label is removed. Otherwise, issues that have carried the `stale` label for 30+ days are automatically closed. Maintainers can also remove the `stale` label at any time during the grace period to prevent closure.
 2. **Tag phase** — The agent investigates open issues for evidence of resolution (linked PRs, code evidence, conversation consensus). Newly identified candidates are labeled `stale` and included in a summary report issue.
 
 ## Investigation strategy

@@ -100,18 +100,26 @@ Find open issues that are very likely already resolved. This workflow operates i
 
 Run both phases on every invocation, starting with the close phase.
 
-### Phase 1: Close stale-labeled issues older than 30 days
+### Phase 1: Process stale-labeled issues
 
 Search for open issues labeled `stale`:
 ```
 github-search_issues: query="repo:{owner}/{repo} is:issue is:open label:stale"
 ```
 
-For each result, check the issue timeline (via `issue_read` with method `get_comments`) to find when the `stale` label was added. If the label was added **30 or more days ago** and has not been removed and re-added since, close the issue using `close-issue` with a comment explaining:
+For each result, fetch the full comment thread via `issue_read` with method `get_comments` and check for two things:
 
-> This issue was labeled `stale` on [date] and has had no further activity for 30 days. Closing automatically. If this issue is still relevant, please reopen it.
+1. **"Not stale" objections** — If any comment posted **after** the `stale` label was most recently added contains phrases like "not stale", "still relevant", "still needed", "still an issue", or "still a problem" (case-insensitive), remove the `stale` label:
+   ```bash
+   gh issue edit {issue_number} --remove-label stale --repo {owner}/{repo}
+   ```
+   Skip this issue from closure — the objection overrides the stale determination.
 
-If the `stale` label was removed and re-added, use the most recent addition date. Skip issues where the label was added fewer than 30 days ago.
+2. **30-day expiry** — For issues with no such objection, check when the `stale` label was added. If the label was added **30 or more days ago** and has not been removed and re-added since, close the issue using `close-issue` with a comment explaining:
+
+   > This issue was labeled `stale` on [date] and has had no further activity for 30 days. Closing automatically. If this issue is still relevant, please reopen it.
+
+   If the `stale` label was removed and re-added, use the most recent addition date. Skip issues where the label was added fewer than 30 days ago.
 
 ### Phase 2: Identify and tag new stale candidates
 
