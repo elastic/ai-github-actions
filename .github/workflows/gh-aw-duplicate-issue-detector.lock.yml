@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"901155712571e8be8dec308242b271140da435f48a22577e3e0238c4b3e05ab5"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"99ba5e7df56edd7374202a687bfa59fcc774700a3ad91222f8db229a43ea5dca"}
 
 name: "Duplicate Issue Detector"
 "on":
@@ -524,7 +524,7 @@ jobs:
       - env:
           GH_TOKEN: ${{ github.token }}
         name: Prescan issue index
-        run: "set -euo pipefail\nmkdir -p /tmp/gh-aw/agent\n\nissues_file=\"/tmp/gh-aw/agent/issues-index.tsv\"\nprintf \"number\\ttitle\\tstate\\n\" > \"$issues_file\"\n\n# Newest 500 issues (most likely to match recent duplicates)\ngh search issues --repo \"$GITHUB_REPOSITORY\" --sort created --order desc --limit 500 --json number,title,state \\\n  --jq '.[] | [.number, .title, .state] | @tsv' >> \"$issues_file\" 2>/dev/null || true\n\n# Oldest 500 issues (covers long-standing items)\ngh search issues --repo \"$GITHUB_REPOSITORY\" --sort created --order asc --limit 500 --json number,title,state \\\n  --jq '.[] | [.number, .title, .state] | @tsv' >> \"$issues_file\" 2>/dev/null || true\n\n# Deduplicate (newest and oldest may overlap for repos with <1000 issues)\nawk -F'\\t' '!seen[$1]++' \"$issues_file\" > \"${issues_file}.tmp\" && mv \"${issues_file}.tmp\" \"$issues_file\"\n\ncount=\"$(tail -n +2 \"$issues_file\" | wc -l | tr -d ' ')\"\necho \"Prescanned ${count} issues into ${issues_file}\""
+        run: "set -euo pipefail\nmkdir -p /tmp/gh-aw/agent\n\nissues_file=\"/tmp/gh-aw/agent/issues-index.tsv\"\nprintf \"number\\ttitle\\tstate\\n\" > \"$issues_file\"\n\n# Newest 500 issues (most likely to match recent duplicates)\ngh search issues --repo \"$GITHUB_REPOSITORY\" --sort created --order desc --limit 500 --json number,title,state \\\n  --jq '.[] | [.number, .title, .state] | @tsv' >> \"$issues_file\" || { echo \"::warning::Failed to fetch newest issues\"; }\n\n# Oldest 500 issues (covers long-standing items)\ngh search issues --repo \"$GITHUB_REPOSITORY\" --sort created --order asc --limit 500 --json number,title,state \\\n  --jq '.[] | [.number, .title, .state] | @tsv' >> \"$issues_file\" || { echo \"::warning::Failed to fetch oldest issues\"; }\n\n# Deduplicate (newest and oldest may overlap for repos with <1000 issues)\nawk -F'\\t' '!seen[$1]++' \"$issues_file\" > \"${issues_file}.tmp\" && mv \"${issues_file}.tmp\" \"$issues_file\"\n\ncount=\"$(tail -n +2 \"$issues_file\" | wc -l | tr -d ' ')\"\necho \"Prescanned ${count} issues into ${issues_file}\""
 
       - name: Configure Git credentials
         env:

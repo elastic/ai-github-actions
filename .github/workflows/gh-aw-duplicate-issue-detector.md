@@ -77,11 +77,11 @@ steps:
 
       # Newest 500 issues (most likely to match recent duplicates)
       gh search issues --repo "$GITHUB_REPOSITORY" --sort created --order desc --limit 500 --json number,title,state \
-        --jq '.[] | [.number, .title, .state] | @tsv' >> "$issues_file" 2>/dev/null || true
+        --jq '.[] | [.number, .title, .state] | @tsv' >> "$issues_file" || { echo "::warning::Failed to fetch newest issues"; }
 
       # Oldest 500 issues (covers long-standing items)
       gh search issues --repo "$GITHUB_REPOSITORY" --sort created --order asc --limit 500 --json number,title,state \
-        --jq '.[] | [.number, .title, .state] | @tsv' >> "$issues_file" 2>/dev/null || true
+        --jq '.[] | [.number, .title, .state] | @tsv' >> "$issues_file" || { echo "::warning::Failed to fetch oldest issues"; }
 
       # Deduplicate (newest and oldest may overlap for repos with <1000 issues)
       awk -F'\t' '!seen[$1]++' "$issues_file" > "${issues_file}.tmp" && mv "${issues_file}.tmp" "$issues_file"
