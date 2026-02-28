@@ -52,6 +52,7 @@ nav:
               - Code Duplication: workflows/gh-agent-workflows/code-duplication.md
               - Docs Patrol: workflows/gh-agent-workflows/docs-patrol-overview.md
               - Newbie Contributor: workflows/gh-agent-workflows/newbie-contributor.md
+              - Test Coverage: workflows/gh-agent-workflows/test-coverage.md
               - Text Quality: workflows/gh-agent-workflows/text-quality.md
           - Standalone Scheduled:
               - Agent Suggestions: workflows/gh-agent-workflows/agent-suggestions.md
@@ -67,7 +68,6 @@ nav:
               - Release Update Check: workflows/gh-agent-workflows/release-update.md
               - Small Problem Fixer: workflows/gh-agent-workflows/small-problem-fixer.md
               - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
-              - Test Improver: workflows/gh-agent-workflows/test-improver.md
       - Elastic-specific:
           - Docs PR Review (Elastic-specific): workflows/gh-agent-workflows/estc-docs-pr-review.md
           - PR Buildkite Detective (Elastic-specific): workflows/gh-agent-workflows/estc-pr-buildkite-detective.md

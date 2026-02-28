@@ -22,6 +22,7 @@ DETECTORS=(
   "Trigger Newbie Contributor Patrol"
   "Trigger Code Duplication Detector"
   "Trigger Stale Issues"
+  "Trigger Test Coverage Detector"
   "Trigger Text Auditor"
 )
 

@@ -135,6 +135,7 @@ continuous_improvement_workflows=(
   refactor-opportunist
   small-problem-fixer
   stale-issues
+  test-coverage-detector
   test-improver
   breaking-change-detector
   code-duplication-detector
