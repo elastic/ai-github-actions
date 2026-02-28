@@ -50,6 +50,14 @@ The reusable workflow also exposes `process_safe_outputs_temporary_id_map` as a 
 
 If your repository blocks `issues.opened` follow-up workflows from bot-created issues, run your fixer as a downstream job in the same workflow run. Use the reusable extractor workflow to derive created issue numbers from `process_safe_outputs_temporary_id_map`.
 
+First, install the reusable extractor workflow into your repository:
+
+```bash
+mkdir -p .github/workflows && curl -sL \
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/github/workflows/gh-aw-extract-created-issues.yml \
+  -o .github/workflows/gh-aw-extract-created-issues.yml
+```
+
 ````yaml
 name: Scheduled Audit + Fix
 on:
@@ -76,7 +84,7 @@ jobs:
 
   extract-created-issues:
     needs: audit
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-extract-created-issues.yml@v0
+    uses: ./.github/workflows/gh-aw-extract-created-issues.yml
     with:
       process_safe_outputs_temporary_id_map: ${{ needs.audit.outputs.process_safe_outputs_temporary_id_map }}
 
