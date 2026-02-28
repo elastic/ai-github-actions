@@ -528,3 +528,11 @@ class TestCreateGuards:
         output = run_py_in_repo(py_code, str(repo))
         assert output["status"] == "error"
         assert "Merge commit" in output["error"]
+
+    def test_no_upstream_fails_closed(self, py_code, tmp_path):
+        """Without an upstream ref, the create guard should fail closed."""
+        repo = make_git_repo(tmp_path, with_upstream=False)
+
+        output = run_py_in_repo(py_code, str(repo))
+        assert output["status"] == "error"
+        assert "upstream" in output["error"].lower()

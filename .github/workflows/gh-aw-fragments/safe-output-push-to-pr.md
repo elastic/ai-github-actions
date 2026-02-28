@@ -22,13 +22,13 @@ safe-inputs:
               # Check 1: PR head must be an ancestor of HEAD (no rebase/reset)
               anc = run(['git', 'merge-base', '--is-ancestor', pr_head_sha, 'HEAD'])
               if anc.returncode != 0:
-                  print(json.dumps({'status': 'error', 'error': f'History rewrite detected: the original PR head ({pr_head_sha[:12]}) is not an ancestor of HEAD. This means git rebase, reset, or cherry-pick rewrote history. push_to_pull_request_branch will fail. Fix: reset to the PR head with `git checkout {pr_head_sha}`, re-apply your changes as direct file edits, and commit as regular commits.'}))
+                  print(json.dumps({'status': 'error', 'error': f'History rewrite detected: the original PR head ({pr_head_sha[:12]}) is not an ancestor of HEAD. This means git rebase, reset, or cherry-pick rewrote history. push_to_pull_request_branch will fail. Fix: run `git reset --hard {pr_head_sha}` to restore the PR branch to its original head, then re-apply your changes as direct file edits and commit as regular commits.'}))
                   raise SystemExit(0)
               # Check 2: no merge commits (multiple parents) since PR head
               log = run(['git', 'rev-list', '--min-parents=2', f'{pr_head_sha}..HEAD'])
               merge_shas = log.stdout.strip()
               if merge_shas:
-                  print(json.dumps({'status': 'error', 'error': f'Merge commit(s) detected: {merge_shas.splitlines()[0][:12]}... push_to_pull_request_branch uses git format-patch which breaks on merge commits. Fix: reset to the PR head with `git checkout {pr_head_sha}`, re-apply your changes as direct file edits (no git merge/rebase/commit-tree with multiple -p flags), and commit as regular single-parent commits.'}))
+                  print(json.dumps({'status': 'error', 'error': f'Merge commit(s) detected: {merge_shas.splitlines()[0][:12]}... push_to_pull_request_branch uses git format-patch which breaks on merge commits. Fix: run `git reset --hard {pr_head_sha}` to restore the PR branch, then re-apply your changes as direct file edits (no git merge/rebase/commit-tree with multiple -p flags) and commit as regular single-parent commits.'}))
                   raise SystemExit(0)
 
       contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')

@@ -20,12 +20,14 @@ safe-inputs:
           if r.returncode == 0 and r.stdout.strip():
               upstream_sha = r.stdout.strip()
               break
-      if upstream_sha:
-          log = run(['git', 'rev-list', '--min-parents=2', f'{upstream_sha}..HEAD'])
-          merge_shas = log.stdout.strip()
-          if merge_shas:
-              print(json.dumps({'status': 'error', 'error': f'Merge commit(s) detected: {merge_shas.splitlines()[0][:12]}... create_pull_request uses git format-patch which breaks on merge commits. Fix: re-apply your changes as direct file edits (no git merge/rebase/commit-tree with multiple -p flags) and commit as regular single-parent commits.'}))
-              raise SystemExit(0)
+      if not upstream_sha:
+          print(json.dumps({'status': 'error', 'error': 'Unable to determine upstream fork point for merge-commit validation. Fix: ensure remotes are fetched and a tracking branch is set (e.g., `git branch --set-upstream-to origin/<default-branch>`), then rerun ready_to_make_pr.'}))
+          raise SystemExit(0)
+      log = run(['git', 'rev-list', '--min-parents=2', f'{upstream_sha}..HEAD'])
+      merge_shas = log.stdout.strip()
+      if merge_shas:
+          print(json.dumps({'status': 'error', 'error': f'Merge commit(s) detected: {merge_shas.splitlines()[0][:12]}... create_pull_request uses git format-patch which breaks on merge commits. Fix: re-apply your changes as direct file edits (no git merge/rebase/commit-tree with multiple -p flags) and commit as regular single-parent commits.'}))
+          raise SystemExit(0)
 
       contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
       pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
