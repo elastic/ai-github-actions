@@ -48,14 +48,14 @@ The reusable workflow also exposes `process_safe_outputs_temporary_id_map` as a 
 
 ## Same-run fixer handoff (recommended)
 
-If your repository blocks `issues.opened` follow-up workflows from bot-created issues, run your fixer as a downstream job in the same workflow run. Use the reusable extractor workflow to derive created issue numbers (and other safe-output changes) from `process_safe_outputs_temporary_id_map`.
+If your repository blocks `issues.opened` follow-up workflows from bot-created issues, run your fixer as a downstream job in the same workflow run. Use the reusable helper workflow to derive created issue numbers (and other safe-output changes) from `process_safe_outputs_temporary_id_map`.
 
-First, install the reusable extractor workflow into your repository:
+First, install the helper workflow into your repository:
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/github/workflows/gh-aw-extract-safe-outputs-changes.yml \
-  -o .github/workflows/gh-aw-extract-safe-outputs-changes.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/.github/workflows/gh-aw-helpers-extract-safe-outputs-changes.yml \
+  -o .github/workflows/gh-aw-helpers-extract-safe-outputs-changes.yml
 ```
 
 ````yaml
@@ -84,7 +84,7 @@ jobs:
 
   extract-safe-outputs-changes:
     needs: audit
-    uses: ./.github/workflows/gh-aw-extract-safe-outputs-changes.yml
+    uses: ./.github/workflows/gh-aw-helpers-extract-safe-outputs-changes.yml
     with:
       process_safe_outputs_temporary_id_map: ${{ needs.audit.outputs.process_safe_outputs_temporary_id_map }}
 

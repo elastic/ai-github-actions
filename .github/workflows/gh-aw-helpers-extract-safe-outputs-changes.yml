@@ -1,4 +1,4 @@
-name: Extract Safe Outputs Changes
+name: "gh-aw-helpers: Extract Safe Outputs Changes"
 
 on:
   workflow_call:
