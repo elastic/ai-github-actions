@@ -17,6 +17,6 @@ jobs:
     if: >-
       github.event.issue.pull_request == null &&
       startsWith(github.event.comment.body, '/gemini')
-    uses: ./.github/workflows/internal-gemini-cli.lock.yml
+    uses: ./.github/workflows/gh-aw-internal-gemini-cli.lock.yml
     secrets:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
