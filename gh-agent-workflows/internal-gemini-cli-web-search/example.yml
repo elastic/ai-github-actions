@@ -1,4 +1,4 @@
-name: Deep Research
+name: Internal Gemini CLI Web Search
 on:
   issue_comment:
     types: [created]
@@ -15,6 +15,6 @@ jobs:
     if: >-
       github.event.issue.pull_request == null &&
       startsWith(github.event.comment.body, '/research')
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-deep-research.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-internal-gemini-cli-web-search.lock.yml@v0
     secrets:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

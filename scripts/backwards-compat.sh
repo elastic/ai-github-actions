@@ -17,6 +17,7 @@ WORKFLOWS_DIR="$REPO_ROOT/.github/workflows"
 # Parallel arrays: old name → new name
 OLD_NAMES=(
   "gh-aw-breaking-change-detect.lock.yml"
+  "gh-aw-deep-research.lock.yml"
   "gh-aw-docs-drift.lock.yml"
   "gh-aw-pr-ci-detective.lock.yml"
   "gh-aw-stale-issues.lock.yml"
@@ -24,6 +25,7 @@ OLD_NAMES=(
 )
 NEW_NAMES=(
   "gh-aw-breaking-change-detector.lock.yml"
+  "gh-aw-internal-gemini-cli-web-search.lock.yml"
   "gh-aw-docs-patrol.lock.yml"
   "gh-aw-pr-actions-detective.lock.yml"
   "gh-aw-stale-issues-investigator.lock.yml"

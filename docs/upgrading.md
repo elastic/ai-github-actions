@@ -31,6 +31,7 @@ Compiler upgrade with new features and bug fixes. No breaking changes — recomp
 ### Backwards-compatibility workflow copies (rename now)
 
 - `gh-aw-breaking-change-detect.lock.yml` → `gh-aw-breaking-change-detector.lock.yml`
+- `gh-aw-deep-research.lock.yml` → `gh-aw-internal-gemini-cli-web-search.lock.yml`
 - `gh-aw-docs-drift.lock.yml` → `gh-aw-docs-patrol.lock.yml`
 - `gh-aw-pr-ci-detective.lock.yml` → `gh-aw-pr-actions-detective.lock.yml`
 - `gh-aw-test-improvement.lock.yml` → `gh-aw-test-improver.lock.yml`
