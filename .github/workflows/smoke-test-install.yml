@@ -54,7 +54,7 @@ jobs:
             duplicate-issue-detector
             estc-docs-patrol-external
             estc-docs-pr-review
-            estc-downstream-health
+            internal-downstream-health
             estc-newbie-contributor-patrol-external
             estc-pr-buildkite-detective
             flaky-test-investigator

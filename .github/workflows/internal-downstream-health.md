@@ -1,6 +1,6 @@
 ---
 inlined-imports: true
-name: "Estc Downstream Health"
+name: "Internal: Downstream Health"
 description: "Monitor downstream repositories using AI workflows and report quality issues"
 imports:
   - gh-aw-fragments/elastic-tools.md
@@ -56,7 +56,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: ${{ github.workflow }}-estc-downstream-health
+  group: ${{ github.workflow }}-internal-downstream-health
   cancel-in-progress: true
 permissions:
   actions: read
