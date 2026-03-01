@@ -30,6 +30,7 @@
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/network-ecosystems.md
+#     - gh-aw-fragments/playwright-mcp-explorer.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment-issue.md
@@ -39,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6f6a0093b731fadbf56e960e738e5198d3a3b561f3167524ed8399cd7163106f"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bd8f6ffb24fa0c365562e2712c9f7aac1bc30d2f83c41ae8ae54ab05352fb1a3"}
 
 name: "Mention in Issue"
 "on":
@@ -128,7 +129,7 @@ jobs:
       title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@19c329d562f8cd58c3b6f07c7d9894c60bc609d2 # v0.51.0
+        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
         with:
           destination: /opt/gh-aw/actions
       - name: Generate agentic run info
@@ -138,7 +139,7 @@ jobs:
           GH_AW_INFO_ENGINE_NAME: "GitHub Copilot CLI"
           GH_AW_INFO_MODEL: "${{ inputs.model }}"
           GH_AW_INFO_VERSION: ""
-          GH_AW_INFO_AGENT_VERSION: "0.0.419"
+          GH_AW_INFO_AGENT_VERSION: "0.0.420"
           GH_AW_INFO_WORKFLOW_NAME: "Mention in Issue"
           GH_AW_INFO_EXPERIMENTAL: "false"
           GH_AW_INFO_SUPPORTS_TOOLS_ALLOWLIST: "true"
@@ -158,20 +159,13 @@ jobs:
         run: /opt/gh-aw/actions/validate_multi_secret.sh COPILOT_GITHUB_TOKEN 'GitHub Copilot CLI' https://github.github.com/gh-aw/reference/engines/#github-copilot-default
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-      - name: Validate context variables
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        with:
-          script: |
-            const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('/opt/gh-aw/actions/validate_context_variables.cjs');
-            await main();
       - name: Checkout .github and .agents folders
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           sparse-checkout: |
             .github
             .agents
+          sparse-checkout-cone-mode: true
           fetch-depth: 1
           persist-credentials: false
       - name: Check workflow file timestamps
@@ -219,6 +213,7 @@ jobs:
           cat "/opt/gh-aw/prompts/xpia.md"
           cat "/opt/gh-aw/prompts/temp_folder_prompt.md"
           cat "/opt/gh-aw/prompts/markdown.md"
+          cat "/opt/gh-aw/prompts/playwright_prompt.md"
           cat "/opt/gh-aw/prompts/safe_outputs_prompt.md"
           cat << 'GH_AW_PROMPT_EOF'
           <safe-output-tools>
@@ -337,6 +332,52 @@ jobs:
           ## Message Footer
           
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## Playwright MCP Tools
+          
+          You have Playwright MCP tools available for interactive browser automation.
+          Use these tools to explore the app step by step — do NOT write Node.js scripts.
+          
+          ### Available tools
+          
+          - `browser_navigate` — go to a URL
+          - `browser_click` — click an element
+          - `browser_type` — type text into an input
+          - `browser_snapshot` — get an accessibility tree (YAML) of the current page
+          - `browser_take_screenshot` — capture a screenshot
+          - `browser_console_execute` — run JavaScript in the browser console
+          
+          ### Why MCP tools instead of scripts
+          
+          MCP tools are interactive: you see the page state after each action and
+          decide what to do next. This is ideal for exploratory testing where you
+          need to adapt based on what you find. Scripts are fire-and-forget — if
+          a selector is wrong, you don't find out until the script fails.
+          
+          ### Measuring DOM properties
+          
+          For programmatic checks (e.g. element heights, contrast), use
+          `browser_console_execute`:
+          
+          ```javascript
+          (() => {
+            const els = document.querySelectorAll('input, button, [role="combobox"], [role="button"]');
+            return JSON.stringify(Array.from(els)
+              .map(el => {
+                const r = el.getBoundingClientRect();
+                return { tag: el.tagName, h: Math.round(r.height), top: Math.round(r.top), text: el.textContent?.trim().slice(0, 20) };
+              })
+              .filter(el => el.top > 50 && el.top < 250));
+          })()
+          ```
+          
+          ### Handling failures
+          
+          - Do not retry the same action more than twice — the page is in a different state than expected.
+          - Diagnose before moving on: use `browser_take_screenshot` and `browser_snapshot` to see what's on the page.
+          - Adapt (different selector, different path) or report the failure as a finding.
+          - Never claim you verified something you didn't — if it failed and you skipped it, say so.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## add-comment Limitations
@@ -496,7 +537,7 @@ jobs:
         run: bash /opt/gh-aw/actions/print_prompt_summary.sh
       - name: Upload activation artifact
         if: success()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: activation
           path: |
@@ -534,7 +575,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@19c329d562f8cd58c3b6f07c7d9894c60bc609d2 # v0.51.0
+        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -623,7 +664,7 @@ jobs:
             const { main } = require('/opt/gh-aw/actions/checkout_pr_branch.cjs');
             await main();
       - name: Install GitHub Copilot CLI
-        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.419
+        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.420
       - name: Install awf binary
         run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.23.0
       - name: Determine automatic lockdown mode for GitHub MCP Server
@@ -637,7 +678,7 @@ jobs:
             const determineAutomaticLockdown = require('/opt/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.23.0 ghcr.io/github/gh-aw-firewall/api-proxy:0.23.0 ghcr.io/github/gh-aw-firewall/squid:0.23.0 ghcr.io/github/gh-aw-mcpg:v0.1.6 ghcr.io/github/github-mcp-server:v0.31.0 node:lts-alpine
+        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.23.0 ghcr.io/github/gh-aw-firewall/api-proxy:0.23.0 ghcr.io/github/gh-aw-firewall/squid:0.23.0 ghcr.io/github/gh-aw-mcpg:v0.1.6 ghcr.io/github/github-mcp-server:v0.31.0 mcr.microsoft.com/playwright/mcp node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p /opt/gh-aw/safeoutputs
@@ -1232,6 +1273,7 @@ jobs:
         run: |
           set -eo pipefail
           mkdir -p /tmp/gh-aw/mcp-config
+          mkdir -p /tmp/gh-aw/mcp-logs/playwright
           
           # Export gateway environment variables for MCP config and gateway script
           export MCP_GATEWAY_PORT="80"
@@ -1268,6 +1310,13 @@ jobs:
                   "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,actions"
                 }
               },
+              "playwright": {
+                "type": "stdio",
+                "container": "mcr.microsoft.com/playwright/mcp",
+                "args": ["--init", "--network", "host", "--security-opt", "seccomp=unconfined", "--ipc=host"],
+                "entrypointArgs": ["--output-dir", "/tmp/gh-aw/mcp-logs/playwright", "--no-sandbox"],
+                "mounts": ["/tmp/gh-aw/mcp-logs:/tmp/gh-aw/mcp-logs:rw"]
+              },
               "public-code-search": {
                 "type": "http",
                 "url": "https://public-code-search.fastmcp.app/mcp",
@@ -1299,7 +1348,7 @@ jobs:
           }
           GH_AW_MCP_CONFIG_EOF
       - name: Download activation artifact
-        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
         with:
           name: activation
           path: /tmp/gh-aw
@@ -1384,7 +1433,7 @@ jobs:
           SECRET_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload Safe Outputs
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: safe-output
           path: ${{ env.GH_AW_SAFE_OUTPUTS }}
@@ -1406,13 +1455,13 @@ jobs:
             await main();
       - name: Upload sanitized agent output
         if: always() && env.GH_AW_AGENT_OUTPUT
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: agent-output
           path: ${{ env.GH_AW_AGENT_OUTPUT }}
           if-no-files-found: warn
       - name: Upload engine output files
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: agent_outputs
           path: |
@@ -1466,7 +1515,7 @@ jobs:
       - name: Upload agent artifacts
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: agent-artifacts
           path: |
@@ -1569,7 +1618,7 @@ jobs:
             await main();
       - name: Upload threat detection log
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: threat-detection.log
           path: /tmp/gh-aw/threat-detection/detection.log
@@ -1612,12 +1661,12 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@19c329d562f8cd58c3b6f07c7d9894c60bc609d2 # v0.51.0
+        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
         continue-on-error: true
-        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
         with:
           name: agent-output
           path: /tmp/gh-aw/safeoutputs/
@@ -1718,7 +1767,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@19c329d562f8cd58c3b6f07c7d9894c60bc609d2 # v0.51.0
+        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
         with:
           destination: /opt/gh-aw/actions
       - name: Add eyes reaction for immediate feedback
@@ -1780,12 +1829,12 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@19c329d562f8cd58c3b6f07c7d9894c60bc609d2 # v0.51.0
+        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
         continue-on-error: true
-        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
         with:
           name: agent-output
           path: /tmp/gh-aw/safeoutputs/
@@ -1796,7 +1845,7 @@ jobs:
           echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/safeoutputs/agent_output.json" >> "$GITHUB_ENV"
       - name: Download patch artifact
         continue-on-error: true
-        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8.0.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
         with:
           name: agent-artifacts
           path: /tmp/gh-aw/
@@ -1841,7 +1890,7 @@ jobs:
             await main();
       - name: Upload safe output items manifest
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: safe-output-items
           path: /tmp/safe-output-items.jsonl

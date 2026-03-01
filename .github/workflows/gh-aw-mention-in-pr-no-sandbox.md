@@ -12,6 +12,7 @@ imports:
   - gh-aw-fragments/pr-context.md
   - gh-aw-fragments/review-process.md
   - gh-aw-fragments/messages-footer.md
+  - gh-aw-fragments/playwright-mcp-explorer.md
   - gh-aw-fragments/safe-output-add-comment-pr.md
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
