@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2f29669456d66cae2aa4f8c35dc0a00fd43581d7e16e8dc74164a2c56c98c938"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0c4a155ffdf369bbe24ee556a0a5d3580b62994bfb28915aa121fbe5db1f7ee7"}
 
 name: "Mention in Issue (no sandbox)"
 "on":
@@ -1122,7 +1122,7 @@ jobs:
           if pr_template: checklist.append(f'Follow the PR template ({pr_template}) for title, description, and validation notes.')
           checklist.append('Confirm the requested task is fully completed and validated before creating or pushing PR changes.')
           if diff_line_count > 0:
-              checklist.append(f'A diff of your unpushed changes ({diff_line_count} lines) has been saved to `/tmp/self-review/diff.patch` (full diff) and `/tmp/self-review/stat.txt` (summary). Spawn a `code-review` sub-agent via `runSubagent` to review the diff against the codebase. Tell it to read `/tmp/self-review/diff.patch` and the relevant source files, and look for bugs, logic errors, missed edge cases, and style issues. If the sub-agent finds legitimate issues, fix them, commit, and call `ready_to_make_pr` again to regenerate the diff before proceeding.')
+              checklist.append(f'A diff of your unpushed changes ({diff_line_count} lines) has been saved to `/tmp/self-review/diff.patch` (full diff) and `/tmp/self-review/stat.txt` (summary). Spawn a `code-review` sub-agent via `runSubagent` to review the diff against the codebase. Tell it to read `/tmp/self-review/diff.patch` and the relevant source files, and look for bugs, logic errors, missed edge cases, and style issues. IMPORTANT: In your sub-agent prompt, include your own context so the reviewer starts warm instead of cold: what you changed and why, which files are relevant and what they do, edge cases you already considered and why they are handled, and what the tests cover. This helps the reviewer focus on what you might have MISSED rather than re-deriving your full reasoning from scratch. If the sub-agent finds legitimate issues, fix them, commit, and call `ready_to_make_pr` again to regenerate the diff before proceeding.')
           print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template, 'diff_line_count': diff_line_count}))
           
           

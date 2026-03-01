@@ -365,6 +365,27 @@ class TestSelfReviewGating:
         checklist_text = " ".join(output["checklist"])
         assert "self-review" not in checklist_text
 
+    def test_context_passing_instruction_present(self, py_code, tmp_path):
+        """The checklist should instruct the agent to pass context to the sub-agent."""
+        repo = make_git_repo(tmp_path, with_upstream=True)
+        (repo / "file.txt").write_text("changed\n")
+
+        output = run_py_in_repo(py_code, str(repo))
+        checklist_text = " ".join(output["checklist"])
+        assert "include your own context" in checklist_text
+        assert "starts warm instead of cold" in checklist_text
+
+    def test_context_passing_in_create_fragment(self, tmp_path):
+        """The create fragment should also include context-passing instructions."""
+        create_code = extract_py_block(CREATE_FRAGMENT)
+        repo = make_git_repo(tmp_path, with_upstream=True)
+        (repo / "file.txt").write_text("changed\n")
+
+        output = run_py_in_repo(create_code, str(repo))
+        checklist_text = " ".join(output["checklist"])
+        assert "include your own context" in checklist_text
+        assert "starts warm instead of cold" in checklist_text
+
     def test_diff_line_count_in_checklist(self, py_code, tmp_path):
         repo = make_git_repo(tmp_path, with_upstream=True)
         (repo / "file.txt").write_text("line1\nline2\nline3\n")
