@@ -23,7 +23,7 @@ on:
         description: "AI model to use"
         type: string
         required: false
-        default: "gemini-3-pro-preview"
+        default: ""
       additional-instructions:
         description: "Repo-specific instructions appended to the agent prompt"
         type: string

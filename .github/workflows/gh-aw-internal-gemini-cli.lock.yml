@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"51ef12113fcf5a5012e45b2a5c4abbaf1419300104d064f4e41cd8f19a39604e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c5b87f63f3e5ff697d3ca309f75e230d607e2ecbe8aea6bfc6425d4ada39e1b1"}
 
 name: "Internal Gemini CLI"
 "on":
@@ -58,7 +58,7 @@ name: "Internal Gemini CLI"
         required: false
         type: string
       model:
-        default: gemini-3-pro-preview
+        default: ""
         description: AI model to use
         required: false
         type: string
