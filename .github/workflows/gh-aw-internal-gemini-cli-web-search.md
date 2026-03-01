@@ -1,7 +1,7 @@
 ---
 inlined-imports: true
-name: "Deep Research"
-description: "Deep research assistant for issue comments with web fetch"
+name: "Internal Gemini CLI Web Search"
+description: "Gemini-powered web research assistant — investigates issues and posts findings as comments or new issues"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
@@ -10,11 +10,12 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment-issue.md
+  - gh-aw-fragments/safe-output-create-issue.md
 engine:
   id: gemini
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-gemini-${{ github.workflow }}-deep-research-${{ github.event.issue.number }}"
+    group: "gh-aw-gemini-${{ github.workflow }}-internal-gemini-cli-web-search-${{ github.event.issue.number }}"
 on:
   workflow_call:
     inputs:
@@ -51,7 +52,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: ${{ github.workflow }}-deep-research-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-internal-gemini-cli-web-search-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
   contents: read
@@ -66,6 +67,11 @@ network:
   firewall: false
 safe-outputs:
   activation-comments: false
+  create-issue:
+    max: 1
+    title-prefix: "[research] "
+    close-older-issues: true
+    expires: 7d
 strict: false
 timeout-minutes: 60
 steps:
@@ -76,9 +82,9 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-# Deep Research Assistant
+# Internal Gemini CLI Web Search
 
-Assist with deep research on ${{ github.repository }} from issue comments, then provide an evidence-backed answer.
+Assist with web research on ${{ github.repository }} from issue comments, then provide an evidence-backed answer.
 
 ## Context
 
@@ -88,7 +94,7 @@ Assist with deep research on ${{ github.repository }} from issue comments, then 
 
 ## Constraints
 
-- **CAN**: Read files, search code, use web fetch, comment on issues
+- **CAN**: Read files, search code, use web fetch, comment on issues, create issues
 - **CANNOT**: Execute commands, modify files, run tests, or push to the repository
 
 ## Instructions
@@ -120,7 +126,12 @@ Before writing the response, apply Chain-of-Verification to your draft findings:
 
 ### Step 4: Post Response
 
-Call `add_comment` with a concise response:
+Choose the right output:
+
+- **`add_comment`** — use this when responding directly to the research request on the triggering issue. This is the default.
+- **`create_issue`** — use this when your findings reveal a distinct problem, action item, or recommendation that deserves its own tracking issue separate from the original request.
+
+Structure your response:
 
 1. **Key takeaway** — lead with the direct answer to the original question
 2. **Evidence** — cite specific URLs, docs, or file paths for each claim
