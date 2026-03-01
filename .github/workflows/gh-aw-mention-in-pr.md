@@ -164,14 +164,14 @@ Based on what's asked, do the appropriate thing. **Requests can combine multiple
 - **Bot-authored PRs**: If the PR author is `github-actions[bot]`, you can only submit a `COMMENT` review — `APPROVE` and `REQUEST_CHANGES` will fail because GitHub does not allow bot accounts to approve or request changes on their own PRs. Use `COMMENT` and state your verdict in the review body instead.
 
 **If asked to fix code or address review feedback:**
-- Read `/tmp/pr-context/review_comments.json` to see open review threads and understand what needs to be addressed.
+- Read `/tmp/pr-context/unresolved_threads.json` to see open review threads and understand what needs to be addressed.
 - For each unresolved thread you address:
    - Make the code changes in the workspace.
    - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
    - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
 - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
 - Use `push_to_pull_request_branch` to push your changes.
-- After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
+- After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
 - **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.
 
 **If asked to fix merge conflicts:**

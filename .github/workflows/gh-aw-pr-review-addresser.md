@@ -122,7 +122,7 @@ PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md
 1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
 2. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches). Check whether this is a fork PR — if the head repo differs from the base repo, you cannot push changes.
 3. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
-4. Read `/tmp/pr-context/review_comments.json` to get all review threads. Identify which threads are unresolved and need attention.
+4. Read `/tmp/pr-context/unresolved_threads.json` to get unresolved review threads that need attention. For full context including resolved threads, see `review_comments.json`.
 5. Read `/tmp/pr-context/diffs/` to understand the current state of changes.
 
 ### Step 2: Address Each Review Thread
@@ -145,7 +145,7 @@ For each unresolved review thread:
 
 Skip this step for fork PRs where you could not push.
 
-After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads from any reviewer — external reviewers, bots, and your own prior reviews. Check `/tmp/pr-context/review_comments.json` for all unresolved threads (`isResolved: false`) — `isOutdated` threads have had the underlying code changed since the comment was made, so check whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer. Fall back to `pull_request_read` with method `get_review_comments` if the pre-fetched data is unavailable.
+After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads from any reviewer — external reviewers, bots, and your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer. Fall back to `pull_request_read` with method `get_review_comments` if the pre-fetched data is unavailable.
 
 ### Step 5: Respond
 

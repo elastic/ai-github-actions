@@ -74,6 +74,14 @@ steps:
         --jq '.data.repository.pullRequest.reviewThreads.nodes' \
         | jq -s 'add // []' > /tmp/pr-context/review_comments.json
 
+      # Filtered review thread views (pre-computed so agents don't need to parse review_comments.json)
+      jq '[.[] | select(.isResolved == false)]' /tmp/pr-context/review_comments.json \
+        > /tmp/pr-context/unresolved_threads.json
+      jq '[.[] | select(.isResolved == true)]' /tmp/pr-context/review_comments.json \
+        > /tmp/pr-context/resolved_threads.json
+      jq '[.[] | select(.isOutdated == true)]' /tmp/pr-context/review_comments.json \
+        > /tmp/pr-context/outdated_threads.json
+
       # Per-file review threads (mirrors diffs/ structure)
       jq -c '.[]' /tmp/pr-context/review_comments.json | while IFS= read -r thread; do
         filepath=$(echo "$thread" | jq -r '.path // empty')
@@ -118,6 +126,9 @@ steps:
       | `file_order_largest.txt` | Changed files sorted by diff size descending (largest first), one filename per line |
       | `reviews.json` | Prior review submissions — author, state (APPROVED/CHANGES_REQUESTED/COMMENTED), body |
       | `review_comments.json` | All review threads (GraphQL) — each thread has `id` (node ID for resolving), `isResolved`, `isOutdated`, `path`, `line`, and nested `comments` with `id`, `databaseId` (numeric REST ID for replies), body/author |
+      | `unresolved_threads.json` | Unresolved review threads — subset of `review_comments.json` where `isResolved` is false |
+      | `resolved_threads.json` | Resolved review threads — subset of `review_comments.json` where `isResolved` is true |
+      | `outdated_threads.json` | Outdated review threads — subset of `review_comments.json` where `isOutdated` is true (code changed since comment) |
       | `threads/<path>.json` | Per-file review threads — one file per changed file with existing threads, mirroring the repo path under `threads/` |
       | `comments.json` | PR discussion comments (not inline) |
       | `issue-{N}.json` | Linked issue details (one file per linked issue, if any) |
