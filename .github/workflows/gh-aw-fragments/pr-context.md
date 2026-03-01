@@ -37,6 +37,83 @@ steps:
       jq -r '[.[] | {filename, size: ((.additions // 0) + (.deletions // 0))}] | sort_by(-.size) | .[].filename' /tmp/pr-context/files.json \
         > /tmp/pr-context/file_order_largest.txt
 
+      # Determine sub-agent count based on PR size
+      FILE_COUNT=$(jq 'length' /tmp/pr-context/files.json)
+      if [ "$FILE_COUNT" -le 10 ]; then
+        AGENT_COUNT=0
+      elif [ "$FILE_COUNT" -le 20 ]; then
+        AGENT_COUNT=2
+      else
+        AGENT_COUNT=3
+      fi
+      echo "$AGENT_COUNT" > /tmp/pr-context/agent_count.txt
+      echo "PR size: ${FILE_COUNT} files → ${AGENT_COUNT} sub-agents"
+
+      # Write review strategy with precise instructions for the agent
+      echo "# Review Strategy" > /tmp/pr-context/review-strategy.md
+      echo "" >> /tmp/pr-context/review-strategy.md
+      echo "**PR size:** ${FILE_COUNT} files | **Sub-agents:** ${AGENT_COUNT}" >> /tmp/pr-context/review-strategy.md
+      echo "" >> /tmp/pr-context/review-strategy.md
+
+      if [ "$AGENT_COUNT" -eq 0 ]; then
+        cat >> /tmp/pr-context/review-strategy.md << 'STRATEGY_DIRECT'
+      ## Direct Review (no sub-agents)
+
+      This PR is small enough to review directly. Do NOT spawn sub-agents.
+
+      Review the diff file by file using the ordering in `/tmp/pr-context/file_order_az.txt`. For each changed file:
+
+      1. Read the diff from `/tmp/pr-context/diffs/<filename>.diff`
+      2. Read the full file from the workspace for context
+      3. Check existing threads in `/tmp/pr-context/threads/<filename>.json` (if it exists)
+      4. Identify issues matching the Code Review Reference criteria
+      5. Verify each issue: construct a concrete failure scenario, challenge the finding, check for existing threads
+
+      Proceed to the Verify and Comment step with your findings.
+      STRATEGY_DIRECT
+      elif [ "$AGENT_COUNT" -eq 2 ]; then
+        cat >> /tmp/pr-context/review-strategy.md << 'STRATEGY_TWO'
+      ## Sub-agent Review (2 agents)
+
+      Spawn exactly 2 `code-review` sub-agents in parallel:
+
+      - **Agent 1**: file ordering from `/tmp/pr-context/file_order_az.txt` (A→Z)
+      - **Agent 2**: file ordering from `/tmp/pr-context/file_order_za.txt` (Z→A)
+
+      Each sub-agent prompt must include:
+      - Instruction to read `/tmp/pr-context/review-instructions.md` for the review process, criteria, and calibration examples
+      - Instruction to read `/tmp/pr-context/README.md` for a manifest of all available context files
+      - The review intensity and minimum severity settings from the workflow
+      - The path to that sub-agent's file ordering — tell it to read the file for its ordered list (per-file diffs are at `/tmp/pr-context/diffs/<filename>.diff`)
+      - Instruction to read changed files from the workspace (the PR branch is checked out)
+
+      Each sub-agent returns a structured findings list. They do NOT leave inline comments.
+
+      After both sub-agents complete, merge and deduplicate findings per the Pick Three, Keep Many process before proceeding to the Verify and Comment step.
+      STRATEGY_TWO
+      else
+        cat >> /tmp/pr-context/review-strategy.md << 'STRATEGY_THREE'
+      ## Sub-agent Review (3 agents)
+
+      Spawn exactly 3 `code-review` sub-agents in parallel:
+
+      - **Agent 1**: file ordering from `/tmp/pr-context/file_order_az.txt` (A→Z)
+      - **Agent 2**: file ordering from `/tmp/pr-context/file_order_za.txt` (Z→A)
+      - **Agent 3**: file ordering from `/tmp/pr-context/file_order_largest.txt` (largest diff first)
+
+      Each sub-agent prompt must include:
+      - Instruction to read `/tmp/pr-context/review-instructions.md` for the review process, criteria, and calibration examples
+      - Instruction to read `/tmp/pr-context/README.md` for a manifest of all available context files
+      - The review intensity and minimum severity settings from the workflow
+      - The path to that sub-agent's file ordering — tell it to read the file for its ordered list (per-file diffs are at `/tmp/pr-context/diffs/<filename>.diff`)
+      - Instruction to read changed files from the workspace (the PR branch is checked out)
+
+      Each sub-agent returns a structured findings list. They do NOT leave inline comments.
+
+      After all 3 sub-agents complete, merge and deduplicate findings per the Pick Three, Keep Many process before proceeding to the Verify and Comment step.
+      STRATEGY_THREE
+      fi
+
       # Existing reviews
       gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --paginate \
         | jq -s 'add // []' > /tmp/pr-context/reviews.json
@@ -132,6 +209,8 @@ steps:
       | `threads/<path>.json` | Per-file review threads — one file per changed file with existing threads, mirroring the repo path under `threads/` |
       | `comments.json` | PR discussion comments (not inline) |
       | `issue-{N}.json` | Linked issue details (one file per linked issue, if any) |
+      | `agent_count.txt` | Pre-computed sub-agent count: `0` (≤10 files, direct review), `2` (11–20 files), or `3` (>20 files) |
+      | `review-strategy.md` | Pre-computed review strategy with precise instructions for the agent based on PR size |
       | `agents.md` | Repository conventions from `generate_agents_md` (if written by agent) |
       | `review-instructions.md` | Review instructions, criteria, and calibration examples (if written by review-process fragment) |
       MANIFEST
