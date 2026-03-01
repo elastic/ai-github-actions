@@ -13,6 +13,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
+  - gh-aw-fragments/pick-three-keep-many.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
