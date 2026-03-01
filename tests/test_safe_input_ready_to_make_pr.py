@@ -286,6 +286,34 @@ class TestFileOutput:
         assert Path("/tmp/self-review/diff.patch").read_text() == ""
         assert Path("/tmp/self-review/stat.txt").read_text() == ""
 
+    def test_commits_txt_created(self, py_code, tmp_path):
+        """commits.txt should capture commit messages since upstream."""
+        repo = make_git_repo(tmp_path, with_upstream=True)
+        (repo / "new.txt").write_text("new\n")
+        subprocess.run(["git", "add", "new.txt"], cwd=str(repo), check=True, capture_output=True)
+        subprocess.run(
+            ["git", "commit", "-m", "add new feature"],
+            cwd=str(repo), check=True, capture_output=True,
+        )
+
+        run_py_in_repo(py_code, str(repo))
+
+        commits = Path("/tmp/self-review/commits.txt").read_text()
+        assert "add new feature" in commits
+
+    def test_readme_manifest_created(self, py_code, tmp_path):
+        """README.md manifest should be created with review instructions."""
+        repo = make_git_repo(tmp_path, with_upstream=True)
+        (repo / "file.txt").write_text("modified\n")
+
+        run_py_in_repo(py_code, str(repo))
+
+        readme = Path("/tmp/self-review/README.md").read_text()
+        assert "Self-Review Context" in readme
+        assert "diff.patch" in readme
+        assert "commits.txt" in readme
+        assert "notes.md" in readme
+
 
 # ---------------------------------------------------------------------------
 # Contributing / PR template detection
@@ -356,7 +384,7 @@ class TestSelfReviewGating:
         output = run_py_in_repo(py_code, str(repo))
         checklist_text = " ".join(output["checklist"])
         assert "self-review" in checklist_text
-        assert "diff.patch" in checklist_text
+        assert "README.md" in checklist_text
 
     def test_self_review_absent_when_no_diff(self, py_code, tmp_path):
         repo = make_git_repo(tmp_path, with_upstream=True)
