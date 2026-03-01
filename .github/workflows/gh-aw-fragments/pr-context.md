@@ -37,6 +37,12 @@ steps:
       jq -r '[.[] | {filename, size: ((.additions // 0) + (.deletions // 0))}] | sort_by(-.size) | .[].filename' /tmp/pr-context/files.json \
         > /tmp/pr-context/file_order_largest.txt
 
+      # Compute PR size metrics for review fan-out decisions
+      FILE_COUNT=$(jq 'length' /tmp/pr-context/files.json)
+      DIFF_LINES=$(wc -l < /tmp/pr-context/pr.diff | tr -d ' ')
+      echo "${FILE_COUNT} files, ${DIFF_LINES} diff lines" > /tmp/pr-context/pr-size.txt
+      echo "PR size: ${FILE_COUNT} files, ${DIFF_LINES} diff lines"
+
       # Existing reviews
       gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --paginate \
         | jq -s 'add // []' > /tmp/pr-context/reviews.json
@@ -132,6 +138,7 @@ steps:
       | `threads/<path>.json` | Per-file review threads — one file per changed file with existing threads, mirroring the repo path under `threads/` |
       | `comments.json` | PR discussion comments (not inline) |
       | `issue-{N}.json` | Linked issue details (one file per linked issue, if any) |
+      | `pr-size.txt` | PR size metrics: `{N} files, {M} diff lines` — used by the agent to decide review fan-out |
       | `agents.md` | Repository conventions from `generate_agents_md` (if written by agent) |
       | `review-instructions.md` | Review instructions, criteria, and calibration examples (if written by review-process fragment) |
       MANIFEST

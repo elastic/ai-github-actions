@@ -120,25 +120,33 @@ Follow these steps in order.
 4. Read `/tmp/pr-context/reviews.json` to check prior review submissions from this bot. Note any prior verdicts to avoid redundant reviews.
 5. Read `/tmp/pr-context/review_comments.json` to check existing review threads. Note which files already have threads and whether they are resolved, unresolved, or outdated.
 
-### Step 2: Sub-agent Review
+### Step 2: Review
 
-**File orderings are pre-computed** at `/tmp/pr-context/`:
-- **Agent 1**: `/tmp/pr-context/file_order_az.txt` — alphabetical (A → Z)
-- **Agent 2**: `/tmp/pr-context/file_order_za.txt` — reverse alphabetical (Z → A)
-- **Agent 3**: `/tmp/pr-context/file_order_largest.txt` — by diff size descending
+Read `/tmp/pr-context/pr-size.txt` for the PR size (file count and diff lines). Use it to decide your review approach:
 
-**Spawn sub-agents:** Follow the **Pick Three, Keep Many** process — spawn 3 `code-review` sub-agents to review the PR diff in parallel. Each sub-agent prompt must include:
+- **Small PRs (under 200 diff lines):** Review directly — no sub-agents. Read files in the order from `/tmp/pr-context/file_order_az.txt`. For each file, read the diff from `/tmp/pr-context/diffs/<filename>.diff`, read the full file from the workspace, check existing threads from `/tmp/pr-context/threads/<filename>.json`, and identify issues per the Code Review Reference criteria. Then proceed to Step 3 with your findings.
+
+- **Medium PRs (200–800 diff lines):** Follow the **Pick Three, Keep Many** process — spawn 2 `code-review` sub-agents in parallel:
+  - **Agent 1**: file ordering from `/tmp/pr-context/file_order_az.txt` (A → Z)
+  - **Agent 2**: file ordering from `/tmp/pr-context/file_order_za.txt` (Z → A)
+
+- **Large PRs (over 800 diff lines):** Follow the **Pick Three, Keep Many** process — spawn 3 `code-review` sub-agents in parallel:
+  - **Agent 1**: file ordering from `/tmp/pr-context/file_order_az.txt` (A → Z)
+  - **Agent 2**: file ordering from `/tmp/pr-context/file_order_za.txt` (Z → A)
+  - **Agent 3**: file ordering from `/tmp/pr-context/file_order_largest.txt` (largest diff first)
+
+**When spawning sub-agents**, each prompt must include:
 - Instruction to read `/tmp/pr-context/review-instructions.md` for the review process, criteria, and calibration examples
 - Instruction to read `/tmp/pr-context/README.md` for a manifest of all available context files
 - The review intensity (`${{ inputs.intensity }}`) and minimum severity (`${{ inputs.minimum_severity }}`)
-- The path to that sub-agent's file ordering (e.g., `/tmp/pr-context/file_order_az.txt`) — tell it to read the file for its ordered list (per-file diffs are at `/tmp/pr-context/diffs/<filename>.diff`)
+- The path to that sub-agent's file ordering — tell it to read the file for its ordered list (per-file diffs are at `/tmp/pr-context/diffs/<filename>.diff`)
 - Instruction to read changed files from the workspace (the PR branch is checked out)
 
 Each sub-agent returns a structured findings list. They do NOT leave inline comments.
 
 ### Step 3: Verify and Comment
 
-After merging and deduplicating sub-agent findings per the Pick Three, Keep Many process, verify each finding before leaving a comment. For every finding:
+If sub-agents were used, merge and deduplicate findings per the Pick Three, Keep Many process. Verify each finding before leaving a comment. For every finding:
 
 1. **Read the file and surrounding context** — open the full file, not just the diff. Understand the broader code.
 2. **Construct a concrete failure scenario** — what specific input or state causes the bug? If you cannot describe one, drop the finding.
