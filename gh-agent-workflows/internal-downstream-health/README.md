@@ -11,7 +11,6 @@ Discovers elastic-owned repositories that use ai-github-actions workflows, monit
 ```bash
 mkdir -p .github/workflows && curl -sL \
   https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/internal-downstream-health/example.yml \
-
   -o .github/workflows/internal-downstream-health.yml
 ```
 
