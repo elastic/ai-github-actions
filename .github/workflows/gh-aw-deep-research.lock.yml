@@ -41,7 +41,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7c2be97d53c02e58149df9738e024165e40421a01a1ee84f2152489daaaf432f"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2b830da3acf7accd2683a6371663ad442c26239c27f3adaa5529690f58b742ee"}
 
 name: "Internal Gemini CLI Web Search"
 "on":
@@ -63,7 +63,7 @@ name: "Internal Gemini CLI Web Search"
         required: false
         type: string
       model:
-        default: gemini-3-pro-preview
+        default: ""
         description: AI model to use
         required: false
         type: string
