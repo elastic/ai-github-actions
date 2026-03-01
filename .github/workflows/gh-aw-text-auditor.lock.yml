@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a3a55d646f184e99b809a64db2b29f46c01c532b4a17d91aa4e5882dae038c6a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f378866177996321173bd1b5526ed95e6db706f680f7aed0bc79d4bce50fa6f0"}
 
 name: "Text Auditor"
 "on":
@@ -115,7 +115,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: text-auditor
+  group: ${{ github.workflow }}-text-auditor
 
 run-name: "Text Auditor"
 

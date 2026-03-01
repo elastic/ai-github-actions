@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c04e88382cf7c1d21fff1cd9355de38fe083e4eda41206a0d4d5b5997ccee6e9"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"68fe3955d7336a38fb15e42984184eb4645dd94a675b927ceed251e3371190c2"}
 
 name: "Newbie Contributor Fixer"
 "on":
@@ -90,7 +90,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: newbie-contributor-fixer
+  group: ${{ github.workflow }}-newbie-contributor-fixer
 
 run-name: "Newbie Contributor Fixer"
 

@@ -15,7 +15,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-dependency-review-${{ github.event.pull_request.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}"
 on:
   workflow_call:
     inputs:
@@ -53,7 +53,7 @@ on:
     - "dependabot[bot]"
     - "renovate[bot]"
 concurrency:
-  group: dependency-review-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
   actions: read

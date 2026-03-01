@@ -14,7 +14,7 @@ engine:
   id: gemini
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-gemini-deep-research-${{ github.event.issue.number }}"
+    group: "gh-aw-gemini-${{ github.workflow }}-deep-research-${{ github.event.issue.number }}"
 on:
   workflow_call:
     inputs:
@@ -51,7 +51,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: deep-research-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-deep-research-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
   contents: read

@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bc0565906470ea37244b4d25e4a9926cf503c621f631fbd879ff829bd3cc01ce"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"40085522185bdbcdd08c0e2b59e442c2960b63dd67532bb9cfe6ca9853aaa147"}
 
 name: "Scheduled Audit"
 "on":
@@ -96,7 +96,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: scheduled-audit-${{ inputs.title-prefix }}
+  group: ${{ github.workflow }}-scheduled-audit-${{ inputs.title-prefix }}
 
 run-name: "Scheduled Audit"
 

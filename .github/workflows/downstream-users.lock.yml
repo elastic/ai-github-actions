@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b309db9c1ea539cc8ed7a88a26d66e9f35d4d455b1b16322f422bd4098679c9b"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"86282249cfd2692685a4ce3027d1ee48cfa60c2cd21dcfcb9176fc087e31e71a"}
 
 name: "Internal: Downstream Users"
 "on":
@@ -55,7 +55,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: downstream-users
+  group: ${{ github.workflow }}-downstream-users
 
 run-name: "Internal: Downstream Users"
 

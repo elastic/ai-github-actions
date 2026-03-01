@@ -14,7 +14,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-update-pr-body-${{ github.event.pull_request.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-update-pr-body-${{ github.event.pull_request.number }}"
 on:
   workflow_call:
     inputs:
@@ -65,7 +65,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: update-pr-body-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-update-pr-body-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
   contents: read

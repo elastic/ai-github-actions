@@ -57,7 +57,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: newbie-contributor-fixer
+  group: ${{ github.workflow }}-newbie-contributor-fixer
   cancel-in-progress: true
 permissions:
   actions: read

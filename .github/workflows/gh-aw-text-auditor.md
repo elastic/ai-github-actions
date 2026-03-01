@@ -82,7 +82,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: text-auditor
+  group: ${{ github.workflow }}-text-auditor
   cancel-in-progress: true
 permissions:
   contents: read

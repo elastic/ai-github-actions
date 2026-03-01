@@ -16,7 +16,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-docs-pr-review-${{ github.event.pull_request.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-docs-pr-review-${{ github.event.pull_request.number }}"
 on:
   workflow_call:
     inputs:
@@ -67,7 +67,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: estc-docs-pr-review-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-estc-docs-pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
   contents: read

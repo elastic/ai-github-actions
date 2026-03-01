@@ -63,7 +63,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: ux-design-patrol
+  group: ${{ github.workflow }}-ux-design-patrol
   cancel-in-progress: true
 permissions:
   contents: read

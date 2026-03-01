@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c9cffce0af80d574d9cb7ee55dd471ab58dd3fdc5529b07ddcb809be0792db61"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"386b2f77664c20e0bd3cd6d6f486eb64e82a0470c451eba15f0bb4a2ace09abd"}
 
 name: "Scheduled Fix"
 "on":
@@ -98,7 +98,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: scheduled-fix-${{ inputs.title-prefix }}
+  group: ${{ github.workflow }}-scheduled-fix-${{ inputs.title-prefix }}
 
 run-name: "Scheduled Fix"
 

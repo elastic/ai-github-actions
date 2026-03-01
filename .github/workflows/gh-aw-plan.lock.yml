@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"14cb9e4bd7855c9832967e78cfd69e77723402bd26d41857164f5c019ec7d15d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"38507eedd23a70475b544d40a83ab375426411eeb17c163a7a3efdecb5ee6aee"}
 
 name: "Plan"
 "on":
@@ -94,7 +94,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: plan-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-plan-${{ github.event.issue.number }}
 
 run-name: "Plan"
 
@@ -476,7 +476,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-plan-${{ github.event.issue.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-plan-${{ github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

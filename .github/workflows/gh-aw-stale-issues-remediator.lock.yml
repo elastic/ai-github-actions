@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e171dde9a490efb0e92104d5ddc254d468fb3bc761e0a569a0332ea17d5752ad"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"80e212d5cd367559753ed7b71359aa48527f897f08e42480692f6eed3ecb7ce3"}
 
 name: "Stale Issues Remediator"
 "on":
@@ -85,7 +85,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: stale-issues-remediator
+  group: ${{ github.workflow }}-stale-issues-remediator
 
 run-name: "Stale Issues Remediator"
 

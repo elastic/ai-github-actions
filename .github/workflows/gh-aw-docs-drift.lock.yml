@@ -45,7 +45,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7d87728633bfa4827a2f3d44b29e8e85189a00590ba228b01abc9ebd8655d13a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c38197a1da609313561ac3686230bd0faab654c587b710a643063e9d4b5aec87"}
 
 name: "Docs Patrol"
 "on":
@@ -101,7 +101,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: docs-patrol
+  group: ${{ github.workflow }}-docs-patrol
 
 run-name: "Docs Patrol"
 

@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"35511b1f2b8cca89490cb19ff4b59e8318373c5edd9d4e390682d589ef35fd3e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a718d1ac10df16ff061df25c796930eda69eb2aed015ba0d53919e94b258475c"}
 
 name: "Code Duplication Fixer"
 "on":
@@ -90,7 +90,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: code-duplication-fixer
+  group: ${{ github.workflow }}-code-duplication-fixer
 
 run-name: "Code Duplication Fixer"
 

@@ -30,7 +30,7 @@ on:
   bots:
     - "github-actions[bot]"
 concurrency:
-  group: agent-deep-dive
+  group: ${{ github.workflow }}-agent-deep-dive
   cancel-in-progress: true
 permissions:
   actions: read

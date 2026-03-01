@@ -67,7 +67,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: code-duplication-detector
+  group: ${{ github.workflow }}-code-duplication-detector
   cancel-in-progress: true
 permissions:
   contents: read

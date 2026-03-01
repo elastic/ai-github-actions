@@ -56,7 +56,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: flaky-test-investigator
+  group: ${{ github.workflow }}-flaky-test-investigator
   cancel-in-progress: true
 permissions:
   actions: read

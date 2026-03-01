@@ -22,7 +22,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-mention-pr-by-id-${{ inputs.target-pr-number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-by-id-${{ inputs.target-pr-number }}"
 on:
   workflow_call:
     inputs:
@@ -75,7 +75,7 @@ on:
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
 concurrency:
-  group: mention-pr-by-id-${{ inputs.target-pr-number }}
+  group: ${{ github.workflow }}-mention-pr-by-id-${{ inputs.target-pr-number }}
   cancel-in-progress: true
 permissions:
   actions: read

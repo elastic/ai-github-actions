@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"684652f5d6bff5a991b9a97623abddaaa11931c82bc93e51c417a1d53a487e57"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e15b4d9e7e0121fc261ec5f1e8067b612ab404f0fe5e71859f01c41f7b9475f6"}
 
 name: "Small Problem Fixer"
 "on":
@@ -96,7 +96,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: small-problem-fixer
+  group: ${{ github.workflow }}-small-problem-fixer
 
 run-name: "Small Problem Fixer"
 

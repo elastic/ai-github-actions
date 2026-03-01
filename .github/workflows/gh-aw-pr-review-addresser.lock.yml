@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"88cc1828871afb2677899a47eb636bf7e099fc47f675a98974424195fb17a32c"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cd1dad8eacfc407bb65ea9f5b9f248ea4de5d9c4d0b303d4c43509313459b9e6"}
 
 name: "PR Review Addresser"
 "on":
@@ -99,7 +99,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: false
-  group: pr-review-addresser-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-pr-review-addresser-${{ github.event.pull_request.number }}
 
 run-name: "PR Review Addresser"
 
@@ -518,7 +518,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-pr-review-addresser-${{ github.event.pull_request.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-pr-review-addresser-${{ github.event.pull_request.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

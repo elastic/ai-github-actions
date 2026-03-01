@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9316e7680e177a5213dbd790b69a0d8cea2738c8f8df76699ce73478b1aaa446"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e3ddec0bc3ac021ea321ab3aeb3565b43497ff5e1c03d845bfc5f42ce983e57a"}
 
 name: "Text Beautifier"
 "on":
@@ -91,7 +91,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: text-beautifier
+  group: ${{ github.workflow }}-text-beautifier
 
 run-name: "Text Beautifier"
 

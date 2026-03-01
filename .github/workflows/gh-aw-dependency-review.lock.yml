@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e127b7a9296830bfe921c071435d7f3d3220094b1f3748d0aecd541b9176d58a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6c07ad4ba07ff4643d2af151051553103d295a76755cdab029459f4ac9a37034"}
 
 name: "Dependency Review"
 "on":
@@ -82,7 +82,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: dependency-review-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}
 
 run-name: "Dependency Review"
 
@@ -587,7 +587,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-dependency-review-${{ github.event.pull_request.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

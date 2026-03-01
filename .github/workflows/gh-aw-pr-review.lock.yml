@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"68a777412c77ebdcfffccbeeb3b012b97cf87e39d9dc272ed9536f3be1993cf4"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5e96210a88a0e71fe8a1a2ce86adee6b4b1b1c3a552cac35b1db93dacab00ef5"}
 
 name: "PR Review"
 "on":
@@ -100,7 +100,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: pr-review-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-pr-review-${{ github.event.pull_request.number }}
 
 run-name: "PR Review"
 
@@ -629,7 +629,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-pr-review-${{ github.event.pull_request.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-pr-review-${{ github.event.pull_request.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

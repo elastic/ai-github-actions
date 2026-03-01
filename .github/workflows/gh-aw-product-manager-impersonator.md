@@ -67,7 +67,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: product-manager-impersonator-${{ inputs.title-prefix }}
+  group: ${{ github.workflow }}-product-manager-impersonator-${{ inputs.title-prefix }}
   cancel-in-progress: true
 permissions:
   contents: read

@@ -63,7 +63,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: docs-patrol
+  group: ${{ github.workflow }}-docs-patrol
   cancel-in-progress: true
 permissions:
   contents: read

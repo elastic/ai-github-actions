@@ -45,7 +45,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cc2e60978c9dcb4c8c9bc7d737396ea679c08f1ffb7ed291d7bd18ba366370a1"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1df9f4a24642271ad297613f3b1a9eff3d69f09cfacaf69d4ccded904c93c208"}
 
 name: "Breaking Change Detector"
 "on":
@@ -96,7 +96,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: breaking-change-detector
+  group: ${{ github.workflow }}-breaking-change-detector
 
 run-name: "Breaking Change Detector"
 

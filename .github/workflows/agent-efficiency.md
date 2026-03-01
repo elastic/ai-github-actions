@@ -21,7 +21,7 @@ on:
   bots:
     - "github-actions[bot]"
 concurrency:
-  group: agent-efficiency
+  group: ${{ github.workflow }}-agent-efficiency
   cancel-in-progress: true
 permissions:
   actions: read

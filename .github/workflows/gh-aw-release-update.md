@@ -55,7 +55,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: release-update
+  group: ${{ github.workflow }}-release-update
   cancel-in-progress: true
 permissions:
   actions: read

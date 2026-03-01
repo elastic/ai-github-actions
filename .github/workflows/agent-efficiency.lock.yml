@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8f58a51f562f7ce5c60ec0e4f50fd3973af2f542155b85c381c5a9d297e7aa4d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0606b309d725017eaa1dcb04ed7c74c15a310bc0ff93471670c43e9a2d6527e3"}
 
 name: "Internal: Agent Efficiency"
 "on":
@@ -54,7 +54,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: agent-efficiency
+  group: ${{ github.workflow }}-agent-efficiency
 
 run-name: "Internal: Agent Efficiency"
 

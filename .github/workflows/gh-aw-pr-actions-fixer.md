@@ -55,7 +55,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: pr-actions-fixer-${{ inputs.workflow-run-id }}
+  group: ${{ github.workflow }}-pr-actions-fixer-${{ inputs.workflow-run-id }}
   cancel-in-progress: false
 permissions:
   actions: read

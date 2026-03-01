@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c8397959f7a2714ac40c47b153fd2df394ced55762128cc117478358dea39a2d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7c9bbc9ce50d57a9d759c1a596394b6e75f0d0c906a2fda7914c4c7753c8d858"}
 
 name: "Internal: Workflow Patrol"
 "on":
@@ -62,7 +62,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: workflow-patrol
+  group: ${{ github.workflow }}-workflow-patrol
 
 run-name: "Internal: Workflow Patrol"
 

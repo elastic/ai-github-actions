@@ -53,7 +53,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: stale-issues-remediator
+  group: ${{ github.workflow }}-stale-issues-remediator
   cancel-in-progress: true
 permissions:
   contents: read

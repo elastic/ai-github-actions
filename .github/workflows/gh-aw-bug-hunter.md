@@ -58,7 +58,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: bug-hunter
+  group: ${{ github.workflow }}-bug-hunter
   cancel-in-progress: true
 permissions:
   actions: read

@@ -22,7 +22,7 @@ on:
   bots:
     - "github-actions[bot]"
 concurrency:
-  group: downstream-users
+  group: ${{ github.workflow }}-downstream-users
   cancel-in-progress: true
 permissions:
   contents: read

@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0b87d308d3e15d36ce014f6c26b37a29bcc8f7f787c92864df432fa97e3f985a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2f29669456d66cae2aa4f8c35dc0a00fd43581d7e16e8dc74164a2c56c98c938"}
 
 name: "Mention in Issue (no sandbox)"
 "on":
@@ -104,7 +104,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: mention-issue-no-sandbox-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-mention-issue-no-sandbox-${{ github.event.issue.number }}
 
 run-name: "Mention in Issue (no sandbox)"
 
@@ -513,7 +513,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-mention-issue-no-sandbox-${{ github.event.issue.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-mention-issue-no-sandbox-${{ github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

@@ -62,7 +62,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: estc-docs-patrol-external
+  group: ${{ github.workflow }}-estc-docs-patrol-external
   cancel-in-progress: true
 permissions:
   contents: read

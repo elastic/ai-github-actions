@@ -65,7 +65,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: scheduled-fix-${{ inputs.title-prefix }}
+  group: ${{ github.workflow }}-scheduled-fix-${{ inputs.title-prefix }}
   cancel-in-progress: true
 permissions:
   actions: read

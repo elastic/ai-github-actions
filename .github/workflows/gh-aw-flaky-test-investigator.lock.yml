@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9c08afe1327933930f4699c0c001a6b39ff24e246509864b2ec8b0372a3facac"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2caa8e652ea16a22ddc69d9d9561fce13e0c0779bdd293b509d0924441d7a00a"}
 
 name: "Flaky Test Investigator"
 "on":
@@ -89,7 +89,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: flaky-test-investigator
+  group: ${{ github.workflow }}-flaky-test-investigator
 
 run-name: "Flaky Test Investigator"
 

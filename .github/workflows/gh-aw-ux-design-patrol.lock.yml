@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"16221bcf878646b93d83835c6227d99642c02431790b86a5b9778afd36247f7f"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7afc26a3514c31f594b0a201efe113c5c2939c7e2957afac6263d9fc7a463c6b"}
 
 name: "UX Design Patrol"
 "on":
@@ -96,7 +96,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: ux-design-patrol
+  group: ${{ github.workflow }}-ux-design-patrol
 
 run-name: "UX Design Patrol"
 

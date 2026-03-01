@@ -57,7 +57,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: test-coverage-detector
+  group: ${{ github.workflow }}-test-coverage-detector
   cancel-in-progress: true
 permissions:
   actions: read

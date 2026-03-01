@@ -57,7 +57,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: information-architecture
+  group: ${{ github.workflow }}-information-architecture
   cancel-in-progress: true
 permissions:
   contents: read

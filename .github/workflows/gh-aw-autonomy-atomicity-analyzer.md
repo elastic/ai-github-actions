@@ -57,7 +57,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: autonomy-atomicity-analyzer
+  group: ${{ github.workflow }}-autonomy-atomicity-analyzer
   cancel-in-progress: true
 permissions:
   contents: read

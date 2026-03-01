@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e75ea16f83e2b2e6404e905c76277dc8063a40b7f61b1b746be3e3786170152a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e7abde23ac2d7f176c077eb0688dd946ae383deed8fa2b86195dec6c8d5d9660"}
 
 name: "Internal: Upgrade Check"
 "on":
@@ -62,7 +62,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: upgrade-check
+  group: ${{ github.workflow }}-upgrade-check
 
 run-name: "Internal: Upgrade Check"
 
