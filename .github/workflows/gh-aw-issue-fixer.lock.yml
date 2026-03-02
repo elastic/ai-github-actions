@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b4b7463fc8c2f58ba0aa879ee4dd0f39b33db1c3987536f3f49f06e090c49bb8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"da7e409ed856dffc6d35fe1332fd897ae7763bf6f6a269f3fb6664daaeb2fc6b"}
 
 name: "Issue Fixer"
 "on":
@@ -88,6 +88,8 @@ name: "Issue Fixer"
         description: URL of the first created pull request
         value: ${{ jobs.safe_outputs.outputs.created_pr_url }}
     secrets:
+      COPILOT_GITHUB_TOKEN:
+        required: true
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
 
