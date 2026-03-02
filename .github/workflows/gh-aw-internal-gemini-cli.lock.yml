@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c154082f0ed7e205b94e529bdec73833560f0404c92cb66e61158afd46e8f2c3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e3a4192a9c6da16c5c5777b1be870cf32d8ccad40082f180ee0cca4dced26f40"}
 
 name: "Internal Gemini CLI"
 "on":
@@ -66,6 +66,11 @@ name: "Internal Gemini CLI"
       setup-commands:
         default: ""
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
+        required: false
+        type: string
+      title-prefix:
+        default: "[gemini-cli]"
+        description: Title prefix for created issues (e.g. '[gemini-cli]')
         required: false
         type: string
     outputs:
@@ -657,7 +662,7 @@ jobs:
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"[gemini-cli] \".",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"${{ inputs.title-prefix }} \".",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -1461,7 +1466,7 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "*.googleapis.com,agents-md-generator.fastmcp.app,api.snapcraft.io,archive.ubuntu.com,artifacts.elastic.co,azure.archive.ubuntu.com,cdn.playwright.dev,cloud.elastic.co,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,ela.st,elastic.co,generativelanguage.googleapis.com,github.com,host.docker.internal,json-schema.org,json.schemastore.org,keyserver.ubuntu.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,playwright.download.prss.microsoft.com,ppa.launchpad.net,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,s.symcb.com,s.symcd.com,security.ubuntu.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.elastic.co"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"[gemini-cli] \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1},\"create_issue\":{\"close_older_issues\":true,\"expires\":168,\"max\":1,\"title_prefix\":\"${{ inputs.title-prefix }} \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
