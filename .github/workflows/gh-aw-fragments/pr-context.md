@@ -22,11 +22,19 @@ steps:
       gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate \
         | jq -s 'add // []' > /tmp/pr-context/files.json
 
-      # Per-file diffs
+      # Per-file diffs with line numbers
+      # Lines with a number prefix are commentable (RIGHT side: added or context).
+      # Deleted lines get no number (LEFT side only).
       jq -c '.[]' /tmp/pr-context/files.json | while IFS= read -r entry; do
         filename=$(echo "$entry" | jq -r '.filename')
         mkdir -p "/tmp/pr-context/diffs/$(dirname "$filename")"
-        echo "$entry" | jq -r '.patch // empty' > "/tmp/pr-context/diffs/${filename}.diff"
+        echo "$entry" | jq -r '.patch // empty' | awk '
+          /^@@/ { s=$3; gsub(/\+/,"",s); split(s,a,","); line=a[1]+0; print; next }
+          /^\+/ { printf "%d\t%s\n", line++, $0; next }
+          /^-/  { printf "  \t%s\n", $0; next }
+          /^ /  { printf "%d\t%s\n", line++, $0; next }
+          { print }
+        ' > "/tmp/pr-context/diffs/${filename}.diff"
       done
 
       # File orderings for sub-agent review (3 strategies)
@@ -126,7 +134,7 @@ steps:
       | `pr.json` | PR metadata — title, body, author, base/head branches, head commit SHA (`headRefOid`), URL |
       | `pr.diff` | Full unified diff of all changes |
       | `files.json` | Changed files array — each entry has `filename`, `status`, `additions`, `deletions`, `patch` |
-      | `diffs/<path>.diff` | Per-file diffs — one file per changed file, mirroring the repo path under `diffs/` |
+      | `diffs/<path>.diff` | Per-file diffs with line numbers — numbered lines (e.g. `405\t+ code`) are commentable; lines without numbers are deleted (LEFT side only) |
       | `file_order_az.txt` | Changed files sorted alphabetically (A→Z), one filename per line |
       | `file_order_za.txt` | Changed files sorted reverse-alphabetically (Z→A), one filename per line |
       | `file_order_largest.txt` | Changed files sorted by diff size descending (largest first), one filename per line |
