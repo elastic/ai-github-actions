@@ -103,7 +103,7 @@ Identify under-tested code paths, add focused tests, and remove or consolidate d
 
 1. Determine required repo commands (lint/build/test) and how to run tests:
    - Check README, CONTRIBUTING, DEVELOPING, Makefile, CI config, package.json, pyproject.toml, and similar files.
-3. Identify coverage tooling (nyc, jest --coverage, pytest --cov, go test -cover, etc.).
+2. Identify coverage tooling (nyc, jest --coverage, pytest --cov, go test -cover, etc.).
    - If coverage is available and reasonably fast, run it to find low-coverage files.
 
 ## Step 2: Identify targets
@@ -135,7 +135,7 @@ New tests that pass once may still be flaky. Before filing a PR, verify stabilit
 1. Run each new or modified test **at least 5 times** in sequence and confirm every run passes.
    - Use the test framework's built-in repeat/count flag when available (e.g., `go test -count=5`, `pytest -x --count 5` with `pytest-repeat`, `--repeat 5` in Jest/Vitest).
    - If no built-in mechanism exists, use a simple shell loop: `for i in $(seq 1 5); do <test-command> || exit 1; done`
-1. If any run fails intermittently, investigate the root cause before proceeding. Common sources of flakiness:
+2. If any run fails intermittently, investigate the root cause before proceeding. Common sources of flakiness:
    - Reliance on timing, sleep, or wall-clock assertions
    - Shared mutable state between test cases
    - Non-deterministic iteration order (e.g., map/set ordering)

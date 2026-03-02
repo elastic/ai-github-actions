@@ -9,7 +9,6 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/workflow-edit-guardrails.md
-  - gh-aw-fragments/review-process.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/playwright-mcp-explorer.md
   - gh-aw-fragments/safe-output-add-comment-issue.md
