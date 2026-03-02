@@ -137,6 +137,8 @@ If sub-agents were used, merge and deduplicate findings per the Pick Three, Keep
 
 Only leave a comment if the finding survives all four checks. Findings flagged independently by multiple sub-agents are stronger candidates. Findings from only one sub-agent deserve extra scrutiny.
 
+Before posting each comment, **verify the target line is within the diff**: check `/tmp/pr-context/diffs/<filename>.diff` and confirm the line appears in a hunk (as an added `+`, removed `-`, or context line). If the line is outside the diff, do NOT attempt an inline comment — include the finding in the review body instead.
+
 Leave inline comments (`create_pull_request_review_comment`) per the **Code Review Reference** above for each finding that survives verification. Comment on each file's findings before moving to the next file. If no findings survive verification, proceed directly to Step 4.
 
 ### Step 4: Submit the Review

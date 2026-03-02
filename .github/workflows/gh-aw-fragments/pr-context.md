@@ -143,9 +143,7 @@ steps:
       | `review-instructions.md` | Review instructions, criteria, and calibration examples for sub-agents |
       | `agent-review.md` | Main agent instructions — review approach resolved from PR size (written when `ready_to_code_review` is called) |
       | `parent-review.md` | Comment format and inline severity threshold for the parent agent (written when `ready_to_code_review` is called) |
-      | `subagent-az.md` | Sub-agent instructions: review files A → Z (written when `ready_to_code_review` is called) |
-      | `subagent-za.md` | Sub-agent instructions: review files Z → A (written when `ready_to_code_review` is called) |
-      | `subagent-largest.md` | Sub-agent instructions: review files largest diff first (written when `ready_to_code_review` is called) |
+      | `subagent-*.md` | Sub-agent instructions (only written for medium/large PRs when `ready_to_code_review` is called — check `agent-review.md` for which exist) |
       MANIFEST
 
       echo "PR context written to /tmp/pr-context/"
