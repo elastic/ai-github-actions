@@ -35,6 +35,7 @@ Compiler upgrade with new features and bug fixes. No breaking changes — recomp
 - `gh-aw-docs-drift.lock.yml` → `gh-aw-docs-patrol.lock.yml`
 - `gh-aw-pr-ci-detective.lock.yml` → `gh-aw-pr-actions-detective.lock.yml`
 - `gh-aw-test-improvement.lock.yml` → `gh-aw-test-improver.lock.yml`
+- `gh-aw-estc-downstream-health.lock.yml` → `internal-downstream-health.lock.yml`
 - `gh-aw-stale-issues.lock.yml` → `gh-aw-stale-issues-investigator.lock.yml`
 
 ### Example rename
