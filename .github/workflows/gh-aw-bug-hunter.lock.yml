@@ -320,7 +320,7 @@ jobs:
           **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
           
           - The full task description and objective (restate it, don't summarize)
-          - All repository context, conventions, and constraints you've gathered (e.g., from `generate_agents_md`)
+          - All repository context, conventions, and constraints you've gathered (e.g., from `/tmp/agents.md`)
           - Any relevant findings from your initial exploration (file paths, git log output, code snippets)
           - The quality gate criteria and output format you expect
           - The specific angle that distinguishes this sub-agent from the others
