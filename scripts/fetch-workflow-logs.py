@@ -10,7 +10,7 @@ Options:
   --last N              Download logs from the last N runs (default: 20)
   --since DATE          Only include runs on or after this date (ISO 8601, e.g. 2025-01-01)
   --until DATE          Only include runs before or on this date (ISO 8601)
-  --conclusion STATUS   Filter by conclusion: success, failure, cancelled, skipped (default: failure)
+  --conclusion STATUS   Filter by conclusion: success, failure, cancelled, skipped, any (default: failure)
   --output-dir DIR      Directory to save logs (default: /tmp/gh-aw/logs)
   --token TOKEN         GitHub token (default: $GH_TOKEN or $GITHUB_TOKEN)
 
