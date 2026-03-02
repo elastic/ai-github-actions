@@ -44,6 +44,11 @@ on:
         type: string
         required: false
         default: ""
+      title-prefix:
+        description: "Title prefix for created issues (e.g. '[research]')"
+        type: string
+        required: false
+        default: "[research]"
     secrets:
       GEMINI_API_KEY:
         required: true
@@ -69,7 +74,7 @@ safe-outputs:
   activation-comments: false
   create-issue:
     max: 1
-    title-prefix: "[research] "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: true
     expires: 7d
 strict: false
