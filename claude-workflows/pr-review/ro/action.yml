@@ -136,8 +136,8 @@ runs:
           <constraints>
           This workflow is for review and comments ONLY - feedback is provided via GitHub PR review comments.
           
-          You CANNOT: Modify files locally, run tests, execute commands, create branches, commit code, push changes
-          You CAN: Read/analyze code, review diffs, provide code suggestions (via ```suggestion blocks in comments)
+          You CANNOT: Modify files locally, run tests, execute arbitrary commands, create branches, commit code, push changes
+          You CAN: Read/analyze code, review diffs, provide code suggestions (via ```suggestion blocks in comments), and run the explicitly listed review helper scripts and read-only git commands
           
           **Important**: Your feedback is provided via GitHub PR review comments, not by making local code changes.
           Suggestion blocks let PR authors apply your fixes with one click.
