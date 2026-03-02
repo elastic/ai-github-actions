@@ -97,7 +97,7 @@ runs:
           <constraints>
           This workflow is for investigation and planning ONLY.
           
-          You CANNOT: Create branches, checkout branches, push changes, commit code, modify files, execute commands, run tests
+          You CANNOT: Create branches, checkout branches, push changes, commit code, modify files, run tests, or execute arbitrary commands
           You CAN: Read/analyze code, search repository, review git history, search for similar issues, provide analysis and recommendations
           </constraints>
 
@@ -120,7 +120,7 @@ runs:
           - `WebFetch`: Fetch and read content from URLs
           - Read-only git commands: `git status`, `git diff`, `git log`, `git show`, `git tag`
           
-          Note: This is a read-only workflow. You cannot execute commands or modify files.
+          Note: This is a read-only workflow. Only the tools and commands listed in `<allowed_tools>` are available.
           </investigation_tools>
 
           <response_goals>
@@ -128,7 +128,7 @@ runs:
 
           In priority order your goal is to:
             1. Provide context about the request or issue (related issues, pull requests, files, etc.)
-            2. Layout a single high-quality and actionable recommendation for how to address the issue based on your knowledge of the project, codebase, and issue
+            2. Lay out a single high-quality and actionable recommendation for how to address the issue based on your knowledge of the project, codebase, and issue
             3. Provide a high quality and detailed plan that a junior developer could follow to implement the recommendation
           </response_goals>
 

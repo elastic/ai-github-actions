@@ -145,7 +145,7 @@ runs:
 
           In priority order your goal is to:
             1. Provide context about the request or issue (related issues, pull requests, files, etc.)
-            2. Layout a single high-quality and actionable recommendation for how to address the issue based on your knowledge of the project, codebase, and issue
+            2. Lay out a single high-quality and actionable recommendation for how to address the issue based on your knowledge of the project, codebase, and issue
             3. Provide a high quality and detailed plan that a junior developer could follow to implement the recommendation
             4. Use execution to verify findings when appropriate (check `<allowed_tools>` section for available commands)
           </response_goals>
