@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"639d20e625bdf362e5e690e812052ba140799d50984096906124b6dcb164574f"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c746cb697caa3596f3ed713a6f4fa4a06639158c28b4e85c0827b57cf5ac7604"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -112,7 +112,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Generate agentic run info
@@ -229,11 +229,10 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF'
           ## MCP Servers
           
-          - **`generate_agents_md`** — generates a summary of the repository's structure, conventions, and coding guidelines from AGENTS.md and related files. Call at the start of every workflow to get repo context.
           - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          
+          Repository conventions are pre-fetched to `/tmp/agents.md`. Read this file early in your task to understand the codebase's conventions, guidelines, and patterns. If the file doesn't exist, continue without it. When spawning sub-agents, include the contents of `/tmp/agents.md` in each sub-agent's prompt (or tell the sub-agent to read the file directly).
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## Formatting Guidelines
@@ -355,10 +354,9 @@ jobs:
           
           ### Step 1: Gather Context
           
-          1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-          2. Use the commit SHA provided in the Context section above. If it is empty, discover it from the PR's commit statuses or check runs.
-          3. Call `list_pull_requests` for the repository (open PRs), then call `pull_request_read` with method `get` on candidates and keep PRs where `head.sha` matches the failed commit SHA. If none match, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
-          4. For each matching PR, keep author, branches, and fork status for downstream analysis.
+          1. Use the commit SHA provided in the Context section above. If it is empty, discover it from the PR's commit statuses or check runs.
+          2. Call `list_pull_requests` for the repository (open PRs), then call `pull_request_read` with method `get` on candidates and keep PRs where `head.sha` matches the failed commit SHA. If none match, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
+          3. For each matching PR, keep author, branches, and fork status for downstream analysis.
           
           ### Step 2: Find the Buildkite Build
           
@@ -384,7 +382,7 @@ jobs:
              - Call `pull_request_read` with method `get_status` for the PR to retrieve commit status contexts.
              - Look for status contexts or check runs whose `target_url` contains `buildkite.com`. The URL typically follows the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>`.
           
-          2. **Fetch the public build page**: Use `web-fetch` to retrieve the Buildkite build URL found above. The page contains the build status, job list, and links to individual job logs.
+          1. **Fetch the public build page**: Use `web-fetch` to retrieve the Buildkite build URL found above. The page contains the build status, job list, and links to individual job logs.
           
           3. **Collect failure evidence from public pages**:
              - Parse the fetched build page to identify failed jobs. Look for job links matching the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>#<job-uuid>`.
@@ -538,7 +536,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -592,7 +590,12 @@ jobs:
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
       - name: Configure Copilot CLI settings
-        run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi"
+        run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi\n"
+        shell: bash
+      - env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        name: Fetch repository conventions
+        run: "set -euo pipefail\nif [ -f \"AGENTS.md\" ]; then\n  cp AGENTS.md /tmp/agents.md\n  echo \"Repository conventions copied from AGENTS.md to /tmp/agents.md\"\nelse\n  OWNER=\"${GITHUB_REPOSITORY%/*}\"\n  REPO=\"${GITHUB_REPOSITORY#*/}\"\n  summary=$(curl -sf --max-time 15 -X POST https://agents-md-generator.fastmcp.app/mcp \\\n    -H \"Content-Type: application/json\" \\\n    -H \"Accept: application/json, text/event-stream\" \\\n    -d \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":1,\\\"method\\\":\\\"tools/call\\\",\\\"params\\\":{\\\"name\\\":\\\"generate_agents_md\\\",\\\"arguments\\\":{\\\"owner\\\":\\\"${OWNER}\\\",\\\"repo\\\":\\\"${REPO}\\\"}}}\" \\\n    | sed 's/^data: //' \\\n    | jq -r '.result.structuredContent.summary // empty' 2>/dev/null) || true\n  if [ -n \"$summary\" ]; then\n    echo \"$summary\" > /tmp/agents.md\n    echo \"Repository conventions written to /tmp/agents.md\"\n  else\n    echo \"::warning::Could not fetch repository conventions; continuing without them\"\n  fi\nfi"
         shell: bash
       - name: Resolve event context
         run: |
@@ -905,13 +908,6 @@ jobs:
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
           {
             "mcpServers": {
-              "agents-md-generator": {
-                "type": "http",
-                "url": "https://agents-md-generator.fastmcp.app/mcp",
-                "tools": [
-                  "generate_agents_md"
-                ]
-              },
               "buildkite": {
                 "type": "http",
                 "url": "https://mcp.buildkite.com/mcp/readonly",
@@ -1262,7 +1258,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1348,7 +1344,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1390,7 +1386,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact

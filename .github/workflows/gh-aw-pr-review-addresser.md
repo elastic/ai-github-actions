@@ -119,11 +119,10 @@ Address the review feedback surgically — make only the minimum changes needed.
 
 PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files.
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches). Check whether this is a fork PR — if the head repo differs from the base repo, you cannot push changes.
-3. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
-4. Read `/tmp/pr-context/unresolved_threads.json` to get unresolved review threads that need attention. For full context including resolved threads, see `review_comments.json`.
-5. Read `/tmp/pr-context/diffs/` to understand the current state of changes.
+1. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches). Check whether this is a fork PR — if the head repo differs from the base repo, you cannot push changes.
+2. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
+3. Read `/tmp/pr-context/unresolved_threads.json` to get unresolved review threads that need attention. For full context including resolved threads, see `review_comments.json`.
+4. Read `/tmp/pr-context/diffs/` to understand the current state of changes.
 
 ### Step 2: Address Each Review Thread
 

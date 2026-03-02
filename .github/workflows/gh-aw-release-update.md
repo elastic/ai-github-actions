@@ -99,10 +99,9 @@ Check for new releases of `elastic/ai-github-actions` and open a PR that updates
 
 ## Step 1: Gather context
 
-1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-2. Use `github-get_latest_release` for `elastic/ai-github-actions` to obtain the latest tag and release notes. If no release exists, call `noop` and stop.
-3. Resolve the tag to a commit SHA using `github-get_tag`.
-4. Find pinned workflow references in this repository:
+1. Use `github-get_latest_release` for `elastic/ai-github-actions` to obtain the latest tag and release notes. If no release exists, call `noop` and stop.
+2. Resolve the tag to a commit SHA using `github-get_tag`.
+3. Find pinned workflow references in this repository:
 
 ````text
 rg -n "elastic/ai-github-actions/.github/workflows/gh-aw-.*\\.lock\\.yml@\\S+" .

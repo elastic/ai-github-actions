@@ -14,6 +14,7 @@ imports:
   - gh-aw-fragments/safe-output-review-comment.md
   - gh-aw-fragments/safe-output-submit-review.md
   - gh-aw-fragments/pick-three-keep-many.md
+  - gh-aw-fragments/safe-output-code-review.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -114,7 +115,7 @@ Follow these steps in order.
 
 ### Step 1: Gather Context
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. Write the result to `/tmp/pr-context/agents.md` so sub-agents can read it. If `generate_agents_md` fails, continue without it.
+1. Read `/tmp/agents.md` for repository conventions (skip if missing).
 2. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches).
 3. Read `/tmp/pr-context/issue-*.json` files if any exist to understand linked issue motivation and acceptance criteria.
 4. Read `/tmp/pr-context/reviews.json` to check prior review submissions from this bot. Note any prior verdicts to avoid redundant reviews.
@@ -122,27 +123,8 @@ Follow these steps in order.
 
 ### Step 2: Review
 
-Read `/tmp/pr-context/pr-size.txt` for the PR size (file count and diff lines). Use it to decide your review approach:
-
-- **Small PRs (under 200 diff lines):** Review directly — no sub-agents. Read files in the order from `/tmp/pr-context/file_order_az.txt`. For each file, read the diff from `/tmp/pr-context/diffs/<filename>.diff`, read the full file from the workspace, check existing threads from `/tmp/pr-context/threads/<filename>.json`, and identify issues per the Code Review Reference criteria. Then proceed to Step 3 with your findings.
-
-- **Medium PRs (200–800 diff lines):** Follow the **Pick Three, Keep Many** process — spawn 2 `code-review` sub-agents in parallel:
-  - **Agent 1**: file ordering from `/tmp/pr-context/file_order_az.txt` (A → Z)
-  - **Agent 2**: file ordering from `/tmp/pr-context/file_order_za.txt` (Z → A)
-
-- **Large PRs (over 800 diff lines):** Follow the **Pick Three, Keep Many** process — spawn 3 `code-review` sub-agents in parallel:
-  - **Agent 1**: file ordering from `/tmp/pr-context/file_order_az.txt` (A → Z)
-  - **Agent 2**: file ordering from `/tmp/pr-context/file_order_za.txt` (Z → A)
-  - **Agent 3**: file ordering from `/tmp/pr-context/file_order_largest.txt` (largest diff first)
-
-**When spawning sub-agents**, each prompt must include:
-- Instruction to read `/tmp/pr-context/review-instructions.md` for the review process, criteria, and calibration examples
-- Instruction to read `/tmp/pr-context/README.md` for a manifest of all available context files
-- The review intensity (`${{ inputs.intensity }}`) and minimum severity (`${{ inputs.minimum_severity }}`)
-- The path to that sub-agent's file ordering — tell it to read the file for its ordered list (per-file diffs are at `/tmp/pr-context/diffs/<filename>.diff`)
-- Instruction to read changed files from the workspace (the PR branch is checked out)
-
-Each sub-agent returns a structured findings list. They do NOT leave inline comments.
+1. Call `ready_to_code_review` — this writes `/tmp/pr-context/agent-review.md` (review approach) and `/tmp/pr-context/parent-review.md` (comment format and inline severity threshold).
+2. Read both files, then follow the approach in `agent-review.md`.
 
 ### Step 3: Verify and Comment
 

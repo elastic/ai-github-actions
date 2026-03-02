@@ -50,7 +50,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
 

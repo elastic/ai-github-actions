@@ -123,10 +123,9 @@ Evaluate the PR body against all configured edit dimensions. Apply changes only 
 
 ### Step 1: Gather Context
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get the full PR details — current body, commits, and file list.
-3. Call `pull_request_read` with method `get_files` to get the list of changed files.
-4. If the PR description references issues (e.g., "Fixes #123", "Closes #456"), call `issue_read` with method `get` on each linked issue to understand the original motivation.
+1. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get the full PR details — current body, commits, and file list.
+2. Call `pull_request_read` with method `get_files` to get the list of changed files.
+3. If the PR description references issues (e.g., "Fixes #123", "Closes #456"), call `issue_read` with method `get` on each linked issue to understand the original motivation.
 
 ### Step 2: Analyze the Diff
 

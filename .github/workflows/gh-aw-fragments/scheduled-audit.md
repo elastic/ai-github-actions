@@ -10,7 +10,7 @@ Follow these steps in order.
 
 ### Step 1: Gather Context
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
+1. Read `/tmp/agents.md` for the repository's coding guidelines and conventions (skip if missing).
 2. Follow the data gathering instructions in the **Report Assignment** section.
 
 ### Step 2: Analyze

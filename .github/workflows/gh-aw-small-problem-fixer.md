@@ -102,8 +102,7 @@ Find a small, clearly-scoped issue (or a very small set of related issues) and o
 
 ## Step 1: Gather candidates
 
-1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-2. Search for small, low-effort issues:
+1. Search for small, low-effort issues:
 
 ````text
 github-search_issues: query="repo:${{ github.repository }} is:issue is:open -label:bug-hunter -\"[bug-hunter]\" (label:\"good first issue\" OR label:small OR label:\"quick fix\" OR label:\"easy\") sort:updated-asc"

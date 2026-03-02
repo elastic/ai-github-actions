@@ -1,7 +1,7 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.51.3
+GH_AW_VERSION := v0.51.5
 GH_AW_COMPAT_VERSION := v0.49.4
 
 # Workflows that must be compiled with the compat compiler

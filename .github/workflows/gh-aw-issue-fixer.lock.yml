@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b049116d1b44954deb1d6fd4735689d11fdb16abe08af4b4b1a5cc7260343d9e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b4b7463fc8c2f58ba0aa879ee4dd0f39b33db1c3987536f3f49f06e090c49bb8"}
 
 name: "Issue Fixer"
 "on":
@@ -116,7 +116,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Generate agentic run info
@@ -231,11 +231,10 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF'
           ## MCP Servers
           
-          - **`generate_agents_md`** — generates a summary of the repository's structure, conventions, and coding guidelines from AGENTS.md and related files. Call at the start of every workflow to get repo context.
           - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          
+          Repository conventions are pre-fetched to `/tmp/agents.md`. Read this file early in your task to understand the codebase's conventions, guidelines, and patterns. If the file doesn't exist, continue without it. When spawning sub-agents, include the contents of `/tmp/agents.md` in each sub-agent's prompt (or tell the sub-agent to read the file directly).
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## Formatting Guidelines
@@ -357,9 +356,8 @@ jobs:
           
           ### Step 1: Gather Context
           
-          1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-          2. Read key repository files (README, CONTRIBUTING, etc.) to understand the project.
-          3. Search for related issues and PRs (open and closed) that may be relevant. Call `issue_read` with method `get` on the most relevant issues to understand prior discussion, decisions, and whether this is a duplicate.
+          1. Read key repository files (README, CONTRIBUTING, etc.) to understand the project.
+          2. Search for related issues and PRs (open and closed) that may be relevant. Call `issue_read` with method `get` on the most relevant issues to understand prior discussion, decisions, and whether this is a duplicate.
           
           ### Step 2: Investigate the Codebase
           
@@ -503,7 +501,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -557,7 +555,12 @@ jobs:
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
       - name: Configure Copilot CLI settings
-        run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi"
+        run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi\n"
+        shell: bash
+      - env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        name: Fetch repository conventions
+        run: "set -euo pipefail\nif [ -f \"AGENTS.md\" ]; then\n  cp AGENTS.md /tmp/agents.md\n  echo \"Repository conventions copied from AGENTS.md to /tmp/agents.md\"\nelse\n  OWNER=\"${GITHUB_REPOSITORY%/*}\"\n  REPO=\"${GITHUB_REPOSITORY#*/}\"\n  summary=$(curl -sf --max-time 15 -X POST https://agents-md-generator.fastmcp.app/mcp \\\n    -H \"Content-Type: application/json\" \\\n    -H \"Accept: application/json, text/event-stream\" \\\n    -d \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":1,\\\"method\\\":\\\"tools/call\\\",\\\"params\\\":{\\\"name\\\":\\\"generate_agents_md\\\",\\\"arguments\\\":{\\\"owner\\\":\\\"${OWNER}\\\",\\\"repo\\\":\\\"${REPO}\\\"}}}\" \\\n    | sed 's/^data: //' \\\n    | jq -r '.result.structuredContent.summary // empty' 2>/dev/null) || true\n  if [ -n \"$summary\" ]; then\n    echo \"$summary\" > /tmp/agents.md\n    echo \"Repository conventions written to /tmp/agents.md\"\n  else\n    echo \"::warning::Could not fetch repository conventions; continuing without them\"\n  fi\nfi"
         shell: bash
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
@@ -661,6 +664,10 @@ jobs:
                       "type": "string"
                     },
                     "type": "array"
+                  },
+                  "repo": {
+                    "description": "Target repository in 'owner/repo' format. Required when changes are in a subdirectory checkout (e.g., 'repos/repo-a/'). Must be in the allowed-repos list. If omitted, uses the repository at the workspace root.",
+                    "type": "string"
                   },
                   "title": {
                     "description": "Concise PR title describing the changes. Follow repository conventions (e.g., conventional commits). The title appears as the main heading.",
@@ -1055,6 +1062,11 @@ jobs:
           step = 5
           if agents_md:
               manifest_lines.append(f'{step}. Read `{agents_md}` in the workspace for repository coding conventions.')
+              step += 1
+          review_instructions = '/tmp/pr-context/review-instructions.md'
+          if os.path.isfile(review_instructions):
+              manifest_lines.append(f'{step}. Read `{review_instructions}` for full review criteria, severity levels, false positive guidance, and calibration examples.')
+              step += 1
           manifest_lines += [
               '',
               '## Focus areas',
@@ -1146,13 +1158,6 @@ jobs:
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
           {
             "mcpServers": {
-              "agents-md-generator": {
-                "type": "http",
-                "url": "https://agents-md-generator.fastmcp.app/mcp",
-                "tools": [
-                  "generate_agents_md"
-                ]
-              },
               "github": {
                 "type": "stdio",
                 "container": "ghcr.io/github/github-mcp-server:v0.31.0",
@@ -1507,7 +1512,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1613,7 +1618,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Add eyes reaction for immediate feedback
@@ -1673,7 +1678,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact

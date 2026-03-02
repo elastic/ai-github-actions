@@ -105,10 +105,9 @@ Understand the request, investigate the codebase, and produce a concrete impleme
 
 ### Step 1: Gather Context
 
-1. Call `generate_agents_md` to get repository coding guidelines and conventions. If this fails, continue without it.
-2. Read the full issue thread and the request comment.
-3. If related issues or PRs are referenced, call `issue_read` / `pull_request_read` with method `get` for each relevant item.
-4. Use `grep` and file reading to inspect the relevant code paths.
+1. Read the full issue thread and the request comment.
+2. If related issues or PRs are referenced, call `issue_read` / `pull_request_read` with method `get` for each relevant item.
+3. Use `grep` and file reading to inspect the relevant code paths.
 
 ### Step 2: Investigate and Plan
 

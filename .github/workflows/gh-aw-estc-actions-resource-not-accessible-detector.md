@@ -211,9 +211,8 @@ The fix is to add an explicit `permissions:` block at the workflow or job level 
 
 ## Step 1: Gather context
 
-1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-2. Read `/tmp/gh-aw/agent/resource-not-accessible-summary.txt`.
-3. Read `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`.
+1. Read `/tmp/gh-aw/agent/resource-not-accessible-summary.txt`.
+2. Read `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`.
 
 ## Step 2: Decide whether to noop
 

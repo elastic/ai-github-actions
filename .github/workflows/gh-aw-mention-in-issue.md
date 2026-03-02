@@ -9,6 +9,7 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/workflow-edit-guardrails.md
+  - gh-aw-fragments/review-process.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/playwright-mcp-explorer.md
   - gh-aw-fragments/safe-output-add-comment-issue.md
@@ -111,10 +112,9 @@ Understand the request, investigate the codebase, and respond with a helpful, ac
 
 ### Step 1: Gather Context
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Read the full issue thread to understand the discussion so far.
-3. If the issue references other issues or PRs, call `issue_read` or `pull_request_read` with method `get` on each to understand the broader context.
-4. Use `grep` and file reading to explore the relevant parts of the codebase.
+1. Read the full issue thread to understand the discussion so far.
+2. If the issue references other issues or PRs, call `issue_read` or `pull_request_read` with method `get` on each to understand the broader context.
+3. Use `grep` and file reading to explore the relevant parts of the codebase.
 
 ### Step 2: Investigate and Respond
 

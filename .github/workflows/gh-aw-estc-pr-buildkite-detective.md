@@ -147,10 +147,9 @@ Classify each failure to guide your investigation:
 
 ### Step 1: Gather Context
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Use the commit SHA provided in the Context section above. If it is empty, discover it from the PR's commit statuses or check runs.
-3. Call `list_pull_requests` for the repository (open PRs), then call `pull_request_read` with method `get` on candidates and keep PRs where `head.sha` matches the failed commit SHA. If none match, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
-4. For each matching PR, keep author, branches, and fork status for downstream analysis.
+1. Use the commit SHA provided in the Context section above. If it is empty, discover it from the PR's commit statuses or check runs.
+2. Call `list_pull_requests` for the repository (open PRs), then call `pull_request_read` with method `get` on candidates and keep PRs where `head.sha` matches the failed commit SHA. If none match, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
+3. For each matching PR, keep author, branches, and fork status for downstream analysis.
 
 ### Step 2: Find the Buildkite Build
 
@@ -176,7 +175,7 @@ Use this path when the Buildkite MCP server is unavailable (missing token, 401, 
    - Call `pull_request_read` with method `get_status` for the PR to retrieve commit status contexts.
    - Look for status contexts or check runs whose `target_url` contains `buildkite.com`. The URL typically follows the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>`.
 
-2. **Fetch the public build page**: Use `web-fetch` to retrieve the Buildkite build URL found above. The page contains the build status, job list, and links to individual job logs.
+1. **Fetch the public build page**: Use `web-fetch` to retrieve the Buildkite build URL found above. The page contains the build status, job list, and links to individual job logs.
 
 3. **Collect failure evidence from public pages**:
    - Parse the fetched build page to identify failed jobs. Look for job links matching the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>#<job-uuid>`.

@@ -147,8 +147,7 @@ Follow these steps in order.
 
 ### Step 1: Gather Context
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. Use these as additional review criteria throughout the review. If this fails, continue without it.
-2. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get the full PR details (author, description, branches, **labels**).
+1. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get the full PR details (author, description, branches, **labels**).
 3. If the PR description references issues (e.g., "Fixes #123", "Closes #456"), call `issue_read` with method `get` on each linked issue to understand the motivation and acceptance criteria. Note any product, deployment, or version context mentioned.
 4. Call `pull_request_read` with method `get_review_comments` to check existing review threads. Note which files already have threads and whether threads are resolved, unresolved, or outdated.
 5. Call `pull_request_read` with method `get_reviews` to see prior review submissions from this bot. Do not repeat points already made in prior reviews.
