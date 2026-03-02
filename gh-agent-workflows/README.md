@@ -43,7 +43,7 @@ Pre-built workflows with domain-specific prompts. These import the same base fra
 - [Dependency Review](dependency-review/) — analyze Dependabot/Renovate dependency update PRs across ecosystems (GitHub Actions, Go, npm, Python, Java, Buildkite)
 
 **Research assistants**:
-- [Deep Research](deep-research/) — issue-comment deep research with web search/fetch and optional PR creation
+- [Internal Gemini CLI Web Search](internal-gemini-cli-web-search/) — issue-comment deep research with web search/fetch and optional PR creation
 
 ## Quick setup script
 
