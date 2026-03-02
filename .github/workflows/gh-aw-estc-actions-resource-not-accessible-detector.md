@@ -52,7 +52,7 @@ on:
         type: number
         required: false
         default: 1
-      issue-title-prefix:
+      title-prefix:
         description: "Title prefix for created issue (e.g. '[resource-not-accessible-by-integration]')"
         type: string
         required: false
@@ -81,7 +81,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
-    title-prefix: "${{ inputs.issue-title-prefix }} "
+    title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90
@@ -184,7 +184,7 @@ Use the prescan output to investigate only workflows that already matched `Resou
 - **CAN**: Read files, search code, run commands, create one issue.
 - **CANNOT**: Push changes or open PRs in this workflow.
 - Only investigate workflows listed in `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`.
-- Do not file a duplicate issue if an open `${{ inputs.issue-title-prefix }}` issue already tracks the same workflows and failure pattern.
+- Do not file a duplicate issue if an open `${{ inputs.title-prefix }}` issue already tracks the same workflows and failure pattern.
 
 ## Permission reference
 
@@ -218,7 +218,7 @@ The fix is to add an explicit `permissions:` block at the workflow or job level 
 
 - If the findings file has no data rows, call `noop` with:
   `No 'Resource not accessible by integration' failures found in the configured look-back window — nothing to report`.
-- Check open issues for `${{ inputs.issue-title-prefix }}` in the title and compare workflow paths/evidence.
+- Check open issues for `${{ inputs.title-prefix }}` in the title and compare workflow paths/evidence.
 - If an existing open issue already tracks the same findings, call `noop` and reference the existing issue number.
 
 ## Step 3: Investigate each affected workflow
@@ -233,7 +233,7 @@ For each workflow in the findings file:
 
 Call `create_issue` exactly once with:
 
-- **Title**: A short descriptive title summarizing the affected workflows (do NOT repeat the issue-title-prefix in the title)
+- **Title**: A short descriptive title summarizing the affected workflows (do NOT repeat the title-prefix in the title)
 - **Body**:
 
   ````
