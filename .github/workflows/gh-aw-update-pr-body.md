@@ -80,7 +80,7 @@ strict: false
 safe-outputs:
   activation-comments: false
   messages:
-    footer: ""
+    footer: "${{ inputs.messages-footer || format('---\nThe body of this PR [is automatically managed](https://ela.st/github-ai-tools) by the [{0} workflow]({{run_url}}).', github.workflow) }}"
 timeout-minutes: 30
 steps:
   - name: Repo-specific setup

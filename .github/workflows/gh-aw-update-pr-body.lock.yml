@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b9d429c2940d6e979d92754f8818b55cebbc5d23d7bc6f96d12f291d24ff1a2a"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9bb4c0ab6f9ff04c347bcb52e01829775bcc2748e96578184cef91bab757efe7"}
 
 name: "Update PR Body"
 "on":
@@ -1314,7 +1314,7 @@ jobs:
           GH_AW_WORKFLOW_ID: "gh-aw-update-pr-body"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.activation.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
-          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"activationComments\":\"false\"}"
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\nThe body of this PR [is automatically managed](https://ela.st/github-ai-tools) by the [{0} workflow]({{run_url}}).', github.workflow) }}\",\"activationComments\":\"false\"}"
           GH_AW_GROUP_REPORTS: "false"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1377,7 +1377,7 @@ jobs:
       GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/${{ github.workflow }}"
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
-      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"activationComments\":\"false\"}"
+      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\nThe body of this PR [is automatically managed](https://ela.st/github-ai-tools) by the [{0} workflow]({{run_url}}).', github.workflow) }}\",\"activationComments\":\"false\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-update-pr-body"
       GH_AW_WORKFLOW_NAME: "Update PR Body"
     outputs:
