@@ -28,7 +28,7 @@
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
-#     - gh-aw-fragments/messages-footer.md
+#     - gh-aw-fragments/messages-footer-no-feedback.md
 #     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"50e4b7b25774d06f5fca29e5a3b0f2577aa081618612d03173246b7ca54e54d2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"51ab253e63c3b208eff2262c5c8a9ea947cf2e7f2d4750df89d83d5f96a859dd"}
 
 name: "Update PR Body"
 "on":
@@ -1320,7 +1320,7 @@ jobs:
           GH_AW_WORKFLOW_ID: "gh-aw-update-pr-body"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.activation.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
-          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {0}]({{run_url}})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.', github.workflow) }}\",\"activationComments\":\"false\"}"
+          GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {0}]({{run_url}})', github.workflow) }}\",\"activationComments\":\"false\"}"
           GH_AW_GROUP_REPORTS: "false"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1383,7 +1383,7 @@ jobs:
       GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/${{ github.workflow }}"
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
-      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {0}]({{run_url}})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.', github.workflow) }}\",\"activationComments\":\"false\"}"
+      GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {0}]({{run_url}})', github.workflow) }}\",\"activationComments\":\"false\"}"
       GH_AW_WORKFLOW_ID: "gh-aw-update-pr-body"
       GH_AW_WORKFLOW_NAME: "Update PR Body"
     outputs:
