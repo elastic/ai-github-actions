@@ -115,7 +115,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
+        uses: github/gh-aw/actions/setup@33cd6c7f1fee588654ef19def2e6a4174be66197 # v0.51.6
         with:
           destination: /opt/gh-aw/actions
       - name: Generate agentic run info
@@ -302,9 +302,9 @@ jobs:
           ## create-pull-request-review-comment
           
           - **Required fields**: `path` (file path), `line` (line number), and `body` (comment text).
-          - **Line**: Must be within the diff — an added or context line in the patch. Must be the **exact line number from reading the file** (not estimated from the patch). Lines outside the diff will fail.
+          - **Line**: Must be a numbered line in the per-file diff (`/tmp/pr-context/diffs/<filename>.diff`). Only lines with a number prefix are commentable. Lines outside the diff will fail with a GitHub API error.
           - **Body**: Sanitized with the standard pipeline (mentions neutralized, HTML filtered, URLs restricted). GitHub API limit is ~65,536 characters.
-          - **Side**: Defaults to `RIGHT` (the new code). Use `LEFT` only when commenting on deleted lines.
+          - **Side**: Always `RIGHT` (the new code). Deleted lines have no number prefix in the diff and cannot be targeted for inline comments — include findings about deleted code in the review body instead.
           - **Suggestion blocks**: Use ` ```suggestion ` fences for concrete code fixes. The suggestion must actually change the code — don't suggest identical code. Only include a `suggestion` block when you can provide a concrete code fix that **actually changes** the code.
           
           Only flag issues you are confident are real problems — false positives erode trust. Once you have flagged an issue, you cannot unflag it.
@@ -600,7 +600,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
+        uses: github/gh-aw/actions/setup@33cd6c7f1fee588654ef19def2e6a4174be66197 # v0.51.6
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -1389,7 +1389,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
+        uses: github/gh-aw/actions/setup@33cd6c7f1fee588654ef19def2e6a4174be66197 # v0.51.6
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1475,7 +1475,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
+        uses: github/gh-aw/actions/setup@33cd6c7f1fee588654ef19def2e6a4174be66197 # v0.51.6
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1501,6 +1501,7 @@ jobs:
       pull-requests: write
     timeout-minutes: 15
     env:
+      GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/${{ github.workflow }}"
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || '---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {workflow_name}]({run_url})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.' }}\",\"activationComments\":\"false\"}"
@@ -1515,7 +1516,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
+        uses: github/gh-aw/actions/setup@33cd6c7f1fee588654ef19def2e6a4174be66197 # v0.51.6
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact

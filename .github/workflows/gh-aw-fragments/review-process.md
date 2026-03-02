@@ -21,7 +21,7 @@ steps:
 
       Review the PR diff file by file in your assigned order. For each changed file:
 
-      1. **Read the diff** for this file from `/tmp/pr-context/diffs/<filename>.diff` to understand what changed. If the diff is empty or truncated (e.g., binary files or very large changes), fall back to reading the full file from the workspace and comparing against context.
+      1. **Read the diff** for this file from `/tmp/pr-context/diffs/<filename>.diff` to understand what changed. Each line is prefixed with its line number (e.g., `405\t+ code`). Lines with numbers are commentable; lines without numbers are deleted lines (LEFT side only). If the diff is empty or truncated (e.g., binary files or very large changes), fall back to reading the full file from the workspace and comparing against context.
       2. **Read the full file from the workspace.** The PR branch is checked out locally — open the file directly to get complete contents with line numbers.
       3. **Check existing threads** for this file from `/tmp/pr-context/threads/<filename>.json` (if it exists). Skip issues that are already under discussion — each thread has `isResolved` and `isOutdated` fields.
       4. **Identify potential issues** matching the review criteria below.
