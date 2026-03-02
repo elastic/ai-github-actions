@@ -8,7 +8,6 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
-  - gh-aw-fragments/messages-footer-no-feedback.md
   - gh-aw-fragments/safe-output-update-pr.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -81,7 +80,7 @@ strict: false
 safe-outputs:
   activation-comments: false
   messages:
-    footer: ""
+    footer: "${{ inputs.messages-footer || format('---\nThe body of this PR [is automatically managed](https://ela.st/github-ai-tools) by the [{0} workflow]({{run_url}}).', github.workflow) }}"
 timeout-minutes: 30
 steps:
   - name: Repo-specific setup
