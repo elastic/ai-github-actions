@@ -34,7 +34,7 @@ See [example.yml](example.yml) for the full workflow file.
 | --- | --- | --- | --- |
 | `long-term-branches` | Space-separated list of long-term branch names to scan in addition to the default branch (e.g. `'8.x 7.17'`) | No | `""` |
 | `look-back-days` | Number of days to look back when scanning failed workflow runs | No | `1` |
-| `issue-title-prefix` | Title prefix used for the combined issue and dedup checks | No | `[resource-not-accessible-by-integration]` |
+| `title-prefix` | Title prefix used for the combined issue and dedup checks | No | `[resource-not-accessible-by-integration]` |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
