@@ -10,6 +10,17 @@
 
 Internal-only workflows (e.g., `upgrade-check.md`, `workflow-patrol.md`, `ci.yml`, `release.yml`) also live in `.github/workflows/`. Published workflows use the `gh-aw-` prefix; internal-only ones omit it. See [gh-agent-workflows/DEVELOPING.md](gh-agent-workflows/DEVELOPING.md) for the full architecture.
 
+## Prerequisites
+
+- [Go](https://go.dev/dl/) — required by `make setup` to build the `gh-aw` compiler
+- [GitHub CLI (`gh`)](https://cli.github.com/) — installed automatically by `make setup` on Linux, but must be pre-installed on macOS
+
+Verify with:
+
+```bash
+go version
+```
+
 ## Quick Start
 
 ```bash
