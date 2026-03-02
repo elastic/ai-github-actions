@@ -4,6 +4,8 @@
 network:
   allowed:
     - defaults
+    - "agents-md-generator.fastmcp.app"
+    - "public-code-search.fastmcp.app"
     - "elastic.co"
     - "elastic.dev"
     - "elastic.github.io"

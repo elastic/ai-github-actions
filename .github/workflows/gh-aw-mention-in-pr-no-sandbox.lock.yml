@@ -30,12 +30,14 @@
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/network-ecosystems.md
+#     - gh-aw-fragments/pick-three-keep-many.md
 #     - gh-aw-fragments/playwright-mcp-explorer.md
 #     - gh-aw-fragments/pr-context.md
 #     - gh-aw-fragments/review-process.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
 #     - gh-aw-fragments/safe-output-add-comment-pr.md
+#     - gh-aw-fragments/safe-output-code-review.md
 #     - gh-aw-fragments/safe-output-push-to-pr.md
 #     - gh-aw-fragments/safe-output-reply-to-review-comment.md
 #     - gh-aw-fragments/safe-output-resolve-thread.md
@@ -45,7 +47,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d85c988c65e9dac0594f560572cbf8504d9b8d50bc61eaf49b51087299c5fc63"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6039e02b70c9c36fa05ad607482e6a9f0a7bf7b144d4985deeaf0f93b15b826e"}
 
 name: "Mention in PR (no sandbox)"
 "on":
@@ -133,7 +135,7 @@ jobs:
       title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Generate agentic run info
@@ -198,9 +200,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_7B543459: ${{ inputs.minimum_severity || 'low' }}
           GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
-          GH_AW_EXPR_8D9F5797: ${{ inputs.intensity || 'balanced' }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -210,6 +210,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
           GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         run: |
           bash /opt/gh-aw/actions/create_prompt_first.sh
@@ -264,11 +265,10 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF'
           ## MCP Servers
           
-          - **`generate_agents_md`** — generates a summary of the repository's structure, conventions, and coding guidelines from AGENTS.md and related files. Call at the start of every workflow to get repo context.
           - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          
+          Repository conventions are pre-fetched to `/tmp/agents.md`. Read this file early in your task to understand the codebase's conventions, guidelines, and patterns. If the file doesn't exist, continue without it. When spawning sub-agents, include the contents of `/tmp/agents.md` in each sub-agent's prompt (or tell the sub-agent to read the file directly).
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## Formatting Guidelines
@@ -343,90 +343,7 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF'
           ## Code Review Reference
           
-          ### Comment Format
-          
-          Call **`create_pull_request_review_comment`** with:
-          - The file path and the **exact line number from reading the file** (not estimated from the diff)
-          - The line must be within the diff (an added or context line in the patch)
-          
-          `````
-          **[SEVERITY] Brief title**
-          
-          Description of the issue and why it matters.
-          
-          ```suggestion
-          corrected code here
-          ```
-          `````
-          
-          Only include a `suggestion` block when you can provide a concrete code fix that **actually changes** the code. If the fix requires structural changes, describe the fix in prose instead — never include a suggestion identical to the original line.
-          
-          ### Inline Comment Threshold
-          
-          The minimum severity for inline comments is `__GH_AW_EXPR_7B543459__`.
-          
-          Issues at or above the threshold get **inline review comments** on the specific code line. Issues below the threshold should be collected into a **collapsible section** of the review body instead — use a `<details>` block titled "Lower-priority observations (N)" with each item listing its severity, title, file:line, and why it matters.
-          
-          Severity order (highest to lowest): critical > high > medium > low > nitpick.
-          
-          If the threshold is `low`, only nitpick-severity issues go in the review body. If `medium`, both low and nitpick go in the body. If the value is unrecognized, treat it as `low`.
-          
-          ### Review Criteria
-          
-          Focus on these categories in priority order:
-          
-          1. Security vulnerabilities (injection, XSS, auth bypass, secrets exposure)
-          2. Logic bugs that could cause runtime failures or incorrect behavior
-          3. Data integrity issues (race conditions, missing transactions, corruption risk)
-          4. Performance bottlenecks (N+1 queries, memory leaks, blocking operations)
-          5. Error handling gaps (unhandled exceptions, missing validation)
-          6. Breaking changes to public APIs without migration path
-          7. Missing or incorrect test coverage for critical paths
-          
-          ### What NOT to Flag
-          
-          Only review the diff — do not flag issues in unchanged code, pre-existing problems not introduced by this PR, or style preferences handled by linters or formatters.
-          
-          **Common false positives** — these patterns look like issues but usually aren't. Before flagging anything in these categories, confirm the problem is real by reading the surrounding code:
-          
-          - **Security — input already sanitized:** Don't flag injection or XSS risks when inputs are sanitized upstream, parameterized queries are used, or the framework auto-escapes output.
-          - **Null/undefined — guarded elsewhere:** Don't flag potential null dereferences if the value is guaranteed by a type guard, assertion, schema validation, or upstream null check.
-          - **Error handling — handled at a different layer:** Don't flag missing try/catch if the caller, middleware, or framework catches and handles the error (e.g., Express error middleware, React error boundaries).
-          - **Performance — theoretical, not practical:** Don't flag algorithmic complexity (e.g., O(n^2)) unless N is demonstrably large enough to matter in the actual usage context. "This could be slow" without evidence is not actionable.
-          - **Validation — exists at another layer:** Don't flag missing input validation if it's handled by an API gateway, middleware, schema validator, or type system.
-          - **Test coverage — trivial or generated code:** Don't flag missing tests for trivial getters/setters, auto-generated code, or simple delegation methods.
-          - **Style or naming — not in coding guidelines:** Don't flag naming conventions or code style unless they violate the repository's documented coding guidelines (from `generate_agents_md` or CONTRIBUTING docs).
-          
-          **Existing review threads** — check BEFORE leaving any comment:
-          
-          - **Resolved with reviewer reply** (e.g. "This is intentional") — reviewer's decision is final. Do NOT re-flag.
-          - **Resolved without reply** — author likely fixed it. Do NOT re-raise unless the fix introduced a new problem.
-          - **Unresolved** — already flagged. Do NOT duplicate.
-          - **Outdated** — only re-flag if the issue still applies to the current diff.
-          
-          When in doubt, do not duplicate. Redundant comments erode trust.
-          
-          Finding no issues is a valid and valuable outcome. An APPROVE with zero inline comments is better than comments that waste the author's time or erode trust. Do not manufacture findings to justify your review — if the code is sound, approve without comments.
-          
-          ### Severity Classification
-          
-          Determine severity AFTER investigating the issue, not before. First identify the problem and trace through the code, then assign a severity based on the evidence you found. Do not start with a severity and look for issues to match it.
-          
-          - 🔴 **CRITICAL** — Must fix before merge (security vulnerabilities, data corruption, production-breaking bugs)
-          - 🟠 **HIGH** — Should fix before merge (logic errors, missing validation, significant performance issues)
-          - 🟡 **MEDIUM** — Address soon, non-blocking (error handling gaps, suboptimal patterns, missing edge cases)
-          - ⚪ **LOW** — Author discretion (minor improvements, documentation gaps)
-          - 💬 **NITPICK** — Truly optional (stylistic preferences, alternative approaches)
-          
-          ### Review Intensity
-          
-          The review intensity is `__GH_AW_EXPR_8D9F5797__`.
-          
-          - **`conservative`**: High evidence bar. Only comment when you can demonstrate a concrete failure scenario — what specific input or state triggers the bug. After identifying a potential issue, explicitly challenge your own finding: if you can construct a reasonable counterargument, do not comment. Give the author maximum benefit of the doubt. Approval with zero comments is the expected outcome for most PRs.
-          - **`balanced`**: Standard evidence bar. Comment when you can point to specific code that would fail and have verified the issue through the full verification protocol. Give the author reasonable benefit of the doubt — if the issue is ambiguous, lean toward not commenting.
-          - **`aggressive`**: Lower evidence bar. Comment when evidence exists even if the failure scenario is not fully confirmed. Improvement suggestions and alternative approaches are welcome but must still cite specific code. Do not speculate without any evidence, and do not duplicate existing threads.
-          
-          If the value is unrecognized, treat it as `balanced`.
+          Review criteria, severity levels, intensity, false positives, and calibration examples are in `/tmp/pr-context/review-instructions.md` (pre-written at startup). Inline comment format and the minimum severity threshold are in `/tmp/pr-context/parent-review.md` (written when `ready_to_code_review` is called).
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## Message Footer
@@ -436,48 +353,35 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF'
           ## Playwright MCP Tools
           
-          You have Playwright MCP tools available for interactive browser automation.
-          Use these tools to explore the app step by step — do NOT write Node.js scripts.
+          Playwright MCP tools are available for interactive browser automation. Full instructions are in `/tmp/playwright-instructions.md` — read it before using any Playwright tools.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ### Pick Three, Keep Many
           
-          ### Available tools
+          Parallelize your work using sub-agents. Spawn multiple sub-agents, each approaching the task from a different angle — e.g., different focus areas, different heuristics, or different parts of the codebase. Each sub-agent works independently and should return its own list of findings.
           
-          - `browser_navigate` — go to a URL
-          - `browser_click` — click an element
-          - `browser_type` — type text into an input
-          - `browser_snapshot` — get an accessibility tree (YAML) of the current page
-          - `browser_take_screenshot` — capture a screenshot
-          - `browser_console_execute` — run JavaScript in the browser console
+          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
           
-          ### Why MCP tools instead of scripts
+          - The full task description and objective (restate it, don't summarize)
+          - All repository context, conventions, and constraints you've gathered (e.g., from `/tmp/agents.md`)
+          - Any relevant data the sub-agent needs to do its job (diffs, file contents, existing threads)
+          - The quality criteria and output format you expect
+          - The specific angle that distinguishes this sub-agent from the others
           
-          MCP tools are interactive: you see the page state after each action and
-          decide what to do next. This is ideal for exploratory testing where you
-          need to adapt based on what you find. Scripts are fire-and-forget — if
-          a selector is wrong, you don't find out until the script fails.
+          Err on the side of providing too much context rather than too little. A well-informed sub-agent with a 10,000-token prompt will produce far better results than one that has to rediscover the codebase from scratch.
           
-          ### Measuring DOM properties
+          **Wait for all sub-agents to complete.** Do not proceed until every sub-agent has returned its result.
           
-          For programmatic checks (e.g. element heights, contrast), use
-          `browser_console_execute`:
+          **Merge and deduplicate findings** across all sub-agents:
+          1. If multiple sub-agents flagged the same issue, keep the version with the strongest evidence and clearest explanation.
+          2. If a finding is unique to one sub-agent, include it only if it passes the quality gate on its own merits — a finding flagged by only one sub-agent deserves extra scrutiny.
+          3. Drop any finding that does not meet the verification criteria.
           
-          ```javascript
-          (() => {
-            const els = document.querySelectorAll('input, button, [role="combobox"], [role="button"]');
-            return JSON.stringify(Array.from(els)
-              .map(el => {
-                const r = el.getBoundingClientRect();
-                return { tag: el.tagName, h: Math.round(r.height), top: Math.round(r.top), text: el.textContent?.trim().slice(0, 20) };
-              })
-              .filter(el => el.top > 50 && el.top < 250));
-          })()
-          ```
+          **Filter aggressively for quality.** Your job as the parent agent is to be the quality gate. Sub-agents cast a wide net; you decide what's worth keeping. For each surviving finding, verify it yourself — check that file paths exist, line numbers are accurate, the problem is real, and the finding is actionable. Discard anything vague, speculative, or already addressed. If no findings survive filtering, call `noop`.
           
-          ### Handling failures
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
           
-          - Do not retry the same action more than twice — the page is in a different state than expected.
-          - Diagnose before moving on: use `browser_take_screenshot` and `browser_snapshot` to see what's on the page.
-          - Adapt (different selector, different path) or report the failure as a finding.
-          - Never claim you verified something you didn't — if it failed and you skipped it, say so.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## add-comment Limitations
@@ -572,25 +476,25 @@ jobs:
           
           PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files.
           
-          1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-          2. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches).
-          3. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
-          4. Read `/tmp/pr-context/comments.json` and `/tmp/pr-context/review_comments.json` to understand the conversation context and what's being asked.
-          5. Do not modify, review, comment on, or resolve threads for any PR other than #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__.
+          1. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches).
+          2. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
+          3. Read `/tmp/pr-context/comments.json` and `/tmp/pr-context/review_comments.json` to understand the conversation context and what's being asked.
+          4. Do not modify, review, comment on, or resolve threads for any PR other than #__GH_AW_GITHUB_EVENT_ISSUE_NUMBER__.
           
           ### Step 2: Handle the Request
           
           Based on what's asked, do the appropriate thing:
           
           **If asked to review the PR:**
-          - Read `/tmp/pr-context/review_comments.json` and `/tmp/pr-context/reviews.json` to check existing threads and prior reviews — do not duplicate feedback.
-          - Review each changed file one at a time using diffs from `/tmp/pr-context/diffs/`. For each file:
-            1. Read the diff from `/tmp/pr-context/diffs/<filename>.diff`. If the diff is empty or truncated (e.g., binary files or very large changes), fall back to running `git diff` against the base branch or compare the full file against context.
-            2. Read the full file from the workspace (the PR branch is checked out)
-            3. Check existing threads from `/tmp/pr-context/threads/<filename>.json` (if it exists) — skip issues already flagged
-            4. Identify and verify issues per the **Code Review Reference** above
-            5. Leave inline comments (`create_pull_request_review_comment`) before moving to the next file
-          - After all files are reviewed, call `submit_pull_request_review`.
+          - Call `ready_to_code_review` to prepare the review approach based on PR size.
+          - Read `/tmp/pr-context/reviews.json` and `/tmp/pr-context/review_comments.json` to check prior reviews and existing threads — do not duplicate feedback.
+          - Read `/tmp/pr-context/agent-review.md` for the review approach and follow it. For small PRs, review directly. For medium/large PRs, spawn the specified number of `code-review` sub-agents in parallel (each reads its `/tmp/pr-context/subagent-*.md` instruction file).
+          - When sub-agents return findings, merge and deduplicate per the Pick Three, Keep Many process. Then verify each surviving finding before leaving a comment:
+            1. **Read the file and surrounding context** — open the full file, not just the diff.
+            2. **Construct a concrete failure scenario** — what specific input or state causes the bug? If you cannot describe one, drop the finding.
+            3. **Challenge the finding** — would a senior engineer familiar with this codebase agree this is a real issue? If unsure, drop it.
+            4. **Check existing threads** — if this issue was already flagged (resolved or unresolved), do not duplicate.
+          - Leave inline comments per the **Code Review Reference** for each finding that survives verification. Then call `submit_pull_request_review`.
           - **Important**: Substantive feedback belongs in the PR review (inline comments + review submission), NOT in a reply comment. Do NOT add a separate comment after submitting the review unless the user explicitly asked for a comment or the review submission failed.
           - **Bot-authored PRs**: If the PR author is `github-actions[bot]`, you can only submit a `COMMENT` review — `APPROVE` and `REQUEST_CHANGES` will fail because GitHub does not allow bot accounts to approve or request changes on their own PRs. Use `COMMENT` and state your verdict in the review body instead.
           
@@ -630,8 +534,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_EXPR_8D9F5797: ${{ inputs.intensity || 'balanced' }}
-          GH_AW_EXPR_7B543459: ${{ inputs.minimum_severity || 'low' }}
+          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
           GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
           GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
           GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
@@ -649,9 +552,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_7B543459: ${{ inputs.minimum_severity || 'low' }}
           GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
-          GH_AW_EXPR_8D9F5797: ${{ inputs.intensity || 'balanced' }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -661,6 +562,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
           GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         with:
@@ -675,9 +577,7 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
-                GH_AW_EXPR_7B543459: process.env.GH_AW_EXPR_7B543459,
                 GH_AW_EXPR_7F2A702A: process.env.GH_AW_EXPR_7F2A702A,
-                GH_AW_EXPR_8D9F5797: process.env.GH_AW_EXPR_8D9F5797,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -687,6 +587,7 @@ jobs:
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
+                GH_AW_INPUTS_MODEL: process.env.GH_AW_INPUTS_MODEL,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED,
                 GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: process.env.GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT
               }
@@ -737,21 +638,21 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+      - name: Setup Go
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        with:
+          go-version: '1.25'
+      - name: Capture GOROOT for AWF chroot mode
+        run: echo "GOROOT=$(go env GOROOT)" >> "$GITHUB_ENV"
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
-      - if: hashFiles('go.mod') != ''
-        name: Setup Go
-        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
-        with:
-          cache: true
-          go-version-file: go.mod
       - if: hashFiles('.python-version') != ''
         name: Setup Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
@@ -791,15 +692,22 @@ jobs:
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
       - name: Configure Copilot CLI settings
-        run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi"
+        run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi\n"
+        shell: bash
+      - env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        name: Fetch repository conventions
+        run: "set -euo pipefail\nif [ -f \"AGENTS.md\" ]; then\n  cp AGENTS.md /tmp/agents.md\n  echo \"Repository conventions copied from AGENTS.md to /tmp/agents.md\"\nelse\n  OWNER=\"${GITHUB_REPOSITORY%/*}\"\n  REPO=\"${GITHUB_REPOSITORY#*/}\"\n  summary=$(curl -sf --max-time 15 -X POST https://agents-md-generator.fastmcp.app/mcp \\\n    -H \"Content-Type: application/json\" \\\n    -H \"Accept: application/json, text/event-stream\" \\\n    -d \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":1,\\\"method\\\":\\\"tools/call\\\",\\\"params\\\":{\\\"name\\\":\\\"generate_agents_md\\\",\\\"arguments\\\":{\\\"owner\\\":\\\"${OWNER}\\\",\\\"repo\\\":\\\"${REPO}\\\"}}}\" \\\n    | sed 's/^data: //' \\\n    | jq -r '.result.structuredContent.summary // empty' 2>/dev/null) || true\n  if [ -n \"$summary\" ]; then\n    echo \"$summary\" > /tmp/agents.md\n    echo \"Repository conventions written to /tmp/agents.md\"\n  else\n    echo \"::warning::Could not fetch repository conventions; continuing without them\"\n  fi\nfi"
         shell: bash
       - env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number || inputs.target-pr-number || github.event.issue.number }}
         name: Fetch PR context to disk
-        run: "set -euo pipefail\nmkdir -p /tmp/pr-context\n\n# PR metadata\ngh pr view \"$PR_NUMBER\" --json title,body,author,baseRefName,headRefName,headRefOid,url \\\n  > /tmp/pr-context/pr.json\n\n# Full diff\nif ! gh pr diff \"$PR_NUMBER\" > /tmp/pr-context/pr.diff; then\n  echo \"::warning::Failed to fetch full PR diff; per-file diffs from files.json are still available.\"\n  : > /tmp/pr-context/pr.diff\nfi\n\n# Changed files list (--paginate may output concatenated arrays; jq -s 'add' merges them)\ngh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files\" --paginate \\\n  | jq -s 'add // []' > /tmp/pr-context/files.json\n\n# Per-file diffs\njq -c '.[]' /tmp/pr-context/files.json | while IFS= read -r entry; do\n  filename=$(echo \"$entry\" | jq -r '.filename')\n  mkdir -p \"/tmp/pr-context/diffs/$(dirname \"$filename\")\"\n  echo \"$entry\" | jq -r '.patch // empty' > \"/tmp/pr-context/diffs/${filename}.diff\"\ndone\n\n# File orderings for sub-agent review (3 strategies)\njq -r '[.[] | .filename] | sort | .[]' /tmp/pr-context/files.json \\\n  > /tmp/pr-context/file_order_az.txt\njq -r '[.[] | .filename] | sort | reverse | .[]' /tmp/pr-context/files.json \\\n  > /tmp/pr-context/file_order_za.txt\njq -r '[.[] | {filename, size: ((.additions // 0) + (.deletions // 0))}] | sort_by(-.size) | .[].filename' /tmp/pr-context/files.json \\\n  > /tmp/pr-context/file_order_largest.txt\n\n# Compute PR size metrics for review fan-out decisions\nFILE_COUNT=$(jq 'length' /tmp/pr-context/files.json)\nDIFF_LINES=$(wc -l < /tmp/pr-context/pr.diff | tr -d ' ')\necho \"${FILE_COUNT} files, ${DIFF_LINES} diff lines\" > /tmp/pr-context/pr-size.txt\necho \"PR size: ${FILE_COUNT} files, ${DIFF_LINES} diff lines\"\n\n# Existing reviews\ngh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews\" --paginate \\\n  | jq -s 'add // []' > /tmp/pr-context/reviews.json\n\n# Review threads with resolution status (GraphQL — REST lacks isResolved/isOutdated)\ngh api graphql --paginate -f query='\n  query($owner: String!, $repo: String!, $number: Int!, $endCursor: String) {\n    repository(owner: $owner, name: $repo) {\n      pullRequest(number: $number) {\n        reviewThreads(first: 100, after: $endCursor) {\n          pageInfo { hasNextPage endCursor }\n          nodes {\n            id\n            isResolved\n            isOutdated\n            isCollapsed\n            path\n            line\n            startLine\n            comments(first: 100) {\n              nodes {\n                id\n                databaseId\n                body\n                author { login }\n                createdAt\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n' -F owner=\"${GITHUB_REPOSITORY%/*}\" -F repo=\"${GITHUB_REPOSITORY#*/}\" -F \"number=$PR_NUMBER\" \\\n  --jq '.data.repository.pullRequest.reviewThreads.nodes' \\\n  | jq -s 'add // []' > /tmp/pr-context/review_comments.json\n\n# Filtered review thread views (pre-computed so agents don't need to parse review_comments.json)\njq '[.[] | select(.isResolved == false)]' /tmp/pr-context/review_comments.json \\\n  > /tmp/pr-context/unresolved_threads.json\njq '[.[] | select(.isResolved == true)]' /tmp/pr-context/review_comments.json \\\n  > /tmp/pr-context/resolved_threads.json\njq '[.[] | select(.isOutdated == true)]' /tmp/pr-context/review_comments.json \\\n  > /tmp/pr-context/outdated_threads.json\n\n# Per-file review threads (mirrors diffs/ structure)\njq -c '.[]' /tmp/pr-context/review_comments.json | while IFS= read -r thread; do\n  filepath=$(echo \"$thread\" | jq -r '.path // empty')\n  [ -z \"$filepath\" ] && continue\n  mkdir -p \"/tmp/pr-context/threads/$(dirname \"$filepath\")\"\n  echo \"$thread\" >> \"/tmp/pr-context/threads/${filepath}.jsonl\"\ndone\n# Convert per-file JSONL to proper JSON arrays\nmkdir -p /tmp/pr-context/threads\nfind /tmp/pr-context/threads -name '*.jsonl' 2>/dev/null | while IFS= read -r jsonl; do\n  jq -s '.' \"$jsonl\" > \"${jsonl%.jsonl}.json\"\n  rm \"$jsonl\"\ndone\n\n# PR discussion comments\ngh api \"repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments\" --paginate \\\n  | jq -s 'add // []' > /tmp/pr-context/comments.json\n\n# Linked issues\njq -r '.body // \"\"' /tmp/pr-context/pr.json 2>/dev/null \\\n  | grep -oiE '(fixes|closes|resolves)\\s+#[0-9]+' \\\n  | grep -oE '[0-9]+$' \\\n  | sort -u \\\n  | while read -r issue; do\n      gh api \"repos/$GITHUB_REPOSITORY/issues/$issue\" > \"/tmp/pr-context/issue-${issue}.json\" || true\n    done || true\n\n# Write manifest\ncat > /tmp/pr-context/README.md << 'MANIFEST'\n# PR Context\n\nPre-fetched PR data. All files are in `/tmp/pr-context/`.\n\n| File | Description |\n| --- | --- |\n| `pr.json` | PR metadata — title, body, author, base/head branches, head commit SHA (`headRefOid`), URL |\n| `pr.diff` | Full unified diff of all changes |\n| `files.json` | Changed files array — each entry has `filename`, `status`, `additions`, `deletions`, `patch` |\n| `diffs/<path>.diff` | Per-file diffs — one file per changed file, mirroring the repo path under `diffs/` |\n| `file_order_az.txt` | Changed files sorted alphabetically (A→Z), one filename per line |\n| `file_order_za.txt` | Changed files sorted reverse-alphabetically (Z→A), one filename per line |\n| `file_order_largest.txt` | Changed files sorted by diff size descending (largest first), one filename per line |\n| `reviews.json` | Prior review submissions — author, state (APPROVED/CHANGES_REQUESTED/COMMENTED), body |\n| `review_comments.json` | All review threads (GraphQL) — each thread has `id` (node ID for resolving), `isResolved`, `isOutdated`, `path`, `line`, and nested `comments` with `id`, `databaseId` (numeric REST ID for replies), body/author |\n| `unresolved_threads.json` | Unresolved review threads — subset of `review_comments.json` where `isResolved` is false |\n| `resolved_threads.json` | Resolved review threads — subset of `review_comments.json` where `isResolved` is true |\n| `outdated_threads.json` | Outdated review threads — subset of `review_comments.json` where `isOutdated` is true (code changed since comment) |\n| `threads/<path>.json` | Per-file review threads — one file per changed file with existing threads, mirroring the repo path under `threads/` |\n| `comments.json` | PR discussion comments (not inline) |\n| `issue-{N}.json` | Linked issue details (one file per linked issue, if any) |\n| `pr-size.txt` | PR size metrics: `{N} files, {M} diff lines` — used by the agent to decide review fan-out |\n| `agents.md` | Repository conventions from `generate_agents_md` (if written by agent) |\n| `review-instructions.md` | Review instructions, criteria, and calibration examples (if written by review-process fragment) |\nMANIFEST\n\necho \"PR context written to /tmp/pr-context/\"\nls -la /tmp/pr-context/"
+        run: "set -euo pipefail\nmkdir -p /tmp/pr-context\n\n# PR metadata\ngh pr view \"$PR_NUMBER\" --json title,body,author,baseRefName,headRefName,headRefOid,url \\\n  > /tmp/pr-context/pr.json\n\n# Full diff\nif ! gh pr diff \"$PR_NUMBER\" > /tmp/pr-context/pr.diff; then\n  echo \"::warning::Failed to fetch full PR diff; per-file diffs from files.json are still available.\"\n  : > /tmp/pr-context/pr.diff\nfi\n\n# Changed files list (--paginate may output concatenated arrays; jq -s 'add' merges them)\ngh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files\" --paginate \\\n  | jq -s 'add // []' > /tmp/pr-context/files.json\n\n# Per-file diffs\njq -c '.[]' /tmp/pr-context/files.json | while IFS= read -r entry; do\n  filename=$(echo \"$entry\" | jq -r '.filename')\n  mkdir -p \"/tmp/pr-context/diffs/$(dirname \"$filename\")\"\n  echo \"$entry\" | jq -r '.patch // empty' > \"/tmp/pr-context/diffs/${filename}.diff\"\ndone\n\n# File orderings for sub-agent review (3 strategies)\njq -r '[.[] | .filename] | sort | .[]' /tmp/pr-context/files.json \\\n  > /tmp/pr-context/file_order_az.txt\njq -r '[.[] | .filename] | sort | reverse | .[]' /tmp/pr-context/files.json \\\n  > /tmp/pr-context/file_order_za.txt\njq -r '[.[] | {filename, size: ((.additions // 0) + (.deletions // 0))}] | sort_by(-.size) | .[].filename' /tmp/pr-context/files.json \\\n  > /tmp/pr-context/file_order_largest.txt\n\n# Compute PR size metrics for review fan-out decisions\nFILE_COUNT=$(jq 'length' /tmp/pr-context/files.json)\nDIFF_LINES=$(wc -l < /tmp/pr-context/pr.diff | tr -d ' ')\necho \"${FILE_COUNT} files, ${DIFF_LINES} diff lines\" > /tmp/pr-context/pr-size.txt\necho \"PR size: ${FILE_COUNT} files, ${DIFF_LINES} diff lines\"\n\n# Existing reviews\ngh api \"repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews\" --paginate \\\n  | jq -s 'add // []' > /tmp/pr-context/reviews.json\n\n# Review threads with resolution status (GraphQL — REST lacks isResolved/isOutdated)\ngh api graphql --paginate -f query='\n  query($owner: String!, $repo: String!, $number: Int!, $endCursor: String) {\n    repository(owner: $owner, name: $repo) {\n      pullRequest(number: $number) {\n        reviewThreads(first: 100, after: $endCursor) {\n          pageInfo { hasNextPage endCursor }\n          nodes {\n            id\n            isResolved\n            isOutdated\n            isCollapsed\n            path\n            line\n            startLine\n            comments(first: 100) {\n              nodes {\n                id\n                databaseId\n                body\n                author { login }\n                createdAt\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n' -F owner=\"${GITHUB_REPOSITORY%/*}\" -F repo=\"${GITHUB_REPOSITORY#*/}\" -F \"number=$PR_NUMBER\" \\\n  --jq '.data.repository.pullRequest.reviewThreads.nodes' \\\n  | jq -s 'add // []' > /tmp/pr-context/review_comments.json\n\n# Filtered review thread views (pre-computed so agents don't need to parse review_comments.json)\njq '[.[] | select(.isResolved == false)]' /tmp/pr-context/review_comments.json \\\n  > /tmp/pr-context/unresolved_threads.json\njq '[.[] | select(.isResolved == true)]' /tmp/pr-context/review_comments.json \\\n  > /tmp/pr-context/resolved_threads.json\njq '[.[] | select(.isOutdated == true)]' /tmp/pr-context/review_comments.json \\\n  > /tmp/pr-context/outdated_threads.json\n\n# Per-file review threads (mirrors diffs/ structure)\njq -c '.[]' /tmp/pr-context/review_comments.json | while IFS= read -r thread; do\n  filepath=$(echo \"$thread\" | jq -r '.path // empty')\n  [ -z \"$filepath\" ] && continue\n  mkdir -p \"/tmp/pr-context/threads/$(dirname \"$filepath\")\"\n  echo \"$thread\" >> \"/tmp/pr-context/threads/${filepath}.jsonl\"\ndone\n# Convert per-file JSONL to proper JSON arrays\nmkdir -p /tmp/pr-context/threads\nfind /tmp/pr-context/threads -name '*.jsonl' 2>/dev/null | while IFS= read -r jsonl; do\n  jq -s '.' \"$jsonl\" > \"${jsonl%.jsonl}.json\"\n  rm \"$jsonl\"\ndone\n\n# PR discussion comments\ngh api \"repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments\" --paginate \\\n  | jq -s 'add // []' > /tmp/pr-context/comments.json\n\n# Linked issues\njq -r '.body // \"\"' /tmp/pr-context/pr.json 2>/dev/null \\\n  | grep -oiE '(fixes|closes|resolves)\\s+#[0-9]+' \\\n  | grep -oE '[0-9]+$' \\\n  | sort -u \\\n  | while read -r issue; do\n      gh api \"repos/$GITHUB_REPOSITORY/issues/$issue\" > \"/tmp/pr-context/issue-${issue}.json\" || true\n    done || true\n\n# Write manifest\ncat > /tmp/pr-context/README.md << 'MANIFEST'\n# PR Context\n\nPre-fetched PR data. All files are in `/tmp/pr-context/`.\n\n| File | Description |\n| --- | --- |\n| `pr.json` | PR metadata — title, body, author, base/head branches, head commit SHA (`headRefOid`), URL |\n| `pr.diff` | Full unified diff of all changes |\n| `files.json` | Changed files array — each entry has `filename`, `status`, `additions`, `deletions`, `patch` |\n| `diffs/<path>.diff` | Per-file diffs — one file per changed file, mirroring the repo path under `diffs/` |\n| `file_order_az.txt` | Changed files sorted alphabetically (A→Z), one filename per line |\n| `file_order_za.txt` | Changed files sorted reverse-alphabetically (Z→A), one filename per line |\n| `file_order_largest.txt` | Changed files sorted by diff size descending (largest first), one filename per line |\n| `reviews.json` | Prior review submissions — author, state (APPROVED/CHANGES_REQUESTED/COMMENTED), body |\n| `review_comments.json` | All review threads (GraphQL) — each thread has `id` (node ID for resolving), `isResolved`, `isOutdated`, `path`, `line`, and nested `comments` with `id`, `databaseId` (numeric REST ID for replies), body/author |\n| `unresolved_threads.json` | Unresolved review threads — subset of `review_comments.json` where `isResolved` is false |\n| `resolved_threads.json` | Resolved review threads — subset of `review_comments.json` where `isResolved` is true |\n| `outdated_threads.json` | Outdated review threads — subset of `review_comments.json` where `isOutdated` is true (code changed since comment) |\n| `threads/<path>.json` | Per-file review threads — one file per changed file with existing threads, mirroring the repo path under `threads/` |\n| `comments.json` | PR discussion comments (not inline) |\n| `issue-{N}.json` | Linked issue details (one file per linked issue, if any) |\n| `pr-size.txt` | PR size metrics: `{N} files, {M} diff lines` — used by the agent to decide review fan-out |\n| `agents.md` | Not used in PR context — repository conventions are at `/tmp/agents.md` (pre-fetched) |\n| `review-instructions.md` | Review instructions, criteria, and calibration examples for sub-agents |\n| `agent-review.md` | Main agent instructions — review approach resolved from PR size (written when `ready_to_code_review` is called) |\n| `parent-review.md` | Comment format and inline severity threshold for the parent agent (written when `ready_to_code_review` is called) |\n| `subagent-az.md` | Sub-agent instructions: review files A → Z (written when `ready_to_code_review` is called) |\n| `subagent-za.md` | Sub-agent instructions: review files Z → A (written when `ready_to_code_review` is called) |\n| `subagent-largest.md` | Sub-agent instructions: review files largest diff first (written when `ready_to_code_review` is called) |\nMANIFEST\n\necho \"PR context written to /tmp/pr-context/\"\nls -la /tmp/pr-context/"
       - name: Write review instructions to disk
-        run: "mkdir -p /tmp/pr-context\ncat > /tmp/pr-context/review-instructions.md << 'REVIEW_EOF'\n# Review Instructions for Sub-agents\n\nYou are a code review sub-agent. Read these instructions, then review the PR files in the order provided in your prompt.\n\n## Context\n\nBefore reviewing files, read these to understand the PR:\n\n1. `/tmp/pr-context/pr.json` — PR title, description, author, and branches. Understand what the PR is trying to accomplish.\n2. `/tmp/pr-context/agents.md` — Repository coding conventions and guidelines (if it exists).\n3. `/tmp/pr-context/review_comments.json` — Existing review threads. Note which files already have threads so you don't duplicate.\n4. `/tmp/pr-context/issue-*.json` — Linked issue details (if any). Understand the motivation and acceptance criteria.\n\n## Process\n\nReview the PR diff file by file in your assigned order. For each changed file:\n\n1. **Read the diff** for this file from `/tmp/pr-context/diffs/<filename>.diff` to understand what changed. If the diff is empty or truncated (e.g., binary files or very large changes), fall back to reading the full file from the workspace and comparing against context.\n2. **Read the full file from the workspace.** The PR branch is checked out locally — open the file directly to get complete contents with line numbers.\n3. **Check existing threads** for this file from `/tmp/pr-context/threads/<filename>.json` (if it exists). Skip issues that are already under discussion — each thread has `isResolved` and `isOutdated` fields.\n4. **Identify potential issues** matching the review criteria below.\n5. **Quick-check each issue** before including it:\n   - What specific code pattern or change triggers this concern?\n   - Is there an obvious guard, handler, or mitigation visible in the immediate context?\n   - Can you describe a concrete failure scenario (the `evidence` field)? If you cannot articulate what specific input or state triggers the problem, drop the finding.\n   - If the issue is clearly handled, skip it. If you're unsure, include it — the parent will verify.\n6. **Add to your findings list.** Do NOT leave inline comments — you don't have that tool. Return findings in this format:\n\n```\n- file: path/to/file\n  line: 42\n  severity: HIGH\n  title: Brief title\n  description: What the issue is and why it matters\n  evidence: The specific code pattern and failure scenario\n  suggestion: corrected code here (optional — only if you can provide a concrete fix)\n```\n\n**Review every file in your assigned order.** Files reviewed earlier get more attention, which is why different sub-agents use different orderings.\n\n**Check existing threads** — per-file threads are at `/tmp/pr-context/threads/<filename>.json` (step 3 above). The full list is at `/tmp/pr-context/review_comments.json`. Do not flag issues that are already under discussion (resolved or unresolved). For outdated threads, only re-flag if the issue still applies to the current diff.\n\n**Return your full findings list** when done, or an empty list if no issues were found.\n\n## Review Criteria\n\nFocus on these categories in priority order:\n\n1. Security vulnerabilities (injection, XSS, auth bypass, secrets exposure)\n2. Logic bugs that could cause runtime failures or incorrect behavior\n3. Data integrity issues (race conditions, missing transactions, corruption risk)\n4. Performance bottlenecks (N+1 queries, memory leaks, blocking operations)\n5. Error handling gaps (unhandled exceptions, missing validation)\n6. Breaking changes to public APIs without migration path\n7. Missing or incorrect test coverage for critical paths\n\n## What NOT to Flag\n\nOnly review the diff — do not flag issues in unchanged code, pre-existing problems not introduced by this PR, or style preferences handled by linters or formatters.\n\n**Common false positives** — these patterns look like issues but usually aren't. Before flagging anything in these categories, confirm the problem is real by reading the surrounding code:\n\n- **Security — input already sanitized:** Don't flag injection or XSS risks when inputs are sanitized upstream, parameterized queries are used, or the framework auto-escapes output.\n- **Null/undefined — guarded elsewhere:** Don't flag potential null dereferences if the value is guaranteed by a type guard, assertion, schema validation, or upstream null check.\n- **Error handling — handled at a different layer:** Don't flag missing try/catch if the caller, middleware, or framework catches and handles the error (e.g., Express error middleware, React error boundaries).\n- **Performance — theoretical, not practical:** Don't flag algorithmic complexity (e.g., O(n^2)) unless N is demonstrably large enough to matter in the actual usage context. \"This could be slow\" without evidence is not actionable.\n- **Validation — exists at another layer:** Don't flag missing input validation if it's handled by an API gateway, middleware, schema validator, or type system.\n- **Test coverage — trivial or generated code:** Don't flag missing tests for trivial getters/setters, auto-generated code, or simple delegation methods.\n- **Style or naming — not in coding guidelines:** Don't flag naming conventions or code style unless they violate the repository's documented coding guidelines (from `generate_agents_md` or CONTRIBUTING docs).\n\n**Existing review threads** — check BEFORE flagging any issue:\n\n- **Resolved with reviewer reply** (e.g. \"This is intentional\") — reviewer's decision is final. Do NOT re-flag.\n- **Resolved without reply** — author likely fixed it. Do NOT re-raise unless the fix introduced a new problem.\n- **Unresolved** — already flagged. Do NOT duplicate.\n- **Outdated** — only re-flag if the issue still applies to the current diff.\n\nWhen in doubt, do not duplicate. Redundant comments erode trust.\n\nFinding no issues is a valid and valuable outcome. An empty findings list is better than findings that waste the author's time or erode trust. Do not manufacture findings to justify your review — if the code is sound, return an empty list.\n\n## Severity Classification\n\nDetermine severity AFTER investigating the issue, not before. First identify the problem and trace through the code, then assign a severity based on the evidence you found.\n\n- 🔴 CRITICAL — Must fix before merge (security vulnerabilities, data corruption, production-breaking bugs)\n- 🟠 HIGH — Should fix before merge (logic errors, missing validation, significant performance issues)\n- 🟡 MEDIUM — Address soon, non-blocking (error handling gaps, suboptimal patterns, missing edge cases)\n- ⚪ LOW — Author discretion (minor improvements, documentation gaps)\n- 💬 NITPICK — Truly optional (stylistic preferences, alternative approaches)\n\n## Review Intensity\n\nThe review intensity is `${{ inputs.intensity || 'balanced' }}`.\n\n- **conservative**: High evidence bar. Only flag when you can demonstrate a concrete failure scenario. If you can construct a reasonable counterargument, do not flag. Approval with zero findings is the expected outcome for most PRs.\n- **balanced**: Standard evidence bar. Flag when you can point to specific code that would fail. If the issue is ambiguous, lean toward not flagging.\n- **aggressive**: Lower evidence bar. Flag when evidence exists even if the failure scenario is not fully confirmed. Improvement suggestions welcome but must cite specific code.\n\n## Calibration Examples\n\nUse these examples to calibrate your judgment. Each pair shows a real issue and a similar-looking pattern that is NOT an issue.\n\n### Example 1: Null/Undefined Access\n\n**True positive — flag this:**\n\n```js\n// PR adds this handler\napp.get('/user/:id', async (req, res) => {\n  const user = await db.findUser(req.params.id);\n  res.json({ name: user.name, email: user.email });\n});\n```\n\nWhy flag: `db.findUser()` can return `null` when no user matches the ID. Accessing `user.name` will throw a TypeError at runtime. No upstream guard exists — the route handler is the entry point.\n\n**False positive — do NOT flag this:**\n\n```ts\n// PR adds this line inside an existing function\nconst settings = user.getSettings();\n```\n\nWhy skip: Reading the full file reveals `user` is typed as `User` (not `User | null`), and the calling function only runs after `authenticateUser()` middleware which guarantees a valid user object. The null case is handled at a different layer.\n\n### Example 2: SQL Injection\n\n**True positive — flag this:**\n\n```python\n# PR adds this query\ncursor.execute(f\"SELECT * FROM orders WHERE customer_id = '{customer_id}'\")\n```\n\nWhy flag: String interpolation in a SQL query with user-controlled input (`customer_id` comes from the request). No parameterization or sanitization anywhere in the call chain.\n\n**False positive — do NOT flag this:**\n\n```python\n# PR adds this query\ncursor.execute(f\"SELECT * FROM orders WHERE status = '{OrderStatus.PENDING.value}'\")\n```\n\nWhy skip: The interpolated value is a hardcoded enum constant (`OrderStatus.PENDING`), not user input. There is no injection vector.\n\n### Example 3: Borderline — Do NOT Flag\n\n```go\n// PR adds this function\nfunc processItems(items []Item) []Result {\n    results := make([]Result, 0)\n    for _, item := range items {\n        for _, tag := range item.Tags {\n            results = append(results, process(item, tag))\n        }\n    }\n    return results\n}\n```\n\nThis looks like an O(n*m) performance concern. But without evidence that `items` or `Tags` are large in practice, this is speculative. The function processes a bounded dataset (items from a single user request). Do not flag theoretical performance issues without evidence of real-world impact.\nREVIEW_EOF"
+        run: "mkdir -p /tmp/pr-context\ncat > /tmp/pr-context/review-instructions.md << 'REVIEW_EOF'\n# Review Instructions for Sub-agents\n\nYou are a code review sub-agent. Read these instructions, then review the PR files in the order provided in your prompt.\n\n## Context\n\nBefore reviewing files, read these to understand the PR:\n\n1. `/tmp/pr-context/pr.json` — PR title, description, author, and branches. Understand what the PR is trying to accomplish.\n2. `/tmp/agents.md` — Repository coding conventions and guidelines (skip if missing).\n3. `/tmp/pr-context/review_comments.json` — Existing review threads. Note which files already have threads so you don't duplicate.\n4. `/tmp/pr-context/issue-*.json` — Linked issue details (if any). Understand the motivation and acceptance criteria.\n\n## Process\n\nReview the PR diff file by file in your assigned order. For each changed file:\n\n1. **Read the diff** for this file from `/tmp/pr-context/diffs/<filename>.diff` to understand what changed. If the diff is empty or truncated (e.g., binary files or very large changes), fall back to reading the full file from the workspace and comparing against context.\n2. **Read the full file from the workspace.** The PR branch is checked out locally — open the file directly to get complete contents with line numbers.\n3. **Check existing threads** for this file from `/tmp/pr-context/threads/<filename>.json` (if it exists). Skip issues that are already under discussion — each thread has `isResolved` and `isOutdated` fields.\n4. **Identify potential issues** matching the review criteria below.\n5. **Quick-check each issue** before including it:\n   - What specific code pattern or change triggers this concern?\n   - Is there an obvious guard, handler, or mitigation visible in the immediate context?\n   - Can you describe a concrete failure scenario (the `evidence` field)? If you cannot articulate what specific input or state triggers the problem, drop the finding.\n   - If the issue is clearly handled, skip it. If you're unsure, include it — the parent will verify.\n6. **Add to your findings list.** Do NOT leave inline comments — you don't have that tool. Return findings in this format:\n\n```\n- file: path/to/file\n  line: 42\n  severity: HIGH\n  title: Brief title\n  description: What the issue is and why it matters\n  evidence: The specific code pattern and failure scenario\n  suggestion: corrected code here (optional — only if you can provide a concrete fix)\n```\n\n**Review every file in your assigned order.** Files reviewed earlier get more attention, which is why different sub-agents use different orderings.\n\n**Check existing threads** — per-file threads are at `/tmp/pr-context/threads/<filename>.json` (step 3 above). The full list is at `/tmp/pr-context/review_comments.json`. Do not flag issues that are already under discussion (resolved or unresolved). For outdated threads, only re-flag if the issue still applies to the current diff.\n\n**Return your full findings list** when done, or an empty list if no issues were found.\n\n## Review Criteria\n\nFocus on these categories in priority order:\n\n1. Security vulnerabilities (injection, XSS, auth bypass, secrets exposure)\n2. Logic bugs that could cause runtime failures or incorrect behavior\n3. Data integrity issues (race conditions, missing transactions, corruption risk)\n4. Performance bottlenecks (N+1 queries, memory leaks, blocking operations)\n5. Error handling gaps (unhandled exceptions, missing validation)\n6. Breaking changes to public APIs without migration path\n7. Missing or incorrect test coverage for critical paths\n\n## What NOT to Flag\n\nOnly review the diff — do not flag issues in unchanged code, pre-existing problems not introduced by this PR, or style preferences handled by linters or formatters.\n\n**Common false positives** — these patterns look like issues but usually aren't. Before flagging anything in these categories, confirm the problem is real by reading the surrounding code:\n\n- **Security — input already sanitized:** Don't flag injection or XSS risks when inputs are sanitized upstream, parameterized queries are used, or the framework auto-escapes output.\n- **Null/undefined — guarded elsewhere:** Don't flag potential null dereferences if the value is guaranteed by a type guard, assertion, schema validation, or upstream null check.\n- **Error handling — handled at a different layer:** Don't flag missing try/catch if the caller, middleware, or framework catches and handles the error (e.g., Express error middleware, React error boundaries).\n- **Performance — theoretical, not practical:** Don't flag algorithmic complexity (e.g., O(n^2)) unless N is demonstrably large enough to matter in the actual usage context. \"This could be slow\" without evidence is not actionable.\n- **Validation — exists at another layer:** Don't flag missing input validation if it's handled by an API gateway, middleware, schema validator, or type system.\n- **Test coverage — trivial or generated code:** Don't flag missing tests for trivial getters/setters, auto-generated code, or simple delegation methods.\n- **Style or naming — not in coding guidelines:** Don't flag naming conventions or code style unless they violate the repository's documented coding guidelines (from `/tmp/agents.md` or CONTRIBUTING docs).\n\n**Existing review threads** — check BEFORE flagging any issue:\n\n- **Resolved with reviewer reply** (e.g. \"This is intentional\") — reviewer's decision is final. Do NOT re-flag.\n- **Resolved without reply** — author likely fixed it. Do NOT re-raise unless the fix introduced a new problem.\n- **Unresolved** — already flagged. Do NOT duplicate.\n- **Outdated** — only re-flag if the issue still applies to the current diff.\n\nWhen in doubt, do not duplicate. Redundant comments erode trust.\n\nFinding no issues is a valid and valuable outcome. An empty findings list is better than findings that waste the author's time or erode trust. Do not manufacture findings to justify your review — if the code is sound, return an empty list.\n\n## Severity Classification\n\nDetermine severity AFTER investigating the issue, not before. First identify the problem and trace through the code, then assign a severity based on the evidence you found.\n\n- 🔴 CRITICAL — Must fix before merge (security vulnerabilities, data corruption, production-breaking bugs)\n- 🟠 HIGH — Should fix before merge (logic errors, missing validation, significant performance issues)\n- 🟡 MEDIUM — Address soon, non-blocking (error handling gaps, suboptimal patterns, missing edge cases)\n- ⚪ LOW — Author discretion (minor improvements, documentation gaps)\n- 💬 NITPICK — Truly optional (stylistic preferences, alternative approaches)\n\n## Review Intensity\n\nThe review intensity is `${{ inputs.intensity || 'balanced' }}`.\n\n- **conservative**: High evidence bar. Only flag when you can demonstrate a concrete failure scenario. If you can construct a reasonable counterargument, do not flag. Approval with zero findings is the expected outcome for most PRs.\n- **balanced**: Standard evidence bar. Flag when you can point to specific code that would fail. If the issue is ambiguous, lean toward not flagging.\n- **aggressive**: Lower evidence bar. Flag when evidence exists even if the failure scenario is not fully confirmed. Improvement suggestions welcome but must cite specific code.\n\n## Calibration Examples\n\nUse these examples to calibrate your judgment. Each pair shows a real issue and a similar-looking pattern that is NOT an issue.\n\n### Example 1: Null/Undefined Access\n\n**True positive — flag this:**\n\n```js\n// PR adds this handler\napp.get('/user/:id', async (req, res) => {\n  const user = await db.findUser(req.params.id);\n  res.json({ name: user.name, email: user.email });\n});\n```\n\nWhy flag: `db.findUser()` can return `null` when no user matches the ID. Accessing `user.name` will throw a TypeError at runtime. No upstream guard exists — the route handler is the entry point.\n\n**False positive — do NOT flag this:**\n\n```ts\n// PR adds this line inside an existing function\nconst settings = user.getSettings();\n```\n\nWhy skip: Reading the full file reveals `user` is typed as `User` (not `User | null`), and the calling function only runs after `authenticateUser()` middleware which guarantees a valid user object. The null case is handled at a different layer.\n\n### Example 2: SQL Injection\n\n**True positive — flag this:**\n\n```python\n# PR adds this query\ncursor.execute(f\"SELECT * FROM orders WHERE customer_id = '{customer_id}'\")\n```\n\nWhy flag: String interpolation in a SQL query with user-controlled input (`customer_id` comes from the request). No parameterization or sanitization anywhere in the call chain.\n\n**False positive — do NOT flag this:**\n\n```python\n# PR adds this query\ncursor.execute(f\"SELECT * FROM orders WHERE status = '{OrderStatus.PENDING.value}'\")\n```\n\nWhy skip: The interpolated value is a hardcoded enum constant (`OrderStatus.PENDING`), not user input. There is no injection vector.\n\n### Example 3: Borderline — Do NOT Flag\n\n```go\n// PR adds this function\nfunc processItems(items []Item) []Result {\n    results := make([]Result, 0)\n    for _, item := range items {\n        for _, tag := range item.Tags {\n            results = append(results, process(item, tag))\n        }\n    }\n    return results\n}\n```\n\nThis looks like an O(n*m) performance concern. But without evidence that `items` or `Tags` are large in practice, this is speculative. The function processes a bounded dataset (items from a single user request). Do not flag theoretical performance issues without evidence of real-world impact.\nREVIEW_EOF"
+      - name: Write Playwright instructions to disk
+        run: "cat > /tmp/playwright-instructions.md << 'EOF'\n# Playwright MCP Tools\n\nUse Playwright MCP tools for interactive browser automation.\nUse these tools to explore the app step by step — do NOT write Node.js scripts.\n\n## Available tools\n\n- `browser_navigate` — go to a URL\n- `browser_click` — click an element\n- `browser_type` — type text into an input\n- `browser_snapshot` — get an accessibility tree (YAML) of the current page\n- `browser_take_screenshot` — capture a screenshot\n- `browser_console_execute` — run JavaScript in the browser console\n\n## Why MCP tools instead of scripts\n\nMCP tools are interactive: you see the page state after each action and\ndecide what to do next. This is ideal for exploratory testing where you\nneed to adapt based on what you find. Scripts are fire-and-forget — if\na selector is wrong, you don't find out until the script fails.\n\n## Measuring DOM properties\n\nFor programmatic checks (e.g. element heights, contrast), use\n`browser_console_execute`:\n\n```javascript\n(() => {\n  const els = document.querySelectorAll('input, button, [role=\"combobox\"], [role=\"button\"]');\n  return JSON.stringify(Array.from(els)\n    .map(el => {\n      const r = el.getBoundingClientRect();\n      return { tag: el.tagName, h: Math.round(r.height), top: Math.round(r.top), text: el.textContent?.trim().slice(0, 20) };\n    })\n    .filter(el => el.top > 50 && el.top < 250));\n})()\n```\n\n## Handling failures\n\n- Do not retry the same action more than twice — the page is in a different state than expected.\n- Diagnose before moving on: use `browser_take_screenshot` and `browser_snapshot` to see what's on the page.\n- Adapt (different selector, different path) or report the failure as a finding.\n- Never claim you verified something you didn't — if it failed and you skipped it, say so.\nEOF"
       - env:
           GITHUB_TOKEN: ${{ github.token }}
           REPO_NAME: ${{ github.repository }}
@@ -1307,6 +1215,16 @@ jobs:
             "logDir": "/opt/gh-aw/safe-inputs/logs",
             "tools": [
               {
+                "name": "ready-to-code-review",
+                "description": "Prepare code review instructions based on PR size — writes agent-review.md, parent-review.md, and subagent-*.md to /tmp/pr-context/",
+                "inputSchema": {
+                  "properties": {},
+                  "type": "object"
+                },
+                "handler": "ready-to-code-review.py",
+                "timeout": 60
+              },
+              {
                 "name": "ready-to-push-to-pr",
                 "description": "Run the PR readiness checklist before pushing to a PR",
                 "inputSchema": {
@@ -1338,6 +1256,135 @@ jobs:
           
       - name: Setup Safe Inputs Tool Files
         run: |
+          cat > /opt/gh-aw/safe-inputs/ready-to-code-review.py << 'GH_AW_SAFE_INPUTS_PY_READY-TO-CODE-REVIEW_EOF'
+          #!/usr/bin/env python3
+          # Auto-generated safe-input tool: ready-to-code-review
+          # Prepare code review instructions based on PR size — writes agent-review.md, parent-review.md, and subagent-*.md to /tmp/pr-context/
+          
+          import json
+          import os
+          import sys
+          
+          # Read inputs from stdin (JSON format)
+          try:
+              inputs = json.loads(sys.stdin.read()) if not sys.stdin.isatty() else {}
+          except (json.JSONDecodeError, Exception):
+              inputs = {}
+          
+          # User code:
+          import os, json, re
+          
+          os.makedirs('/tmp/pr-context', exist_ok=True)
+          
+          # Read PR size written by the pr-context step
+          try:
+              with open('/tmp/pr-context/pr-size.txt') as f:
+                  pr_size = f.read().strip()
+              m = re.search(r', (\d+) diff', pr_size)
+              diff_lines = int(m.group(1)) if m else 0
+          except Exception:
+              pr_size = 'unknown size'
+              diff_lines = 0
+          
+          # Write one instruction file per sub-agent file ordering strategy
+          for key, desc in [('az', 'A \u2192 Z (alphabetical)'), ('za', 'Z \u2192 A (reverse alphabetical)'), ('largest', 'largest diff first')]:
+              lines = [
+                  '# PR Review Sub-Agent',
+                  '',
+                  'Review the PR as a code review sub-agent. Return findings only \u2014 do NOT leave inline comments.',
+                  '',
+                  '## Instructions',
+                  '',
+                  'Read `/tmp/pr-context/review-instructions.md` for the full review process, criteria, calibration examples, and output format.',
+                  '',
+                  '## Context',
+                  '',
+                  '- Repository conventions: `/tmp/agents.md` (skip if missing)',
+                  '- PR details: `/tmp/pr-context/pr.json`',
+                  '- All context files: `/tmp/pr-context/README.md`',
+                  '- Per-file diffs: `/tmp/pr-context/diffs/<filename>.diff`',
+                  '- Full file contents: read from the workspace (PR branch is checked out)',
+                  '',
+                  '## Your File Order',
+                  '',
+                  f'Review files in this order: `/tmp/pr-context/file_order_{key}.txt` ({desc})',
+              ]
+              with open(f'/tmp/pr-context/subagent-{key}.md', 'w') as f:
+                  f.write('\n'.join(lines) + '\n')
+          
+          # Determine review approach based on PR size
+          if diff_lines < 200:
+              approach_lines = [
+                  f'**Small PR ({pr_size}):** Review directly \u2014 no sub-agents. Review files in order from `/tmp/pr-context/file_order_az.txt`, reading each diff from `/tmp/pr-context/diffs/<filename>.diff` and the full file from the workspace.',
+              ]
+              size_key = 'small'
+          elif diff_lines < 800:
+              approach_lines = [
+                  f'**Medium PR ({pr_size}):** Use the **Pick Three, Keep Many** process \u2014 spawn 2 `code-review` sub-agents in parallel:',
+                  '',
+                  '- **Agent 1**: prompt it to read `/tmp/pr-context/subagent-az.md` and follow it',
+                  '- **Agent 2**: prompt it to read `/tmp/pr-context/subagent-za.md` and follow it',
+                  '',
+                  'Each sub-agent returns a structured findings list. They do NOT leave inline comments.',
+              ]
+              size_key = 'medium'
+          else:
+              approach_lines = [
+                  f'**Large PR ({pr_size}):** Use the **Pick Three, Keep Many** process \u2014 spawn 3 `code-review` sub-agents in parallel:',
+                  '',
+                  '- **Agent 1**: prompt it to read `/tmp/pr-context/subagent-az.md` and follow it',
+                  '- **Agent 2**: prompt it to read `/tmp/pr-context/subagent-za.md` and follow it',
+                  '- **Agent 3**: prompt it to read `/tmp/pr-context/subagent-largest.md` and follow it',
+                  '',
+                  'Each sub-agent returns a structured findings list. They do NOT leave inline comments.',
+              ]
+              size_key = 'large'
+          
+          with open('/tmp/pr-context/agent-review.md', 'w') as f:
+              f.write('\n'.join(approach_lines) + '\n')
+          
+          # Write parent-agent comment format and threshold instructions
+          t3 = chr(96) * 3
+          t5 = chr(96) * 5
+          threshold = os.environ.get('GH_AW_INPUTS_MINIMUM_SEVERITY', 'low') or 'low'
+          parent_lines = [
+              '# Code Review: Comment Format and Threshold',
+              '',
+              '## Comment Format',
+              '',
+              'Call **`create_pull_request_review_comment`** with:',
+              '- The file path and the **exact line number from reading the file** (not estimated from the diff)',
+              '- The line must be within the diff (an added or context line in the patch)',
+              '',
+              t5,
+              '**[SEVERITY] Brief title**',
+              '',
+              'Description of the issue and why it matters.',
+              '',
+              f'{t3}suggestion',
+              'corrected code here',
+              t3,
+              t5,
+              '',
+              'Only include a `suggestion` block when you can provide a concrete code fix that **actually changes** the code. If the fix requires structural changes, describe the fix in prose instead — never include a suggestion identical to the original line.',
+              '',
+              '## Inline Comment Threshold',
+              '',
+              f'The minimum severity for inline comments is `{threshold}`.',
+              '',
+              'Issues at or above the threshold get **inline review comments** on the specific code line. Issues below the threshold should be collected into a **collapsible section** of the review body — use a `<details>` block titled "Lower-priority observations (N)" with each item listing its severity, title, file:line, and why it matters.',
+              '',
+              'Severity order (highest to lowest): critical > high > medium > low > nitpick.',
+              '',
+              'If the threshold is `low`, only nitpick-severity issues go in the review body. If `medium`, both low and nitpick go in the body. If the value is unrecognized, treat it as `low`.',
+          ]
+          with open('/tmp/pr-context/parent-review.md', 'w') as f:
+              f.write('\n'.join(parent_lines) + '\n')
+          
+          print(json.dumps({'status': 'ok', 'size': size_key, 'diff_lines': diff_lines, 'agent_review': '/tmp/pr-context/agent-review.md', 'parent_review': '/tmp/pr-context/parent-review.md'}))
+          
+          GH_AW_SAFE_INPUTS_PY_READY-TO-CODE-REVIEW_EOF
+          chmod +x /opt/gh-aw/safe-inputs/ready-to-code-review.py
           cat > /opt/gh-aw/safe-inputs/ready-to-push-to-pr.py << 'GH_AW_SAFE_INPUTS_PY_READY-TO-PUSH-TO-PR_EOF'
           #!/usr/bin/env python3
           # Auto-generated safe-input tool: ready-to-push-to-pr
@@ -1560,13 +1607,6 @@ jobs:
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
           {
             "mcpServers": {
-              "agents-md-generator": {
-                "type": "http",
-                "url": "https://agents-md-generator.fastmcp.app/mcp",
-                "tools": [
-                  "generate_agents_md"
-                ]
-              },
               "github": {
                 "type": "stdio",
                 "container": "ghcr.io/github/github-mcp-server:v0.31.0",
@@ -1798,7 +1838,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1890,7 +1930,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Add eyes reaction for immediate feedback
@@ -1949,7 +1989,7 @@ jobs:
       push_commit_url: ${{ steps.process_safe_outputs.outputs.push_commit_url }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact

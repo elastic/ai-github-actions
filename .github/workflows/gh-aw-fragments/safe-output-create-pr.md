@@ -102,6 +102,11 @@ safe-inputs:
       step = 5
       if agents_md:
           manifest_lines.append(f'{step}. Read `{agents_md}` in the workspace for repository coding conventions.')
+          step += 1
+      review_instructions = '/tmp/pr-context/review-instructions.md'
+      if os.path.isfile(review_instructions):
+          manifest_lines.append(f'{step}. Read `{review_instructions}` for full review criteria, severity levels, false positive guidance, and calibration examples.')
+          step += 1
       manifest_lines += [
           '',
           '## Focus areas',

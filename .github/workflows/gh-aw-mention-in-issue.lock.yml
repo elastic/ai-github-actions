@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bd8f6ffb24fa0c365562e2712c9f7aac1bc30d2f83c41ae8ae54ab05352fb1a3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f074c152071f41578edc15fc606ffcd2ef1127fbe435d25a577c0b6e19f21c4f"}
 
 name: "Mention in Issue"
 "on":
@@ -129,7 +129,7 @@ jobs:
       title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Generate agentic run info
@@ -257,11 +257,10 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF'
           ## MCP Servers
           
-          - **`generate_agents_md`** — generates a summary of the repository's structure, conventions, and coding guidelines from AGENTS.md and related files. Call at the start of every workflow to get repo context.
           - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          
+          Repository conventions are pre-fetched to `/tmp/agents.md`. Read this file early in your task to understand the codebase's conventions, guidelines, and patterns. If the file doesn't exist, continue without it. When spawning sub-agents, include the contents of `/tmp/agents.md` in each sub-agent's prompt (or tell the sub-agent to read the file directly).
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## Formatting Guidelines
@@ -336,48 +335,7 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF'
           ## Playwright MCP Tools
           
-          You have Playwright MCP tools available for interactive browser automation.
-          Use these tools to explore the app step by step — do NOT write Node.js scripts.
-          
-          ### Available tools
-          
-          - `browser_navigate` — go to a URL
-          - `browser_click` — click an element
-          - `browser_type` — type text into an input
-          - `browser_snapshot` — get an accessibility tree (YAML) of the current page
-          - `browser_take_screenshot` — capture a screenshot
-          - `browser_console_execute` — run JavaScript in the browser console
-          
-          ### Why MCP tools instead of scripts
-          
-          MCP tools are interactive: you see the page state after each action and
-          decide what to do next. This is ideal for exploratory testing where you
-          need to adapt based on what you find. Scripts are fire-and-forget — if
-          a selector is wrong, you don't find out until the script fails.
-          
-          ### Measuring DOM properties
-          
-          For programmatic checks (e.g. element heights, contrast), use
-          `browser_console_execute`:
-          
-          ```javascript
-          (() => {
-            const els = document.querySelectorAll('input, button, [role="combobox"], [role="button"]');
-            return JSON.stringify(Array.from(els)
-              .map(el => {
-                const r = el.getBoundingClientRect();
-                return { tag: el.tagName, h: Math.round(r.height), top: Math.round(r.top), text: el.textContent?.trim().slice(0, 20) };
-              })
-              .filter(el => el.top > 50 && el.top < 250));
-          })()
-          ```
-          
-          ### Handling failures
-          
-          - Do not retry the same action more than twice — the page is in a different state than expected.
-          - Diagnose before moving on: use `browser_take_screenshot` and `browser_snapshot` to see what's on the page.
-          - Adapt (different selector, different path) or report the failure as a finding.
-          - Never claim you verified something you didn't — if it failed and you skipped it, say so.
+          Playwright MCP tools are available for interactive browser automation. Full instructions are in `/tmp/playwright-instructions.md` — read it before using any Playwright tools.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## add-comment Limitations
@@ -442,10 +400,9 @@ jobs:
           
           ### Step 1: Gather Context
           
-          1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-          2. Read the full issue thread to understand the discussion so far.
-          3. If the issue references other issues or PRs, call `issue_read` or `pull_request_read` with method `get` on each to understand the broader context.
-          4. Use `grep` and file reading to explore the relevant parts of the codebase.
+          1. Read the full issue thread to understand the discussion so far.
+          2. If the issue references other issues or PRs, call `issue_read` or `pull_request_read` with method `get` on each to understand the broader context.
+          3. Use `grep` and file reading to explore the relevant parts of the codebase.
           
           ### Step 2: Investigate and Respond
           
@@ -575,21 +532,21 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+      - name: Setup Go
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        with:
+          go-version: '1.25'
+      - name: Capture GOROOT for AWF chroot mode
+        run: echo "GOROOT=$(go env GOROOT)" >> "$GITHUB_ENV"
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
-      - if: hashFiles('go.mod') != ''
-        name: Setup Go
-        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
-        with:
-          cache: true
-          go-version-file: go.mod
       - if: hashFiles('.python-version') != ''
         name: Setup Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
@@ -629,8 +586,15 @@ jobs:
           echo "$install_dir" >> "$GITHUB_PATH"
         shell: bash
       - name: Configure Copilot CLI settings
-        run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi"
+        run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi\n"
         shell: bash
+      - env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        name: Fetch repository conventions
+        run: "set -euo pipefail\nif [ -f \"AGENTS.md\" ]; then\n  cp AGENTS.md /tmp/agents.md\n  echo \"Repository conventions copied from AGENTS.md to /tmp/agents.md\"\nelse\n  OWNER=\"${GITHUB_REPOSITORY%/*}\"\n  REPO=\"${GITHUB_REPOSITORY#*/}\"\n  summary=$(curl -sf --max-time 15 -X POST https://agents-md-generator.fastmcp.app/mcp \\\n    -H \"Content-Type: application/json\" \\\n    -H \"Accept: application/json, text/event-stream\" \\\n    -d \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":1,\\\"method\\\":\\\"tools/call\\\",\\\"params\\\":{\\\"name\\\":\\\"generate_agents_md\\\",\\\"arguments\\\":{\\\"owner\\\":\\\"${OWNER}\\\",\\\"repo\\\":\\\"${REPO}\\\"}}}\" \\\n    | sed 's/^data: //' \\\n    | jq -r '.result.structuredContent.summary // empty' 2>/dev/null) || true\n  if [ -n \"$summary\" ]; then\n    echo \"$summary\" > /tmp/agents.md\n    echo \"Repository conventions written to /tmp/agents.md\"\n  else\n    echo \"::warning::Could not fetch repository conventions; continuing without them\"\n  fi\nfi"
+        shell: bash
+      - name: Write Playwright instructions to disk
+        run: "cat > /tmp/playwright-instructions.md << 'EOF'\n# Playwright MCP Tools\n\nUse Playwright MCP tools for interactive browser automation.\nUse these tools to explore the app step by step — do NOT write Node.js scripts.\n\n## Available tools\n\n- `browser_navigate` — go to a URL\n- `browser_click` — click an element\n- `browser_type` — type text into an input\n- `browser_snapshot` — get an accessibility tree (YAML) of the current page\n- `browser_take_screenshot` — capture a screenshot\n- `browser_console_execute` — run JavaScript in the browser console\n\n## Why MCP tools instead of scripts\n\nMCP tools are interactive: you see the page state after each action and\ndecide what to do next. This is ideal for exploratory testing where you\nneed to adapt based on what you find. Scripts are fire-and-forget — if\na selector is wrong, you don't find out until the script fails.\n\n## Measuring DOM properties\n\nFor programmatic checks (e.g. element heights, contrast), use\n`browser_console_execute`:\n\n```javascript\n(() => {\n  const els = document.querySelectorAll('input, button, [role=\"combobox\"], [role=\"button\"]');\n  return JSON.stringify(Array.from(els)\n    .map(el => {\n      const r = el.getBoundingClientRect();\n      return { tag: el.tagName, h: Math.round(r.height), top: Math.round(r.top), text: el.textContent?.trim().slice(0, 20) };\n    })\n    .filter(el => el.top > 50 && el.top < 250));\n})()\n```\n\n## Handling failures\n\n- Do not retry the same action more than twice — the page is in a different state than expected.\n- Diagnose before moving on: use `browser_take_screenshot` and `browser_snapshot` to see what's on the page.\n- Adapt (different selector, different path) or report the failure as a finding.\n- Never claim you verified something you didn't — if it failed and you skipped it, say so.\nEOF"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
@@ -774,6 +738,10 @@ jobs:
                       "type": "string"
                     },
                     "type": "array"
+                  },
+                  "repo": {
+                    "description": "Target repository in 'owner/repo' format. Required when changes are in a subdirectory checkout (e.g., 'repos/repo-a/'). Must be in the allowed-repos list. If omitted, uses the repository at the workspace root.",
+                    "type": "string"
                   },
                   "title": {
                     "description": "Concise PR title describing the changes. Follow repository conventions (e.g., conventional commits). The title appears as the main heading.",
@@ -1201,6 +1169,11 @@ jobs:
           step = 5
           if agents_md:
               manifest_lines.append(f'{step}. Read `{agents_md}` in the workspace for repository coding conventions.')
+              step += 1
+          review_instructions = '/tmp/pr-context/review-instructions.md'
+          if os.path.isfile(review_instructions):
+              manifest_lines.append(f'{step}. Read `{review_instructions}` for full review criteria, severity levels, false positive guidance, and calibration examples.')
+              step += 1
           manifest_lines += [
               '',
               '## Focus areas',
@@ -1293,13 +1266,6 @@ jobs:
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
           {
             "mcpServers": {
-              "agents-md-generator": {
-                "type": "http",
-                "url": "https://agents-md-generator.fastmcp.app/mcp",
-                "tools": [
-                  "generate_agents_md"
-                ]
-              },
               "github": {
                 "type": "stdio",
                 "container": "ghcr.io/github/github-mcp-server:v0.31.0",
@@ -1661,7 +1627,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1767,7 +1733,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Add eyes reaction for immediate feedback
@@ -1829,7 +1795,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@5fa65dd15a71cec00f2d14c664467154d343d875 # v0.51.3
+        uses: github/gh-aw/actions/setup@88319be75ab1adc60640307a10e5cf04b3deff1e # v0.51.5
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact

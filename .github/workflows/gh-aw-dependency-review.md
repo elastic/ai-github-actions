@@ -100,10 +100,9 @@ This workflow is read-only. You can read files, search code, run commands, and c
 
 ### Step 1: Gather Context
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get full PR details (author, description, branches).
-3. Call `pull_request_read` with method `get_diff` to see exactly what changed.
-4. Call `pull_request_read` with method `get_files` to get the list of changed files.
+1. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get full PR details (author, description, branches).
+2. Call `pull_request_read` with method `get_diff` to see exactly what changed.
+3. Call `pull_request_read` with method `get_files` to get the list of changed files.
 
 ### Step 2: Identify and Classify Updated Dependencies
 
@@ -134,8 +133,8 @@ If the action reference uses a commit SHA (e.g. `uses: actions/checkout@de0fac2e
    ```bash
    gh api repos/{owner}/{repo}/commits/{sha} --jq '.commit.verification.verified'
    ```
-2. If the commit is **not verified**, flag this prominently. Unverified commits in pinned actions are a supply-chain risk.
-3. Check whether the commit SHA corresponds to a known release tag:
+1. If the commit is **not verified**, flag this prominently. Unverified commits in pinned actions are a supply-chain risk.
+2. Check whether the commit SHA corresponds to a known release tag:
    ```bash
    gh api repos/{owner}/{repo}/git/matching-refs/tags --jq '.[].ref' | head -20
    ```
@@ -148,7 +147,7 @@ For dependencies hosted on GitHub, fetch the release notes:
    ```bash
    gh api repos/{owner}/{repo}/releases/tags/{new_tag} --jq '.body' 2>/dev/null
    ```
-2. If no release exists for the exact tag, check the latest releases:
+1. If no release exists for the exact tag, check the latest releases:
    ```bash
    gh api repos/{owner}/{repo}/releases --jq '.[].tag_name' | head -10
    ```
@@ -168,7 +167,7 @@ For dependencies hosted on GitHub, fetch the release notes:
    - **npm/Node**: `grep -rn "require('{package}')\|from '{package}'" --include='*.js' --include='*.ts' --include='*.mjs' --include='*.cjs'`
    - **Python**: `grep -rn "import {package}\|from {package}" --include='*.py'`
    - **Java**: `grep -rn '{groupId}' --include='*.java' --include='*.kt' --include='*.gradle' --include='*.xml'`
-2. For each usage, note:
+1. For each usage, note:
    - Which files and modules use it
    - What APIs, functions, or features are consumed
    - For GitHub Actions: what inputs are passed and outputs consumed

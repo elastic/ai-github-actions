@@ -98,8 +98,7 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 
 ### Step 1: Gather Context
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Fetch workflow run details using `inputs.workflow-run-id`:
+1. Fetch workflow run details using `inputs.workflow-run-id`:
    ````bash
    gh api repos/${{ github.repository }}/actions/runs/{run_id} \
      --jq '{id: .id, html_url: .html_url, pull_requests: .pull_requests}'

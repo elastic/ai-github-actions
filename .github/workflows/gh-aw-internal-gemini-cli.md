@@ -106,10 +106,9 @@ Understand the request, investigate using code search and bash commands, and res
 
 ### Step 1: Gather Context and Plan
 
-1. Call `generate_agents_md` to get repository conventions.
-2. Read the full issue thread and any referenced issues. Identify the specific question or goal — this is your investigation anchor for all subsequent steps.
-3. Before investigating, decompose the question into sub-questions. For complex or multi-faceted requests, list 2-5 specific sub-questions that, if answered, would fully address the original request.
-4. Use `search_code` and local file reads to understand relevant code structure.
+1. Read the full issue thread and any referenced issues. Identify the specific question or goal — this is your investigation anchor for all subsequent steps.
+2. Before investigating, decompose the question into sub-questions. For complex or multi-faceted requests, list 2-5 specific sub-questions that, if answered, would fully address the original request.
+3. Use `search_code` and local file reads to understand relevant code structure.
 
 ### Step 2: Investigate
 

@@ -14,7 +14,7 @@ Follow these steps in order.
 
 ### Step 1: Gather Candidates
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
+1. Read `/tmp/agents.md` for the repository's coding guidelines and conventions (skip if missing).
 2. Follow the candidate gathering instructions in the **Fix Assignment** section.
 3. For each candidate, read the full issue and comments using `issue_read` (methods `get` and `get_comments`).
 

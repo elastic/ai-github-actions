@@ -12,6 +12,8 @@ imports:
   - gh-aw-fragments/pr-context.md
   - gh-aw-fragments/review-process.md
   - gh-aw-fragments/messages-footer.md
+  - gh-aw-fragments/pick-three-keep-many.md
+  - gh-aw-fragments/safe-output-code-review.md
   - gh-aw-fragments/playwright-mcp-explorer.md
   - gh-aw-fragments/safe-output-add-comment-pr.md
   - gh-aw-fragments/safe-output-review-comment.md
@@ -137,11 +139,22 @@ Assist with pull request #${{ inputs.target-pr-number }} on ${{ github.repositor
 
 ## Instructions
 
-1. Call `generate_agents_md` to get repository conventions.
-2. Read `/tmp/pr-context/pr.json` for PR details. Read `/tmp/pr-context/README.md` for a manifest of all pre-fetched PR context.
-3. Handle the request in `${{ inputs.prompt }}` with focused changes and evidence.
-4. Do not modify, review, comment on, or resolve threads for any PR other than #${{ inputs.target-pr-number }}.
-5. Use safe outputs only against PR #${{ inputs.target-pr-number }}.
-6. If no code/review action is needed, call `add_comment` with a concise response.
+1. Read `/tmp/pr-context/pr.json` for PR details. Read `/tmp/pr-context/README.md` for a manifest of all pre-fetched PR context.
+2. Handle the request in `${{ inputs.prompt }}` with focused changes and evidence.
+3. Do not modify, review, comment on, or resolve threads for any PR other than #${{ inputs.target-pr-number }}.
+4. Use safe outputs only against PR #${{ inputs.target-pr-number }}.
+5. If no code/review action is needed, call `add_comment` with a concise response.
+
+**If asked to review the PR:**
+- Call `ready_to_code_review` to prepare the review approach based on PR size.
+- Read `/tmp/pr-context/reviews.json` and `/tmp/pr-context/review_comments.json` to check prior reviews and existing threads — do not duplicate feedback.
+- Read `/tmp/pr-context/agent-review.md` for the review approach and follow it. For small PRs, review directly. For medium/large PRs, spawn the specified number of `code-review` sub-agents in parallel (each reads its `/tmp/pr-context/subagent-*.md` instruction file).
+- When sub-agents return findings, merge and deduplicate per the Pick Three, Keep Many process. Then verify each surviving finding before leaving a comment:
+  1. **Read the file and surrounding context** — open the full file, not just the diff.
+  2. **Construct a concrete failure scenario** — what specific input or state causes the bug? If you cannot describe one, drop the finding.
+  3. **Challenge the finding** — would a senior engineer familiar with this codebase agree this is a real issue? If unsure, drop it.
+  4. **Check existing threads** — if this issue was already flagged (resolved or unresolved), do not duplicate.
+- Leave inline comments per the **Code Review Reference** for each finding that survives verification. Then call `submit_pull_request_review`.
+- **Bot-authored PRs**: If the PR author is `github-actions[bot]`, submit a `COMMENT` review only — `APPROVE` and `REQUEST_CHANGES` will fail.
 
 ${{ inputs.additional-instructions }}

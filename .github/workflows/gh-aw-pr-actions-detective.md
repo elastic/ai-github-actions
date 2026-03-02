@@ -92,10 +92,9 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 
 ### Step 1: Gather Context
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Identify the PRs associated with the workflow run using `github.event.workflow_run.pull_requests`. If there are none, call `noop` with message "No pull request associated with workflow run; nothing to do" and stop.
-3. For each PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status.
-4. Fetch workflow run details and logs with `bash` + `gh api`:
+1. Identify the PRs associated with the workflow run using `github.event.workflow_run.pull_requests`. If there are none, call `noop` with message "No pull request associated with workflow run; nothing to do" and stop.
+2. For each PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status.
+3. Fetch workflow run details and logs with `bash` + `gh api`:
    - List jobs and their conclusions:
      ````bash
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/jobs \

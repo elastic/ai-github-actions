@@ -69,8 +69,7 @@ Maintain a canonical list of public downstream repositories using elastic/ai-git
 
 ## Step 1: Gather Context
 
-1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-2. Read the current `data/downstream-users.json` file (if it exists).
+1. Read the current `data/downstream-users.json` file (if it exists).
 
 ## Step 2: Discover Downstream Usage
 
@@ -81,7 +80,7 @@ Maintain a canonical list of public downstream repositories using elastic/ai-git
      - `include_globs`: `**/*.yml`, `**/*.yaml`
    - Exclude `elastic/ai-github-actions` itself.
 
-2. For each unique repo + path pair returned:
+1. For each unique repo + path pair returned:
    - Fetch the workflow file using `github-get_file_contents`.
    - Extract every `uses: elastic/ai-github-actions/...` line.
    - Normalize each entry by removing the leading `elastic/ai-github-actions/` and any `@version` suffix.

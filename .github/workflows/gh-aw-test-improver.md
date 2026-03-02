@@ -101,10 +101,9 @@ Identify under-tested code paths, add focused tests, and remove or consolidate d
 
 ## Step 1: Gather context
 
-1. Call `generate_agents_md` to get repository conventions (if it fails, continue).
-2. Determine required repo commands (lint/build/test) and how to run tests:
+1. Determine required repo commands (lint/build/test) and how to run tests:
    - Check README, CONTRIBUTING, DEVELOPING, Makefile, CI config, package.json, pyproject.toml, and similar files.
-3. Identify coverage tooling (nyc, jest --coverage, pytest --cov, go test -cover, etc.).
+2. Identify coverage tooling (nyc, jest --coverage, pytest --cov, go test -cover, etc.).
    - If coverage is available and reasonably fast, run it to find low-coverage files.
 
 ## Step 2: Identify targets

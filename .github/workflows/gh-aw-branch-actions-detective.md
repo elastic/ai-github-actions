@@ -103,8 +103,7 @@ Analyze failed GitHub Actions CI runs on protected branches (e.g. `main`) in ${{
 
 ### Step 1: Gather Context
 
-1. Call `generate_agents_md` to get the repository's coding guidelines and conventions. If this fails, continue without it.
-2. Fetch workflow run details and logs with `bash` + `gh api`:
+1. Fetch workflow run details and logs with `bash` + `gh api`:
    - List jobs and their conclusions:
      ````bash
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/jobs \

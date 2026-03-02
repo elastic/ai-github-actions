@@ -108,10 +108,9 @@ Understand the request, investigate repository and external context, and respond
 
 ### Step 1: Gather Context and Plan
 
-1. Call `generate_agents_md` to get repository conventions.
-2. Read the full issue thread and any referenced issues. Identify the specific question or goal — this is your research anchor for all subsequent steps.
-3. Before searching, decompose the question into sub-questions. For complex or multi-faceted requests, list 2–5 specific sub-questions that, if answered, would fully address the original request. This prevents unfocused searching and ensures complete coverage.
-4. Use `search_code` and local file reads only when codebase knowledge is needed to answer the question or prepare an implementation.
+1. Read the full issue thread and any referenced issues. Identify the specific question or goal — this is your research anchor for all subsequent steps.
+2. Before searching, decompose the question into sub-questions. For complex or multi-faceted requests, list 2–5 specific sub-questions that, if answered, would fully address the original request. This prevents unfocused searching and ensures complete coverage.
+3. Use `search_code` and local file reads only when codebase knowledge is needed to answer the question or prepare an implementation.
 
 ### Step 2: Research Iteratively
 

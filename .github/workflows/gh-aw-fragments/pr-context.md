@@ -139,8 +139,13 @@ steps:
       | `comments.json` | PR discussion comments (not inline) |
       | `issue-{N}.json` | Linked issue details (one file per linked issue, if any) |
       | `pr-size.txt` | PR size metrics: `{N} files, {M} diff lines` — used by the agent to decide review fan-out |
-      | `agents.md` | Repository conventions from `generate_agents_md` (if written by agent) |
-      | `review-instructions.md` | Review instructions, criteria, and calibration examples (if written by review-process fragment) |
+      | `agents.md` | Not used in PR context — repository conventions are at `/tmp/agents.md` (pre-fetched) |
+      | `review-instructions.md` | Review instructions, criteria, and calibration examples for sub-agents |
+      | `agent-review.md` | Main agent instructions — review approach resolved from PR size (written when `ready_to_code_review` is called) |
+      | `parent-review.md` | Comment format and inline severity threshold for the parent agent (written when `ready_to_code_review` is called) |
+      | `subagent-az.md` | Sub-agent instructions: review files A → Z (written when `ready_to_code_review` is called) |
+      | `subagent-za.md` | Sub-agent instructions: review files Z → A (written when `ready_to_code_review` is called) |
+      | `subagent-largest.md` | Sub-agent instructions: review files largest diff first (written when `ready_to_code_review` is called) |
       MANIFEST
 
       echo "PR context written to /tmp/pr-context/"
