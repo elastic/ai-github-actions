@@ -13,7 +13,8 @@ jobs:
   run:
     if: >-
       github.event.pull_request.user.login == 'dependabot[bot]' ||
-      github.event.pull_request.user.login == 'renovate[bot]'
+      github.event.pull_request.user.login == 'renovate[bot]' ||
+      startsWith(github.head_ref, 'updatecli')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-dependency-review.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

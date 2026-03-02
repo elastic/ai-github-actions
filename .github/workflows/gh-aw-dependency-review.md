@@ -1,7 +1,7 @@
 ---
 inlined-imports: true
 name: "Dependency Review"
-description: "Analyze Dependabot and Renovate dependency update PRs"
+description: "Analyze Dependabot, Renovate, and Updatecli dependency update PRs"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
@@ -84,7 +84,7 @@ steps:
 
 # Dependency Review Agent
 
-Analyze dependency update pull requests (Dependabot, Renovate) in ${{ github.repository }}. Provide a detailed analysis comment covering changelog highlights, compatibility, risk, and ecosystem-specific checks.
+Analyze dependency update pull requests (Dependabot, Renovate, Updatecli) in ${{ github.repository }}. Provide a detailed analysis comment covering changelog highlights, compatibility, risk, and ecosystem-specific checks.
 
 ## Context
 
