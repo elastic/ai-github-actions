@@ -93,5 +93,10 @@ These workflows are tailored for Elastic's internal tooling, documentation platf
 - [PR Buildkite Detective (Elastic-specific)](estc-pr-buildkite-detective/) — diagnose Buildkite CI failures and recommend fixes
 - [Docs Patrol External (Elastic-specific)](estc-docs-patrol-external/) — detect stale published Elastic documentation
 - [Newbie Contributor Patrol External (Elastic-specific)](estc-newbie-contributor-patrol-external/) — cross-reference repo docs against published Elastic documentation
-- [Downstream Health (Elastic-specific)](estc-downstream-health/) — monitor downstream Elastic repositories using AI workflows
 - [Resource Not Accessible Detector (Elastic-specific)](estc-actions-resource-not-accessible-detector/) — detect `Resource not accessible by integration` CI errors and file one combined tracking issue
+
+## Internal Workflows
+
+These workflows are for internal use and are not officially supported.
+
+- [Downstream Health](internal-downstream-health/) — monitor downstream repositories using AI workflows
