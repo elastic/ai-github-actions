@@ -17,9 +17,9 @@ safe-inputs:
           pr_size = 'unknown size'
           diff_lines = 0
 
-      # Write one instruction file per sub-agent file ordering strategy
-      for key, desc in [('az', 'A \u2192 Z (alphabetical)'), ('za', 'Z \u2192 A (reverse alphabetical)'), ('largest', 'largest diff first')]:
-          lines = [
+      # Determine review approach based on PR size
+      def write_subagent(key, desc):
+          sa_lines = [
               '# PR Review Sub-Agent',
               '',
               'Review the PR as a code review sub-agent. Return findings only \u2014 do NOT leave inline comments.',
@@ -40,16 +40,17 @@ safe-inputs:
               '',
               f'Review files in this order: `/tmp/pr-context/file_order_{key}.txt` ({desc})',
           ]
-          with open(f'/tmp/pr-context/subagent-{key}.md', 'w') as f:
-              f.write('\n'.join(lines) + '\n')
+          with open(f'/tmp/pr-context/subagent-{key}.md', 'w') as sa_f:
+              sa_f.write('\n'.join(sa_lines) + '\n')
 
-      # Determine review approach based on PR size
       if diff_lines < 200:
           approach_lines = [
               f'**Small PR ({pr_size}):** Review directly \u2014 no sub-agents. Review files in order from `/tmp/pr-context/file_order_az.txt`, reading each diff from `/tmp/pr-context/diffs/<filename>.diff` and the full file from the workspace.',
           ]
           size_key = 'small'
       elif diff_lines < 800:
+          write_subagent('az', 'A \u2192 Z (alphabetical)')
+          write_subagent('za', 'Z \u2192 A (reverse alphabetical)')
           approach_lines = [
               f'**Medium PR ({pr_size}):** Use the **Pick Three, Keep Many** process \u2014 spawn 2 `code-review` sub-agents in parallel:',
               '',
@@ -60,6 +61,9 @@ safe-inputs:
           ]
           size_key = 'medium'
       else:
+          write_subagent('az', 'A \u2192 Z (alphabetical)')
+          write_subagent('za', 'Z \u2192 A (reverse alphabetical)')
+          write_subagent('largest', 'largest diff first')
           approach_lines = [
               f'**Large PR ({pr_size}):** Use the **Pick Three, Keep Many** process \u2014 spawn 3 `code-review` sub-agents in parallel:',
               '',
@@ -84,8 +88,7 @@ safe-inputs:
           '## Comment Format',
           '',
           'Call **`create_pull_request_review_comment`** with:',
-          '- The file path and the **exact line number from reading the file** (not estimated from the diff)',
-          '- The line must be within the diff (an added or context line in the patch)',
+          '- The file path and a **line number that appears in the numbered diff** (`/tmp/pr-context/diffs/<filename>.diff`). Only lines with a number prefix are commentable. If your target line has no number in the diff, include the finding in the review body instead.',
           '',
           t5,
           '**[SEVERITY] Brief title**',

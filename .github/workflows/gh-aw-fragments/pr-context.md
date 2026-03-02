@@ -22,11 +22,19 @@ steps:
       gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate \
         | jq -s 'add // []' > /tmp/pr-context/files.json
 
-      # Per-file diffs
+      # Per-file diffs with line numbers
+      # Lines with a number prefix are commentable (RIGHT side: added or context).
+      # Deleted lines get no number (LEFT side only).
       jq -c '.[]' /tmp/pr-context/files.json | while IFS= read -r entry; do
         filename=$(echo "$entry" | jq -r '.filename')
         mkdir -p "/tmp/pr-context/diffs/$(dirname "$filename")"
-        echo "$entry" | jq -r '.patch // empty' > "/tmp/pr-context/diffs/${filename}.diff"
+        echo "$entry" | jq -r '.patch // empty' | awk '
+          /^@@/ { s=$3; gsub(/\+/,"",s); split(s,a,","); line=a[1]+0; print; next }
+          /^\+/ { printf "%d\t%s\n", line++, $0; next }
+          /^-/  { printf "  \t%s\n", $0; next }
+          /^ /  { printf "%d\t%s\n", line++, $0; next }
+          { print }
+        ' > "/tmp/pr-context/diffs/${filename}.diff"
       done
 
       # File orderings for sub-agent review (3 strategies)
@@ -126,7 +134,7 @@ steps:
       | `pr.json` | PR metadata — title, body, author, base/head branches, head commit SHA (`headRefOid`), URL |
       | `pr.diff` | Full unified diff of all changes |
       | `files.json` | Changed files array — each entry has `filename`, `status`, `additions`, `deletions`, `patch` |
-      | `diffs/<path>.diff` | Per-file diffs — one file per changed file, mirroring the repo path under `diffs/` |
+      | `diffs/<path>.diff` | Per-file diffs with line numbers — numbered lines (e.g. `405\t+ code`) are commentable; lines without numbers are deleted (LEFT side only) |
       | `file_order_az.txt` | Changed files sorted alphabetically (A→Z), one filename per line |
       | `file_order_za.txt` | Changed files sorted reverse-alphabetically (Z→A), one filename per line |
       | `file_order_largest.txt` | Changed files sorted by diff size descending (largest first), one filename per line |
@@ -143,9 +151,7 @@ steps:
       | `review-instructions.md` | Review instructions, criteria, and calibration examples for sub-agents |
       | `agent-review.md` | Main agent instructions — review approach resolved from PR size (written when `ready_to_code_review` is called) |
       | `parent-review.md` | Comment format and inline severity threshold for the parent agent (written when `ready_to_code_review` is called) |
-      | `subagent-az.md` | Sub-agent instructions: review files A → Z (written when `ready_to_code_review` is called) |
-      | `subagent-za.md` | Sub-agent instructions: review files Z → A (written when `ready_to_code_review` is called) |
-      | `subagent-largest.md` | Sub-agent instructions: review files largest diff first (written when `ready_to_code_review` is called) |
+      | `subagent-*.md` | Sub-agent instructions (only written for medium/large PRs when `ready_to_code_review` is called — check `agent-review.md` for which exist) |
       MANIFEST
 
       echo "PR context written to /tmp/pr-context/"
