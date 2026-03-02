@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"cded93cfa5f93c5d9fe1bd438fb2421f897d3f5888fc1e946fdc184feee810fc"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"86c42a838f7fbcd1edb9d1651fda033118977c830c2af2c9b55cceb35059e5f5"}
 
 name: "Resource Not Accessible By Integration Detector"
 "on":
@@ -51,11 +51,6 @@ name: "Resource Not Accessible By Integration Detector"
       allowed-bot-users:
         default: github-actions[bot]
         description: Allowlisted bot actor usernames (comma-separated)
-        required: false
-        type: string
-      title-prefix:
-        default: "[resource-not-accessible-by-integration]"
-        description: Title prefix for created issue (e.g. '[resource-not-accessible-by-integration]')
         required: false
         type: string
       long-term-branches:
@@ -81,6 +76,11 @@ name: "Resource Not Accessible By Integration Detector"
       setup-commands:
         default: ""
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
+        required: false
+        type: string
+      title-prefix:
+        default: "[resource-not-accessible-by-integration]"
+        description: Title prefix for created issue (e.g. '[resource-not-accessible-by-integration]')
         required: false
         type: string
     outputs:
@@ -172,7 +172,7 @@ jobs:
           GH_AW_EXPR_3A5062C8: ${{ inputs.look-back-days }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_922C262D: ${{ inputs.long-term-branches }}
-          GH_AW_EXPR_CE96317F: ${{ inputs.title-prefix }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -340,7 +340,7 @@ jobs:
           - **CAN**: Read files, search code, run commands, create one issue.
           - **CANNOT**: Push changes or open PRs in this workflow.
           - Only investigate workflows listed in `/tmp/gh-aw/agent/resource-not-accessible-findings.tsv`.
-          - Do not file a duplicate issue if an open `__GH_AW_EXPR_CE96317F__` issue already tracks the same workflows and failure pattern.
+          - Do not file a duplicate issue if an open `__GH_AW_EXPR_BF503D80__` issue already tracks the same workflows and failure pattern.
           
           ## Permission reference
           
@@ -374,7 +374,7 @@ jobs:
           
           - If the findings file has no data rows, call `noop` with:
             `No 'Resource not accessible by integration' failures found in the configured look-back window — nothing to report`.
-          - Check open issues for `__GH_AW_EXPR_CE96317F__` in the title and compare workflow paths/evidence.
+          - Check open issues for `__GH_AW_EXPR_BF503D80__` in the title and compare workflow paths/evidence.
           - If an existing open issue already tracks the same findings, call `noop` and reference the existing issue number.
           
           ## Step 3: Investigate each affected workflow
@@ -434,9 +434,9 @@ jobs:
           GH_AW_GITHUB_EVENT_REPOSITORY_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_CE96317F: ${{ inputs.title-prefix }}
           GH_AW_EXPR_922C262D: ${{ inputs.long-term-branches }}
           GH_AW_EXPR_3A5062C8: ${{ inputs.look-back-days }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -450,7 +450,7 @@ jobs:
           GH_AW_EXPR_3A5062C8: ${{ inputs.look-back-days }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_922C262D: ${{ inputs.long-term-branches }}
-          GH_AW_EXPR_CE96317F: ${{ inputs.title-prefix }}
+          GH_AW_EXPR_BF503D80: ${{ inputs.title-prefix }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -475,7 +475,7 @@ jobs:
                 GH_AW_EXPR_3A5062C8: process.env.GH_AW_EXPR_3A5062C8,
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
                 GH_AW_EXPR_922C262D: process.env.GH_AW_EXPR_922C262D,
-                GH_AW_EXPR_CE96317F: process.env.GH_AW_EXPR_CE96317F,
+                GH_AW_EXPR_BF503D80: process.env.GH_AW_EXPR_BF503D80,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
