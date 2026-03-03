@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8bb8b55f073d02e11f39346c1cb7a96193cd36636cafe28c3595bf887fc51cef"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"25b2e5fafd39126133b15aaaccc404f6d0299e2a0e48382d8ae1bb10b0ec3b3a"}
 
 name: "Internal Gemini CLI"
 "on":
@@ -1013,6 +1013,7 @@ jobs:
           DEBUG: gemini-cli:*
           GEMINI_API_BASE_URL: http://host.docker.internal:10003
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MAX_ATTEMPTS: 10
           GEMINI_MODEL: ${{ inputs.model }}
           GH_AW_MCP_CONFIG: ${{ github.workspace }}/.gemini/settings.json
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
@@ -1200,6 +1201,7 @@ jobs:
           DEBUG: gemini-cli:*
           GEMINI_API_BASE_URL: http://host.docker.internal:10003
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MAX_ATTEMPTS: 10
           GEMINI_MODEL: ${{ inputs.model }}
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GITHUB_WORKSPACE: ${{ github.workspace }}

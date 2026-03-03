@@ -14,6 +14,8 @@ imports:
 engine:
   id: gemini
   model: ${{ inputs.model }}
+  env:
+    GEMINI_MAX_ATTEMPTS: "10"
   concurrency:
     group: "gh-aw-gemini-${{ github.workflow }}-internal-gemini-cli-web-search-${{ github.event.issue.number }}"
 on:
