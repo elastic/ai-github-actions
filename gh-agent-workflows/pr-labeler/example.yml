@@ -1,0 +1,24 @@
+name: PR Labeler
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+
+permissions:
+  actions: read
+  contents: read
+  issues: read
+  pull-requests: write
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-labeler.lock.yml@v0
+    with:
+      classification-labels: "small_boom,medium_boom,big_boom"
+      additional-instructions: |
+        Only use labels from `small_boom,medium_boom,big_boom`.
+        Classify PR blast radius as:
+        - `small_boom`: narrow scope, low risk, straightforward changes; usually low likelihood of human review.
+        - `medium_boom`: moderate scope/risk, multi-file or non-trivial behavior impact; likely benefits from human review.
+        - `big_boom`: broad/high-risk changes, security/auth/workflow/runtime-impacting, or uncertain changes; strong human review required.
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
