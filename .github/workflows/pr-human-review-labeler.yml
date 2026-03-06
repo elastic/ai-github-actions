@@ -1,0 +1,133 @@
+name: PR Human Review Labeler
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Classify PR blast radius
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.payload.pull_request.number;
+            const pr = context.payload.pull_request;
+
+            const HUMAN_REQUIRED = "human_required";
+            const NO_HUMAN_REQUIRED = "no_human_required";
+
+            // Make labels available so applying them does not fail on first run.
+            for (const label of [HUMAN_REQUIRED, NO_HUMAN_REQUIRED]) {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name: label });
+              } catch (error) {
+                if (error.status === 404) {
+                  await github.rest.issues.createLabel({
+                    owner,
+                    repo,
+                    name: label,
+                    color: label === HUMAN_REQUIRED ? "B60205" : "0E8A16",
+                    description:
+                      label === HUMAN_REQUIRED
+                        ? "PR likely has significant blast radius; human review required."
+                        : "PR looks straightforward and low risk."
+                  });
+                } else {
+                  throw error;
+                }
+              }
+            }
+
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              { owner, repo, pull_number: pr.number, per_page: 100 }
+            );
+
+            const changedFiles = files.length;
+            const churn = (pr.additions || 0) + (pr.deletions || 0);
+            const topLevelDirs = new Set(
+              files
+                .map((f) => f.filename.split("/")[0])
+                .filter((part) => part && !part.includes("."))
+            );
+
+            const highRiskPathPatterns = [
+              /^\.github\/workflows\//,
+              /^gh-agent-workflows\//,
+              /^scripts\//,
+              /^\.github\/actions\//,
+              /(^|\/)(auth|security|permissions?|secrets?)\b/i
+            ];
+
+            const touchedHighRiskPaths = files.some((f) =>
+              highRiskPathPatterns.some((pattern) => pattern.test(f.filename))
+            );
+
+            const docsOnly = files.every((f) =>
+              /(^docs\/)|(\.md$)|(\.mdx$)|(^\.github\/ISSUE_TEMPLATE\/)/i.test(f.filename)
+            );
+
+            let humanRequired = false;
+            const reasons = [];
+
+            if (changedFiles >= 20) {
+              humanRequired = true;
+              reasons.push(`changed files ${changedFiles} >= 20`);
+            }
+            if (churn >= 800) {
+              humanRequired = true;
+              reasons.push(`code churn ${churn} >= 800 lines`);
+            }
+            if (topLevelDirs.size >= 4) {
+              humanRequired = true;
+              reasons.push(`touches ${topLevelDirs.size} top-level areas`);
+            }
+            if (touchedHighRiskPaths) {
+              humanRequired = true;
+              reasons.push("touches high-risk paths");
+            }
+            if (pr.draft) {
+              humanRequired = true;
+              reasons.push("PR is draft");
+            }
+
+            if (docsOnly && changedFiles <= 10 && churn < 300 && !pr.draft) {
+              humanRequired = false;
+              reasons.push("docs-only, low-churn change");
+            }
+
+            const addLabel = humanRequired ? HUMAN_REQUIRED : NO_HUMAN_REQUIRED;
+            const removeLabel = humanRequired ? NO_HUMAN_REQUIRED : HUMAN_REQUIRED;
+
+            const currentLabels = (pr.labels || []).map((l) => l.name);
+
+            if (currentLabels.includes(removeLabel)) {
+              await github.rest.issues.removeLabel({
+                owner,
+                repo,
+                issue_number,
+                name: removeLabel
+              });
+            }
+
+            if (!currentLabels.includes(addLabel)) {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number,
+                labels: [addLabel]
+              });
+            }
+
+            core.info(
+              `Assigned '${addLabel}'. Signals: changedFiles=${changedFiles}, churn=${churn}, topLevelDirs=${topLevelDirs.size}, highRisk=${touchedHighRiskPaths}, docsOnly=${docsOnly}, reasons=${reasons.join("; ")}`
+            );
