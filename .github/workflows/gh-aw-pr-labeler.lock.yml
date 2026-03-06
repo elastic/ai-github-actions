@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"12610dea38a23345f7a007cb9829e49135fe4ef8680bede41b7592f645f8206e"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6b744897372bc8e4172f8b869ebafab0f2fe8b80b02fd0fb25fa557edb5cff38"}
 
 name: "PR Labeler"
 "on":
@@ -46,9 +46,8 @@ name: "PR Labeler"
         required: false
         type: string
       classification-labels:
-        default: human_required,no_human_required
         description: Comma-separated list of classification labels the agent may apply
-        required: false
+        required: true
         type: string
       model:
         default: gpt-5.3-codex
@@ -283,15 +282,12 @@ jobs:
           ## Instructions
           
           1. Read the full PR details and changed files for #__GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__.
-          2. Parse `__GH_AW_EXPR_9AD6B038__` as a comma-separated list and treat that list as the only valid classification labels.
-          3. Select exactly one label from that parsed list and apply it with `add_labels`.
-          4. Remove conflicting classification labels from that same parsed list using `remove_labels`, so only one classification label remains.
-          5. Never add or remove labels that are not in the parsed classification label list.
-          6. Use this default rubric when labels are exactly `human_required,no_human_required`:
-             - `human_required` for risky, broad, complex, or uncertain changes
-             - `no_human_required` for straightforward, narrow, low-risk changes
-          7. For custom label sets, follow `__GH_AW_EXPR_49B959F1__` for semantics and choose conservatively when uncertain.
-          8. If the PR cannot be evaluated at all, call `noop`.
+          1. Parse `__GH_AW_EXPR_9AD6B038__` as a comma-separated list and treat that list as the only valid classification labels.
+          1. Select exactly one label from that parsed list and apply it with `add_labels`.
+          1. Remove conflicting classification labels from that same parsed list using `remove_labels`, so only one classification label remains.
+          1. Never add or remove labels that are not in the parsed classification label list.
+          1. Use `__GH_AW_EXPR_49B959F1__` to define label semantics and risk criteria for your selected label set.
+          1. If the PR cannot be evaluated at all, call `noop`.
           
           __GH_AW_EXPR_49B959F1__
           

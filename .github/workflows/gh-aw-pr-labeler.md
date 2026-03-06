@@ -1,7 +1,7 @@
 ---
 inlined-imports: true
 name: "PR Labeler"
-description: "Evaluate a pull request and apply one classification label"
+description: "Evaluate a pull request and apply classification labels"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
@@ -35,8 +35,7 @@ on:
       classification-labels:
         description: "Comma-separated list of classification labels the agent may apply"
         type: string
-        required: false
-        default: "human_required,no_human_required"
+        required: true
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
@@ -59,7 +58,7 @@ safe-outputs:
   noop:
     max: 1
   add-labels:
-    max: 1
+    max: 10
     target: "${{ github.event.pull_request.number }}"
   remove-labels:
     max: 10
@@ -125,7 +124,7 @@ steps:
 
 # PR Labeler
 
-Evaluate the pull request and assign exactly one label from the configured classification set.
+Evaluate the pull request and apply one or more labels from the configured classification set.
 
 ## Context
 
@@ -135,19 +134,17 @@ Evaluate the pull request and assign exactly one label from the configured class
 
 ## Goal
 
-Apply one classification label that best represents the PR's risk or routing category.
+Apply classification labels that best represent the PR's risk or routing category.
 
 ## Instructions
 
 1. Read the full PR details and changed files for #${{ github.event.pull_request.number }}.
-2. Parse `${{ inputs.classification-labels }}` as a comma-separated list and treat that list as the only valid classification labels.
-3. Select exactly one label from that parsed list and apply it with `add_labels`.
-4. Remove conflicting classification labels from that same parsed list using `remove_labels`, so only one classification label remains.
-5. Never add or remove labels that are not in the parsed classification label list.
-6. Use this default rubric when labels are exactly `human_required,no_human_required`:
-   - `human_required` for risky, broad, complex, or uncertain changes
-   - `no_human_required` for straightforward, narrow, low-risk changes
-7. For custom label sets, follow `${{ inputs.additional-instructions }}` for semantics and choose conservatively when uncertain.
-8. If the PR cannot be evaluated at all, call `noop`.
+1. Parse `${{ inputs.classification-labels }}` as a comma-separated list and treat that list as the only valid classification labels.
+1. Select one or more labels from that parsed list and apply them with `add_labels`.
+1. `add_labels` appends labels and does not remove existing ones.
+1. If your classification scheme is mutually exclusive or you are replacing prior labels, remove outdated/conflicting labels first with `remove_labels`, then add the desired labels with `add_labels`.
+1. Never add or remove labels that are not in the parsed classification label list.
+1. Use `${{ inputs.additional-instructions }}` to define label semantics and risk criteria for your selected label set.
+1. If the PR cannot be evaluated at all, call `noop`.
 
 ${{ inputs.additional-instructions }}

@@ -18,9 +18,19 @@ jobs:
       classification-labels: "small_boom,medium_boom,big_boom"
       additional-instructions: |
         Only use labels from `small_boom,medium_boom,big_boom`.
+        Use this holistic risk model and pick the best-fit label:
+        - Change scope: breadth/cross-cutting impact across modules and services.
+        - Criticality: security/auth/permissions, CI/workflows, runtime-critical paths, schema/data integrity.
+        - Reversibility: ease/safety of rollback (data/config/schema changes are harder to reverse).
+        - Verification confidence: quality/coverage of tests and validation evidence.
+        - Operational safeguards: feature flags, canaryability, staged rollout, and clear rollback path.
         Classify PR blast radius as:
         - `small_boom`: narrow scope, low risk, straightforward changes; usually low likelihood of human review.
         - `medium_boom`: moderate scope/risk, multi-file or non-trivial behavior impact; likely benefits from human review.
-        - `big_boom`: broad/high-risk changes, security/auth/workflow/runtime-impacting, or uncertain changes; strong human review required.
+        - `big_boom`: broad/high-risk changes with concrete blast radius evidence (security/auth/workflow/runtime-critical impact, cross-cutting behavioral changes, or high operational risk); strong human review required.
+        Apply an uncertainty tax: if evidence is ambiguous, move one level more conservative.
+        Do not use `big_boom` solely because a PR is large or adds many new files.
+        If a PR is mostly additive (new files/features) and does not significantly alter existing behavior, prefer `small_boom` or `medium_boom` based on real impact.
+        Important: adding `medium_boom` does not remove existing labels. If reclassifying from `big_boom` to `medium_boom`, first remove `big_boom` via `remove_labels`, then add `medium_boom` via `add_labels`.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
