@@ -61,13 +61,9 @@ safe-outputs:
   add-labels:
     max: 1
     target: "${{ github.event.pull_request.number }}"
-    allowed:
-      - "${{ inputs.classification-labels }}"
   remove-labels:
     max: 10
     target: "${{ github.event.pull_request.number }}"
-    allowed:
-      - "${{ inputs.classification-labels }}"
   steps:
     - name: Pre-sanitize label operations from input allowlist
       uses: actions/github-script@v7
