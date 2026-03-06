@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"97cc924f68b0e2c2338fb62a983252d9566bc0a45a187954fad88b5a967e70b8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e503b2f8533335875fc4f8f41d9700d8a7d275ea68abfe220ecf8bde1f74ba4c"}
 
 name: "PR Labeler"
 "on":
@@ -1280,7 +1280,7 @@ jobs:
           mkdir -p /tmp/gh-aw/safeoutputs/
           find "/tmp/gh-aw/safeoutputs/" -type f -print
           echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/safeoutputs/agent_output.json" >> "$GITHUB_ENV"
-      - name: Pre-sanitize add_labels from input allowlist
+      - name: Pre-sanitize label operations from input allowlist
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
           ALLOWED_LABELS: ${{ inputs.classification-labels }}
@@ -1310,7 +1310,12 @@ jobs:
             let removed = 0;
             let dropped = 0;
             doc.items = doc.items.filter((item) => {
-              if (item?.type !== 'add_labels' || !Array.isArray(item.labels)) return true;
+              if (
+                (item?.type !== 'add_labels' && item?.type !== 'remove_labels') ||
+                !Array.isArray(item.labels)
+              ) {
+                return true;
+              }
               const before = item.labels.length;
               item.labels = item.labels
                 .map((v) => String(v).trim())
@@ -1323,7 +1328,7 @@ jobs:
               return true;
             });
             fs.writeFileSync(outputPath, JSON.stringify(doc));
-            core.info(`Sanitized add_labels: removed=${removed}, dropped_messages=${dropped}`);
+            core.info(`Sanitized label ops: removed=${removed}, dropped_messages=${dropped}`);
       - name: Process Safe Outputs
         id: process_safe_outputs
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8

@@ -4,7 +4,7 @@ Evaluate pull requests and apply one classification label from a configurable la
 
 ## How it works
 
-Triggered by PR activity. The workflow ensures classification labels exist, runs the PR Labeler agent, and applies exactly one label from the configured list while removing conflicting labels from the same list.
+Triggered by PR activity. The workflow runs the PR Labeler agent, applies exactly one label from the configured list, and removes conflicting labels from that same list.
 
 ## Quick Install
 
@@ -20,32 +20,33 @@ See [example.yml](example.yml) for the full workflow file.
 
 | Event | Types |
 | --- | --- |
-| `pull_request` | `opened`, `synchronize`, `reopened`, `ready_for_review`, `edited` |
+| `pull_request` | `opened`, `synchronize`, `reopened`, `ready_for_review` |
 
 ## Configuration
 
-Set `CLASSIFICATION_LABELS` in the trigger workflow to a comma-separated list:
+Set `classification-labels` in the trigger workflow as a comma-separated list:
 
 ```yaml
-env:
-  CLASSIFICATION_LABELS: "human_required,no_human_required"
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-labeler.lock.yml@v0
+    with:
+      classification-labels: "human_required,no_human_required"
 ```
 
 You can also pass `additional-instructions` to define custom semantics for your labels.
+Ensure the labels already exist in your repository.
 
 The workflow enforces label choice primarily through the agent prompt. Provide explicit semantics in `additional-instructions` so the agent can map PR risk to your label set reliably.
 
 ## Human vs no-human example
 
 ```yaml
-env:
-  CLASSIFICATION_LABELS: "human_required,no_human_required"
-
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-labeler.lock.yml@v0
     with:
-      classification-labels: ${{ env.CLASSIFICATION_LABELS }}
+      classification-labels: "human_required,no_human_required"
       additional-instructions: |
         Use `human_required` when the PR is high-risk, broad, or uncertain.
         Use `no_human_required` only for straightforward, low-risk changes.

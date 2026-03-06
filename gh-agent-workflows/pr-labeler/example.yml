@@ -1,12 +1,12 @@
 name: PR Labeler
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, edited]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   actions: read
   contents: read
-  issues: read
+  issues: write
   pull-requests: write
 
 jobs:

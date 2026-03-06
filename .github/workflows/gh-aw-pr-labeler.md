@@ -69,7 +69,7 @@ safe-outputs:
     allowed:
       - "${{ inputs.classification-labels }}"
   steps:
-    - name: Pre-sanitize add_labels from input allowlist
+    - name: Pre-sanitize label operations from input allowlist
       uses: actions/github-script@v7
       env:
         ALLOWED_LABELS: ${{ inputs.classification-labels }}
@@ -99,7 +99,12 @@ safe-outputs:
           let removed = 0;
           let dropped = 0;
           doc.items = doc.items.filter((item) => {
-            if (item?.type !== 'add_labels' || !Array.isArray(item.labels)) return true;
+            if (
+              (item?.type !== 'add_labels' && item?.type !== 'remove_labels') ||
+              !Array.isArray(item.labels)
+            ) {
+              return true;
+            }
             const before = item.labels.length;
             item.labels = item.labels
               .map((v) => String(v).trim())
@@ -112,7 +117,7 @@ safe-outputs:
             return true;
           });
           fs.writeFileSync(outputPath, JSON.stringify(doc));
-          core.info(`Sanitized add_labels: removed=${removed}, dropped_messages=${dropped}`);
+          core.info(`Sanitized label ops: removed=${removed}, dropped_messages=${dropped}`);
 timeout-minutes: 60
 steps:
   - name: Repo-specific setup
