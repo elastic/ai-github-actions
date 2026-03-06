@@ -31,6 +31,5 @@ jobs:
         Apply an uncertainty tax: if evidence is ambiguous, move one level more conservative.
         Do not use `big_boom` solely because a PR is large or adds many new files.
         If a PR is mostly additive (new files/features) and does not significantly alter existing behavior, prefer `small_boom` or `medium_boom` based on real impact.
-        Important: adding `medium_boom` does not remove existing labels. If reclassifying from `big_boom` to `medium_boom`, first remove `big_boom` via `remove_labels`, then add `medium_boom` via `add_labels`.
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
