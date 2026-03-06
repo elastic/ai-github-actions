@@ -1,5 +1,10 @@
 {
   "entries": {
+    "actions/github-script@v7": {
+      "repo": "actions/github-script",
+      "version": "v7",
+      "sha": "f28e40c7f34bde8b3046d885e986cb6290c5673b"
+    },
     "actions/github-script@v8": {
       "repo": "actions/github-script",
       "version": "v8",
