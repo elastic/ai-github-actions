@@ -21,17 +21,18 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Find under-tested code paths and file a test coverage report
+# Analyze code for quality issues — anti-patterns, accessibility violations, performance problems, best-practices deviations — and file a structured report
 #
 # Resolved workflow manifest:
 #   Imports:
 #     - gh-aw-fragments/code-quality-audit.md
 #     - gh-aw-fragments/elastic-tools.md
+#     - gh-aw-fragments/ensure-full-history.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/network-ecosystems.md
-#     - gh-aw-fragments/pick-three-keep-one.md
+#     - gh-aw-fragments/pick-three-keep-many.md
 #     - gh-aw-fragments/previous-findings.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
@@ -40,16 +41,15 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e908ad671ba140020648bf359cd214c0c399b85280fc6801d98798899a01f3b0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c9c3f1e1b3a38d8170dae8011245f442689c44782478f3f49780f1cbb6f2b5f3"}
 
-name: "Test Coverage Detector"
+name: "Code Quality Audit"
 "on":
   workflow_call:
     inputs:
       additional-instructions:
-        default: ""
-        description: Repo-specific instructions appended to the agent prompt
-        required: false
+        description: Domain-specific audit criteria — what to look for, what to skip, and how to evaluate findings. This is the core of the audit and should define the categories, severity standards, and evidence expectations for the specific quality dimension being audited.
+        required: true
         type: string
       allowed-bot-users:
         default: github-actions[bot]
@@ -73,13 +73,12 @@ name: "Test Coverage Detector"
         type: string
       severity-threshold:
         default: medium
-        description: Minimum severity to include in the report. 'high' = only untested critical paths (error handling, auth, data mutations). 'medium' (default) = also include untested public APIs and recent changes. 'low' = also include minor coverage gaps.
+        description: Minimum severity to include in the report. 'high' = only report issues with clear user impact or correctness problems. 'medium' (default) = also include issues that degrade quality or maintainability. 'low' = also include minor deviations from best practices.
         required: false
         type: string
       title-prefix:
-        default: "[test-coverage]"
-        description: Title prefix for created issues (e.g. '[test-coverage]')
-        required: false
+        description: Title prefix for created issues (e.g. '[react-accessibility]')
+        required: true
         type: string
     outputs:
       created_issue_number:
@@ -96,9 +95,9 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: ${{ github.workflow }}-test-coverage-detector
+  group: ${{ github.workflow }}-code-quality-audit
 
-run-name: "Test Coverage Detector"
+run-name: "Code Quality Audit"
 
 jobs:
   activation:
@@ -125,7 +124,7 @@ jobs:
           GH_AW_INFO_MODEL: "${{ inputs.model }}"
           GH_AW_INFO_VERSION: ""
           GH_AW_INFO_AGENT_VERSION: "0.0.421"
-          GH_AW_INFO_WORKFLOW_NAME: "Test Coverage Detector"
+          GH_AW_INFO_WORKFLOW_NAME: "Code Quality Audit"
           GH_AW_INFO_EXPERIMENTAL: "false"
           GH_AW_INFO_SUPPORTS_TOOLS_ALLOWLIST: "true"
           GH_AW_INFO_STAGED: "false"
@@ -156,7 +155,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-test-coverage-detector.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-code-quality-audit.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -232,6 +231,9 @@ jobs:
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           Repository conventions are pre-fetched to `/tmp/agents.md`. Read this file early in your task to understand the codebase's conventions, guidelines, and patterns. If the file doesn't exist, continue without it. When spawning sub-agents, include the contents of `/tmp/agents.md` in each sub-agent's prompt (or tell the sub-agent to read the file directly).
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## Formatting Guidelines
@@ -316,25 +318,28 @@ jobs:
           - Only file a new issue when the finding is genuinely distinct from all previous findings.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          ### Pick Three, Keep One
+          ### Pick Three, Keep Many
           
-          Parallelize your initial investigation using sub-agents. Spawn 3 sub-agents, each with a distinct angle — e.g., different starting points, different areas of the codebase, or different heuristics. Each sub-agent works independently and should return its single best candidate finding (with file paths, line numbers, and evidence) or a recommendation to `noop`. The goal is competition: 3 sub-agents each produce their best shot, and you pick the winner.
+          Parallelize your work using sub-agents. Spawn multiple sub-agents, each approaching the task from a different angle — e.g., different focus areas, different heuristics, or different parts of the codebase. Each sub-agent works independently and should return its own list of findings.
           
-          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs to do its job:
+          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
           
           - The full task description and objective (restate it, don't summarize)
           - All repository context, conventions, and constraints you've gathered (e.g., from `/tmp/agents.md`)
-          - Any relevant findings from your initial exploration (file paths, git log output, code snippets)
-          - The quality gate criteria and output format you expect
+          - Any relevant data the sub-agent needs to do its job (diffs, file contents, existing threads)
+          - The quality criteria and output format you expect
           - The specific angle that distinguishes this sub-agent from the others
           
-          Err on the side of providing too much context rather than too little. A well-informed sub-agent with a 10,000-token prompt will produce far better results than one with a 200-token prompt that has to rediscover everything from scratch.
+          Err on the side of providing too much context rather than too little. A well-informed sub-agent with a 10,000-token prompt will produce far better results than one that has to rediscover the codebase from scratch.
           
-          **Wait for all 3 sub-agents to complete.** Do not proceed until every sub-agent has returned its result.
+          **Wait for all sub-agents to complete.** Do not proceed until every sub-agent has returned its result.
           
-          **Evaluate the candidates** by comparing evidence quality, specificity, and actionability. Prefer candidates with concrete file paths, line numbers, and verifiable evidence over general observations. If most or all sub-agents recommend `noop`, that is a strong signal to `noop`.
+          **Merge and deduplicate findings** across all sub-agents:
+          1. If multiple sub-agents flagged the same issue, keep the version with the strongest evidence and clearest explanation.
+          2. If a finding is unique to one sub-agent, include it only if it passes the quality gate on its own merits — a finding flagged by only one sub-agent deserves extra scrutiny.
+          3. Drop any finding that does not meet the verification criteria.
           
-          **Select the single best candidate** and proceed with it. Discard the others. If no candidate meets the quality gate, call `noop`.
+          **Filter aggressively for quality.** Your job as the parent agent is to be the quality gate. Sub-agents cast a wide net; you decide what's worth keeping. For each surviving finding, verify it yourself — check that file paths exist, line numbers are accurate, the problem is real, and the finding is actionable. Discard anything vague, speculative, or already addressed. If no findings survive filtering, call `noop`.
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
@@ -489,73 +494,29 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          Identify under-tested code paths that would benefit from focused tests and file a report issue with specific, actionable recommendations.
-          
-          **The bar is high: you must identify concrete, high-value test gaps before filing.** Most runs should end with `noop` — that means test coverage is adequate.
-          
           ### Data Gathering
           
-          1. Determine required repo commands (lint/build/test) and how to run tests:
-             - Check README, CONTRIBUTING, DEVELOPING, Makefile, CI config, package.json, pyproject.toml, and similar files.
-          2. Identify coverage tooling (nyc, jest --coverage, pytest --cov, go test -cover, etc.).
-             - If coverage is available and reasonably fast, run it to find low-coverage files.
-             - If coverage tooling is not available, use code analysis to identify untested code paths.
-          3. Review recent changes:
-             - Run `git log --since="28 days ago" --stat` and identify recent changes without corresponding test updates.
-          4. Use the **Pick Three, Keep One** pattern for the investigation phase: spawn 3 `general-purpose` sub-agents, each searching for test gaps from a different angle (e.g., one analyzing coverage reports, one reviewing recent commits for missing tests, one examining error paths and edge cases in public APIs). Include the repo conventions, coverage data, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
+          1. Understand the project:
+             - Read `README.md`, `CONTRIBUTING.md`, `DEVELOPING.md`, and any docs directory.
+             - Read `package.json`, `go.mod`, `pyproject.toml`, or equivalent to identify the tech stack and versions.
+             - Skim the directory structure to understand the codebase layout.
           
-          ### What to Look For
+          2. Use the **Pick Three, Keep Many** pattern for the audit:
+             - Spawn 3 `general-purpose` sub-agents, each auditing from a different angle as defined in the **Audit Criteria** section below.
+             - Each sub-agent prompt must include: the full audit criteria, the tech stack info, relevant file paths, and the severity threshold.
+             - Each sub-agent should return all findings that meet the severity threshold, with specific file paths, line numbers, and code snippets.
+             - Wait for all sub-agents to complete, then merge and deduplicate.
           
-          - **Untested public APIs**: exported functions, CLI commands, API endpoints, or config parsing that have no or minimal test coverage.
-          - **Error paths**: exception handling, validation failures, and edge cases that are not exercised by any test.
-          - **Recent changes without tests**: code modified in the last 28 days where no corresponding test was added or updated.
-          - **Critical business logic**: core algorithms, data transformations, or state machines with insufficient coverage.
-          - **Trace to user-facing behavior.** For every candidate, answer: "What end-to-end user action would exercise this code path?" Only report gaps that map to a concrete user scenario.
-          
-          ### What to Skip
-          
-          - Trivial getters, setters, or simple constructors — testing these adds maintenance burden without catching regressions.
-          - Generated code, vendored dependencies, or third-party code.
-          - Test files themselves.
-          - Code paths that are adequately covered by integration or end-to-end tests, even if unit coverage is low.
-          - Internal helper functions that are only reachable through already-tested public APIs.
-          - Subjective "should have more tests" observations without a concrete user scenario.
-          
-          ### Quality Gate — When to Noop
-          
-          Call `noop` if any of these are true:
-          - Coverage tooling shows adequate coverage and no clear gaps in critical paths.
-          - The only gaps found are trivial (getters, constructors, simple pass-through functions).
-          - You cannot describe a concrete user scenario for any identified gap.
-          - All gaps are already tracked in open issues.
-          - The codebase has no testable code (e.g., pure configuration, documentation-only).
-          
-          ### Issue Format
-          
-          **Issue title:** Test coverage gaps (date)
-          
-          **Issue body:**
-          
-          > ## Summary
-          > - Coverage method: [tool used or manual analysis]
-          > - Files analyzed: [count]
-          > - Gaps identified: [count]
-          >
-          > ## Findings
-          >
-          > ### 1. [Brief description of the gap]
-          > **File:** `path/to/file.ext`
-          > **Function/Method:** `FuncName(...)`
-          > **User scenario:** [Describe the real-world user action that exercises this code path]
-          > **Why it matters:** [What regression could this catch? What could break?]
-          > **Suggested test approach:** [Brief description of what a test should verify]
-          >
-          > ## Suggested Actions
-          > - [ ] [Concrete action for each finding, e.g., "Add unit test for error handling in `ParseConfig` when config file is missing"]
+          3. Check for duplicates:
+             - Read `/tmp/previous-findings.json` for issues already filed by this agent.
+             - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "__GH_AW_EXPR_BF503D80__"`.
+             - Drop any finding that closely matches an existing open issue.
           
           ### Labeling
           
-          - If the `test-coverage` label exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `__GH_AW_EXPR_BF503D80__` title prefix only.
+          - If a label matching the title prefix (without brackets) exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `__GH_AW_EXPR_BF503D80__` title prefix only.
+          
+          ## Audit Criteria
           
           __GH_AW_EXPR_49B959F1__
           
@@ -653,7 +614,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS: /opt/gh-aw/safeoutputs/outputs.jsonl
       GH_AW_SAFE_OUTPUTS_CONFIG_PATH: /opt/gh-aw/safeoutputs/config.json
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawtestcoveragedetector
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawcodequalityaudit
     outputs:
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       detection_conclusion: ${{ steps.detection_conclusion.outputs.conclusion }}
@@ -726,6 +687,12 @@ jobs:
         name: Fetch repository conventions
         run: "set -euo pipefail\nif [ -f \"AGENTS.md\" ]; then\n  cp AGENTS.md /tmp/agents.md\n  echo \"Repository conventions copied from AGENTS.md to /tmp/agents.md\"\nelse\n  OWNER=\"${GITHUB_REPOSITORY%/*}\"\n  REPO=\"${GITHUB_REPOSITORY#*/}\"\n  summary=$(curl -sf --max-time 15 -X POST https://agents-md-generator.fastmcp.app/mcp \\\n    -H \"Content-Type: application/json\" \\\n    -H \"Accept: application/json, text/event-stream\" \\\n    -d \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":1,\\\"method\\\":\\\"tools/call\\\",\\\"params\\\":{\\\"name\\\":\\\"generate_agents_md\\\",\\\"arguments\\\":{\\\"owner\\\":\\\"${OWNER}\\\",\\\"repo\\\":\\\"${REPO}\\\"}}}\" \\\n    | sed 's/^data: //' \\\n    | jq -r '.result.structuredContent.summary // empty' 2>/dev/null) || true\n  if [ -n \"$summary\" ]; then\n    echo \"$summary\" > /tmp/agents.md\n    echo \"Repository conventions written to /tmp/agents.md\"\n  else\n    echo \"::warning::Could not fetch repository conventions; continuing without them\"\n  fi\nfi"
         shell: bash
+      - env:
+          GITHUB_TOKEN: ${{ github.token }}
+          REPO_NAME: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+        name: Ensure full history
+        run: "if git rev-parse --is-shallow-repository | grep -q true; then\n  SERVER_URL_STRIPPED=\"${SERVER_URL#https://}\"\n  git remote set-url origin \"https://x-access-token:${GITHUB_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git\"\n  git fetch --unshallow --quiet\nfi"
       - env:
           GH_TOKEN: ${{ github.token }}
           TITLE_PREFIX: ${{ inputs.title-prefix }}
@@ -1342,8 +1309,8 @@ jobs:
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Test Coverage Detector"
-          WORKFLOW_DESCRIPTION: "Find under-tested code paths and file a test coverage report"
+          WORKFLOW_NAME: "Code Quality Audit"
+          WORKFLOW_DESCRIPTION: "Analyze code for quality issues — anti-patterns, accessibility violations, performance problems, best-practices deviations — and file a structured report"
           HAS_PATCH: ${{ steps.collect_output.outputs.has_patch }}
         with:
           script: |
@@ -1435,7 +1402,7 @@ jobs:
       contents: read
       issues: write
     concurrency:
-      group: "gh-aw-conclusion-gh-aw-test-coverage-detector"
+      group: "gh-aw-conclusion-gh-aw-code-quality-audit"
       cancel-in-progress: false
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
@@ -1465,7 +1432,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
-          GH_AW_WORKFLOW_NAME: "Test Coverage Detector"
+          GH_AW_WORKFLOW_NAME: "Code Quality Audit"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1478,7 +1445,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Test Coverage Detector"
+          GH_AW_WORKFLOW_NAME: "Code Quality Audit"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1491,10 +1458,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Test Coverage Detector"
+          GH_AW_WORKFLOW_NAME: "Code Quality Audit"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-test-coverage-detector"
+          GH_AW_WORKFLOW_ID: "gh-aw-code-quality-audit"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.activation.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_INFERENCE_ACCESS_ERROR: ${{ needs.agent.outputs.inference_access_error }}
@@ -1513,7 +1480,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Test Coverage Detector"
+          GH_AW_WORKFLOW_NAME: "Code Quality Audit"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1559,12 +1526,12 @@ jobs:
       issues: write
     timeout-minutes: 15
     env:
-      GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/gh-aw-test-coverage-detector"
+      GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/gh-aw-code-quality-audit"
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {0}]({{run_url}})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.', github.workflow) }}\",\"activationComments\":\"false\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-test-coverage-detector"
-      GH_AW_WORKFLOW_NAME: "Test Coverage Detector"
+      GH_AW_WORKFLOW_ID: "gh-aw-code-quality-audit"
+      GH_AW_WORKFLOW_NAME: "Code Quality Audit"
     outputs:
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}

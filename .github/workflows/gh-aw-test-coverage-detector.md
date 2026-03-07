@@ -14,6 +14,7 @@ imports:
   - gh-aw-fragments/pick-three-keep-one.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
+  - gh-aw-fragments/code-quality-audit.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -45,6 +46,11 @@ on:
         type: string
         required: false
         default: ""
+      severity-threshold:
+        description: "Minimum severity to include in the report. 'high' = only untested critical paths (error handling, auth, data mutations). 'medium' (default) = also include untested public APIs and recent changes. 'low' = also include minor coverage gaps."
+        type: string
+        required: false
+        default: "medium"
       title-prefix:
         description: "Title prefix for created issues (e.g. '[test-coverage]')"
         type: string

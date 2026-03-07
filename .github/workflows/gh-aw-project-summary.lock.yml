@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6df243851e718cb0a2ca5adadfa40fa94ec6e0467d6d220d506c35bfd33903c0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"f1e6a3e35c05cbc133759774a2a0244eeaf124ef34009dc2e1eb4c8785d67f12"}
 
 name: "Project Summary"
 "on":
@@ -434,8 +434,9 @@ jobs:
           
           **Guidelines:**
           - Include direct links to issues/PRs and a short rationale for each item.
-          - If a section is empty, write `None`.
+          - If a section is empty, **omit it entirely** rather than writing `None`. Only include sections that have meaningful content. A summary with 2 substantive sections is more useful than one with 6 sections marked `None`.
           - Do not repeat items already covered in the previous report unless status materially changed.
+          - Exclude bot-authored PRs and issues (e.g., from agentic workflows, dependabot, renovate) from activity counts and the Recent Progress section unless they represent significant changes. Bot activity should not inflate the summary or trigger a report on otherwise quiet days.
           
           __GH_AW_EXPR_49B959F1__
           

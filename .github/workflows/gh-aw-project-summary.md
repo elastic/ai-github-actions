@@ -142,7 +142,8 @@ Call `noop` with message **"Project summary skipped — no meaningful activity s
 
 **Guidelines:**
 - Include direct links to issues/PRs and a short rationale for each item.
-- If a section is empty, write `None`.
+- If a section is empty, **omit it entirely** rather than writing `None`. Only include sections that have meaningful content. A summary with 2 substantive sections is more useful than one with 6 sections marked `None`.
 - Do not repeat items already covered in the previous report unless status materially changed.
+- Exclude bot-authored PRs and issues (e.g., from agentic workflows, dependabot, renovate) from activity counts and the Recent Progress section unless they represent significant changes. Bot activity should not inflate the summary or trigger a report on otherwise quiet days.
 
 ${{ inputs.additional-instructions }}
