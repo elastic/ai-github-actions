@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5eef6797f47cfc5795f85152396b111b7737b3c47a32a289eea4829cfbabdebb"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"708ce4bb3efec15a147635e7f347e6e895c8ffaa691e4c0fd7bfce041046ba81"}
 
 name: "Release Update Check"
 "on":
@@ -318,7 +318,7 @@ jobs:
           ## Constraints
           
           - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request.
-          - **CANNOT**: Push directly to the repository — use `create_pull_request`.
+          - **CANNOT**: Push directly to the repository — use `ready_to_make_pr` then `create_pull_request`.
           - **Only one PR per run.**
           - Only update workflow references to `elastic/ai-github-actions/.github/workflows/gh-aw-*.lock.yml@...`.
           - If no updates are needed, call `noop` with a brief reason.
@@ -350,7 +350,7 @@ jobs:
           ## Step 4: Create the PR
           
           1. Commit the changes locally.
-          2. Call `create_pull_request` with:
+          2. Call `ready_to_make_pr`, then call `create_pull_request` with:
              - **Title**: `Update ai-github-actions workflows to <latest tag>`
              - **Body**: Summary of updated refs (old → new), release note highlights that matter, suggested workflow updates, and tests run (if none, say "Not run (workflow reference updates only)").
           

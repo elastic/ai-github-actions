@@ -41,6 +41,14 @@ EXCLUDED_WORKFLOWS=(
   "text-beautifier"
 )
 
+# Workflows that should auto-chain issue -> remediation PR in generated dogfood triggers.
+# These entries refer to gh-agent-workflows/<name>/example.yml directories.
+REMEDIATION_WORKFLOWS=(
+  "docs-patrol"
+  "framework-best-practices"
+  "text-auditor"
+)
+
 echo "Syncing workflow files..."
 
 # Copy trigger example.yml files from gh-agent-workflows/*/ → .github/workflows/trigger-*
@@ -69,10 +77,11 @@ for f in gh-agent-workflows/*/example.yml; do
   overrides="gh-agent-workflows/$dir/dogfood-with.yml"
   if [[ -f "$overrides" ]]; then
     awk -v of="$overrides" '
-      /^    with:/ { in_with=1; next }
+      /^  [^ ]+:/ { current_job=$0; sub(/^  /, "", current_job); sub(/:$/, "", current_job) }
+      current_job=="run" && /^    with:/ { in_with=1; next }
       in_with && /^    [a-z]/ { in_with=0 }
       in_with { next }
-      /^    secrets:/ {
+      current_job=="run" && /^    secrets:/ {
         print "    with:"
         while ((getline line < of) > 0) {
           print "      " line
@@ -93,6 +102,31 @@ for f in gh-agent-workflows/*/example.yml; do
     sed '/COPILOT_GITHUB_TOKEN:/a\
       EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
     echo "    + injected EXTRA_COMMIT_GITHUB_TOKEN secret"
+  fi
+
+  # Append automatic issue -> PR remediation chain for selected workflows.
+  add_remediation=false
+  for remediation in "${REMEDIATION_WORKFLOWS[@]}"; do
+    [[ "$dir" == "$remediation" ]] && add_remediation=true && break
+  done
+  if [[ "$add_remediation" == "true" ]]; then
+    # Ensure permissions allow downstream PR creation job.
+    sed -E 's/^([[:space:]]*contents: )read$/\1write/; s/^([[:space:]]*pull-requests: )read$/\1write/' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
+
+    cat >> "$target" <<'EOF'
+
+  create_pr_from_issue:
+    needs: run
+    if: ${{ needs.run.outputs.created_issue_number != '' }}
+    uses: ./.github/workflows/gh-aw-create-pr-from-issue.lock.yml
+    with:
+      target-issue-number: ${{ needs.run.outputs.created_issue_number }}
+      additional-instructions: "Create a focused pull request that resolves this issue."
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
+EOF
+    echo "    + appended remediation chain jobs"
   fi
 done
 

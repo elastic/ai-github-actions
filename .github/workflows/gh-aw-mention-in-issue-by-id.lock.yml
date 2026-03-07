@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"1b43c78d22ccbf7485f143ca0ccd427535b5a047b544c900e43eb9076baef415"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a6d4a049f8943ea3f5ec7a9f23f77eff499f206900f38e7fc00e311c9bd32395"}
 
 name: "Mention in Issue by ID"
 "on":
@@ -376,9 +376,9 @@ jobs:
           ## Constraints
           
           - **CAN**: Read files, search code, modify files locally, run tests and commands, comment on the targeted issue, create pull requests, create issues
-          - **CANNOT**: Directly push or commit to the repository - use `create_pull_request` to propose changes
+          - **CANNOT**: Directly push or commit to the repository - use `ready_to_make_pr` then `create_pull_request` to propose changes
           
-          When creating pull requests, make the changes in the workspace first, then use `create_pull_request` - branches are managed automatically.
+          When creating pull requests, make the changes in the workspace first, call `ready_to_make_pr`, then use `create_pull_request` - branches are managed automatically.
           
           ## Instructions
           
@@ -386,7 +386,7 @@ jobs:
           2. Handle the request in `__GH_AW_INPUTS_PROMPT__` with focused investigation and evidence from the codebase.
           3. Do not comment on any issue except #__GH_AW_EXPR_EA5D66D8__.
           4. Use safe outputs only against issue #__GH_AW_EXPR_EA5D66D8__ when commenting.
-          5. If asked to implement changes, make edits in the workspace and use `create_pull_request`.
+          5. If asked to implement changes, make edits in the workspace, call `ready_to_make_pr`, then use `create_pull_request`.
           6. If no code or PR action is needed, call `add_comment` with a concise, actionable response.
           
           __GH_AW_EXPR_49B959F1__

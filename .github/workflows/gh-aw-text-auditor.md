@@ -236,6 +236,7 @@ Call `noop` if any of these are true:
 - The problems found are in generated or vendored files
 - All findings are style preferences rather than clear errors
 - Findings require design decisions or significant rewording beyond simple corrections
+- All findings are **single-instance cosmetic-only issues** — isolated casing preferences (e.g., "Node detail" vs "Node Detail"), missing articles, punctuation choices, or markdown formatting minutiae that do not cause user confusion. These are not worth a human's review time unless they are part of a broader, systematic inconsistency.
 
 Note: overlap/duplication with existing open `${{ inputs.title-prefix }}` issues and low-value micro-edits are evaluated via the rubric above.
 
