@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"898e05c33b2f60cdeaebb052f6bef75fea9b8063480993cad0489673e2be51be"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4e48146c79ca2337f6105a68aa686a92888aba6081b262b49f4275a5bec7b14c"}
 
 name: "Mention in Issue"
 "on":
@@ -437,7 +437,7 @@ jobs:
           - `create_pull_request` — create a PR with your changes
           - `create_issue` — create a new issue (e.g. to split off sub-tasks)
           
-          Unless instructred otherwise, if you do create an issue or a pull request, assign it to the user who requested the change that resulted in the creation of the issue or pull request.
+          Unless instructed otherwise, if you do create an issue or a pull request, assign it to the user who requested the change that resulted in the creation of the issue or pull request.
           
           __GH_AW_EXPR_49B959F1__
           
