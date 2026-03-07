@@ -17,7 +17,7 @@ Set the expiry to longer than the 30-day default (e.g., 90 days or 1 year).
 **2. Store the secret and run the setup script** from the repository you want to configure (requires `gh`, `git`, and `curl`):
 
 ```bash
-printf '%s' "(your-pat)" | gh secret set COPILOT_GITHUB_TOKEN
+printf '%s' 'YOUR_PAT_HERE' | gh secret set COPILOT_GITHUB_TOKEN
 curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/scripts/quick-setup.sh \
   | bash -s --
 ```
