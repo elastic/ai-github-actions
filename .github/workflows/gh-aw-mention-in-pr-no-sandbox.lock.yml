@@ -47,7 +47,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e203d285220f3454b353b990cc63c4cdc5597116eb9e49cbd483c6118c99c295"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"78a1f3bba423f7d5f19d683f9ae0fa00a6f5d4b78e9c97a1912f5aeeda5d8c2a"}
 
 name: "Mention in PR (no sandbox)"
 "on":
@@ -518,6 +518,7 @@ jobs:
              - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
              - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
           - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
+          - Use `ready_to_push_to_pr` to check if the changes are ready to push.
           - Use `push_to_pull_request_branch` to push your changes.
           - After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
           - **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.
@@ -535,6 +536,7 @@ jobs:
           If you did not submit a PR review, call `add_comment` with your response. If you submitted a review, do NOT call `add_comment` unless explicitly requested or to report a review submission failure.
           
           **Additional tools:**
+          - `ready_to_push_to_pr` — run pre-push safety checks before pushing PR changes
           - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
           - `reply_to_pull_request_review_comment` — reply inline to a review comment thread to explain what you changed or why you disagree
           - `resolve_pull_request_review_thread` — resolve a review thread after addressing the feedback (pass the thread's GraphQL node ID)

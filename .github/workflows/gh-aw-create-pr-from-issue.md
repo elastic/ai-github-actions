@@ -1,7 +1,7 @@
 ---
 inlined-imports: true
-name: "Mention in Issue by ID"
-description: "AI assistant for a specific issue ID — answer questions, debug, and create PRs on demand"
+name: "Create PR From Issue"
+description: "Implement an issue and open a pull request"
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
@@ -13,13 +13,12 @@ imports:
   - gh-aw-fragments/playwright-mcp-explorer.md
   - gh-aw-fragments/safe-output-add-comment-issue.md
   - gh-aw-fragments/safe-output-create-pr.md
-  - gh-aw-fragments/safe-output-create-issue.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-${{ github.workflow }}-mention-issue-by-id-${{ inputs.target-issue-number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-create-pr-from-issue-${{ inputs.target-issue-number }}"
 on:
   workflow_call:
     inputs:
@@ -29,13 +28,14 @@ on:
         required: false
         default: "gpt-5.3-codex"
       target-issue-number:
-        description: "Issue number to target"
+        description: "Issue number to implement"
         type: string
         required: true
       prompt:
-        description: "Prompt for the agent"
+        description: "Additional implementation instructions"
         type: string
-        required: true
+        required: false
+        default: ""
       additional-instructions:
         description: "Repo-specific instructions appended to the agent prompt"
         type: string
@@ -62,7 +62,7 @@ on:
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
 concurrency:
-  group: ${{ github.workflow }}-mention-issue-by-id-${{ inputs.target-issue-number }}
+  group: ${{ github.workflow }}-create-pr-from-issue-${{ inputs.target-issue-number }}
   cancel-in-progress: true
 permissions:
   actions: read
@@ -74,12 +74,12 @@ tools:
     toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
+strict: false
 safe-outputs:
   activation-comments: false
   max-patch-size: 10240
   add-comment:
     target: "${{ inputs.target-issue-number }}"
-strict: false
 timeout-minutes: 60
 steps:
   - name: Repo-specific setup
@@ -89,30 +89,28 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-# Issue Assistant by ID
+# Create PR From Issue
 
-Assist with issue #${{ inputs.target-issue-number }} on ${{ github.repository }}.
+Implement issue #${{ inputs.target-issue-number }} on ${{ github.repository }} and open a pull request.
 
 ## Context
 
 - **Repository**: ${{ github.repository }}
 - **Issue**: #${{ inputs.target-issue-number }}
-- **Request**: "${{ inputs.prompt }}"
+- **Additional request**: "${{ inputs.prompt }}"
 
 ## Constraints
 
-- **CAN**: Read files, search code, modify files locally, run tests and commands, comment on the targeted issue, create pull requests, create issues
-- **CANNOT**: Directly push or commit to the repository - use `ready_to_make_pr` then `create_pull_request` to propose changes
-
-When creating pull requests, make the changes in the workspace first, call `ready_to_make_pr`, then use `create_pull_request` - branches are managed automatically.
+- **CAN**: Read files, search code, modify files locally, run tests and commands, comment on the targeted issue, create pull requests
+- **CANNOT**: Directly push or commit to the repository — use `ready_to_make_pr` then `create_pull_request` to propose changes
 
 ## Instructions
 
-1. Read issue #${{ inputs.target-issue-number }} first to understand the full thread and current context.
-2. Handle the request in `${{ inputs.prompt }}` with focused investigation and evidence from the codebase.
-3. Do not comment on any issue except #${{ inputs.target-issue-number }}.
-4. Use safe outputs only against issue #${{ inputs.target-issue-number }} when commenting.
-5. If asked to implement changes, make edits in the workspace, call `ready_to_make_pr`, then use `create_pull_request`.
-6. If no code or PR action is needed, call `add_comment` with a concise, actionable response.
+1. Read issue #${{ inputs.target-issue-number }} first to understand requirements and acceptance criteria.
+2. Investigate the relevant code paths and implement a focused fix for the issue.
+3. Run required repo checks (lint/build/test) relevant to your change. If required commands cannot run, explain why and do not open a PR.
+4. Call `ready_to_make_pr` and apply its checklist.
+5. Call `create_pull_request` with a clear title/body that references and closes issue #${{ inputs.target-issue-number }}.
+6. If implementation is blocked or unclear, call `add_comment` on the issue with a concise status update and concrete next step.
 
 ${{ inputs.additional-instructions }}

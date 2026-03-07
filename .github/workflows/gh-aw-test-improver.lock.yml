@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8c1608d65330795c0baab1c5746d8d1e49fb36401e2d9264254db3563468fb29"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"055a260ce84412fca1016e88cef813f690b9512d896a7d7a0c24f8525c51ea47"}
 
 name: "Test Improver"
 "on":
@@ -318,7 +318,7 @@ jobs:
           ## Constraints
           
           - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request.
-          - **CANNOT**: Push directly to the repository — use `create_pull_request`.
+          - **CANNOT**: Push directly to the repository — use `ready_to_make_pr` then `create_pull_request`.
           - **Only one PR per run.**
           - No large refactors; prioritize targeted test additions or small cleanup of redundant tests.
           - If the change set is large or unsafe, call `noop` with a brief reason.
@@ -382,7 +382,7 @@ jobs:
           ## Step 7: Create the PR
           
           1. Commit the changes locally.
-          2. Call `create_pull_request` with:
+          2. Call `ready_to_make_pr`, then call `create_pull_request` with:
              - **Title**: concise summary of the test improvements
              - **Body** must include:
                - Summary of what changed

@@ -88,7 +88,7 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-Find a single reproducible, user-impacting bug in the repository that can be covered by a minimal failing test.
+Find a single reproducible, user-impacting bug in the repository that can be covered by a minimal failing test. Not a number field accepting "ABC", but a real and impactful bug.
 
 **The bar is high: you must actually reproduce the bug before filing.** Most runs should end with `noop` — that means the codebase is healthy.
 

@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"14be01b9072069d5f1aade5729de2a8bf478ee6b52835f31e45644797c2c0b8d"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5d3c3e082b16755cd90eb24df0808db7bcbe5ca30cf885c8b597ada6aec71681"}
 
 name: "Mention in Issue (no sandbox)"
 "on":
@@ -403,9 +403,9 @@ jobs:
           ## Constraints
           
           - **CAN**: Read files, search code, modify files locally, run tests and commands, comment on issues, create pull requests, create issues
-          - **CANNOT**: Directly push or commit to the repository — use `create_pull_request` to propose changes
+          - **CANNOT**: Directly push or commit to the repository — use `ready_to_make_pr` then `create_pull_request` to propose changes
           
-          When creating pull requests, make the changes in the workspace first, then use `create_pull_request` — branches are managed automatically.
+          When creating pull requests, make the changes in the workspace first, call `ready_to_make_pr`, then use `create_pull_request` — branches are managed automatically.
           
           ## Instructions
           
@@ -425,7 +425,7 @@ jobs:
           - **Debug reported problems** — reproduce locally, run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config, and trace the code path
           - **Suggest solutions** — provide concrete code examples and implementation guidance
           - **Clarify requirements** — ask follow-up questions if the request is ambiguous
-          - **Create a PR** — if asked to implement something, make the changes in the workspace, then use `create_pull_request` to submit them
+          - **Create a PR** — if asked to implement something, make the changes in the workspace, call `ready_to_make_pr`, then use `create_pull_request` to submit them
           
           When making code changes, identify and run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config and include results. If required commands cannot be run, explain why.
           
@@ -434,6 +434,7 @@ jobs:
           Call `add_comment` with your response. Be concise and actionable — no filler or praise. If the request is unclear, ask clarifying questions rather than guessing.
           
           **Additional tools:**
+          - `ready_to_make_pr` — run pre-PR safety checks before opening a PR
           - `create_pull_request` — create a PR with your changes
           - `create_issue` — create a new issue (e.g. to split off sub-tasks)
           

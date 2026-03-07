@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8a87d78e7b6d3366d5fc7a6e23a84faa147b9063f3dc429e1adf5ba5155d61b6"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b86b0a3777025392500d164541a24989ae2572fe9df435f3bb8f8ca8fcd7dc42"}
 
 name: "Text Auditor"
 "on":
@@ -556,6 +556,7 @@ jobs:
           - The problems found are in generated or vendored files
           - All findings are style preferences rather than clear errors
           - Findings require design decisions or significant rewording beyond simple corrections
+          - All findings are **single-instance cosmetic-only issues** — isolated casing preferences (e.g., "Node detail" vs "Node Detail"), missing articles, punctuation choices, or markdown formatting minutiae that do not cause user confusion. These are not worth a human's review time unless they are part of a broader, systematic inconsistency.
           
           Note: overlap/duplication with existing open `__GH_AW_EXPR_BF503D80__` issues and low-value micro-edits are evaluated via the rubric above.
           

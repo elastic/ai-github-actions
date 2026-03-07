@@ -14,6 +14,7 @@ imports:
   - gh-aw-fragments/pick-three-keep-many.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
+  - gh-aw-fragments/code-quality-audit.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -45,6 +46,11 @@ on:
         type: string
         required: false
         default: ""
+      severity-threshold:
+        description: "Minimum severity to include in the report. 'high' = only clear simplifications that reduce complexity or fix bugs. 'medium' (default) = also include missed library features that improve maintainability. 'low' = also include minor underuse patterns."
+        type: string
+        required: false
+        default: "medium"
       title-prefix:
         description: "Title prefix for created issues (e.g. '[framework-best-practices]')"
         type: string

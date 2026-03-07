@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"9bb4c0ab6f9ff04c347bcb52e01829775bcc2748e96578184cef91bab757efe7"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"98f4fc8ae0f9a783df21e5925a087e19f724eb3813451cc963522c4eab337379"}
 
 name: "Update PR Body"
 "on":
@@ -170,6 +170,7 @@ jobs:
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_4A6C8AF6: ${{ inputs.edit-accuracy }}
           GH_AW_EXPR_754DFA49: ${{ inputs.edit-format }}
+          GH_AW_EXPR_9B9EBBAB: ${{ inputs.messages-footer }}
           GH_AW_EXPR_BFC7045A: ${{ inputs.edit-style }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
@@ -316,6 +317,13 @@ jobs:
           
           - **Repository**: __GH_AW_GITHUB_REPOSITORY__
           - **PR**: #__GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__ — __GH_AW_GITHUB_EVENT_PULL_REQUEST_TITLE__
+          - **Runtime-managed footer override input**: `__GH_AW_EXPR_9B9EBBAB__`
+          - **Default runtime footer text (used when no override is provided)**:
+          
+          ```text
+          ---
+          The body of this PR is automatically managed by the workflow runtime.
+          ```
           
           ## Edit Level Configuration
           
@@ -329,6 +337,7 @@ jobs:
           | **style** | `__GH_AW_EXPR_BFC7045A__` | How aggressively to improve writing clarity, conciseness, and tone |
           
           Level semantics:
+          
           - **`high`** — apply the agent's best judgment; proactively improve this dimension throughout the body
           - **`low`** — make only conservative fixes for clear problems; do not restructure or rewrite
           - **`none`** — do not touch this dimension at all; leave it exactly as the author wrote it
@@ -387,13 +396,23 @@ jobs:
           
           Based on your analysis, compile the full list of changes warranted across all non-`none` dimensions. Group them by dimension.
           
+          Before proposing body changes, normalize footer content:
+          
+          - Identify and remove any existing footer block(s) that match either:
+            - the configured runtime-managed footer override input (when present), or
+            - the default runtime footer text above.
+          - If the PR body contains repeated copies of that same footer, remove all copies from the authored content you are editing.
+          - Treat this cleanup as mechanical deduplication, not a style/format rewrite.
+          
           Do **not** propose changes when:
+          
           - The dimension level is `none`
           - The level is `low` and the issue is minor (style preference, slight improvement, optional detail)
           - An update would erase useful context (motivation, design decisions, issue links) the author provided
           - The body is a reasonable high-level summary even if some details differ
           
           **Never willingly add any of the following to the PR body** (even in `high` mode):
+          
           - Commit counts, file counts, or insertion/deletion statistics (e.g., "2 commits, 143 files changed, 12,613 insertions")
           - Scope or size summaries — the reviewer can see these in the GitHub UI
           - Lists of every file changed — link to relevant code instead
@@ -405,6 +424,7 @@ jobs:
           **If any changes are warranted:**
           
           Call `update_pull_request` **exactly once** with a `replace` operation to write a body that applies all warranted changes. You may only call this tool once per run — additional calls will be rejected by validation. The updated body must:
+          
           - Apply only the changes identified in Step 4 — do not make unplanned edits
           - Preserve the original structure, formatting, and wording of sections untouched by warranted changes
           - Preserve the original motivation and context (including issue links like `Fixes #N`)
@@ -432,6 +452,7 @@ jobs:
           GH_AW_EXPR_235B0F42: ${{ inputs.edit-completeness }}
           GH_AW_EXPR_754DFA49: ${{ inputs.edit-format }}
           GH_AW_EXPR_BFC7045A: ${{ inputs.edit-style }}
+          GH_AW_EXPR_9B9EBBAB: ${{ inputs.messages-footer }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -446,6 +467,7 @@ jobs:
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_4A6C8AF6: ${{ inputs.edit-accuracy }}
           GH_AW_EXPR_754DFA49: ${{ inputs.edit-format }}
+          GH_AW_EXPR_9B9EBBAB: ${{ inputs.messages-footer }}
           GH_AW_EXPR_BFC7045A: ${{ inputs.edit-style }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
@@ -474,6 +496,7 @@ jobs:
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
                 GH_AW_EXPR_4A6C8AF6: process.env.GH_AW_EXPR_4A6C8AF6,
                 GH_AW_EXPR_754DFA49: process.env.GH_AW_EXPR_754DFA49,
+                GH_AW_EXPR_9B9EBBAB: process.env.GH_AW_EXPR_9B9EBBAB,
                 GH_AW_EXPR_BFC7045A: process.env.GH_AW_EXPR_BFC7045A,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
