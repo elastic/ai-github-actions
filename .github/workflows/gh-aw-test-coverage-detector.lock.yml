@@ -411,20 +411,17 @@ jobs:
           
           ### Severity Threshold: `__GH_AW_EXPR_08E89BCD__`
           
-          Only include findings at or above the configured severity:
-          - **high** — Correctness problems, user-facing defects, or violations of standards that directly impact users (e.g., WCAG failures that block keyboard users, race conditions that corrupt state, security vulnerabilities).
-          - **medium** — Issues that degrade quality, maintainability, or performance without an immediate user-visible defect (e.g., missing error boundaries, unstable references causing unnecessary re-renders, deprecated API usage).
-          - **low** — Minor deviations from best practices that are technically correct but could be improved (e.g., missing memo on a component that re-renders often but is not yet a bottleneck).
+          Only include findings at or above the configured severity. Severity labels and meanings are defined by the importing workflow; this fragment uses the importing workflow's `__GH_AW_EXPR_08E89BCD__` semantics.
           
           ### Evidence Standard
           
           Every finding must include **all** of the following. Findings missing any element must be dropped:
           
-          1. **Location** — Exact file path(s) and line number(s).
-          2. **Code snippet** — The specific code exhibiting the issue.
+          1. **Location** — File path(s) and precise location context (line numbers when available or another unambiguous locator required by the importing workflow).
+          2. **Evidence** — The specific code or configuration that exhibits the issue.
           3. **What is wrong** — A clear, concrete explanation of the problem. Not "this could be better" but "this does X when it should do Y" or "this violates [specific standard/guideline]."
           4. **Why it matters** — Concrete impact: who is affected, what breaks, what degrades, or what standard is violated. Reference the specific standard, guideline, or documentation (e.g., WCAG 2.1 SC 4.1.2, React docs on exhaustive-deps, framework migration guide).
-          5. **Suggested fix** — A concrete code change or approach, not a vague recommendation. Show the corrected code when possible.
+          5. **Suggested fix** — A concrete code change or approach, not a vague recommendation.
           
           ### Verification Pass (Required)
           
@@ -451,41 +448,9 @@ jobs:
           - Prefer fewer, denser issues over frequent thin issues.
           - If a pattern appears in many files, do a completeness pass: search the repo for all occurrences and list them, so maintainers can fix the whole family at once.
           
-          ### Issue Format
+          ### Output Contract
           
-          **Issue title:** Brief summary of findings (e.g., "3 accessibility barriers in form components")
-          
-          **Issue body:**
-          
-          > ## Code Quality Audit — [Audit Dimension]
-          >
-          > The following issues were found during a scheduled audit. Each finding includes specific file locations, code evidence, and a suggested fix.
-          >
-          > **Severity threshold:** `__GH_AW_EXPR_08E89BCD__`
-          >
-          > ### 1. [Brief description]
-          >
-          > **Severity:** [high / medium / low]
-          > **File(s):** `path/to/file.ts` (lines N–M)
-          > **Standard/Guideline:** [What rule, best practice, or standard this violates — with a link if possible]
-          >
-          > **Current code:**
-          > ```
-          > [The problematic code snippet]
-          > ```
-          >
-          > **Problem:** [What is wrong and why it matters]
-          >
-          > **Suggested fix:**
-          > ```
-          > [The corrected code]
-          > ```
-          >
-          > ### 2. [Next finding...]
-          >
-          > ## Suggested Actions
-          >
-          > - [ ] [Specific, actionable checkbox for each fix]
+          Follow the importing workflow's issue title/body template. This shared fragment defines quality gates and evidence requirements only; per-workflow report schemas remain source-of-truth for final output format.
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'

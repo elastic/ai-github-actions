@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"59b9ae8674de63299285e24617cfbb6d58cd9f7ca519d1bbca723be4b3933950"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"65df487b67429d25ac7d30b444404b85aa016d89fcc3a48b6a09cde76c0e1bad"}
 
 name: "Flaky Test Investigator"
 "on":
@@ -427,7 +427,9 @@ jobs:
           
           ### Issue Format
           
-          **Issue title:** Brief flaky-test investigation summary for the window
+          **Issue title:**
+          - Root cause identified: Brief flaky-test investigation summary for the window
+          - Root cause unclear but repeated pattern exists: `Flaky pattern: [test name] — triage needed`
           
           **Issue body:**
           
@@ -442,11 +444,15 @@ jobs:
           > - Frequency: [count]
           > - Representative error: [short snippet]
           >
-          > **Root cause:** [specific, evidence-based — only include if truly identified; otherwise do not file an issue]
-          > **Recommended fix:** [concrete root-cause fix steps]
+          > **Root cause:** [specific, evidence-based — include only when truly identified]
+          > **Recommended fix:** [concrete root-cause fix steps — include only when root cause is identified]
+          >
+          > **If triage report:**
+          > - Candidate hypotheses: [ranked by likelihood]
+          > - Suggested investigation steps: [concrete next checks]
           >
           > ## Suggested Actions
-          > - [ ] [Concrete fix task]
+          > - [ ] [Concrete fix task or investigation task]
           > - [ ] [Validation task to confirm stability]
           
           __GH_AW_EXPR_49B959F1__

@@ -140,7 +140,9 @@ Call `noop` when:
 
 ### Issue Format
 
-**Issue title:** Brief flaky-test investigation summary for the window
+**Issue title:**
+- Root cause identified: Brief flaky-test investigation summary for the window
+- Root cause unclear but repeated pattern exists: `Flaky pattern: [test name] — triage needed`
 
 **Issue body:**
 
@@ -155,11 +157,15 @@ Call `noop` when:
 > - Frequency: [count]
 > - Representative error: [short snippet]
 >
-> **Root cause:** [specific, evidence-based — only include if truly identified; otherwise do not file an issue]
-> **Recommended fix:** [concrete root-cause fix steps]
+> **Root cause:** [specific, evidence-based — include only when truly identified]
+> **Recommended fix:** [concrete root-cause fix steps — include only when root cause is identified]
+>
+> **If triage report:**
+> - Candidate hypotheses: [ranked by likelihood]
+> - Suggested investigation steps: [concrete next checks]
 >
 > ## Suggested Actions
-> - [ ] [Concrete fix task]
+> - [ ] [Concrete fix task or investigation task]
 > - [ ] [Validation task to confirm stability]
 
 ${{ inputs.additional-instructions }}
