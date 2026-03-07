@@ -112,7 +112,7 @@ Follow these steps in order.
 ### Step 2: Investigate the Codebase
 
 1. Read the issue description carefully to understand the request or problem.
-2. Explore the relevant parts of the codebase using `grep` and file reading.
+2. Explore the relevant parts of the codebase using repository search tools (prefer `rg`) and file reading.
 3. Run tests or commands in the workspace to verify reported bugs when possible:
    - Run existing tests to confirm reported behavior
    - Execute scripts to understand current behavior

@@ -99,25 +99,25 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 ### Step 1: Gather Context
 
 1. Fetch workflow run details using `inputs.workflow-run-id`:
-   ````bash
+   ```bash
    gh api repos/${{ github.repository }}/actions/runs/{run_id} \
      --jq '{id: .id, html_url: .html_url, pull_requests: .pull_requests}'
-   ````
-3. Identify the PRs associated with the workflow run from the response. If there are none, call `noop` with message "No pull request associated with workflow run; nothing to do" and stop.
-4. For each PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status.
-5. Fetch workflow run details and logs with `bash` + `gh api`:
+   ```
+2. Identify the PRs associated with the workflow run from the response. If there are none, call `noop` with message "No pull request associated with workflow run; nothing to do" and stop.
+3. For each PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status.
+4. Fetch workflow run details and logs with `bash` + `gh api`:
    - List jobs and their conclusions:
-     ````bash
+     ```bash
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/jobs \
        --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
-     ````
+     ```
    - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
-     ````bash
+     ```bash
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/logs \
        -H "Accept: application/vnd.github+json" \
        > /tmp/gh-aw/agent/workflow-logs-{run_id}.zip
      unzip -o /tmp/gh-aw/agent/workflow-logs-{run_id}.zip -d /tmp/gh-aw/agent/workflow-logs-{run_id}/
-     ````
+     ```
 
 ### Step 2: Analyze and Fix
 

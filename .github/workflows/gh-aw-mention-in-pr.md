@@ -152,9 +152,14 @@ PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md
 
 ### Step 2: Handle the Request
 
-Based on what's asked, do the appropriate thing. **Requests can combine multiple actions** (e.g., "fix merge conflicts and address the review feedback"). When they do, handle them in this order: merge conflicts first, then code changes/review feedback, then push once at the end. Do not push between steps — batch all changes into a single push.
+Based on what's asked, do the appropriate thing.
+
+1. Determine the primary request mode: review, code fix/review feedback, merge conflict resolution, or code question.
+2. **Requests can combine multiple actions** (e.g., "fix merge conflicts and address the review feedback"). When they do, handle them in this order: merge conflicts first, then code changes/review feedback, then push once at the end.
+3. Do not push between steps — batch all changes into a single push.
 
 **If asked to review the PR:**
+
 - Call `ready_to_code_review` — this writes `/tmp/pr-context/agent-review.md` (review approach) and `/tmp/pr-context/parent-review.md` (comment format and inline severity threshold). Read both files.
 - Review the PR following `agent-review.md`. For small PRs, review directly. For medium/large PRs, spawn the specified number of `code-review` sub-agents in parallel (each reads its `/tmp/pr-context/subagent-*.md` instruction file).
 - When sub-agents return findings, merge and deduplicate per the Pick Three, Keep Many process. Then verify each surviving finding before leaving a comment:
@@ -167,17 +172,19 @@ Based on what's asked, do the appropriate thing. **Requests can combine multiple
 - **Bot-authored PRs**: If the PR author is `github-actions[bot]`, you can only submit a `COMMENT` review — `APPROVE` and `REQUEST_CHANGES` will fail because GitHub does not allow bot accounts to approve or request changes on their own PRs. Use `COMMENT` and state your verdict in the review body instead.
 
 **If asked to fix code or address review feedback:**
+
 - Read `/tmp/pr-context/unresolved_threads.json` to see open review threads and understand what needs to be addressed.
 - For each unresolved thread you address:
-   - Make the code changes in the workspace.
-   - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
-   - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
+  - Make the code changes in the workspace.
+  - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
+  - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
 - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
 - Use `push_to_pull_request_branch` to push your changes.
 - After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
 - **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.
 
 **If asked to fix merge conflicts:**
+
 - Check via `pull_request_read` (method `get`) whether this is a fork PR. If so, reply that you cannot push to fork branches and suggest the author resolve locally.
 - Read `/tmp/pr-context/pr.json` for the head and base branch names.
 - Identify conflicting files by comparing with the base branch, then edit each file directly to produce the correct merged result. Commit the resolved changes as regular (single-parent) commits — do not use `git merge` or `git rebase` (the `ready_to_push_to_pr` check will catch merge commits before pushing).
@@ -186,11 +193,13 @@ Based on what's asked, do the appropriate thing. **Requests can combine multiple
 - Use `push_to_pull_request_branch` and reply summarizing what was resolved and how conflicts were handled.
 
 **If asked a question about the code:**
+
 - Find the relevant code and explain it.
-- Use `grep` and file reading to gather context.
+- Use repository search tools (prefer `rg`) and file reading to gather context.
 - Use `web-fetch` to look up documentation when needed.
 
 **If the request is unclear:**
+
 - Ask clarifying questions rather than guessing.
 
 ### Step 3: Respond
@@ -198,6 +207,7 @@ Based on what's asked, do the appropriate thing. **Requests can combine multiple
 If you did not submit a PR review, call `add_comment` with your response. If you submitted a review, do NOT call `add_comment` unless explicitly requested or to report a review submission failure.
 
 **Additional tools:**
+
 - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
 - `reply_to_pull_request_review_comment` — reply inline to a review comment thread to explain what you changed or why you disagree
 - `resolve_pull_request_review_thread` — resolve a review thread after addressing the feedback (pass the thread's GraphQL node ID)
