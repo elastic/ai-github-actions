@@ -93,7 +93,7 @@ Find a small, clearly-scoped issue (or a very small set of related issues) and o
 ## Constraints
 
 - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request, add issue comments.
-- **CANNOT**: Push directly to the repository — use `create_pull_request`.
+- **CANNOT**: Push directly to the repository — use `ready_to_make_pr` then `create_pull_request`.
 - **Only one PR per run.**
 - Only combine issues if they share the same root cause and the fix is a single small change (no broad refactors).
 - Skip issues that need design decisions, large refactors, or ambiguous reproduction steps.
@@ -150,7 +150,7 @@ If the fix feels uncertain, incomplete, or risky, call `noop` with a reason. A s
 
 ## Step 5: Create the PR
 
-Call `create_pull_request` with:
+Call `ready_to_make_pr`, then `create_pull_request` with:
 - **Title**: concise fix summary
 - **Body**: summary, linked issue(s), required commands/tests run and their results, and any follow-ups
 - **Labels**: include `small-problem-fixer` if the label exists (check with `github-get_label`); otherwise omit labels

@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"29d75dc40a8462cc5c30daba01b2dba8d71dee4d78a807d0ea65594bd671e9bf"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6e7d3cc70dcd4b3da950942a938dee92f0b80ceca361c6574996dbaae507fba7"}
 
 name: "Small Problem Fixer"
 "on":
@@ -337,7 +337,7 @@ jobs:
           ## Constraints
           
           - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request, add issue comments.
-          - **CANNOT**: Push directly to the repository — use `create_pull_request`.
+          - **CANNOT**: Push directly to the repository — use `ready_to_make_pr` then `create_pull_request`.
           - **Only one PR per run.**
           - Only combine issues if they share the same root cause and the fix is a single small change (no broad refactors).
           - Skip issues that need design decisions, large refactors, or ambiguous reproduction steps.
@@ -394,7 +394,7 @@ jobs:
           
           ## Step 5: Create the PR
           
-          Call `create_pull_request` with:
+          Call `ready_to_make_pr`, then `create_pull_request` with:
           - **Title**: concise fix summary
           - **Body**: summary, linked issue(s), required commands/tests run and their results, and any follow-ups
           - **Labels**: include `small-problem-fixer` if the label exists (check with `github-get_label`); otherwise omit labels

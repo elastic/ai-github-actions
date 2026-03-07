@@ -93,7 +93,7 @@ Identify under-tested code paths, add focused tests, and remove or consolidate d
 ## Constraints
 
 - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request.
-- **CANNOT**: Push directly to the repository — use `create_pull_request`.
+- **CANNOT**: Push directly to the repository — use `ready_to_make_pr` then `create_pull_request`.
 - **Only one PR per run.**
 - No large refactors; prioritize targeted test additions or small cleanup of redundant tests.
 - If the change set is large or unsafe, call `noop` with a brief reason.
@@ -157,7 +157,7 @@ If the tests don't pass this bar, call `noop`. Low-value tests are worse than no
 ## Step 7: Create the PR
 
 1. Commit the changes locally.
-2. Call `create_pull_request` with:
+2. Call `ready_to_make_pr`, then call `create_pull_request` with:
    - **Title**: concise summary of the test improvements
    - **Body** must include:
      - Summary of what changed

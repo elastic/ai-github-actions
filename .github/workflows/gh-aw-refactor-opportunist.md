@@ -110,6 +110,12 @@ You are a senior software architect reviewing this codebase with fresh eyes. You
 4. **Select one refactor target**
    - Choose the single highest-impact structural improvement you found.
    - The refactor must be decomposable — it should be possible to implement incrementally, not as one massive change.
+   - Use a simple prioritization score when comparing candidates:
+     - Impact on maintainability/changeability (0-3)
+     - Incremental viability and low migration risk (0-3)
+     - Evidence strength from code/churn/issues (0-2)
+     - **Extra reuse bonus (0-2):** award extra points when an existing helper or central implementation already exists and the candidate primarily consolidates usage onto it.
+   - Prefer the highest-scoring candidate; if scores are close, prefer the one with the stronger reuse bonus.
 
 5. **Partially implement to prove viability**
    - Implement the refactor for **one representative slice** of the codebase (e.g., one module, one file pair, one abstraction boundary).

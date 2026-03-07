@@ -14,6 +14,7 @@ imports:
   - gh-aw-fragments/pick-three-keep-one.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
+  - gh-aw-fragments/code-quality-audit.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -45,6 +46,11 @@ on:
         type: string
         required: false
         default: ""
+      severity-threshold:
+        description: "Minimum severity to include in the report. 'high' = only untested critical paths (error handling, auth, data mutations). 'medium' (default) = also include untested public APIs and recent changes. 'low' = also include minor coverage gaps."
+        type: string
+        required: false
+        default: "medium"
       title-prefix:
         description: "Title prefix for created issues (e.g. '[test-coverage]')"
         type: string
@@ -80,6 +86,17 @@ safe-outputs:
     expires: 7d
 timeout-minutes: 90
 steps:
+  - name: Validate severity threshold
+    env:
+      SEVERITY_THRESHOLD: ${{ inputs.severity-threshold }}
+    run: |
+      case "$SEVERITY_THRESHOLD" in
+        high|medium|low) ;;
+        *)
+          echo "Invalid severity-threshold: '$SEVERITY_THRESHOLD'. Expected one of: high, medium, low."
+          exit 1
+          ;;
+      esac
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
@@ -90,6 +107,13 @@ steps:
 Identify under-tested code paths that would benefit from focused tests and file a report issue with specific, actionable recommendations.
 
 **The bar is high: you must identify concrete, high-value test gaps before filing.** Most runs should end with `noop` — that means test coverage is adequate.
+
+### Severity Policy
+
+Apply `${{ inputs.severity-threshold }}` using this explicit policy:
+- `high` — include only untested critical paths (error handling, authentication/authorization, data mutations, and correctness-critical business logic).
+- `medium` — include everything in `high`, plus untested public APIs and recent changes that lack tests.
+- `low` — include everything in `medium`, plus minor but concrete coverage gaps that still map to a real user scenario.
 
 ### Data Gathering
 
