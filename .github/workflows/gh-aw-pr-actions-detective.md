@@ -113,13 +113,48 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 - Identify the failing job/step and summarize the root cause.
 - Propose a concrete, minimal fix or remediation plan.
 - If the logs are inconclusive, state what additional data is needed.
+- Before posting, check the most recent prior `PR Actions Detective` comment on the same PR (if any) and compare:
+  - failing workflow/job/step,
+  - root cause summary, and
+  - recommended remediation.
+- If both the diagnosed issue and remediation are materially the same as the last detective report, call `noop` with a short "no meaningful change since last report" reason instead of posting another comment.
 
 ### Step 3: Respond
 
-Call `add_comment` on the PR with:
-- A concise summary of the failure and root cause
-- The recommended fix or remediation plan
-- Tests run and their results (if any)
-- Any follow-up steps required
+If you are posting a comment, call `add_comment` on the PR using this structure:
+
+1. **TL;DR (required, first line)** — 1-2 sentences stating what failed and the immediate action.
+2. **Remediation (expanded, not collapsed)** — concrete fix steps and immediate next action.
+3. **All other sections inside a collapsed details block** using `<details><summary>...</summary> ... </details>`. Put root cause evidence, failing logs context, tests run, and follow-up details inside this block.
+
+Use this exact shape:
+
+```markdown
+### TL;DR
+[short actionable summary]
+
+## Remediation
+- [specific fix step]
+- [specific validation step]
+
+<details>
+<summary>Investigation details</summary>
+
+## Root Cause
+[concise explanation]
+
+## Evidence
+- Workflow: [name]
+- Job/step: [name]
+- Key log excerpt: [snippet]
+
+## Validation
+- [tests/commands run or "not run" with reason]
+
+## Follow-up
+- [optional next steps]
+
+</details>
+```
 
 ${{ inputs.additional-instructions }}

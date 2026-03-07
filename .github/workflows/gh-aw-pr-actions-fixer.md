@@ -122,7 +122,7 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 ### Step 2: Analyze and Fix
 
 - Identify the failing job/step and summarize the root cause.
-- If the fix is straightforward and safe, implement it locally, run tests, and push to the PR branch.
+- If the fix is straightforward and safe, implement it locally, run tests, call `ready_to_push_to_pr`, then use `push_to_pull_request_branch` to push to the PR branch.
 - If the fix is risky or requires broader refactoring, propose a concrete remediation plan instead of pushing.
 - If the PR is from a fork, do not push; provide patch guidance in the comment.
 
@@ -135,6 +135,7 @@ Call `add_comment` on the PR with:
 - Any follow-up steps required
 
 **Additional tools:**
+- `ready_to_push_to_pr` — run pre-push safety checks before pushing PR changes
 - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
 
 ${{ inputs.additional-instructions }}

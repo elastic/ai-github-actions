@@ -46,7 +46,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5a85593d0161971502423e037fc9d20fe5693c8c4ef8b74ca3ba13d6a29de899"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6a034e6e5b30edab1c44dbbf888b4e770e9a0099c3a8afd410f176deeee35193"}
 
 name: "Mention in PR by ID"
 "on":
@@ -469,6 +469,16 @@ jobs:
             4. **Check existing threads** — if this issue was already flagged (resolved or unresolved), do not duplicate.
           - Leave inline comments per the **Code Review Reference** for each finding that survives verification. Then call `submit_pull_request_review`.
           - **Bot-authored PRs**: If the PR author is `github-actions[bot]`, submit a `COMMENT` review only — `APPROVE` and `REQUEST_CHANGES` will fail.
+          
+          **If asked to fix code or address review feedback:**
+          - Read `/tmp/pr-context/unresolved_threads.json` to identify open review feedback.
+          - Implement the requested code changes and run relevant lint/build/test commands for the modified area.
+          - Call `ready_to_push_to_pr` to confirm the branch is safe to push.
+          - Use `push_to_pull_request_branch` to push your changes once.
+          - Resolve every thread that is fully addressed by your changes using `resolve_pull_request_review_thread` and the thread GraphQL node ID (`id`, e.g., `PRRT_kwDO...`).
+          - Do **not** resolve threads you disagreed with, skipped, or only partially addressed; instead, leave a `reply_to_pull_request_review_comment` explaining status when needed.
+          - **Important completion step**: feedback is not fully complete until fully addressed threads are marked resolved via safe output.
+          - If `resolve_pull_request_review_thread` fails for fully addressed threads, call `add_comment` listing the thread IDs and failure reason.
           
           __GH_AW_EXPR_49B959F1__
           

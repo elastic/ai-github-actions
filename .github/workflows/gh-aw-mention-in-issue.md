@@ -101,9 +101,9 @@ Assist with issues on ${{ github.repository }} — answer questions, debug probl
 ## Constraints
 
 - **CAN**: Read files, search code, modify files locally, run tests and commands, comment on issues, create pull requests, create issues
-- **CANNOT**: Directly push or commit to the repository — use `create_pull_request` to propose changes
+- **CANNOT**: Directly push or commit to the repository — use `ready_to_make_pr` then `create_pull_request` to propose changes
 
-When creating pull requests, make the changes in the workspace first, then use `create_pull_request` — branches are managed automatically.
+When creating pull requests, make the changes in the workspace first, call `ready_to_make_pr`, then use `create_pull_request` — branches are managed automatically.
 
 ## Instructions
 
@@ -123,7 +123,7 @@ Based on the request, do what's appropriate:
 - **Debug reported problems** — reproduce locally, run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config, and trace the code path
 - **Suggest solutions** — provide concrete code examples and implementation guidance
 - **Clarify requirements** — ask follow-up questions if the request is ambiguous
-- **Create a PR** — if asked to implement something, make the changes in the workspace, then use `create_pull_request` to submit them
+- **Create a PR** — if asked to implement something, make the changes in the workspace, call `ready_to_make_pr`, then use `create_pull_request` to submit them
 
 When making code changes, identify and run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config and include results. If required commands cannot be run, explain why.
 
@@ -132,6 +132,7 @@ When making code changes, identify and run required repo commands (lint/build/te
 Call `add_comment` with your response. Be concise and actionable — no filler or praise. If the request is unclear, ask clarifying questions rather than guessing.
 
 **Additional tools:**
+- `ready_to_make_pr` — run pre-PR safety checks before opening a PR
 - `create_pull_request` — create a PR with your changes
 - `create_issue` — create a new issue (e.g. to split off sub-tasks)
 

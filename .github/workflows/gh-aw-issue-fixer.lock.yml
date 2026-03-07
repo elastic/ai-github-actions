@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3f8604d2661901ac3e0c22ef174672b3855e8fb1e0e9a6be6e20a7d020005166"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4c61ea6aae5e219787a291bb56ca9b04d74e76b426e2aed6b55134aa8b57100e"}
 
 name: "Issue Fixer"
 "on":
@@ -409,7 +409,7 @@ jobs:
           ### Step 4: Post Response
           
           1. Call `add_comment` with your triage response.
-          2. If you implemented a valid fix with verification, call `create_pull_request` to open a draft PR.
+          2. If you implemented a valid fix with verification, call `ready_to_make_pr` and then `create_pull_request` to open a draft PR.
           
           __GH_AW_EXPR_49B959F1__
           
