@@ -63,6 +63,8 @@ tools:
 safe-outputs:
   activation-comments: false
   noop:
+  add-comment:
+    hide-older-comments: true
 strict: false
 timeout-minutes: 60
 steps:

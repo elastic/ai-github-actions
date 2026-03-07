@@ -83,6 +83,8 @@ network:
     - "buildkite.com"
 safe-outputs:
   activation-comments: false
+  add-comment:
+    hide-older-comments: true
 strict: false
 timeout-minutes: 30
 steps:
