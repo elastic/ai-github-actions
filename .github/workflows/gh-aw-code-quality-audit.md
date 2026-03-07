@@ -85,6 +85,17 @@ safe-outputs:
     expires: 7d
 timeout-minutes: 90
 steps:
+  - name: Validate severity threshold
+    env:
+      SEVERITY_THRESHOLD: ${{ inputs.severity-threshold }}
+    run: |
+      case "$SEVERITY_THRESHOLD" in
+        high|medium|low) ;;
+        *)
+          echo "Invalid severity-threshold: '$SEVERITY_THRESHOLD'. Expected one of: high, medium, low."
+          exit 1
+          ;;
+      esac
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:

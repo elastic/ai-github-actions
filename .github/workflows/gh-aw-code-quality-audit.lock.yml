@@ -41,7 +41,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"c9c3f1e1b3a38d8170dae8011245f442689c44782478f3f49780f1cbb6f2b5f3"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"aa075d90c9f7cdafcb0419d391208d8d1f88de8d54136c0f0fab418e32489506"}
 
 name: "Code Quality Audit"
 "on":
@@ -663,6 +663,10 @@ jobs:
           TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
         run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
+      - env:
+          SEVERITY_THRESHOLD: ${{ inputs.severity-threshold }}
+        name: Validate severity threshold
+        run: "case \"$SEVERITY_THRESHOLD\" in\n  high|medium|low) ;;\n  *)\n    echo \"Invalid severity-threshold: '$SEVERITY_THRESHOLD'. Expected one of: high, medium, low.\"\n    exit 1\n    ;;\nesac\n"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}

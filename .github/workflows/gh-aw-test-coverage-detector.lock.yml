@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e908ad671ba140020648bf359cd214c0c399b85280fc6801d98798899a01f3b0"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"48735a22cd66d6b86333c8237876ac47fe4796f3a0fde1beae5cbe33762812f1"}
 
 name: "Test Coverage Detector"
 "on":
@@ -458,6 +458,13 @@ jobs:
           
           **The bar is high: you must identify concrete, high-value test gaps before filing.** Most runs should end with `noop` — that means test coverage is adequate.
           
+          ### Severity Policy
+          
+          Apply `__GH_AW_EXPR_08E89BCD__` using this explicit policy:
+          - `high` — include only untested critical paths (error handling, authentication/authorization, data mutations, and correctness-critical business logic).
+          - `medium` — include everything in `high`, plus untested public APIs and recent changes that lack tests.
+          - `low` — include everything in `medium`, plus minor but concrete coverage gaps that still map to a real user scenario.
+          
           ### Data Gathering
           
           1. Determine required repo commands (lint/build/test) and how to run tests:
@@ -696,6 +703,10 @@ jobs:
           TITLE_PREFIX: ${{ inputs.title-prefix }}
         name: List previous findings
         run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
+      - env:
+          SEVERITY_THRESHOLD: ${{ inputs.severity-threshold }}
+        name: Validate severity threshold
+        run: "case \"$SEVERITY_THRESHOLD\" in\n  high|medium|low) ;;\n  *)\n    echo \"Invalid severity-threshold: '$SEVERITY_THRESHOLD'. Expected one of: high, medium, low.\"\n    exit 1\n    ;;\nesac\n"
       - env:
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
