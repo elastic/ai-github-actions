@@ -96,17 +96,17 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 2. For each PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status.
 3. Fetch workflow run details and logs with `bash` + `gh api`:
    - List jobs and their conclusions:
-     ````bash
+   ```bash
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/jobs \
        --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
-     ````
+    ```
    - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
-     ````bash
+    ```bash
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/logs \
        -H "Accept: application/vnd.github+json" \
        > /tmp/gh-aw/agent/workflow-logs-{run_id}.zip
      unzip -o /tmp/gh-aw/agent/workflow-logs-{run_id}.zip -d /tmp/gh-aw/agent/workflow-logs-{run_id}/
-     ````
+    ```
 
 ### Step 2: Analyze
 

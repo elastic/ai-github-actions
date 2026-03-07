@@ -140,6 +140,8 @@ Classify each promising candidate into one of the categories below. If related i
 - Reports the same bug with the same root cause, or requests the exact same feature
 - The affected component, behavior, and scope match
 - One being closed as "done" means the other is also done
+- Closed historical issues can still be useful context, but if this report has credible evidence of recurrence/regression after closure (for example newer branch/version, fresh failing runs, or changed failure characteristics), prefer **Related** unless sameness is clear
+- Be especially cautious when issue comments/timeline indicate the earlier issue was actually resolved; treat that as a signal to prefer **Related** unless there is strong evidence this is still the same unresolved problem
 
 **Related** *(only when detection is enabled)* — **not** the same issue, but may provide useful context or a partial answer:
 - Covers a similar area, component, or failure mode but has distinct scope
@@ -151,6 +153,19 @@ Classify each promising candidate into one of the categories below. If related i
 - It is closed as "won't fix" or "invalid" with no useful discussion
 - You are uncertain — when in doubt, skip it; prefer **Related** over **Duplicate** for borderline cases
 
+### Evaluation Rubric (Required)
+
+Before posting your result, evaluate your best candidate(s) against this rubric:
+
+1. **Similarity evidence** — component/failure signature/scope clearly match this issue
+2. **Recurrence handling** — recurrence/regression signals are handled conservatively (prefer **Related** when uncertain)
+3. **Closure safety** — "safe to close" is used only with high confidence
+4. **Maintainer utility** — explanation helps a maintainer act quickly without re-investigating from scratch
+
+Use this rubric as a hard gate:
+- If fewer than **3/4** criteria are satisfied, do not classify as **Duplicate**.
+- If confidence is mixed, prefer **Related** (or skip/noop if nothing useful remains).
+
 ### Step 5: Post Result
 
 Post **exactly one** `add_comment` call (or `noop` if nothing is found). Do not call `add_comment` more than once.
@@ -160,6 +175,7 @@ Post **exactly one** `add_comment` call (or `noop` if nothing is found). Do not 
 Call `add_comment` with a single comment. Include up to **3 duplicates** and up to **3 related issues**, ranked most-to-least relevant.
 
 When there are duplicates, start with a recommendation line telling the maintainer whether this issue looks safe to close — for example: *"This issue looks like a duplicate of #123 and may be safe to close."* If there are multiple duplicate candidates, recommend the single best one.
+Use this "safe to close" recommendation only when confidence is high that the candidate fully covers this issue now; if there are plausible recurrence/regression signals, skip the closure recommendation and present the candidate(s) as context.
 
 Example with both duplicates and related issues:
 

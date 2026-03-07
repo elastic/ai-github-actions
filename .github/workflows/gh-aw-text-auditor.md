@@ -113,7 +113,7 @@ steps:
 
 Find typos, unclear error messages, and awkward user-facing text that are low-effort to fix, and file a single improvement issue.
 
-**The bar is high: only report concrete, unambiguous text problems.** Most runs should end with `noop` — that means user-facing text is clean.
+**The bar is high: only report concrete, unambiguous text problems.** `noop` is the default when findings are uncertain or low-value.
 
 ## Edit Level Configuration
 
@@ -140,8 +140,12 @@ Level semantics:
    - README, CONTRIBUTING, DEVELOPING, and other markdown documentation
    - UI strings, notification templates, and user-visible configuration descriptions
    - Code comments in public APIs that appear in generated documentation
-2. Use the **Pick Three, Keep Many** pattern for the audit phase: spawn 3 `general-purpose` sub-agents, each scanning for text issues from a different angle (e.g., one focusing on different text dimensions like grammar/terminology/clarity, one scanning different file types like docs vs UI strings vs config descriptions, one checking different text surfaces like error messages vs help text vs onboarding copy). Include the list of identified text sources, the edit-level configuration, and the full "What to Look For by Dimension" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
+2. Use the **Pick Three, Keep Many** pattern for the audit phase:
+   - Spawn 3 `general-purpose` sub-agents with different angles (for example: dimensions, file types, and text surfaces).
+   - In each sub-agent prompt, include identified text sources, edit-level configuration, and the full "What to Look For by Dimension" and "What to Skip" criteria.
+   - Wait for all three results, then merge and deduplicate before proceeding.
 3. Read the identified files and search for text issues.
+4. Before deciding to file, check `/tmp/previous-findings.json` and current open `${{ inputs.title-prefix }}` issues to avoid creating a new issue for already-tracked typo families.
 
 ### What to Look For by Dimension
 
@@ -183,18 +187,57 @@ Use each dimension's configured level to determine whether to report findings.
 - **Internal-only text** — debug logs, developer-only comments, test fixtures
 - **Intentional abbreviations** — short forms that are standard in the project
 - **Generated or vendored files** — do not scan auto-generated code, lock files, or third-party content
-- **Issues already tracked** — check open issues before filing
 - **Findings that require design decisions** — if fixing the text requires deciding on new terminology or restructuring content, skip it
 
-### Quality Gate — When to Noop
+### Consolidation and Anti-Churn Rules
+
+- Prefer fewer, denser issues over frequent tiny issues.
+- It is acceptable to file one issue with many similar findings (including many instances of the same typo family) when they are concrete and low-effort.
+- If a run finds only a small extension of already-tracked findings, do not file a new issue; call `noop`.
+- When possible, group similar findings in the issue body by typo/fix pattern and affected area to reduce triage overhead.
+
+### Completeness (Required)
+
+For each typo/problem pattern that survives initial filtering, do an explicit completeness pass before deciding output:
+
+1. Build one or more precise search patterns for that problem (exact phrase, typo token, or other high-signal matcher).
+2. Search the repository for all occurrences.
+3. Verify each match and keep only true positives that are user-facing and in-scope.
+4. Add all verified in-scope occurrences for that problem to the same report so maintainers can fix the whole family at once.
+
+Do not stop after the first valid example when more occurrences are likely.
+The goal is one comprehensive issue per problem family, not a stream of partial follow-up issues.
+
+### Decision Rubric (Required)
+
+This rubric operationalizes the workflow quality gate.
+Use this sequence to decide `create_issue` vs `noop`:
+
+1. Apply the **Automatic Noop Triggers** first.
+2. If none apply, score the run with the rubric below.
+3. File only if the rubric passes.
+
+Score the run on these four criteria:
+
+1. **Novelty** — findings are not already tracked in open `${{ inputs.title-prefix }}` issues or `/tmp/previous-findings.json`
+2. **Materiality** — at least one finding clearly improves user-facing runtime/help/CLI/docs text quality
+3. **Batch quality** — findings are meaningfully consolidated (not fragmented into many tiny one-off reports)
+4. **Actionability** — each finding includes exact file path, concrete current text, and a defensible suggested fix
+
+Use this rubric as a hard gate:
+- If fewer than **3/4** criteria are satisfied, call `noop`.
+- If **Materiality** is not satisfied, call `noop` even if total score is 3/4.
+
+### Automatic Noop Triggers
 
 Call `noop` if any of these are true:
 - All edit dimensions are set to `none`
 - No concrete text problems were found
-- All findings are style preferences rather than clear errors
 - The problems found are in generated or vendored files
-- A similar issue is already open
-- The fixes would require design decisions or significant rewording beyond simple corrections
+- All findings are style preferences rather than clear errors
+- Findings require design decisions or significant rewording beyond simple corrections
+
+Note: overlap/duplication with existing open `${{ inputs.title-prefix }}` issues and low-value micro-edits are evaluated via the rubric above.
 
 ### Issue Format
 
@@ -218,6 +261,9 @@ Call `noop` if any of these are true:
 > ## Suggested Actions
 >
 > - [ ] [Specific, actionable checkbox for each fix]
+
+Include as many concrete findings as needed for a useful batched report; do not artificially cap the count.
+Be exhaustive for each accepted problem family, then stop after the completeness pass and rubric decision.
 
 ### Labeling
 
