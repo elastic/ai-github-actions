@@ -1,7 +1,7 @@
 name: PR Actions Detective
 on:
   workflow_run:
-    workflows: ["CI", "Build", "Test"]
+    workflows: ["Internal: CI", "Internal: Tests", "CI", "Build", "Test"]
     types: [completed]
 
 permissions:
