@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"d589e9e92dd79580cfa87ca119b5a0069b7f150690deb67875ebc174d1f63400"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"8ca49070112f3c71d739dd15e34cdf1512eec4e0634ac25101ca170a10e428f5"}
 
 name: "PR Actions Detective"
 "on":
@@ -325,6 +325,7 @@ jobs:
                gh api repos/__GH_AW_GITHUB_REPOSITORY__/actions/runs/{run_id}/jobs \
                  --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
               ```
+             - If none of the jobs have a `failure` conclusion, call `noop` with message "No failed jobs in workflow run; nothing to report" and stop.
              - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
               ```bash
                gh api repos/__GH_AW_GITHUB_REPOSITORY__/actions/runs/{run_id}/logs \

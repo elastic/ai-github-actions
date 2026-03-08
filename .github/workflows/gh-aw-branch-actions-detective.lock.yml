@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"4698c5df5e82f9afbef0009e358219a46b66356bd178b5a7b4a8f16ba27467ba"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"c39066096793c814006c0318fb064abf1e9b5f36c344d2d0264f8b1b06880ac6"}
 
 name: "Branch Actions Detective"
 "on":
@@ -339,6 +339,7 @@ jobs:
                gh api repos/__GH_AW_GITHUB_REPOSITORY__/actions/runs/{run_id}/jobs \
                  --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
                ````
+             - If none of the jobs have a `failure` conclusion, call `noop` with message "No failed jobs in workflow run; nothing to report" and stop.
              - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
                ````bash
                gh api repos/__GH_AW_GITHUB_REPOSITORY__/actions/runs/{run_id}/logs \
