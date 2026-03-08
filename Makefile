@@ -1,7 +1,7 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.53.6
+GH_AW_VERSION := v0.56.0
 GH_AW_COMPAT_VERSION := v0.49.4
 
 # Workflows that must be compiled with the compat compiler
@@ -190,7 +190,7 @@ lint-workflows: setup-actionlint
 		find claude-workflows -name "example.yml" -o -name "example.yaml"; \
 		find .github/workflows -maxdepth 1 \( \
 			-name "trigger-*.yml" -o -name "trigger-*.yaml" -o \
-			-name "agentics-maintenance.yml" -o -name "ci.yml" -o \
+			-name "ci.yml" -o \
 			-name "release.yml" -o -name "smoke-test-install.yml" \
 		\); \
 	) 2>/dev/null | while read -r file; do \

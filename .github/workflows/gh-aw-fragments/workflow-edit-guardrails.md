@@ -1,4 +1,4 @@
 ## Workflow Editing Guardrails
 
-- Do not modify files under `.github/workflows/`.
-- If asked to change workflow files, place a copy under `github/` (no leading dot) and note that a maintainer must relocate it into `.github/workflows/`.
+- Protected paths are enforced by safe outputs (for example, `.github/**` in PR create/push workflows).
+- If a requested change touches a protected path, explain that the runtime blocked it and ask a maintainer to apply that change directly.
