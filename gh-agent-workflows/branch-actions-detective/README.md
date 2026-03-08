@@ -33,3 +33,4 @@ See [example.yml](example.yml) for the full workflow file.
 ## Safe Outputs
 
 - `create-issue` — file a tracking issue for the CI failure (max 1, auto-closes older issues)
+- `noop` — emitted when no failed jobs are found or failure already tracked by an open issue

@@ -33,3 +33,4 @@ See [example.yml](example.yml) for the full workflow file.
 ## Safe Outputs
 
 - `add-comment` — post a comment explaining the failure (max 3)
+- `noop` — emitted when no failed jobs are found or diagnosis unchanged since last report
