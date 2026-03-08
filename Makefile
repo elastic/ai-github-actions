@@ -190,7 +190,7 @@ lint-workflows: setup-actionlint
 		find claude-workflows -name "example.yml" -o -name "example.yaml"; \
 		find .github/workflows -maxdepth 1 \( \
 			-name "trigger-*.yml" -o -name "trigger-*.yaml" -o \
-			-name "agentics-maintenance.yml" -o -name "ci.yml" -o \
+			-name "ci.yml" -o \
 			-name "release.yml" -o -name "smoke-test-install.yml" \
 		\); \
 	) 2>/dev/null | while read -r file; do \

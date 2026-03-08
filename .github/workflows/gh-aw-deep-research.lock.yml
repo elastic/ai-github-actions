@@ -41,7 +41,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"bd5f2cd1c3762952d58fc61b20cf3e4657ce9f0147fe10ad7b5cf85b538535cc"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"bd5f2cd1c3762952d58fc61b20cf3e4657ce9f0147fe10ad7b5cf85b538535cc"}
 
 name: "Internal Gemini CLI Web Search"
 "on":
@@ -122,7 +122,7 @@ jobs:
       title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@956f874e40e831c08a8b01ec76f5d49ae3fe8387 # v0.53.6
+        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
         with:
           destination: /opt/gh-aw/actions
       - name: Generate agentic run info
@@ -142,6 +142,7 @@ jobs:
           GH_AW_INFO_AWF_VERSION: ""
           GH_AW_INFO_AWMG_VERSION: ""
           GH_AW_INFO_FIREWALL_TYPE: "squid"
+          GH_AW_COMPILED_STRICT: "false"
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
@@ -512,7 +513,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@956f874e40e831c08a8b01ec76f5d49ae3fe8387 # v0.53.6
+        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -544,7 +545,7 @@ jobs:
           node-version-file: .nvmrc
       - if: hashFiles('.ruby-version') != ''
         name: Setup Ruby
-        uses: ruby/setup-ruby@19a43a6a2428d455dbd1b85344698725179c9d8c # v1
+        uses: ruby/setup-ruby@6ca151fd1bfcfd6fe0c4eb6837eb0584d0134a0c # v1
         with:
           bundler-cache: true
           ruby-version: .ruby-version
@@ -613,7 +614,7 @@ jobs:
       - name: Install awf binary
         run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.23.0
       - name: Install Gemini CLI
-        run: npm install -g --silent @google/gemini-cli@0.31.0
+        run: npm install -g @google/gemini-cli@latest
       - name: Determine automatic lockdown mode for GitHub MCP Server
         id: determine-automatic-lockdown
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -1316,7 +1317,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@956f874e40e831c08a8b01ec76f5d49ae3fe8387 # v0.53.6
+        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1405,7 +1406,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@956f874e40e831c08a8b01ec76f5d49ae3fe8387 # v0.53.6
+        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1450,7 +1451,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@956f874e40e831c08a8b01ec76f5d49ae3fe8387 # v0.53.6
+        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
