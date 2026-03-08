@@ -556,6 +556,51 @@ class TestCreateGuards:
         assert output["status"] == "error"
         assert "Merge commit" in output["error"]
 
+    def test_origin_master_fallback(self, py_code, tmp_path):
+        """origin/master should be used when upstream and origin/HEAD are unavailable."""
+        repo = tmp_path / "repo"
+        repo.mkdir()
+
+        def git(*args):
+            subprocess.run(
+                ["git"] + list(args),
+                cwd=str(repo),
+                capture_output=True,
+                check=True,
+            )
+
+        # Create a repo with 'master' as default branch
+        git("init", "-b", "master")
+        git("config", "user.email", "test@test.com")
+        git("config", "user.name", "Test")
+        (repo / "file.txt").write_text("hello\n")
+        git("add", "file.txt")
+        git("commit", "-m", "init")
+
+        # Set up a bare remote and push
+        remote = tmp_path / "remote.git"
+        subprocess.run(
+            ["git", "clone", "--bare", str(repo), str(remote)],
+            capture_output=True,
+            check=True,
+        )
+        git("remote", "add", "origin", str(remote))
+        git("fetch", "origin")
+
+        # Do NOT set upstream tracking and remove origin/HEAD
+        subprocess.run(
+            ["git", "-C", str(repo), "remote", "set-head", "origin", "--delete"],
+            capture_output=True,
+        )
+
+        # Make a new commit so there's a diff
+        (repo / "new.txt").write_text("new\n")
+        git("add", "new.txt")
+        git("commit", "-m", "add new")
+
+        output = run_py_in_repo(py_code, str(repo))
+        assert output["status"] == "ok"
+
     def test_no_upstream_fails_closed(self, py_code, tmp_path):
         """Without an upstream ref, the create guard should fail closed."""
         repo = make_git_repo(tmp_path, with_upstream=False)
