@@ -4,10 +4,69 @@
 
 *40+ AI agents. Zero new tabs to monitor. Your repo (almost) runs itself.*
 
-We built a fleet of specialized AI agents that review PRs, hunt bugs, triage issues, investigate CI failures, generate feature ideas, and audit your docs — all running as GitHub Actions. This is the Elastic AI Software Factory.
+---
 
-[Welcome to the Agent Factory](blog/posts/welcome-to-the-factory.md){ .md-button .md-button--primary }
-[Quick Start](workflows/gh-agent-workflows.md){ .md-button }
+## Get Started in 60 Seconds
+
+**1. Create a Copilot PAT** (the link pre-fills name, description, and scope):
+
+[Create COPILOT_GITHUB_TOKEN →](https://github.com/settings/personal-access-tokens/new?name=COPILOT_GITHUB_TOKEN&description=GitHub+Agentic+Workflows+-+Copilot+engine+authentication&user_copilot_requests=read){ .md-button .md-button--primary }
+
+Set the expiry to longer than the 30-day default (e.g., 90 days or 1 year).
+
+**2. Store the secret and run the setup script** from the repository you want to configure (requires `gh`, `git`, and `curl`):
+
+```bash
+printf '%s' 'YOUR_PAT_HERE' | gh secret set COPILOT_GITHUB_TOKEN
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/scripts/quick-setup.sh \
+  | bash -s --
+```
+
+This installs the core workflows, sets up `agentics-maintenance.yml`, creates a branch, and opens a PR. Use `--continuous-improvement` to also install codebase maintenance workflows.
+
+Or set up manually — see the [full setup docs](workflows/gh-agent-workflows.md).
+
+---
+
+## Core Workflows
+
+These four workflows are the foundation — install them first and you'll cover most day-to-day development needs:
+
+| Workflow | Trigger | What it does |
+| --- | --- | --- |
+| **[Issue Triage](workflows/gh-agent-workflows/issue-triage.md)** | New issues | Investigate, label, and provide implementation plans |
+| **[Mention in Issue](workflows/gh-agent-workflows/mention-in-issue.md)** | `/ai` in issues | Answer questions, debug, create PRs |
+| **[Mention in PR](workflows/gh-agent-workflows/mention-in-pr.md)** | `/ai` in PRs | Review, fix code, push changes |
+| **[PR Review](workflows/gh-agent-workflows/pr-review.md)** | PR opened / updated | AI code review with severity-ranked inline comments |
+
+---
+
+## Repository Maintenance
+
+Keep your issues and PRs clean and well-organized:
+
+| Workflow | What it does |
+| --- | --- |
+| [Duplicate Issue Detector](workflows/gh-agent-workflows/duplicate-issue-detector.md) | Flag duplicate issues with links to originals |
+| [Stale Issues](workflows/gh-agent-workflows/stale-issues.md) | Find resolved issues and manage their lifecycle |
+| [Update PR Body](workflows/gh-agent-workflows/update-pr-body.md) | Auto-populate PR descriptions from diffs and linked issues |
+| [PR Actions Detective](workflows/gh-agent-workflows/pr-actions-detective.md) | Diagnose CI failures and recommend fixes |
+
+---
+
+## Codebase Maintenance
+
+Scheduled agents that continuously improve your codebase:
+
+| Workflow | What it does |
+| --- | --- |
+| [Bug Hunting](workflows/gh-agent-workflows/bugs.md) | Find and fix reproducible bugs |
+| [Code Duplication](workflows/gh-agent-workflows/code-duplication.md) | Detect and consolidate duplicate code |
+| [Test Coverage](workflows/gh-agent-workflows/test-coverage.md) | Find coverage gaps and add targeted tests |
+| [Code Simplifier](workflows/gh-agent-workflows/code-simplifier.md) | Simplify overcomplicated code with high-confidence refactors |
+| [Docs Patrol](workflows/gh-agent-workflows/docs-patrol-overview.md) | Catch stale documentation |
+
+[Browse all workflows →](workflows/gh-agent-workflows.md){ .md-button }
 
 ---
 
@@ -54,39 +113,3 @@ We built a fleet of specialized AI agents that review PRs, hunt bugs, triage iss
 </div>
 
 [Browse all blog posts](blog/index.md){ .md-button }
-
----
-
-## Quick Start
-
-Run the quick setup script from the repository you want to configure (requires `gh`, `git`, and `curl`):
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/scripts/quick-setup.sh \
-  | bash -s --
-```
-
-By default, this:
-
-- Installs the starter set of workflow triggers
-- Adds `agentics-maintenance.yml`
-- Sets `COPILOT_GITHUB_TOKEN`
-- Creates a branch, pushes it, and opens a PR
-
-Use `--continuous-improvement` to also install selected continuous improvement workflows.
-
-Or set up manually:
-
-1. **Store a Copilot PAT** as `COPILOT_GITHUB_TOKEN` in your repo secrets
-2. **Copy a workflow's `example.yml`** from [gh-agent-workflows/](https://github.com/elastic/ai-github-actions/tree/main/gh-agent-workflows)
-3. **Customize** with `additional-instructions` and `setup-commands` for your project
-
-Updates propagate automatically through the `v0` tag. See the [full setup docs](workflows/gh-agent-workflows.md) for the complete guide.
-
----
-
-## Explore the Full Catalog
-
-The complete reference for every agent — triggers, inputs, safe outputs, and installation instructions.
-
-[Workflows Reference](workflows/gh-agent-workflows.md){ .md-button }
