@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0058ecb80ba98240972d212bff017fbf0fc7c800e7015fb41b55c20f3c136b83"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"0e6f5fea2267256729eb22c7eb0edfb379223ab270f44e9820e394f6f7d4a4ef"}
 
 name: "PR Actions Fixer"
 "on":
@@ -1092,6 +1092,7 @@ jobs:
               '',
               'Look for bugs, logic errors, missed edge cases, and style issues.',
               'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+              'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
               '',
               '## What NOT to flag',
               '',

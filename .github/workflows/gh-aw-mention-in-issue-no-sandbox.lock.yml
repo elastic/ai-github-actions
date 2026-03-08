@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"5d3c3e082b16755cd90eb24df0808db7bcbe5ca30cf885c8b597ada6aec71681"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"74e01c618b3d4d6140899ebaf6134655b78e72dcaf239b1a552df57619d77023"}
 
 name: "Mention in Issue (no sandbox)"
 "on":
@@ -1247,6 +1247,7 @@ jobs:
               '',
               'Look for bugs, logic errors, missed edge cases, and style issues.',
               'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+              'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
               '',
               '## What NOT to flag',
               '',

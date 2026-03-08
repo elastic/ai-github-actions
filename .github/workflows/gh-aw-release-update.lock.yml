@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"708ce4bb3efec15a147635e7f347e6e895c8ffaa691e4c0fd7bfce041046ba81"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8fbb3aa9746b6a1354f829e9696f620937e22e954898ee3a6a090f830add0a0e"}
 
 name: "Release Update Check"
 "on":
@@ -1021,6 +1021,7 @@ jobs:
               '',
               'Look for bugs, logic errors, missed edge cases, and style issues.',
               'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+              'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
               '',
               '## What NOT to flag',
               '',

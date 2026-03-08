@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6e7d3cc70dcd4b3da950942a938dee92f0b80ceca361c6574996dbaae507fba7"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2f515a30c6775cb6137d4bcd418a0ea8b172afdfc6d7de3c51b24c55b6b20466"}
 
 name: "Small Problem Fixer"
 "on":
@@ -1126,6 +1126,7 @@ jobs:
               '',
               'Look for bugs, logic errors, missed edge cases, and style issues.',
               'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+              'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
               '',
               '## What NOT to flag',
               '',

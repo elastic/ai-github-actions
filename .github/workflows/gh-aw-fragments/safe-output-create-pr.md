@@ -113,6 +113,7 @@ safe-inputs:
           '',
           'Look for bugs, logic errors, missed edge cases, and style issues.',
           'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+          'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
           '',
           '## What NOT to flag',
           '',

@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"b7514d88df6ed4dee54183e55917743a2297fbf6db77fab52ceb4fd0b7ef005f"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"2424ffde7a5d2212ad06a1d550675a311c9a2eb55483516c69bfdeeedfd6c92f"}
 
 name: "Gh Aw Bug Exterminator"
 "on":
@@ -1051,6 +1051,7 @@ jobs:
               '',
               'Look for bugs, logic errors, missed edge cases, and style issues.',
               'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+              'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
               '',
               '## What NOT to flag',
               '',

@@ -8,7 +8,7 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-add-comment-pr.md
+  - gh-aw-fragments/safe-output-add-comment-pr-hide-older.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -83,8 +83,6 @@ network:
     - "buildkite.com"
 safe-outputs:
   activation-comments: false
-  add-comment:
-    hide-older-comments: true
 strict: false
 timeout-minutes: 30
 steps:

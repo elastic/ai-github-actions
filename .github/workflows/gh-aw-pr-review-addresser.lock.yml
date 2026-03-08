@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"47b087e1835cc62512676a12e4e670b33112ea7795f0efe87bded016d9756ba7"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"72898cc05a0a5684bd20905f21851d33ba10227a77fa4240c7e762ea7f23d967"}
 
 name: "PR Review Addresser"
 "on":
@@ -1221,6 +1221,7 @@ jobs:
               '',
               'Look for bugs, logic errors, missed edge cases, and style issues.',
               'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+              'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
               '',
               '## What NOT to flag',
               '',

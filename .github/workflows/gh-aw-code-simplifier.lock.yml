@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a1286f9c415c8620c4dcf2779d5248ea5c0faa503f68a22a57a009a3096f5e2f"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"443c779789362ff912c6564591fe0391127988d239ad3907299861dada71e1a9"}
 
 name: "Code Simplifier"
 "on":
@@ -1067,6 +1067,7 @@ jobs:
               '',
               'Look for bugs, logic errors, missed edge cases, and style issues.',
               'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+              'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
               '',
               '## What NOT to flag',
               '',

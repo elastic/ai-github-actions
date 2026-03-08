@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"94f12b25c74ecc09d4133e151f4bbc27bbd3e564f41339fdc65ad0b59f284fca"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"12e187bda825f29ef0db6a191eebb04f36b3c394acfa8c49508319a94cfe2ff5"}
 
 name: "Newbie Contributor Fixer"
 "on":
@@ -1054,6 +1054,7 @@ jobs:
               '',
               'Look for bugs, logic errors, missed edge cases, and style issues.',
               'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+              'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
               '',
               '## What NOT to flag',
               '',

@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"026c0db9ff3ff94b6bb5e7764c5a1787c4e2015ef544ae49c5676d97d9053511"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"28ac67f7289c0d0e8cec21703620c68a59902c95f6799ea33b4a030abe0fbb35"}
 
 name: "Text Beautifier"
 "on":
@@ -1062,6 +1062,7 @@ jobs:
               '',
               'Look for bugs, logic errors, missed edge cases, and style issues.',
               'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+              'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
               '',
               '## What NOT to flag',
               '',

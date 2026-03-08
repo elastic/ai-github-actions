@@ -37,11 +37,11 @@
 #     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
-#     - gh-aw-fragments/safe-output-add-comment-pr.md
+#     - gh-aw-fragments/safe-output-add-comment-pr-hide-older.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"235564b3434abf6ea9277d9715a3d2a7c3f20eaf05f98319a2b1627200a713e8"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"d589e9e92dd79580cfa87ca119b5a0069b7f150690deb67875ebc174d1f63400"}
 
 name: "PR Actions Detective"
 "on":
@@ -1230,8 +1230,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      discussions: write
-      issues: write
       pull-requests: write
     concurrency:
       group: "gh-aw-conclusion-gh-aw-pr-actions-detective"
@@ -1355,8 +1353,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      discussions: write
-      issues: write
       pull-requests: write
     timeout-minutes: 15
     env:

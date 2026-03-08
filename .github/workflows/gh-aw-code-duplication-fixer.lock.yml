@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"337fd95b8be9c4d7f54621d1106ce24edb185adad2b1ba32bdfa594d7eb969e5"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"7760256939cd7fdbe0796686809481cc105979cfb8dc39a7f9d6d69ff9855e6a"}
 
 name: "Code Duplication Fixer"
 "on":
@@ -1053,6 +1053,7 @@ jobs:
               '',
               'Look for bugs, logic errors, missed edge cases, and style issues.',
               'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+              'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
               '',
               '## What NOT to flag',
               '',

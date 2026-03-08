@@ -41,7 +41,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"055a260ce84412fca1016e88cef813f690b9512d896a7d7a0c24f8525c51ea47"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8593068da264915ce280a4d83f097b61a9596855f0e2b0e8c1c5029bc937dead"}
 
 name: "Test Improver"
 "on":
@@ -1064,6 +1064,7 @@ jobs:
               '',
               'Look for bugs, logic errors, missed edge cases, and style issues.',
               'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+              'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
               '',
               '## What NOT to flag',
               '',

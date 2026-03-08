@@ -32,11 +32,11 @@
 #     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
-#     - gh-aw-fragments/safe-output-add-comment-pr.md
+#     - gh-aw-fragments/safe-output-add-comment-pr-hide-older.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"3fe2deb1be1bac60db8c5dc04c487a54928e006a26a9251f360273e9cd92c483"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"6a344d3a87433a528004af656ccdd1939034e60e4a1d910705825ad326299989"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -1302,8 +1302,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      discussions: write
-      issues: write
       pull-requests: write
     concurrency:
       group: "gh-aw-conclusion-gh-aw-estc-pr-buildkite-detective"
@@ -1427,8 +1425,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: read
-      discussions: write
-      issues: write
       pull-requests: write
     timeout-minutes: 15
     env:
