@@ -11,6 +11,7 @@ permissions:
   issues: write
   pull-requests: write
 
+  actions: read
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-framework-best-practices.lock.yml
@@ -23,22 +24,15 @@ jobs:
     outputs:
       created_issue_number: ${{ steps.resolve.outputs.created_issue_number }}
     steps:
+      - name: Download safe output items
+        uses: actions/download-artifact@v4
+        with:
+          name: safe-output-items
+          path: /tmp/safe-output-items
       - name: Resolve created issue number
         id: resolve
-        env:
-          CREATED_ISSUE_NUMBER: ${{ needs.run.outputs.created_issue_number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
         run: |
-          number="$CREATED_ISSUE_NUMBER"
-          if [ -z "$number" ]; then
-            number="$(gh issue list \
-              --repo "$REPOSITORY" \
-              --search "in:body \"actions/runs/$RUN_ID\" author:github-actions[bot] is:issue" \
-              --json number,createdAt \
-              --jq 'sort_by(.createdAt) | reverse | .[0].number // empty')"
-          fi
+          number="$(grep -m1 -oE '"number":[[:space:]]*[0-9]+' /tmp/safe-output-items/safe-output-items.jsonl | tr -cd '0-9' || true)"
           echo "created_issue_number=$number" >> "$GITHUB_OUTPUT"
 
   create_pr_from_issue:

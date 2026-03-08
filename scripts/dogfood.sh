@@ -110,8 +110,28 @@ for f in gh-agent-workflows/*/example.yml; do
     [[ "$dir" == "$remediation" ]] && add_remediation=true && break
   done
   if [[ "$add_remediation" == "true" ]]; then
-    # Ensure permissions allow downstream PR creation job.
-    sed -E 's/^([[:space:]]*contents: )read$/\1write/; s/^([[:space:]]*pull-requests: )read$/\1write/' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
+    # Ensure permissions allow downstream PR creation job and artifact reads.
+    awk '
+      BEGIN { in_permissions=0; have_actions=0 }
+      /^permissions:/ { in_permissions=1; print; next }
+      in_permissions {
+        if (/^jobs:/) {
+          if (!have_actions) print "  actions: read"
+          in_permissions=0
+          print
+          next
+        }
+        if ($0 ~ /^  contents: /) sub(/read$/, "write")
+        if ($0 ~ /^  pull-requests: /) sub(/read$/, "write")
+        if ($0 ~ /^  actions: /) {
+          if ($0 ~ /none$/) sub(/none$/, "read")
+          have_actions=1
+        }
+        print
+        next
+      }
+      { print }
+    ' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
 
     cat >> "$target" <<'EOF'
 
@@ -121,22 +141,15 @@ for f in gh-agent-workflows/*/example.yml; do
     outputs:
       created_issue_number: ${{ steps.resolve.outputs.created_issue_number }}
     steps:
+      - name: Download safe output items
+        uses: actions/download-artifact@v4
+        with:
+          name: safe-output-items
+          path: /tmp/safe-output-items
       - name: Resolve created issue number
         id: resolve
-        env:
-          CREATED_ISSUE_NUMBER: ${{ needs.run.outputs.created_issue_number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPOSITORY: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
         run: |
-          number="$CREATED_ISSUE_NUMBER"
-          if [ -z "$number" ]; then
-            number="$(gh issue list \
-              --repo "$REPOSITORY" \
-              --search "in:body \"actions/runs/$RUN_ID\" author:github-actions[bot] is:issue" \
-              --json number,createdAt \
-              --jq 'sort_by(.createdAt) | reverse | .[0].number // empty')"
-          fi
+          number="$(grep -m1 -oE '"number":[[:space:]]*[0-9]+' /tmp/safe-output-items/safe-output-items.jsonl | tr -cd '0-9' || true)"
           echo "created_issue_number=$number" >> "$GITHUB_OUTPUT"
 
   create_pr_from_issue:
