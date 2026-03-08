@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"738d1f4cba5b443d11e2a1ddbb76a38aa624c541275832ce4583b15d793205e7"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"dba21fdbf97f4744dc0225c6502707833bed3b75e1632b720a6aba4099105ebf"}
 
 name: "Resource Not Accessible By Integration Detector"
 "on":
@@ -612,6 +612,8 @@ jobs:
         name: Prescan failed runs for target error
         run: "set -euo pipefail\nmkdir -p /tmp/gh-aw/agent\n\nsince=\"$(date -u -d \"${LOOK_BACK_DAYS} days ago\" '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -v-\"${LOOK_BACK_DAYS}\"d '+%Y-%m-%dT%H:%M:%SZ')\"\nfindings_file=\"/tmp/gh-aw/agent/resource-not-accessible-findings.tsv\"\nprintf \"workflow_path\\tbranch\\trun_id\\trun_url\\tcreated_at\\tevidence\\n\" > \"$findings_file\"\n\nbranches=()\nfor branch in \"$DEFAULT_BRANCH\" $LONG_TERM_BRANCHES; do\n  [ -n \"$branch\" ] || continue\n  skip=false\n  for existing in \"${branches[@]:-}\"; do\n    if [ \"$existing\" = \"$branch\" ]; then\n      skip=true\n      break\n    fi\n  done\n  if [ \"$skip\" = false ]; then\n    branches+=(\"$branch\")\n  fi\ndone\n\nruns_file=\"/tmp/gh-aw/agent/resource-not-accessible-runs.tsv\"\n: > \"$runs_file\"\nfor branch in \"${branches[@]}\"; do\n  gh api \"repos/$GITHUB_REPOSITORY/actions/runs\" \\\n    --method GET \\\n    -f branch=\"$branch\" \\\n    -f status=failure \\\n    -f created=\">=${since}\" \\\n    --paginate \\\n    --jq '.workflow_runs[] | [.id, .html_url, .path, .head_branch, .created_at] | @tsv' \\\n    >> \"$runs_file\" || true\ndone\n\nwhile IFS=$'\\t' read -r run_id run_url workflow_path head_branch created_at; do\n  [ -n \"${run_id:-}\" ] || continue\n  zip_file=\"/tmp/gh-aw/agent/workflow-logs-${run_id}.zip\"\n  log_dir=\"/tmp/gh-aw/agent/workflow-logs-${run_id}\"\n\n  if ! gh api \"repos/$GITHUB_REPOSITORY/actions/runs/${run_id}/logs\" -H \"Accept: application/vnd.github+json\" > \"$zip_file\" 2>/dev/null; then\n    continue\n  fi\n  rm -rf \"$log_dir\"\n  if ! unzip -o \"$zip_file\" -d \"$log_dir\" >/dev/null 2>&1; then\n    continue\n  fi\n\n  match=\"$(grep -R -n -m 3 \"Resource not accessible by integration\" \"$log_dir\" 2>/dev/null || true)\"\n  if [ -n \"$match\" ]; then\n    evidence=\"${match//$'\\t'/ }\"\n    evidence=\"${evidence//$'\\n'/ | }\"\n    printf \"%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n\" \"$workflow_path\" \"$head_branch\" \"$run_id\" \"$run_url\" \"$created_at\" \"$evidence\" >> \"$findings_file\"\n  fi\n  rm -rf \"$log_dir\" \"$zip_file\"\ndone < \"$runs_file\"\n\nmatches=\"$(tail -n +2 \"$findings_file\" | wc -l | tr -d ' ')\"\nworkflows=\"$(tail -n +2 \"$findings_file\" | cut -f1 | sort -u | wc -l | tr -d ' ')\"\n{\n  echo \"since=${since}\"\n  echo \"look_back_days=${LOOK_BACK_DAYS}\"\n  echo \"matched_runs=${matches}\"\n  echo \"matched_workflows=${workflows}\"\n  echo \"findings_file=${findings_file}\"\n} > /tmp/gh-aw/agent/resource-not-accessible-summary.txt\n"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

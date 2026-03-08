@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"0f879110a1b05683f2b046704bb7f2bda25cd81c254e1d7e2820a09f4ed9290e"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"fd9cea41a8019f2623a696c8d4fd2f1f017e7c1afe2a891ad9866f18919c5426"}
 
 name: "Stale Issues Investigator"
 "on":
@@ -665,6 +665,8 @@ jobs:
         name: Prescan open issues
         run: "set -euo pipefail\nmkdir -p /tmp/gh-aw/agent\n\nissues_file=\"/tmp/gh-aw/agent/open-issues.tsv\"\nprintf \"number\\ttitle\\tupdated_at\\tcreated_at\\tlabel_names\\n\" > \"$issues_file\"\n\n# Fetch open issues sorted by least recently updated (server-side sort)\ngh issue list --repo \"$GITHUB_REPOSITORY\" --state open --limit 500 \\\n  --search \"sort:updated-asc\" \\\n  --json number,title,updatedAt,createdAt,labels \\\n  --jq '.[] | [.number, .title, .updatedAt, .createdAt, ([.labels[].name] | join(\",\"))] | @tsv' \\\n  >> \"$issues_file\" || { echo \"::warning::Failed to fetch open issues\"; }\n\ncount=\"$(tail -n +2 \"$issues_file\" | wc -l | tr -d ' ')\"\necho \"Prescanned ${count} open issues into ${issues_file}\"\n"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

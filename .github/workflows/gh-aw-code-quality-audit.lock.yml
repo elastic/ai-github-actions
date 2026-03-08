@@ -41,7 +41,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"aa075d90c9f7cdafcb0419d391208d8d1f88de8d54136c0f0fab418e32489506"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"ab78b7af0ebf1f0bea5c8d3641d971fb09faa6e03c627981f09ca28786093a91"}
 
 name: "Code Quality Audit"
 "on":
@@ -669,6 +669,8 @@ jobs:
         name: Validate severity threshold
         run: "case \"$SEVERITY_THRESHOLD\" in\n  high|medium|low) ;;\n  *)\n    echo \"Invalid severity-threshold: '$SEVERITY_THRESHOLD'. Expected one of: high, medium, low.\"\n    exit 1\n    ;;\nesac\n"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup
