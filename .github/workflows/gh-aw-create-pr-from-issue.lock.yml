@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"e18e4136ec2c2555f2949ff3d20a46828f6ff0aea05e719cec9de72a66e9e3f3"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"612ea26f3ac3cb54a9fb9279b2a60a10eec6cfcdd9201440a3ac36cec4cb1e1e"}
 
 name: "Create PR From Issue"
 "on":
@@ -1552,7 +1552,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: write
-      discussions: write
       issues: write
       pull-requests: write
     concurrency:
@@ -1694,7 +1693,6 @@ jobs:
     runs-on: ubuntu-slim
     permissions:
       contents: write
-      discussions: write
       issues: write
       pull-requests: write
     timeout-minutes: 15
