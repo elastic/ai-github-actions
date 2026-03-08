@@ -78,6 +78,9 @@ safe-outputs:
   activation-comments: false
   max-patch-size: 10240
   add-comment:
+    pull-requests: false
+    issues: true
+    discussions: false
     target: "${{ inputs.target-issue-number }}"
 strict: false
 timeout-minutes: 60
