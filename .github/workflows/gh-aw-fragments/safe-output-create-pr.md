@@ -131,6 +131,8 @@ safe-inputs:
           checklist.append(f'A diff of your unpushed changes ({diff_line_count} lines) and supporting context have been saved to `/tmp/self-review/`. Before spawning the sub-agent, write `/tmp/self-review/notes.md` with: what you changed and why, which files matter most and what they do, edge cases you already handled, and what test coverage exists. Then spawn a `code-review` sub-agent via `runSubagent` and tell it to start by reading `/tmp/self-review/README.md`. If the sub-agent finds legitimate issues, fix them, commit, and call `ready_to_make_pr` again.')
       print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template, 'diff_line_count': diff_line_count}))
 safe-outputs:
+  protected-files:
+    - ".github/**"
   create-pull-request:
     draft: ${{ inputs.draft-prs }}
     github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
@@ -147,4 +149,3 @@ Before calling `create_pull_request`, call `ready_to_make_pr` and apply its chec
 - **Committed changes required**: You must have locally committed changes before creating a PR.
 - **Base branch**: The PR targets the repository's default branch.
 - **Max per run**: Typically 1 PR creation per workflow run.
-- You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.

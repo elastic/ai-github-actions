@@ -141,6 +141,8 @@ safe-inputs:
           checklist.append(f'A diff of your unpushed changes ({diff_line_count} lines) and supporting context have been saved to `/tmp/self-review/`. Before spawning the sub-agent, write `/tmp/self-review/notes.md` with: what you changed and why, which files matter most and what they do, edge cases you already handled, and what test coverage exists. Then spawn a `code-review` sub-agent via `runSubagent` and tell it to start by reading `/tmp/self-review/README.md`. If the sub-agent finds legitimate issues, fix them, commit, and call `ready_to_push_to_pr` again.')
       print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template, 'diff_line_count': diff_line_count}))
 safe-outputs:
+  protected-files:
+    - ".github/**"
   push-to-pull-request-branch:
     github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 ---
@@ -153,7 +155,6 @@ Before calling `push_to_pull_request_branch`, call `ready_to_push_to_pr` and app
 - **Fork PRs**: Cannot push to fork PR branches. Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, explain that you cannot push and suggest the author apply changes themselves.
 - **Committed changes required**: You must have locally committed changes before calling push. Uncommitted or staged-only changes will fail.
 - **Branch**: Pushes to the PR's head branch. The workspace must have the PR branch checked out.
-- You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
 
 Trying to resolve merge conflicts? Do not use `git merge` or `git rebase` — `push_to_pull_request_branch` uses `git format-patch` which requires single-parent commits. Instead:
 1. Compare with the base branch (from `/tmp/pr-context/pr.json` field `baseRefName`) to see what changed in the conflicting files
