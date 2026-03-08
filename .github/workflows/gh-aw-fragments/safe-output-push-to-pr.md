@@ -12,7 +12,7 @@ safe-inputs:
           except subprocess.TimeoutExpired:
               return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
 
-      # Guard: detect history rewrites and merge commits
+      # Guard: detect history rewrites (rebase/reset/cherry-pick)
       pr_json_path = '/tmp/pr-context/pr.json'
       if os.path.isfile(pr_json_path):
           with open(pr_json_path) as f:
@@ -23,15 +23,6 @@ safe-inputs:
               anc = run(['git', 'merge-base', '--is-ancestor', pr_head_sha, 'HEAD'])
               if anc.returncode != 0:
                   print(json.dumps({'status': 'error', 'error': f'History rewrite detected: the original PR head ({pr_head_sha[:12]}) is not an ancestor of HEAD. This means git rebase, reset, or cherry-pick rewrote history. push_to_pull_request_branch will fail. Fix: run `git reset --hard {pr_head_sha}` to restore the PR branch to its original head, then re-apply your changes as direct file edits and commit as regular commits.'}))
-                  raise SystemExit(0)
-              # Check 2: no merge commits (multiple parents) since PR head
-              log = run(['git', 'rev-list', '--min-parents=2', f'{pr_head_sha}..HEAD'])
-              if log.returncode != 0:
-                  print(json.dumps({'status': 'error', 'error': f'Failed to check for merge commits (git rev-list exited {log.returncode}): {log.stderr.strip()}. Cannot verify commit history is safe for push.'}))
-                  raise SystemExit(0)
-              merge_shas = log.stdout.strip()
-              if merge_shas:
-                  print(json.dumps({'status': 'error', 'error': f'Merge commit(s) detected: {merge_shas.splitlines()[0][:12]}... push_to_pull_request_branch uses git format-patch which breaks on merge commits. Fix: run `git reset --hard {pr_head_sha}` to restore the PR branch, then re-apply your changes as direct file edits (no git merge/rebase/commit-tree with multiple -p flags) and commit as regular single-parent commits.'}))
                   raise SystemExit(0)
 
       contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
@@ -156,8 +147,9 @@ Before calling `push_to_pull_request_branch`, call `ready_to_push_to_pr` and app
 - **Committed changes required**: You must have locally committed changes before calling push. Uncommitted or staged-only changes will fail.
 - **Branch**: Pushes to the PR's head branch. The workspace must have the PR branch checked out.
 
-Trying to resolve merge conflicts? Do not use `git merge` or `git rebase` — `push_to_pull_request_branch` uses `git format-patch` which requires single-parent commits. Instead:
-1. Compare with the base branch (from `/tmp/pr-context/pr.json` field `baseRefName`) to see what changed in the conflicting files
-2. Edit the files directly to incorporate the changes from the base branch
-3. Commit the changes as regular (single-parent) commits
-4. Call `ready_to_push_to_pr` (which will catch any merge commits) and then `push_to_pull_request_branch` to push
+Trying to resolve merge conflicts? Use merge-based conflict resolution. Rebase remains disallowed:
+
+1. Compare with the base branch (from `/tmp/pr-context/pr.json` field `baseRefName`) and update your local base branch refs as needed.
+2. Run a merge from base into the PR branch, resolve conflicts, and commit the merge result.
+3. Do **not** use `git rebase` (or other history-rewrite flows like `reset --hard` + cherry-pick).
+4. Call `ready_to_push_to_pr` (which catches rewritten history) and then `push_to_pull_request_branch` to push.
