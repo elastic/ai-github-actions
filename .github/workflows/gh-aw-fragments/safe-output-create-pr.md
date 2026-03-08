@@ -15,7 +15,7 @@ safe-inputs:
       # Guard: detect merge commits
       # Find the fork point with the upstream branch to scope the check
       upstream_sha = ''
-      for ref in ['@{upstream}', 'origin/HEAD', 'origin/main']:
+      for ref in ['@{upstream}', 'origin/HEAD', 'origin/main', 'origin/master']:
           r = run(['git', 'merge-base', 'HEAD', ref])
           if r.returncode == 0 and r.stdout.strip():
               upstream_sha = r.stdout.strip()
