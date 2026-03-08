@@ -115,12 +115,36 @@ for f in gh-agent-workflows/*/example.yml; do
 
     cat >> "$target" <<'EOF'
 
-  create_pr_from_issue:
+  resolve_created_issue:
     needs: run
-    if: ${{ needs.run.outputs.created_issue_number != '' }}
+    runs-on: ubuntu-slim
+    outputs:
+      created_issue_number: ${{ steps.resolve.outputs.created_issue_number }}
+    steps:
+      - name: Resolve created issue number
+        id: resolve
+        env:
+          CREATED_ISSUE_NUMBER: ${{ needs.run.outputs.created_issue_number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          number="$CREATED_ISSUE_NUMBER"
+          if [ -z "$number" ]; then
+            number="$(gh issue list \
+              --repo "$REPOSITORY" \
+              --search "in:body \"actions/runs/$RUN_ID\" author:github-actions[bot] is:issue" \
+              --json number,createdAt \
+              --jq 'sort_by(.createdAt) | reverse | .[0].number // empty')"
+          fi
+          echo "created_issue_number=$number" >> "$GITHUB_OUTPUT"
+
+  create_pr_from_issue:
+    needs: resolve_created_issue
+    if: ${{ needs.resolve_created_issue.outputs.created_issue_number != '' }}
     uses: ./.github/workflows/gh-aw-create-pr-from-issue.lock.yml
     with:
-      target-issue-number: ${{ needs.run.outputs.created_issue_number }}
+      target-issue-number: ${{ needs.resolve_created_issue.outputs.created_issue_number }}
       additional-instructions: "Create a focused pull request that resolves this issue."
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
