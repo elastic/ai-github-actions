@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"1f26204b0e8b48dce16278f2a26cf17f47c9c3e1368c1ecda716f4487c9873dc"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"0d089b2b550519f8ddd2dcaf715ffb981bf90c334dbe8e4521b72edda8e2f6fc"}
 
 name: "Stale Issues Remediator"
 "on":
@@ -485,6 +485,8 @@ jobs:
         name: Collect stale-labeled issues
         run: "set -euo pipefail\n\n# Fetch all open issues carrying the stale label\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --label \"$STALE_LABEL\" \\\n  --state open \\\n  --limit 200 \\\n  --json number,title,updatedAt,labels,createdAt \\\n  > /tmp/stale-labeled-issues.json || { echo \"::warning::Failed to fetch stale-labeled issues\"; echo \"[]\" > /tmp/stale-labeled-issues.json; }\n\necho \"Stale-labeled issues: $(jq length /tmp/stale-labeled-issues.json)\"\n\n# For each stale-labeled issue, grab recent comments and label timeline events.\njq -c '.[]' /tmp/stale-labeled-issues.json | while IFS= read -r issue; do\n  num=$(echo \"$issue\" | jq -r '.number')\n  gh issue view \"$num\" \\\n    --repo \"$GITHUB_REPOSITORY\" \\\n    --json comments \\\n    --jq '.comments[-5:] | .[] | {author: .author.login, createdAt: .createdAt, body: .body[0:500]}' \\\n    2>/dev/null || true\ndone | jq -s '.' > /tmp/stale-recent-comments.json || echo \"[]\" > /tmp/stale-recent-comments.json\n\n# Fetch label add/remove events for each stale-labeled issue (for 30-day expiry)\njq -r '.[].number' /tmp/stale-labeled-issues.json | while IFS= read -r num; do\n  gh api --paginate \"repos/$GITHUB_REPOSITORY/issues/$num/events\" 2>/dev/null \\\n    | jq --arg lbl \"$STALE_LABEL\" --argjson num \"$num\" \\\n      '[.[] | select((.event==\"labeled\" or .event==\"unlabeled\") and .label.name==$lbl) | {number: $num, event: .event, created_at: .created_at}]' \\\n    || echo \"[]\"\ndone | jq -s 'add // []' > /tmp/stale-label-events.json || echo \"[]\" > /tmp/stale-label-events.json\n"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

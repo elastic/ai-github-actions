@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"7eab7b3cce52b246f8fa9dfa1b8f4bcfc40a78bbf48b7741a0755a572b0e4cb6"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"db5cfd94a9313aa9efa5f4bd75aec08f3249e38cb6594d61f8980687057c2b21"}
 
 name: "Newbie Contributor Patrol"
 "on":
@@ -584,6 +584,8 @@ jobs:
         name: List previous findings
         run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

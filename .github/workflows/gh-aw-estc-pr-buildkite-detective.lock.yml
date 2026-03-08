@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"6a344d3a87433a528004af656ccdd1939034e60e4a1d910705825ad326299989"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"2065edfd370c9adabb22d5b32324b398b7f9c2e807aacb0d50cc67afe90be726"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -613,6 +613,8 @@ jobs:
             echo "BK_COMMIT_SHA=$(jq -r '.check_run.head_sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
           fi
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

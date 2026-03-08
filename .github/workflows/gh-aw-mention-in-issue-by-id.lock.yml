@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"650784c843eff975dea920282e5500f12758c11a966c15b477e65651dc20191e"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"2c1daeeee17834a14d4c318860f390585bb74646c93bfee0da819326e2842a97"}
 
 name: "Mention in Issue by ID"
 "on":
@@ -562,6 +562,8 @@ jobs:
       - name: Write Playwright instructions to disk
         run: "cat > /tmp/playwright-instructions.md << 'EOF'\n# Playwright MCP Tools\n\nUse Playwright MCP tools for interactive browser automation.\nUse these tools to explore the app step by step — do NOT write Node.js scripts.\n\n## Available tools\n\n- `browser_navigate` — go to a URL\n- `browser_click` — click an element\n- `browser_type` — type text into an input\n- `browser_snapshot` — get an accessibility tree (YAML) of the current page\n- `browser_take_screenshot` — capture a screenshot\n- `browser_console_execute` — run JavaScript in the browser console\n\n## Why MCP tools instead of scripts\n\nMCP tools are interactive: you see the page state after each action and\ndecide what to do next. This is ideal for exploratory testing where you\nneed to adapt based on what you find. Scripts are fire-and-forget — if\na selector is wrong, you don't find out until the script fails.\n\n## Measuring DOM properties\n\nFor programmatic checks (e.g. element heights, contrast), use\n`browser_console_execute`:\n\n```javascript\n(() => {\n  const els = document.querySelectorAll('input, button, [role=\"combobox\"], [role=\"button\"]');\n  return JSON.stringify(Array.from(els)\n    .map(el => {\n      const r = el.getBoundingClientRect();\n      return { tag: el.tagName, h: Math.round(r.height), top: Math.round(r.top), text: el.textContent?.trim().slice(0, 20) };\n    })\n    .filter(el => el.top > 50 && el.top < 250));\n})()\n```\n\n## Handling failures\n\n- Do not retry the same action more than twice — the page is in a different state than expected.\n- Diagnose before moving on: use `browser_take_screenshot` and `browser_snapshot` to see what's on the page.\n- Adapt (different selector, different path) or report the failure as a finding.\n- Never claim you verified something you didn't — if it failed and you skipped it, say so.\nEOF"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

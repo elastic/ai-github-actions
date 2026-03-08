@@ -119,6 +119,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -143,6 +145,7 @@ Apply classification labels that best represent the PR's risk or routing categor
 1. Select one or more labels from that parsed list and apply them with `add_labels`.
 1. `add_labels` appends labels and does not remove existing ones.
 1. If your classification scheme is mutually exclusive or you are replacing prior labels, remove outdated/conflicting labels first with `remove_labels`, then add the desired labels with `add_labels`.
+1. When replacing/removing an existing classification label, use a high-confidence bar: if you are on the fence between keeping the current label vs switching it, keep the current label and avoid churn.
 1. Never add or remove labels that are not in the parsed classification label list.
 1. Use `${{ inputs.additional-instructions }}` to define label semantics and risk criteria for your selected label set.
 1. If the PR cannot be evaluated at all, call `noop`.
