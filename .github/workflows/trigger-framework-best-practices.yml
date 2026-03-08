@@ -22,28 +22,28 @@ jobs:
     needs: run
     runs-on: ubuntu-slim
     outputs:
-      created_issue_number: ${{ steps.resolve.outputs.created_issue_number }}
       created_issue_url: ${{ steps.resolve.outputs.created_issue_url }}
     steps:
-      - name: Download safe output items
-        uses: actions/download-artifact@v4
-        with:
-          name: safe-output-items
-          path: /tmp/safe-output-items
       - name: Resolve created issue number
         id: resolve
+        env:
+          CREATED_ISSUE_NUMBER: ${{ needs.run.outputs.created_issue_number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          number="$(grep -m1 -oE '"number":[[:space:]]*[0-9]+' /tmp/safe-output-items/safe-output-items.jsonl | tr -cd '0-9' || true)"
-          url="$(grep -m1 -oE '"url":"[^"]+"' /tmp/safe-output-items/safe-output-items.jsonl | sed -E 's/^"url":"(.*)"$/\1/' || true)"
-          echo "created_issue_number=$number" >> "$GITHUB_OUTPUT"
+          number="$CREATED_ISSUE_NUMBER"
+          url=""
+          if [ -n "$number" ]; then
+            url="$(gh issue view "$number" --repo "$REPOSITORY" --json url --jq '.url')"
+          fi
           echo "created_issue_url=$url" >> "$GITHUB_OUTPUT"
 
   create_pr_from_issue:
-    needs: resolve_created_issue
-    if: ${{ needs.resolve_created_issue.outputs.created_issue_number != '' }}
+    needs: [run, resolve_created_issue]
+    if: ${{ needs.run.outputs.created_issue_number != '' }}
     uses: ./.github/workflows/gh-aw-create-pr-from-issue.lock.yml
     with:
-      target-issue-number: ${{ needs.resolve_created_issue.outputs.created_issue_number }}
+      target-issue-number: ${{ needs.run.outputs.created_issue_number }}
       additional-instructions: "Create a focused pull request that resolves this issue."
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
