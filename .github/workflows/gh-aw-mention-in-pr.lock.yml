@@ -47,7 +47,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"7a4b1f4e6556c6725b984f19f1ae69650507bc22410752d276f510085cca54ea"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"558d09513c26877342e7cae33bc7f743e9a77b27a3de8cb83a6f6101bff66054"}
 
 name: "Mention in PR"
 "on":
@@ -145,7 +145,7 @@ jobs:
       title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
+        uses: github/gh-aw/actions/setup@d67a5c331b07e3bcbe9bf5b9a200b680c6148a15
         with:
           destination: /opt/gh-aw/actions
       - name: Generate agentic run info
@@ -452,11 +452,12 @@ jobs:
           - **Committed changes required**: You must have locally committed changes before calling push. Uncommitted or staged-only changes will fail.
           - **Branch**: Pushes to the PR's head branch. The workspace must have the PR branch checked out.
           
-          Trying to resolve merge conflicts? Do not use `git merge` or `git rebase` — `push_to_pull_request_branch` uses `git format-patch` which requires single-parent commits. Instead:
-          1. Compare with the base branch (from `/tmp/pr-context/pr.json` field `baseRefName`) to see what changed in the conflicting files
-          2. Edit the files directly to incorporate the changes from the base branch
-          3. Commit the changes as regular (single-parent) commits
-          4. Call `ready_to_push_to_pr` (which will catch any merge commits) and then `push_to_pull_request_branch` to push
+          Trying to resolve merge conflicts? Use merge-based conflict resolution. Rebase remains disallowed:
+          
+          1. Compare with the base branch (from `/tmp/pr-context/pr.json` field `baseRefName`) and update your local base branch refs as needed.
+          2. Run a merge from base into the PR branch, resolve conflicts, and commit the merge result.
+          3. Do **not** use `git rebase` (or other history-rewrite flows like `reset --hard` + cherry-pick).
+          4. Call `ready_to_push_to_pr` (which catches rewritten history) and then `push_to_pull_request_branch` to push.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## resolve-pull-request-review-thread Limitations
@@ -537,6 +538,7 @@ jobs:
             - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
             - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
           - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
+          - Call `ready_to_push_to_pr` to confirm the branch is safe to push.
           - Use `push_to_pull_request_branch` to push your changes.
           - After pushing, resolve every review thread that your changes fully address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
           - **Important completion step**: when feedback is completed and no further reviewer action is needed, resolving the corresponding thread is required. Do not leave fully addressed threads open.
@@ -547,10 +549,10 @@ jobs:
           
           - Check via `pull_request_read` (method `get`) whether this is a fork PR. If so, reply that you cannot push to fork branches and suggest the author resolve locally.
           - Read `/tmp/pr-context/pr.json` for the head and base branch names.
-          - Identify conflicting files by comparing with the base branch, then edit each file directly to produce the correct merged result. Commit the resolved changes as regular (single-parent) commits — do not use `git merge` or `git rebase` (the `ready_to_push_to_pr` check will catch merge commits before pushing).
+          - Follow the merge-conflict/update-branch guidance in `ready_to_push_to_pr` and resolve conflicts with a merge-based flow. Do **not** use `git rebase` or other history-rewrite flows.
           - If conflicts are too complex to resolve confidently (large structural changes, binary files, ambiguous intent), reply explaining what you found and suggest the author resolve locally.
           - If the request includes additional work (code fixes, review feedback), complete all of it before pushing — `push_to_pull_request_branch` can only be called once. Resolve merge conflicts first, then make other requested changes on top, then push everything together.
-          - Use `push_to_pull_request_branch` and reply summarizing what was resolved and how conflicts were handled.
+          - Call `ready_to_push_to_pr`, then use `push_to_pull_request_branch`, and reply summarizing what was resolved and how conflicts were handled.
           
           **If asked a question about the code:**
           
@@ -568,6 +570,7 @@ jobs:
           
           **Additional tools:**
           
+          - `ready_to_push_to_pr` — run pre-push safety checks before pushing PR changes
           - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
           - `reply_to_pull_request_review_comment` — reply inline to a review comment thread to explain what you changed or why you disagree
           - `resolve_pull_request_review_thread` — resolve a review thread after addressing the feedback (pass the thread's GraphQL node ID)
@@ -692,7 +695,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
+        uses: github/gh-aw/actions/setup@d67a5c331b07e3bcbe9bf5b9a200b680c6148a15
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -1550,7 +1553,7 @@ jobs:
               except subprocess.TimeoutExpired:
                   return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
           
-          # Guard: detect history rewrites and merge commits
+          # Guard: detect history rewrites (rebase/reset/cherry-pick)
           pr_json_path = '/tmp/pr-context/pr.json'
           if os.path.isfile(pr_json_path):
               with open(pr_json_path) as f:
@@ -1561,15 +1564,6 @@ jobs:
                   anc = run(['git', 'merge-base', '--is-ancestor', pr_head_sha, 'HEAD'])
                   if anc.returncode != 0:
                       print(json.dumps({'status': 'error', 'error': f'History rewrite detected: the original PR head ({pr_head_sha[:12]}) is not an ancestor of HEAD. This means git rebase, reset, or cherry-pick rewrote history. push_to_pull_request_branch will fail. Fix: run `git reset --hard {pr_head_sha}` to restore the PR branch to its original head, then re-apply your changes as direct file edits and commit as regular commits.'}))
-                      raise SystemExit(0)
-                  # Check 2: no merge commits (multiple parents) since PR head
-                  log = run(['git', 'rev-list', '--min-parents=2', f'{pr_head_sha}..HEAD'])
-                  if log.returncode != 0:
-                      print(json.dumps({'status': 'error', 'error': f'Failed to check for merge commits (git rev-list exited {log.returncode}): {log.stderr.strip()}. Cannot verify commit history is safe for push.'}))
-                      raise SystemExit(0)
-                  merge_shas = log.stdout.strip()
-                  if merge_shas:
-                      print(json.dumps({'status': 'error', 'error': f'Merge commit(s) detected: {merge_shas.splitlines()[0][:12]}... push_to_pull_request_branch uses git format-patch which breaks on merge commits. Fix: run `git reset --hard {pr_head_sha}` to restore the PR branch, then re-apply your changes as direct file edits (no git merge/rebase/commit-tree with multiple -p flags) and commit as regular single-parent commits.'}))
                       raise SystemExit(0)
           
           contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
@@ -2121,7 +2115,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
+        uses: github/gh-aw/actions/setup@d67a5c331b07e3bcbe9bf5b9a200b680c6148a15
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -2213,7 +2207,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
+        uses: github/gh-aw/actions/setup@d67a5c331b07e3bcbe9bf5b9a200b680c6148a15
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -2260,7 +2254,7 @@ jobs:
       push_commit_url: ${{ steps.process_safe_outputs.outputs.push_commit_url }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
+        uses: github/gh-aw/actions/setup@d67a5c331b07e3bcbe9bf5b9a200b680c6148a15
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact

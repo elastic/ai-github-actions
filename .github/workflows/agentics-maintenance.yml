@@ -42,9 +42,9 @@ on:
         description: 'Optional maintenance operation to run'
         required: false
         type: choice
-        default: 'none'
+        default: ''
         options:
-          - 'none'
+          - ''
           - 'disable'
           - 'enable'
           - 'update'
@@ -54,7 +54,7 @@ permissions: {}
 
 jobs:
   close-expired-entities:
-    if: ${{ !github.event.repository.fork && (github.event_name != 'workflow_dispatch' || github.event.inputs.operation == 'none') }}
+    if: ${{ !github.event.repository.fork && (github.event_name != 'workflow_dispatch' || github.event.inputs.operation == '') }}
     runs-on: ubuntu-slim
     permissions:
       discussions: write
@@ -62,7 +62,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
+        uses: github/gh-aw/actions/setup@d67a5c331b07e3bcbe9bf5b9a200b680c6148a15
         with:
           destination: /opt/gh-aw/actions
 
@@ -94,7 +94,7 @@ jobs:
             await main();
 
   run_operation:
-    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.operation != 'none' && !github.event.repository.fork }}
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.operation != '' && !github.event.repository.fork }}
     runs-on: ubuntu-slim
     permissions:
       actions: write
@@ -107,7 +107,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
+        uses: github/gh-aw/actions/setup@d67a5c331b07e3bcbe9bf5b9a200b680c6148a15
         with:
           destination: /opt/gh-aw/actions
 
@@ -122,9 +122,9 @@ jobs:
             await main();
 
       - name: Install gh-aw
-        uses: github/gh-aw/actions/setup-cli@v0.56.0
+        uses: github/gh-aw/actions/setup-cli@d67a5c331b07e3bcbe9bf5b9a200b680c6148a15
         with:
-          version: v0.56.0
+          version: d67a5c331b07e3bcbe9bf5b9a200b680c6148a15
 
       - name: Run operation
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
