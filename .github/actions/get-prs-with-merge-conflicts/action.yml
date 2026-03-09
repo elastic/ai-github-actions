@@ -46,6 +46,10 @@ runs:
       uses: actions/github-script@v7
       env:
         REPOSITORY: ${{ github.repository }}
+        INPUT_INCLUDE_LABELS: ${{ inputs.include-labels }}
+        INPUT_EXCLUDE_LABELS: ${{ inputs.exclude-labels }}
+        INPUT_AUTHOR_ASSOCIATIONS: ${{ inputs.author-associations }}
+        INPUT_OPT_OUT_LABEL: ${{ inputs.opt-out-label }}
       with:
         github-token: ${{ inputs.github-token }}
         script: |
@@ -57,15 +61,15 @@ runs:
                 .map((label) => label.trim().toLowerCase())
                 .filter((label) => label.length > 0),
             );
-          const includeLabels = parseLabelSet(core.getInput("include-labels"));
-          const excludeLabels = parseLabelSet(core.getInput("exclude-labels"));
+          const includeLabels = parseLabelSet(process.env.INPUT_INCLUDE_LABELS ?? "");
+          const excludeLabels = parseLabelSet(process.env.INPUT_EXCLUDE_LABELS ?? "");
           const allowedAssociations = new Set(
-            core.getInput("author-associations")
+            (process.env.INPUT_AUTHOR_ASSOCIATIONS ?? "")
               .split(",")
               .map((a) => a.trim().toUpperCase())
               .filter((a) => a.length > 0),
           );
-          const optOutLabel = core.getInput("opt-out-label").trim().toLowerCase();
+          const optOutLabel = (process.env.INPUT_OPT_OUT_LABEL ?? "").trim().toLowerCase();
           if (optOutLabel) {
             excludeLabels.add(optOutLabel);
           }
@@ -88,8 +92,14 @@ runs:
             { owner, repo },
           );
 
+          const allPrs = result.repository.pullRequests.nodes;
+          core.info(`GraphQL returned ${allPrs.length} open PR(s)`);
+          for (const pr of allPrs) {
+            core.info(`  PR #${pr.number}: mergeStateStatus=${pr.mergeStateStatus}, isDraft=${pr.isDraft}, authorAssociation=${pr.authorAssociation}`);
+          }
+
           const prs = [];
-          for (const pr of result.repository.pullRequests.nodes) {
+          for (const pr of allPrs) {
             const labels = new Set((pr.labels?.nodes ?? []).map((l) => l.name.toLowerCase()));
             const matchesInclude =
               includeLabels.size === 0 || [...includeLabels].some((label) => labels.has(label));
