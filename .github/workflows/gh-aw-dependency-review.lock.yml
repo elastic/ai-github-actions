@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"bdf54e6b91e8ceef7b8203a6dfddc18e2cadb8d5b514ba5a91ca3950569551f9"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"ce6a3df4c56bb90da02ed84ea8d9a8fb41f3ed387838e1538818d046ad1642f4"}
 
 name: "Dependency Review"
 "on":
@@ -166,6 +166,7 @@ jobs:
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_23557367: ${{ inputs.target-pr-number || github.event.pull_request.number }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_9AD6B038: ${{ inputs.classification-labels }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -445,10 +446,10 @@ jobs:
           
           Based on the analysis, determine if any labels from the configured `classification-labels` set should be applied:
           
-          - **Allowed classification labels**: `${{ inputs.classification-labels }}`
-          - Parse `${{ inputs.classification-labels }}` as a comma-separated list and treat that list as the only valid labels for this step.
-          - If `${{ inputs.classification-labels }}` is empty, skip this step entirely.
-          - Use `${{ inputs.additional-instructions }}` to understand what each label means and when to apply it.
+          - **Allowed classification labels**: `__GH_AW_EXPR_9AD6B038__`
+          - Parse `__GH_AW_EXPR_9AD6B038__` as a comma-separated list and treat that list as the only valid labels for this step.
+          - If `__GH_AW_EXPR_9AD6B038__` is empty, skip this step entirely.
+          - Use `__GH_AW_EXPR_49B959F1__` to understand what each label means and when to apply it.
           - Never apply a label that is not in the parsed classification label list.
           
           ### Step 5: Post Analysis Comment
@@ -511,6 +512,7 @@ jobs:
           GH_AW_GITHUB_EVENT_PULL_REQUEST_TITLE: ${{ github.event.pull_request.title }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_9AD6B038: ${{ inputs.classification-labels }}
           GH_AW_EXPR_23557367: ${{ inputs.target-pr-number || github.event.pull_request.number }}
         with:
           script: |
@@ -524,6 +526,7 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_23557367: ${{ inputs.target-pr-number || github.event.pull_request.number }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_9AD6B038: ${{ inputs.classification-labels }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -547,6 +550,7 @@ jobs:
               substitutions: {
                 GH_AW_EXPR_23557367: process.env.GH_AW_EXPR_23557367,
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
+                GH_AW_EXPR_9AD6B038: process.env.GH_AW_EXPR_9AD6B038,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
