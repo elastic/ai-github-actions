@@ -155,10 +155,10 @@ If `resolve_pull_request_review_thread` fails for any fully addressed thread, ca
 
 ### Step 5: Respond
 
-Call `add_comment` on the PR with a brief summary of:
+Call `add_comment` on the PR with a concise to the point summary of:
 - Which review threads were addressed with code changes
 - Which threads you replied to instead of fixing
-- Tests run and their results
+- Tests run and their results (in a collapsed summary/details block)
 
 Do NOT duplicate thread-specific explanations in the summary comment — those belong in the inline replies you already posted via `reply_to_pull_request_review_comment`.
 
