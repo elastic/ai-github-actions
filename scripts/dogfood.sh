@@ -110,8 +110,28 @@ for f in gh-agent-workflows/*/example.yml; do
     [[ "$dir" == "$remediation" ]] && add_remediation=true && break
   done
   if [[ "$add_remediation" == "true" ]]; then
-    # Ensure permissions allow downstream PR creation job.
-    sed -E 's/^([[:space:]]*contents: )read$/\1write/; s/^([[:space:]]*pull-requests: )read$/\1write/' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
+    # Ensure permissions allow downstream remediation workflow call.
+    awk '
+      BEGIN { in_permissions=0; have_actions=0 }
+      /^permissions:/ { in_permissions=1; print; next }
+      in_permissions {
+        if (/^jobs:/) {
+          if (!have_actions) print "  actions: read"
+          in_permissions=0
+          print
+          next
+        }
+        if ($0 ~ /^  contents: /) sub(/read$/, "write")
+        if ($0 ~ /^  pull-requests: /) sub(/read$/, "write")
+        if ($0 ~ /^  actions: /) {
+          if ($0 ~ /none$/) sub(/none$/, "read")
+          have_actions=1
+        }
+        print
+        next
+      }
+      { print }
+    ' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
 
     cat >> "$target" <<'EOF'
 

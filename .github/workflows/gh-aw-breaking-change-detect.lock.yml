@@ -45,7 +45,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"b0d8e8479f4730d5ae5e74c519af2d86c62fb58fddeddba0999c3397e8c0ef22"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"1203f1abf841401d657fbdb6db0e821b5ab1798b33ec735417add39401b4f62a"}
 
 name: "Breaking Change Detector"
 "on":
@@ -657,6 +657,8 @@ jobs:
         name: List previous findings
         run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

@@ -41,7 +41,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"1fb4f54b473e0087de722a4a6256d6059d0c83e0038070760d4a7998a070202c"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"5df0b0f990d3c198425642f591f56e16ad842cfc0f58e50549cc8e8fa61161fc"}
 
 name: "PR Actions Detective"
 "on":
@@ -330,6 +330,7 @@ jobs:
                gh api repos/__GH_AW_GITHUB_REPOSITORY__/actions/runs/{run_id}/jobs \
                  --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
               ```
+             - If none of the jobs have a `failure` conclusion, call `noop` with message "No failed jobs in workflow run; nothing to report" and stop.
              - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
               ```bash
                gh api repos/__GH_AW_GITHUB_REPOSITORY__/actions/runs/{run_id}/logs \
@@ -557,6 +558,8 @@ jobs:
         run: "set -euo pipefail\nif [ -f \"AGENTS.md\" ]; then\n  cp AGENTS.md /tmp/agents.md\n  echo \"Repository conventions copied from AGENTS.md to /tmp/agents.md\"\nelse\n  OWNER=\"${GITHUB_REPOSITORY%/*}\"\n  REPO=\"${GITHUB_REPOSITORY#*/}\"\n  summary=$(curl -sf --max-time 15 -X POST https://agents-md-generator.fastmcp.app/mcp \\\n    -H \"Content-Type: application/json\" \\\n    -H \"Accept: application/json, text/event-stream\" \\\n    -d \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":1,\\\"method\\\":\\\"tools/call\\\",\\\"params\\\":{\\\"name\\\":\\\"generate_agents_md\\\",\\\"arguments\\\":{\\\"owner\\\":\\\"${OWNER}\\\",\\\"repo\\\":\\\"${REPO}\\\"}}}\" \\\n    | sed 's/^data: //' \\\n    | jq -r '.result.structuredContent.summary // empty' 2>/dev/null) || true\n  if [ -n \"$summary\" ]; then\n    echo \"$summary\" > /tmp/agents.md\n    echo \"Repository conventions written to /tmp/agents.md\"\n  else\n    echo \"::warning::Could not fetch repository conventions; continuing without them\"\n  fi\nfi"
         shell: bash
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

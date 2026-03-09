@@ -47,7 +47,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"909f46b9591eec1dab81a6a164afb1e9eac13076d873de3c0129a72961df5769"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"deec4e885c885c0b39c5e142b01a1b197400f9b1e2094ba54c6d0b433bfbae84"}
 
 name: "Mention in PR"
 "on":
@@ -773,6 +773,8 @@ jobs:
         name: Ensure origin refs for PR patch generation
         run: "SERVER_URL_STRIPPED=\"${SERVER_URL#https://}\"\ngit remote set-url origin \"https://x-access-token:${GITHUB_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git\"\ngit fetch --no-tags --prune origin '+refs/heads/*:refs/remotes/origin/*'\n"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

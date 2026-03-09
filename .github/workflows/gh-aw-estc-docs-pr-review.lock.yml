@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"05661b62d14fb1755991989ea92a2621d4277aa51ec505329982f316b37daa0f"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"657c7c2bdbc2aaca1148e23bc6651db46c91319fd32ed3aa5711f3e5167258b5"}
 
 name: "Estc Docs PR Review"
 "on":
@@ -666,6 +666,8 @@ jobs:
       - name: Download style guide reference pages
         run: "set -euo pipefail\nmkdir -p /tmp/style-guide\nurls=(\n  \"https://www.elastic.co/docs/contribute-docs/style-guide\"\n  \"https://www.elastic.co/docs/contribute-docs/style-guide/voice-tone\"\n  \"https://www.elastic.co/docs/contribute-docs/style-guide/grammar-spelling\"\n  \"https://www.elastic.co/docs/contribute-docs/style-guide/formatting\"\n  \"https://www.elastic.co/docs/contribute-docs/style-guide/word-choice\"\n  \"https://www.elastic.co/docs/contribute-docs/style-guide/accessibility\"\n  \"https://www.elastic.co/docs/contribute-docs/style-guide/ui-writing\"\n  \"https://www.elastic.co/docs/contribute-docs/how-to/cumulative-docs/guidelines\"\n  \"https://www.elastic.co/docs/contribute-docs/how-to/cumulative-docs/reference\"\n  \"https://docs-v3-preview.elastic.dev/elastic/docs-builder/tree/main/syntax/applies\"\n)\nfor url in \"${urls[@]}\"; do\n  slug=$(echo \"$url\" | sed 's|https\\?://||; s|/|_|g; s|[^a-zA-Z0-9_-]||g')\n  curl -sSfL --retry 2 --max-time 30 \"$url\" -o \"/tmp/style-guide/${slug}.html\" || echo \"::warning::Failed to download ${url}\"\ndone\necho \"Downloaded $(ls /tmp/style-guide/ | wc -l) style guide pages to /tmp/style-guide/\"\n"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"48735a22cd66d6b86333c8237876ac47fe4796f3a0fde1beae5cbe33762812f1"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"82bb41f9d760cce45ac80448e67e12bd11ee109a9c7639252ddf77af2b950bb5"}
 
 name: "Test Coverage Detector"
 "on":
@@ -709,6 +709,8 @@ jobs:
         name: Validate severity threshold
         run: "case \"$SEVERITY_THRESHOLD\" in\n  high|medium|low) ;;\n  *)\n    echo \"Invalid severity-threshold: '$SEVERITY_THRESHOLD'. Expected one of: high, medium, low.\"\n    exit 1\n    ;;\nesac\n"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

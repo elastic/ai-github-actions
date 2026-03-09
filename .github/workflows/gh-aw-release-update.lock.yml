@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"3d4dea0dc0f74bf9c9070c917d24a0e2f80604de74f362391b686c2732e18955"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"fd86a3a209dd005d7e85b281db93511310309c05cb2affd7349e45252d65c473"}
 
 name: "Release Update Check"
 "on":
@@ -518,6 +518,8 @@ jobs:
         run: "set -euo pipefail\nif [ -f \"AGENTS.md\" ]; then\n  cp AGENTS.md /tmp/agents.md\n  echo \"Repository conventions copied from AGENTS.md to /tmp/agents.md\"\nelse\n  OWNER=\"${GITHUB_REPOSITORY%/*}\"\n  REPO=\"${GITHUB_REPOSITORY#*/}\"\n  summary=$(curl -sf --max-time 15 -X POST https://agents-md-generator.fastmcp.app/mcp \\\n    -H \"Content-Type: application/json\" \\\n    -H \"Accept: application/json, text/event-stream\" \\\n    -d \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":1,\\\"method\\\":\\\"tools/call\\\",\\\"params\\\":{\\\"name\\\":\\\"generate_agents_md\\\",\\\"arguments\\\":{\\\"owner\\\":\\\"${OWNER}\\\",\\\"repo\\\":\\\"${REPO}\\\"}}}\" \\\n    | sed 's/^data: //' \\\n    | jq -r '.result.structuredContent.summary // empty' 2>/dev/null) || true\n  if [ -n \"$summary\" ]; then\n    echo \"$summary\" > /tmp/agents.md\n    echo \"Repository conventions written to /tmp/agents.md\"\n  else\n    echo \"::warning::Could not fetch repository conventions; continuing without them\"\n  fi\nfi"
         shell: bash
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

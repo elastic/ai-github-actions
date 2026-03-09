@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"65df487b67429d25ac7d30b444404b85aa016d89fcc3a48b6a09cde76c0e1bad"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"c399aa3796716736cf5336b1c8f7f732c18421a159be8016aa3fe7fc631b47d6"}
 
 name: "Flaky Test Investigator"
 "on":
@@ -622,6 +622,8 @@ jobs:
         name: List previous findings
         run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

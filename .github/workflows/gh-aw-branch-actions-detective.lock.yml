@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"4698c5df5e82f9afbef0009e358219a46b66356bd178b5a7b4a8f16ba27467ba"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"037ad0e086399f3111e9f30bf618a7ef973f234a214024c9bc22412acbfcfa9a"}
 
 name: "Branch Actions Detective"
 "on":
@@ -339,6 +339,7 @@ jobs:
                gh api repos/__GH_AW_GITHUB_REPOSITORY__/actions/runs/{run_id}/jobs \
                  --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
                ````
+             - If none of the jobs have a `failure` conclusion, call `noop` with message "No failed jobs in workflow run; nothing to report" and stop.
              - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
                ````bash
                gh api repos/__GH_AW_GITHUB_REPOSITORY__/actions/runs/{run_id}/logs \
@@ -567,6 +568,8 @@ jobs:
         name: List previous findings
         run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup

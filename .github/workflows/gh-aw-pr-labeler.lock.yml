@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"d5aa8ec8bea3608de0aa494e88f4d4f34374ed30bc2a2ef9c897159ee48678ce"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"1fc9c7643998f11988c821415ea389509f1c341bbbfb4f2e37d53b230545d47c"}
 
 name: "PR Labeler"
 "on":
@@ -287,6 +287,7 @@ jobs:
           1. Select one or more labels from that parsed list and apply them with `add_labels`.
           1. `add_labels` appends labels and does not remove existing ones.
           1. If your classification scheme is mutually exclusive or you are replacing prior labels, remove outdated/conflicting labels first with `remove_labels`, then add the desired labels with `add_labels`.
+          1. When replacing/removing an existing classification label, use a high-confidence bar: if you are on the fence between keeping the current label vs switching it, keep the current label and avoid churn.
           1. Never add or remove labels that are not in the parsed classification label list.
           1. Use `__GH_AW_EXPR_49B959F1__` to define label semantics and risk criteria for your selected label set.
           1. If the PR cannot be evaluated at all, call `noop`.
@@ -462,6 +463,8 @@ jobs:
         run: "set -euo pipefail\nif [ -f \"AGENTS.md\" ]; then\n  cp AGENTS.md /tmp/agents.md\n  echo \"Repository conventions copied from AGENTS.md to /tmp/agents.md\"\nelse\n  OWNER=\"${GITHUB_REPOSITORY%/*}\"\n  REPO=\"${GITHUB_REPOSITORY#*/}\"\n  summary=$(curl -sf --max-time 15 -X POST https://agents-md-generator.fastmcp.app/mcp \\\n    -H \"Content-Type: application/json\" \\\n    -H \"Accept: application/json, text/event-stream\" \\\n    -d \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":1,\\\"method\\\":\\\"tools/call\\\",\\\"params\\\":{\\\"name\\\":\\\"generate_agents_md\\\",\\\"arguments\\\":{\\\"owner\\\":\\\"${OWNER}\\\",\\\"repo\\\":\\\"${REPO}\\\"}}}\" \\\n    | sed 's/^data: //' \\\n    | jq -r '.result.structuredContent.summary // empty' 2>/dev/null) || true\n  if [ -n \"$summary\" ]; then\n    echo \"$summary\" > /tmp/agents.md\n    echo \"Repository conventions written to /tmp/agents.md\"\n  else\n    echo \"::warning::Could not fetch repository conventions; continuing without them\"\n  fi\nfi"
         shell: bash
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup
