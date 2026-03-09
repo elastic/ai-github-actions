@@ -148,6 +148,7 @@ safe-outputs:
   push-to-pull-request-branch:
     target: "${{ inputs.target-pr-number || 'triggering' }}"
     github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
+    protected-files: allowed
 ---
 
 Before calling `push_to_pull_request_branch`, call `ready_to_push_to_pr` and apply its checklist.
