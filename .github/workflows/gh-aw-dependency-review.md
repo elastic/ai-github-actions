@@ -92,6 +92,11 @@ safe-outputs:
             core.info('No GH_AW_AGENT_OUTPUT file found; skipping.');
             return;
           }
+          const doc = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+          if (!Array.isArray(doc.items)) {
+            core.warning('agent output has no items array; skipping.');
+            return;
+          }
           const allowed = new Set(
             String(process.env.CLASSIFICATION_LABELS || '')
               .split(',')
@@ -99,12 +104,10 @@ safe-outputs:
               .filter(Boolean)
           );
           if (allowed.size === 0) {
-            core.info('No allowed labels provided; skipping.');
-            return;
-          }
-          const doc = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
-          if (!Array.isArray(doc.items)) {
-            core.warning('agent output has no items array; skipping.');
+            const before = doc.items.length;
+            doc.items = doc.items.filter((item) => item?.type !== 'add_labels');
+            fs.writeFileSync(outputPath, JSON.stringify(doc));
+            core.info(`No allowed labels provided; removed ${before - doc.items.length} add_labels operations.`);
             return;
           }
           let removed = 0;

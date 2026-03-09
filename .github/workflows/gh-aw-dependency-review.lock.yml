@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"ce6a3df4c56bb90da02ed84ea8d9a8fb41f3ed387838e1538818d046ad1642f4"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"1220b4a345844709c33fe207dc47c680e8e00d0c7f0a4806e52631f4de0cb241"}
 
 name: "Dependency Review"
 "on":
@@ -1579,6 +1579,11 @@ jobs:
               core.info('No GH_AW_AGENT_OUTPUT file found; skipping.');
               return;
             }
+            const doc = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+            if (!Array.isArray(doc.items)) {
+              core.warning('agent output has no items array; skipping.');
+              return;
+            }
             const allowed = new Set(
               String(process.env.CLASSIFICATION_LABELS || '')
                 .split(',')
@@ -1586,12 +1591,10 @@ jobs:
                 .filter(Boolean)
             );
             if (allowed.size === 0) {
-              core.info('No allowed labels provided; skipping.');
-              return;
-            }
-            const doc = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
-            if (!Array.isArray(doc.items)) {
-              core.warning('agent output has no items array; skipping.');
+              const before = doc.items.length;
+              doc.items = doc.items.filter((item) => item?.type !== 'add_labels');
+              fs.writeFileSync(outputPath, JSON.stringify(doc));
+              core.info(`No allowed labels provided; removed ${before - doc.items.length} add_labels operations.`);
               return;
             }
             let removed = 0;
