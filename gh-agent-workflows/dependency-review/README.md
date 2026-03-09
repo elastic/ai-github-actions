@@ -4,7 +4,7 @@ Analyze Dependabot, Renovate, and Updatecli dependency update PRs.
 
 ## How it works
 
-Triggered when Dependabot, Renovate, or Updatecli opens or updates a PR. Classifies each dependency by ecosystem (GitHub Actions, Go, npm, Python, Java, Buildkite, etc.), runs shared checks (changelog, usage analysis, compatibility, testability), and applies ecosystem-specific checks where relevant. Posts a structured analysis comment and optionally labels the PR `needs-human-review` or `higher-risk`.
+Triggered when Dependabot, Renovate, or Updatecli opens or updates a PR. Classifies each dependency by ecosystem (GitHub Actions, Go, npm, Python, Java, Buildkite, etc.), runs shared checks (changelog, usage analysis, compatibility, testability), and applies ecosystem-specific checks where relevant. Posts a structured analysis comment and optionally labels the PR `needs-human-review`, `higher-risk`, or `oblt-aw/ai/merge-ready`.
 
 ## Quick Install
 
@@ -33,7 +33,7 @@ See [example.yml](example.yml) for the full workflow file.
 ## Safe Outputs
 
 - `add-comment` — post an analysis comment on the PR (max 1)
-- `add-labels` — label the PR when human review or higher risk is detected (max 3)
+- `add-labels` — label the PR with `needs-human-review`, `higher-risk`, or `oblt-aw/ai/merge-ready` (max 3)
 
 ## Manual usage with mention-in-pr
 

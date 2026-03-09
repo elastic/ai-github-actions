@@ -77,6 +77,7 @@ safe-outputs:
     allowed:
       - "needs-human-review"
       - "higher-risk"
+      - "oblt-aw/ai/merge-ready"
 strict: false
 timeout-minutes: 60
 steps:
@@ -236,7 +237,10 @@ Based on the analysis, determine if labels should be applied:
 - **`higher-risk`**: Apply when:
   - The updated dependency is used only in workflows triggered by push-to-main, release, schedule, or workflow_dispatch (cannot be validated in PR context)
 
-Only apply `needs-human-review` and `higher-risk` labels.
+- **`oblt-aw/ai/merge-ready`**: Apply when:
+  - No issues were found and the dependency update is safe to merge without human review
+
+Only apply `needs-human-review`, `higher-risk`, and `oblt-aw/ai/merge-ready` labels.
 
 ### Step 5: Post Analysis Comment
 
