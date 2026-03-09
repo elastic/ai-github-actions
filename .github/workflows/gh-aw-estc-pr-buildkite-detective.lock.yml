@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"0b43f546adb37e6d76b521d7d6ce8f85e4d2a323590174376686e1f477d9f412"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"544fc5da6cbff27918feed751b628cff26b71eca29a9de94f7240386f34d1832"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -171,10 +171,13 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GH_AW_ENV_BK_BRANCHES: ${{ env.BK_BRANCHES }}
           GH_AW_ENV_BK_COMMIT_SHA: ${{ env.BK_COMMIT_SHA }}
           GH_AW_ENV_BK_EVENT_ID: ${{ env.BK_EVENT_ID }}
           GH_AW_ENV_BK_EVENT_NAME: ${{ env.BK_EVENT_NAME }}
           GH_AW_ENV_BK_FAILURE_STATE: ${{ env.BK_FAILURE_STATE }}
+          GH_AW_ENV_BK_PR_NUMBERS: ${{ env.BK_PR_NUMBERS }}
+          GH_AW_ENV_BK_TARGET_URL: ${{ env.BK_TARGET_URL }}
           GH_AW_EXPR_0EAAB79A: ${{ inputs.buildkite-pipeline }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_6908A9DD: ${{ inputs.buildkite-org }}
@@ -330,6 +333,9 @@ jobs:
           - **Event ID**: __GH_AW_ENV_BK_EVENT_ID__
           - **Failure State**: __GH_AW_ENV_BK_FAILURE_STATE__
           - **Commit SHA**: __GH_AW_ENV_BK_COMMIT_SHA__
+          - **Target URL**: __GH_AW_ENV_BK_TARGET_URL__
+          - **PR Numbers**: __GH_AW_ENV_BK_PR_NUMBERS__
+          - **Branches**: __GH_AW_ENV_BK_BRANCHES__
           - **Buildkite Organization**: __GH_AW_EXPR_6908A9DD__
           
           ## Constraints
@@ -361,8 +367,11 @@ jobs:
           ### Step 1: Gather Context
           
           1. Use the commit SHA provided in the Context section above. If it is empty, discover it from the PR's commit statuses or check runs.
-          2. Call `list_pull_requests` for the repository (open PRs), then call `pull_request_read` with method `get` on candidates and keep PRs where `head.sha` matches the failed commit SHA. If none match, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
-          3. For each matching PR, keep author, branches, and fork status for downstream analysis.
+          2. Find the associated pull request(s):
+             - If **PR Numbers** in the Context section above is non-empty (e.g., from `check_run` events), use those PR numbers directly with `pull_request_read` method `get`.
+             - Otherwise, use `bash` + `gh api repos/__GH_AW_GITHUB_REPOSITORY__/commits/{commit_sha}/pulls` to find PRs containing the commit SHA. If no results, also try searching open PRs whose head branch matches one of the **Branches** listed in the Context section.
+             - If no PR is found after all attempts, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
+          3. For each matching PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status for downstream analysis.
           
           ### Step 2: Find the Buildkite Build
           
@@ -431,10 +440,13 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_ENV_BK_BRANCHES: ${{ env.BK_BRANCHES }}
           GH_AW_ENV_BK_COMMIT_SHA: ${{ env.BK_COMMIT_SHA }}
           GH_AW_ENV_BK_EVENT_ID: ${{ env.BK_EVENT_ID }}
           GH_AW_ENV_BK_EVENT_NAME: ${{ env.BK_EVENT_NAME }}
           GH_AW_ENV_BK_FAILURE_STATE: ${{ env.BK_FAILURE_STATE }}
+          GH_AW_ENV_BK_PR_NUMBERS: ${{ env.BK_PR_NUMBERS }}
+          GH_AW_ENV_BK_TARGET_URL: ${{ env.BK_TARGET_URL }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_6908A9DD: ${{ inputs.buildkite-org }}
@@ -449,10 +461,13 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_ENV_BK_BRANCHES: ${{ env.BK_BRANCHES }}
           GH_AW_ENV_BK_COMMIT_SHA: ${{ env.BK_COMMIT_SHA }}
           GH_AW_ENV_BK_EVENT_ID: ${{ env.BK_EVENT_ID }}
           GH_AW_ENV_BK_EVENT_NAME: ${{ env.BK_EVENT_NAME }}
           GH_AW_ENV_BK_FAILURE_STATE: ${{ env.BK_FAILURE_STATE }}
+          GH_AW_ENV_BK_PR_NUMBERS: ${{ env.BK_PR_NUMBERS }}
+          GH_AW_ENV_BK_TARGET_URL: ${{ env.BK_TARGET_URL }}
           GH_AW_EXPR_0EAAB79A: ${{ inputs.buildkite-pipeline }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_6908A9DD: ${{ inputs.buildkite-org }}
@@ -476,10 +491,13 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
+                GH_AW_ENV_BK_BRANCHES: process.env.GH_AW_ENV_BK_BRANCHES,
                 GH_AW_ENV_BK_COMMIT_SHA: process.env.GH_AW_ENV_BK_COMMIT_SHA,
                 GH_AW_ENV_BK_EVENT_ID: process.env.GH_AW_ENV_BK_EVENT_ID,
                 GH_AW_ENV_BK_EVENT_NAME: process.env.GH_AW_ENV_BK_EVENT_NAME,
                 GH_AW_ENV_BK_FAILURE_STATE: process.env.GH_AW_ENV_BK_FAILURE_STATE,
+                GH_AW_ENV_BK_PR_NUMBERS: process.env.GH_AW_ENV_BK_PR_NUMBERS,
+                GH_AW_ENV_BK_TARGET_URL: process.env.GH_AW_ENV_BK_TARGET_URL,
                 GH_AW_EXPR_0EAAB79A: process.env.GH_AW_EXPR_0EAAB79A,
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
                 GH_AW_EXPR_6908A9DD: process.env.GH_AW_EXPR_6908A9DD,
@@ -611,11 +629,17 @@ jobs:
           if [ "$GITHUB_EVENT_NAME" = "status" ]; then
             echo "BK_EVENT_ID=$(jq -r '.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
             echo "BK_FAILURE_STATE=$(jq -r '.state' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-            echo "BK_COMMIT_SHA=$(jq -r '.sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+            echo "BK_COMMIT_SHA=$(jq -r '.commit.sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+            echo "BK_TARGET_URL=$(jq -r '.target_url // empty' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+            echo "BK_BRANCHES=$(jq -c '[.branches[].name]' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+            echo "BK_PR_NUMBERS=" >> "$GITHUB_ENV"
           else
             echo "BK_EVENT_ID=$(jq -r '.check_run.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
             echo "BK_FAILURE_STATE=$(jq -r '.check_run.conclusion' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
             echo "BK_COMMIT_SHA=$(jq -r '.check_run.head_sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+            echo "BK_TARGET_URL=$(jq -r '.check_run.details_url // empty' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+            echo "BK_BRANCHES=" >> "$GITHUB_ENV"
+            echo "BK_PR_NUMBERS=$(jq -c '[.check_run.pull_requests[].number]' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
           fi
       - env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -1426,7 +1450,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
-          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
+          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }},buildkite-limited-access[bot]
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
