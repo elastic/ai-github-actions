@@ -12,21 +12,6 @@ safe-inputs:
           except subprocess.TimeoutExpired:
               return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
 
-      # Guard: fail early on prohibited workflow file changes
-      changed_files = []
-      for names_cmd in [
-          ['git', 'diff', '--name-only', '--merge-base', '@{upstream}'],
-          ['git', 'diff', '--name-only', '@{upstream}'],
-          ['git', 'diff', '--name-only', 'HEAD'],
-      ]:
-          names = run(names_cmd)
-          if names.stdout.strip():
-              changed_files = [line.strip() for line in names.stdout.splitlines() if line.strip()]
-              break
-      if any(path.startswith('.github/workflows/') for path in changed_files):
-          print(json.dumps({'status': 'error', 'error': 'Changes under .github/workflows/ detected in your local branch. push_to_pull_request_branch will reject these changes. Fix: move proposed workflow edits to matching paths under `github/workflows/` (without the leading dot), then ask a maintainer to relocate them to `.github/workflows/`.'}))
-          raise SystemExit(0)
-
       # Guard: detect history rewrites and merge commits
       pr_json_path = '/tmp/pr-context/pr.json'
       if os.path.isfile(pr_json_path):
@@ -100,7 +85,6 @@ Before calling `push_to_pull_request_branch`, call `ready_to_push_to_pr` and app
 - **Fork PRs**: Cannot push to fork PR branches. Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, explain that you cannot push and suggest the author apply changes themselves.
 - **Committed changes required**: You must have locally committed changes before calling push. Uncommitted or staged-only changes will fail.
 - **Branch**: Pushes to the PR's head branch. The workspace must have the PR branch checked out.
-- You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.
 
 Trying to resolve merge conflicts? Do not use `git merge` or `git rebase` — `push_to_pull_request_branch` uses `git format-patch` which requires single-parent commits. Instead:
 1. Compare with the base branch (from `/tmp/pr-context/pr.json` field `baseRefName`) to see what changed in the conflicting files

@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"b4f246f35147621052bc48b5f494e7449cb62f2c73a40a033bdeac6bf591313d"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"aa00ad363fb860bd4044d36aeb8308f3d797012932628b4a09a04c6bf8633707"}
 
 name: "PR Review Addresser"
 "on":
