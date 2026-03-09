@@ -405,7 +405,7 @@ class TestSelfReviewGating:
 
 
 # ---------------------------------------------------------------------------
-# Push fragment: history rewrite and merge commit guards
+# Push fragment: history rewrite guard
 # ---------------------------------------------------------------------------
 
 
@@ -437,7 +437,7 @@ def _cleanup_pr_json() -> None:
 
 
 class TestPushGuards:
-    """Test the ancestry and merge-commit guards in the push fragment."""
+    """Test the ancestry guard in the push fragment."""
 
     @pytest.fixture
     def py_code(self):
@@ -493,8 +493,8 @@ class TestPushGuards:
         assert output["status"] == "error"
         assert "History rewrite" in output["error"]
 
-    def test_merge_commit_detected(self, py_code, tmp_path):
-        """A merge commit after the PR head should be detected."""
+    def test_merge_commit_allowed(self, py_code, tmp_path):
+        """A merge commit after the PR head should be allowed for push."""
         repo = make_git_repo(tmp_path, with_upstream=True)
         pr_head = _get_head_sha(repo)
         _write_pr_json(pr_head)
@@ -511,8 +511,7 @@ class TestPushGuards:
         subprocess.run(["git", "merge", "side", "--no-edit"], cwd=str(repo), check=True, capture_output=True)
 
         output = run_py_in_repo(py_code, str(repo))
-        assert output["status"] == "error"
-        assert "Merge commit" in output["error"]
+        assert output["status"] == "ok"
 
 
 # ---------------------------------------------------------------------------

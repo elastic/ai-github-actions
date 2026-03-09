@@ -44,6 +44,29 @@ jobs:
 
 The fixer job only runs when the detector actually created an issue.
 
+## Audit creates issue -> create PR in same workflow
+
+With current compiler output propagation, you can chain directly from an audit/detector workflow to `gh-aw-create-pr-from-issue` in the same run:
+
+```yaml
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-text-auditor.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+  create_pr_from_issue:
+    needs: run
+    if: needs.run.outputs.created_issue_number != ''
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
+    with:
+      target-issue-number: ${{ needs.run.outputs.created_issue_number }}
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+```
+
+This pattern gives you: **Audit creates issue -> same workflow: if issue was created, then start `create-pr-from-issue`**.
+
 ## Complete examples
 
 ### Bug Hunter + Bug Exterminator

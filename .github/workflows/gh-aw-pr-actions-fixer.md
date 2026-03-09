@@ -32,6 +32,11 @@ on:
         type: string
         required: false
         default: ""
+      target-pr-number:
+        description: "Explicit PR number to target (used for manual/dispatch triggers)"
+        type: string
+        required: false
+        default: ""
       workflow-run-id:
         description: "Workflow run ID to analyze"
         type: string

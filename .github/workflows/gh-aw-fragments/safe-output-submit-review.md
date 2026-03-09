@@ -3,6 +3,7 @@ safe-outputs:
   submit-pull-request-review:
     max: 1
     footer: "if-body"
+    target: '${{ inputs.target-pr-number || "triggering" }}'
 ---
 
 ## submit-pull-request-review Limitations
