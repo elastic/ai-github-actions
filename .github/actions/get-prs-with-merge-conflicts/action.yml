@@ -17,6 +17,10 @@ inputs:
     description: "Exclude PRs that have any of these labels (comma-separated)."
     required: false
     default: ""
+  author-associations:
+    description: "Only include PRs whose author has one of these associations (comma-separated). Empty means no filter. Values: OWNER, MEMBER, COLLABORATOR, CONTRIBUTOR, FIRST_TIME_CONTRIBUTOR, FIRST_TIMER, NONE."
+    required: false
+    default: "OWNER,MEMBER,COLLABORATOR"
   opt-out-label:
     description: "Deprecated: exclude PRs with this label (kept for backward compatibility)"
     required: false
@@ -55,6 +59,12 @@ runs:
             );
           const includeLabels = parseLabelSet(core.getInput("include-labels"));
           const excludeLabels = parseLabelSet(core.getInput("exclude-labels"));
+          const allowedAssociations = new Set(
+            core.getInput("author-associations")
+              .split(",")
+              .map((a) => a.trim().toUpperCase())
+              .filter((a) => a.length > 0),
+          );
           const optOutLabel = core.getInput("opt-out-label").trim().toLowerCase();
           if (optOutLabel) {
             excludeLabels.add(optOutLabel);
@@ -67,6 +77,7 @@ runs:
                     number
                     isDraft
                     mergeStateStatus
+                    authorAssociation
                     labels(first: 50) {
                       nodes { name }
                     }
@@ -83,14 +94,16 @@ runs:
             const matchesInclude =
               includeLabels.size === 0 || [...includeLabels].some((label) => labels.has(label));
             const matchesExclude = [...excludeLabels].some((label) => labels.has(label));
+            const matchesAssociation =
+              allowedAssociations.size === 0 || allowedAssociations.has(pr.authorAssociation);
             const conflicted = pr.mergeStateStatus === "DIRTY";
-            if (!pr.isDraft && matchesInclude && !matchesExclude && conflicted) {
+            if (!pr.isDraft && matchesInclude && !matchesExclude && matchesAssociation && conflicted) {
               prs.push({ number: pr.number });
             }
           }
 
           core.info(
-            `Found ${prs.length} conflicted PR(s). includeLabels=${JSON.stringify([...includeLabels])}, excludeLabels=${JSON.stringify([...excludeLabels])}`,
+            `Found ${prs.length} conflicted PR(s). includeLabels=${JSON.stringify([...includeLabels])}, excludeLabels=${JSON.stringify([...excludeLabels])}, authorAssociations=${JSON.stringify([...allowedAssociations])}`,
           );
           core.setOutput("prs", JSON.stringify(prs));
           core.setOutput("count", String(prs.length));
