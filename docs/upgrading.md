@@ -23,6 +23,15 @@ Compiler upgrade with new features and bug fixes. No breaking changes — recomp
 - Activation job `contents: read` permission added
 - Report template headers normalized to `h3+` levels
 
+## gh-aw compiler v0.56.2 (approx)
+
+Compiler updates in this range fix safe-output workflow-call output propagation so detector/audit workflows reliably expose created issue outputs (for example, `created_issue_number`).
+
+That enables same-run chaining patterns like:
+- detector/audit job creates an issue
+- caller checks `if: needs.run.outputs.created_issue_number != ''`
+- caller immediately starts `gh-aw-create-pr-from-issue`
+
 ## v0.2.x → Latest (breaking changes)
 
 - `stale-issues` was split: rename to `stale-issues-investigator` and add `stale-issues-remediator` if you want automatic objection handling + auto-close.

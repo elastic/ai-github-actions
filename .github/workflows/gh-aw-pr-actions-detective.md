@@ -31,6 +31,11 @@ on:
         type: string
         required: false
         default: ""
+      target-pr-number:
+        description: "Explicit PR number to target (used for manual/dispatch triggers)"
+        type: string
+        required: false
+        default: ""
       allowed-bot-users:
         description: "Allowlisted bot actor usernames (comma-separated)"
         type: string
@@ -70,6 +75,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -100,6 +107,7 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/jobs \
        --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
     ```
+   - If none of the jobs have a `failure` conclusion, call `noop` with message "No failed jobs in workflow run; nothing to report" and stop.
    - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
     ```bash
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/logs \

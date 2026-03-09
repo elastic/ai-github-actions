@@ -78,6 +78,9 @@ safe-outputs:
   activation-comments: false
   max-patch-size: 10240
   add-comment:
+    pull-requests: false
+    issues: true
+    discussions: false
     target: "${{ inputs.target-issue-number }}"
 strict: false
 timeout-minutes: 60
@@ -86,6 +89,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 

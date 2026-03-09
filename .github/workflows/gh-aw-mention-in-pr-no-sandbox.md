@@ -26,7 +26,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-no-sandbox-${{ github.event.issue.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-no-sandbox-${{ inputs.target-pr-number || github.event.issue.number }}"
 on:
   workflow_call:
     inputs:
@@ -42,6 +42,11 @@ on:
         default: ""
       setup-commands:
         description: "Shell commands to run before the agent starts (dependency install, build, etc.)"
+        type: string
+        required: false
+        default: ""
+      target-pr-number:
+        description: "Explicit PR number to target (used for manual/dispatch triggers)"
         type: string
         required: false
         default: ""
@@ -75,7 +80,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: ${{ github.workflow }}-mention-pr-no-sandbox-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-mention-pr-no-sandbox-${{ inputs.target-pr-number || github.event.issue.number }}
   cancel-in-progress: true
 permissions:
   actions: read
@@ -109,6 +114,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -119,7 +126,7 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **PR**: #${{ github.event.issue.number }} — ${{ github.event.issue.title }}
+- **PR**: #${{ inputs.target-pr-number || github.event.issue.number }} — ${{ github.event.issue.title }}
 - **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
 - **Request**: "${{ steps.sanitized.outputs.text }}"
 
@@ -139,7 +146,7 @@ PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md
 1. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches).
 2. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
 3. Read `/tmp/pr-context/comments.json` and `/tmp/pr-context/review_comments.json` to understand the conversation context and what's being asked.
-4. Do not modify, review, comment on, or resolve threads for any PR other than #${{ github.event.issue.number }}.
+4. Do not modify, review, comment on, or resolve threads for any PR other than #${{ inputs.target-pr-number || github.event.issue.number }}.
 
 ### Step 2: Handle the Request
 
@@ -166,6 +173,7 @@ Based on what's asked, do the appropriate thing:
    - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
 - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
 - Use `ready_to_push_to_pr` to check if the changes are ready to push.
+- If `ready_to_push_to_pr` results in any additional edits (including merge-conflict resolutions), rerun the same required repo commands against the final state before pushing. If required commands cannot be run, explain why and do not push.
 - Use `push_to_pull_request_branch` to push your changes.
 - After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
 - **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.

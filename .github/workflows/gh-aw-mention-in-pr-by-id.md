@@ -94,15 +94,6 @@ strict: false
 safe-outputs:
   activation-comments: false
   max-patch-size: 10240
-  add-comment:
-    target: "${{ inputs.target-pr-number }}"
-  create-pull-request-review-comment:
-    target: "${{ inputs.target-pr-number }}"
-  submit-pull-request-review:
-    target: "${{ inputs.target-pr-number }}"
-  push-to-pull-request-branch:
-    target: "${{ inputs.target-pr-number }}"
-    github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 timeout-minutes: 60
 steps:
   - name: Checkout target PR branch (workflow_call)
@@ -125,6 +116,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 

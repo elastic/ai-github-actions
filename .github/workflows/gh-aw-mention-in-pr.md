@@ -116,6 +116,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -179,6 +181,8 @@ Based on what's asked, do the appropriate thing.
   - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
   - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
 - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
+- Call `ready_to_push_to_pr` to confirm the branch is safe to push.
+- If `ready_to_push_to_pr` results in any additional edits (including merge-conflict resolutions), rerun the same required repo commands against the final state before pushing. If required commands cannot be run, explain why and do not push.
 - Use `push_to_pull_request_branch` to push your changes.
 - After pushing, resolve every review thread that your changes fully address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
 - **Important completion step**: when feedback is completed and no further reviewer action is needed, resolving the corresponding thread is required. Do not leave fully addressed threads open.
@@ -189,10 +193,11 @@ Based on what's asked, do the appropriate thing.
 
 - Check via `pull_request_read` (method `get`) whether this is a fork PR. If so, reply that you cannot push to fork branches and suggest the author resolve locally.
 - Read `/tmp/pr-context/pr.json` for the head and base branch names.
-- Identify conflicting files by comparing with the base branch, then edit each file directly to produce the correct merged result. Commit the resolved changes as regular (single-parent) commits — do not use `git merge` or `git rebase` (the `ready_to_push_to_pr` check will catch merge commits before pushing).
+- Follow the merge-conflict/update-branch guidance in `ready_to_push_to_pr` and resolve conflicts with a merge-based flow. Do **not** use `git rebase` or other history-rewrite flows.
 - If conflicts are too complex to resolve confidently (large structural changes, binary files, ambiguous intent), reply explaining what you found and suggest the author resolve locally.
 - If the request includes additional work (code fixes, review feedback), complete all of it before pushing — `push_to_pull_request_branch` can only be called once. Resolve merge conflicts first, then make other requested changes on top, then push everything together.
-- Use `push_to_pull_request_branch` and reply summarizing what was resolved and how conflicts were handled.
+- After resolving conflicts (and any follow-up changes), rerun required repo commands (lint/build/test) on the final tree. If required commands cannot be run, explain why and do not push.
+- Call `ready_to_push_to_pr`, then use `push_to_pull_request_branch`, and reply summarizing what was resolved and how conflicts were handled.
 
 **If asked a question about the code:**
 
@@ -210,6 +215,7 @@ If you did not submit a PR review, call `add_comment` with your response. If you
 
 **Additional tools:**
 
+- `ready_to_push_to_pr` — run pre-push safety checks before pushing PR changes
 - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
 - `reply_to_pull_request_review_comment` — reply inline to a review comment thread to explain what you changed or why you disagree
 - `resolve_pull_request_review_thread` — resolve a review thread after addressing the feedback (pass the thread's GraphQL node ID)

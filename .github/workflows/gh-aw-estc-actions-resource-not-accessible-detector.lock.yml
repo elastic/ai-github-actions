@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"738d1f4cba5b443d11e2a1ddbb76a38aa624c541275832ce4583b15d793205e7"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"dba21fdbf97f4744dc0225c6502707833bed3b75e1632b720a6aba4099105ebf"}
 
 name: "Resource Not Accessible By Integration Detector"
 "on":
@@ -116,7 +116,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@956f874e40e831c08a8b01ec76f5d49ae3fe8387 # v0.53.6
+        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
         with:
           destination: /opt/gh-aw/actions
       - name: Generate agentic run info
@@ -126,7 +126,7 @@ jobs:
           GH_AW_INFO_ENGINE_NAME: "GitHub Copilot CLI"
           GH_AW_INFO_MODEL: "${{ inputs.model }}"
           GH_AW_INFO_VERSION: ""
-          GH_AW_INFO_AGENT_VERSION: "0.0.421"
+          GH_AW_INFO_AGENT_VERSION: "latest"
           GH_AW_INFO_WORKFLOW_NAME: "Resource Not Accessible By Integration Detector"
           GH_AW_INFO_EXPERIMENTAL: "false"
           GH_AW_INFO_SUPPORTS_TOOLS_ALLOWLIST: "true"
@@ -136,6 +136,7 @@ jobs:
           GH_AW_INFO_AWF_VERSION: "v0.23.0"
           GH_AW_INFO_AWMG_VERSION: ""
           GH_AW_INFO_FIREWALL_TYPE: "squid"
+          GH_AW_COMPILED_STRICT: "false"
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
@@ -537,7 +538,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@956f874e40e831c08a8b01ec76f5d49ae3fe8387 # v0.53.6
+        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -569,7 +570,7 @@ jobs:
           node-version-file: .nvmrc
       - if: hashFiles('.ruby-version') != ''
         name: Setup Ruby
-        uses: ruby/setup-ruby@19a43a6a2428d455dbd1b85344698725179c9d8c # v1
+        uses: ruby/setup-ruby@6ca151fd1bfcfd6fe0c4eb6837eb0584d0134a0c # v1
         with:
           bundler-cache: true
           ruby-version: .ruby-version
@@ -611,6 +612,8 @@ jobs:
         name: Prescan failed runs for target error
         run: "set -euo pipefail\nmkdir -p /tmp/gh-aw/agent\n\nsince=\"$(date -u -d \"${LOOK_BACK_DAYS} days ago\" '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null || date -u -v-\"${LOOK_BACK_DAYS}\"d '+%Y-%m-%dT%H:%M:%SZ')\"\nfindings_file=\"/tmp/gh-aw/agent/resource-not-accessible-findings.tsv\"\nprintf \"workflow_path\\tbranch\\trun_id\\trun_url\\tcreated_at\\tevidence\\n\" > \"$findings_file\"\n\nbranches=()\nfor branch in \"$DEFAULT_BRANCH\" $LONG_TERM_BRANCHES; do\n  [ -n \"$branch\" ] || continue\n  skip=false\n  for existing in \"${branches[@]:-}\"; do\n    if [ \"$existing\" = \"$branch\" ]; then\n      skip=true\n      break\n    fi\n  done\n  if [ \"$skip\" = false ]; then\n    branches+=(\"$branch\")\n  fi\ndone\n\nruns_file=\"/tmp/gh-aw/agent/resource-not-accessible-runs.tsv\"\n: > \"$runs_file\"\nfor branch in \"${branches[@]}\"; do\n  gh api \"repos/$GITHUB_REPOSITORY/actions/runs\" \\\n    --method GET \\\n    -f branch=\"$branch\" \\\n    -f status=failure \\\n    -f created=\">=${since}\" \\\n    --paginate \\\n    --jq '.workflow_runs[] | [.id, .html_url, .path, .head_branch, .created_at] | @tsv' \\\n    >> \"$runs_file\" || true\ndone\n\nwhile IFS=$'\\t' read -r run_id run_url workflow_path head_branch created_at; do\n  [ -n \"${run_id:-}\" ] || continue\n  zip_file=\"/tmp/gh-aw/agent/workflow-logs-${run_id}.zip\"\n  log_dir=\"/tmp/gh-aw/agent/workflow-logs-${run_id}\"\n\n  if ! gh api \"repos/$GITHUB_REPOSITORY/actions/runs/${run_id}/logs\" -H \"Accept: application/vnd.github+json\" > \"$zip_file\" 2>/dev/null; then\n    continue\n  fi\n  rm -rf \"$log_dir\"\n  if ! unzip -o \"$zip_file\" -d \"$log_dir\" >/dev/null 2>&1; then\n    continue\n  fi\n\n  match=\"$(grep -R -n -m 3 \"Resource not accessible by integration\" \"$log_dir\" 2>/dev/null || true)\"\n  if [ -n \"$match\" ]; then\n    evidence=\"${match//$'\\t'/ }\"\n    evidence=\"${evidence//$'\\n'/ | }\"\n    printf \"%s\\t%s\\t%s\\t%s\\t%s\\t%s\\n\" \"$workflow_path\" \"$head_branch\" \"$run_id\" \"$run_url\" \"$created_at\" \"$evidence\" >> \"$findings_file\"\n  fi\n  rm -rf \"$log_dir\" \"$zip_file\"\ndone < \"$runs_file\"\n\nmatches=\"$(tail -n +2 \"$findings_file\" | wc -l | tr -d ' ')\"\nworkflows=\"$(tail -n +2 \"$findings_file\" | cut -f1 | sort -u | wc -l | tr -d ' ')\"\n{\n  echo \"since=${since}\"\n  echo \"look_back_days=${LOOK_BACK_DAYS}\"\n  echo \"matched_runs=${matches}\"\n  echo \"matched_workflows=${workflows}\"\n  echo \"findings_file=${findings_file}\"\n} > /tmp/gh-aw/agent/resource-not-accessible-summary.txt\n"
       - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SETUP_COMMANDS: ${{ inputs.setup-commands }}
         if: ${{ inputs.setup-commands != '' }}
         name: Repo-specific setup
@@ -643,7 +646,7 @@ jobs:
             const { main } = require('/opt/gh-aw/actions/checkout_pr_branch.cjs');
             await main();
       - name: Install GitHub Copilot CLI
-        run: /opt/gh-aw/actions/install_copilot_cli.sh 0.0.421
+        run: /opt/gh-aw/actions/install_copilot_cli.sh latest
       - name: Install awf binary
         run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.23.0
       - name: Determine automatic lockdown mode for GitHub MCP Server
@@ -657,7 +660,7 @@ jobs:
             const determineAutomaticLockdown = require('/opt/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.23.0 ghcr.io/github/gh-aw-firewall/api-proxy:0.23.0 ghcr.io/github/gh-aw-firewall/squid:0.23.0 ghcr.io/github/gh-aw-mcpg:v0.1.8 ghcr.io/github/github-mcp-server:v0.31.0 node:lts-alpine
+        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.23.0 ghcr.io/github/gh-aw-firewall/api-proxy:0.23.0 ghcr.io/github/gh-aw-firewall/squid:0.23.0 ghcr.io/github/gh-aw-mcpg:v0.1.8 ghcr.io/github/github-mcp-server:v0.32.0 node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p /opt/gh-aw/safeoutputs
@@ -976,7 +979,7 @@ jobs:
             "mcpServers": {
               "github": {
                 "type": "stdio",
-                "container": "ghcr.io/github/github-mcp-server:v0.31.0",
+                "container": "ghcr.io/github/github-mcp-server:v0.32.0",
                 "env": {
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
@@ -1038,6 +1041,10 @@ jobs:
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_STEP_SUMMARY: /tmp/gh-aw/agent-step-summary.md
           GITHUB_WORKSPACE: ${{ github.workspace }}
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
           XDG_CONFIG_HOME: /home/runner
       - name: Detect inference access error
         id: detect-inference-error
@@ -1264,6 +1271,10 @@ jobs:
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_STEP_SUMMARY: /tmp/gh-aw/agent-step-summary.md
           GITHUB_WORKSPACE: ${{ github.workspace }}
+          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
           XDG_CONFIG_HOME: /home/runner
       - name: Parse threat detection results
         id: parse_detection_results
@@ -1322,7 +1333,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@956f874e40e831c08a8b01ec76f5d49ae3fe8387 # v0.53.6
+        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1412,7 +1423,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@956f874e40e831c08a8b01ec76f5d49ae3fe8387 # v0.53.6
+        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1455,7 +1466,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@956f874e40e831c08a8b01ec76f5d49ae3fe8387 # v0.53.6
+        uses: github/gh-aw/actions/setup@046e81c42fe2a9d91f47596660fcc69f48f5c70a # v0.56.0
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
