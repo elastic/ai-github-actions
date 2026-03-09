@@ -148,7 +148,7 @@ safe-outputs:
   protected-files:
     - ".github/**"
   push-to-pull-request-branch:
-    target: '${{ inputs.target-pr-number || "triggering" }}'
+    target: "${{ inputs.target-pr-number || 'triggering' }}"
     github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 ---
 
