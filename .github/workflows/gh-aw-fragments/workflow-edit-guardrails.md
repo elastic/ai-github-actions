@@ -1,4 +1,3 @@
 ## Workflow Editing Guardrails
 
-- Protected paths are enforced by safe outputs (for example, `.github/**` in PR create/push workflows).
-- If a requested change touches a protected path, explain that the runtime blocked it and ask a maintainer to apply that change directly.
+- If a requested change touches a workflow file under `.github/workflows/`, explain that the GitHub Actions token cannot push workflow changes and ask a maintainer to apply that change directly.

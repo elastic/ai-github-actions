@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"94e09bb9bb20f1b9b1a3b52f62c357933cb564e57d0c1088fb2f533f34080f05"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"aeda2b4acb2bc4726bc5cd12c3ce45e62a32a7bc62ab6477eeda5e077a6a76bb"}
 
 name: "Mention in Issue by ID"
 "on":
@@ -310,8 +310,7 @@ jobs:
           cat << 'GH_AW_PROMPT_EOF'
           ## Workflow Editing Guardrails
           
-          - Protected paths are enforced by safe outputs (for example, `.github/**` in PR create/push workflows).
-          - If a requested change touches a protected path, explain that the runtime blocked it and ask a maintainer to apply that change directly.
+          - If a requested change touches a workflow file under `.github/workflows/`, explain that the GitHub Actions token cannot push workflow changes and ask a maintainer to apply that change directly.
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
