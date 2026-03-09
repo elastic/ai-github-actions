@@ -100,7 +100,12 @@ steps:
       if [ "$GITHUB_EVENT_NAME" = "status" ]; then
         echo "BK_EVENT_ID=$(jq -r '.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
         echo "BK_FAILURE_STATE=$(jq -r '.state' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-        echo "BK_COMMIT_SHA=$(jq -r '.sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+        # .sha is the default-branch HEAD (workflow reference), not the PR commit.
+        # The PR branch commit is in .branches[] for the non-default branch.
+        DEFAULT_BRANCH=$(jq -r '.repository.default_branch // "main"' "$GITHUB_EVENT_PATH")
+        PR_SHA=$(jq -r --arg db "$DEFAULT_BRANCH" \
+          '[.branches[] | select(.name != $db)] | .[0].commit.sha // empty' "$GITHUB_EVENT_PATH")
+        echo "BK_COMMIT_SHA=${PR_SHA:-$(jq -r '.sha' "$GITHUB_EVENT_PATH")}" >> "$GITHUB_ENV"
         echo "BK_TARGET_URL=$(jq -r '.target_url // empty' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
         echo "BK_BRANCHES=$(jq -c '[.branches[].name]' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
         echo "BK_PR_NUMBERS=" >> "$GITHUB_ENV"

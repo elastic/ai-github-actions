@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"056ed7d954ef4d4b95e632bc7178c0268471380ac2ffc587e1f67c443dbdffb5"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"a56de7b6249243a8ef707caa8ab0bab1e52f8a36a6e658df2febbceda50e74b2"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -623,24 +623,7 @@ jobs:
         run: "set -euo pipefail\nif [ -f \"AGENTS.md\" ]; then\n  cp AGENTS.md /tmp/agents.md\n  echo \"Repository conventions copied from AGENTS.md to /tmp/agents.md\"\nelse\n  OWNER=\"${GITHUB_REPOSITORY%/*}\"\n  REPO=\"${GITHUB_REPOSITORY#*/}\"\n  summary=$(curl -sf --max-time 15 -X POST https://agents-md-generator.fastmcp.app/mcp \\\n    -H \"Content-Type: application/json\" \\\n    -H \"Accept: application/json, text/event-stream\" \\\n    -d \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":1,\\\"method\\\":\\\"tools/call\\\",\\\"params\\\":{\\\"name\\\":\\\"generate_agents_md\\\",\\\"arguments\\\":{\\\"owner\\\":\\\"${OWNER}\\\",\\\"repo\\\":\\\"${REPO}\\\"}}}\" \\\n    | sed 's/^data: //' \\\n    | jq -r '.result.structuredContent.summary // empty' 2>/dev/null) || true\n  if [ -n \"$summary\" ]; then\n    echo \"$summary\" > /tmp/agents.md\n    echo \"Repository conventions written to /tmp/agents.md\"\n  else\n    echo \"::warning::Could not fetch repository conventions; continuing without them\"\n  fi\nfi"
         shell: bash
       - name: Resolve event context
-        run: |
-          set -euo pipefail
-          echo "BK_EVENT_NAME=$GITHUB_EVENT_NAME" >> "$GITHUB_ENV"
-          if [ "$GITHUB_EVENT_NAME" = "status" ]; then
-            echo "BK_EVENT_ID=$(jq -r '.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-            echo "BK_FAILURE_STATE=$(jq -r '.state' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-            echo "BK_COMMIT_SHA=$(jq -r '.sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-            echo "BK_TARGET_URL=$(jq -r '.target_url // empty' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-            echo "BK_BRANCHES=$(jq -c '[.branches[].name]' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-            echo "BK_PR_NUMBERS=" >> "$GITHUB_ENV"
-          else
-            echo "BK_EVENT_ID=$(jq -r '.check_run.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-            echo "BK_FAILURE_STATE=$(jq -r '.check_run.conclusion' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-            echo "BK_COMMIT_SHA=$(jq -r '.check_run.head_sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-            echo "BK_TARGET_URL=$(jq -r '.check_run.details_url // empty' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-            echo "BK_BRANCHES=" >> "$GITHUB_ENV"
-            echo "BK_PR_NUMBERS=$(jq -c '[.check_run.pull_requests[].number]' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-          fi
+        run: "set -euo pipefail\necho \"BK_EVENT_NAME=$GITHUB_EVENT_NAME\" >> \"$GITHUB_ENV\"\nif [ \"$GITHUB_EVENT_NAME\" = \"status\" ]; then\n  echo \"BK_EVENT_ID=$(jq -r '.id' \"$GITHUB_EVENT_PATH\")\" >> \"$GITHUB_ENV\"\n  echo \"BK_FAILURE_STATE=$(jq -r '.state' \"$GITHUB_EVENT_PATH\")\" >> \"$GITHUB_ENV\"\n  # .sha is the default-branch HEAD (workflow reference), not the PR commit.\n  # The PR branch commit is in .branches[] for the non-default branch.\n  DEFAULT_BRANCH=$(jq -r '.repository.default_branch // \"main\"' \"$GITHUB_EVENT_PATH\")\n  PR_SHA=$(jq -r --arg db \"$DEFAULT_BRANCH\" \\\n    '[.branches[] | select(.name != $db)] | .[0].commit.sha // empty' \"$GITHUB_EVENT_PATH\")\n  echo \"BK_COMMIT_SHA=${PR_SHA:-$(jq -r '.sha' \"$GITHUB_EVENT_PATH\")}\" >> \"$GITHUB_ENV\"\n  echo \"BK_TARGET_URL=$(jq -r '.target_url // empty' \"$GITHUB_EVENT_PATH\")\" >> \"$GITHUB_ENV\"\n  echo \"BK_BRANCHES=$(jq -c '[.branches[].name]' \"$GITHUB_EVENT_PATH\")\" >> \"$GITHUB_ENV\"\n  echo \"BK_PR_NUMBERS=\" >> \"$GITHUB_ENV\"\nelse\n  echo \"BK_EVENT_ID=$(jq -r '.check_run.id' \"$GITHUB_EVENT_PATH\")\" >> \"$GITHUB_ENV\"\n  echo \"BK_FAILURE_STATE=$(jq -r '.check_run.conclusion' \"$GITHUB_EVENT_PATH\")\" >> \"$GITHUB_ENV\"\n  echo \"BK_COMMIT_SHA=$(jq -r '.check_run.head_sha' \"$GITHUB_EVENT_PATH\")\" >> \"$GITHUB_ENV\"\n  echo \"BK_TARGET_URL=$(jq -r '.check_run.details_url // empty' \"$GITHUB_EVENT_PATH\")\" >> \"$GITHUB_ENV\"\n  echo \"BK_BRANCHES=\" >> \"$GITHUB_ENV\"\n  echo \"BK_PR_NUMBERS=$(jq -c '[.check_run.pull_requests[].number]' \"$GITHUB_EVENT_PATH\")\" >> \"$GITHUB_ENV\"\nfi\n"
       - env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
