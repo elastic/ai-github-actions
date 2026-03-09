@@ -100,7 +100,7 @@ steps:
       if [ "$GITHUB_EVENT_NAME" = "status" ]; then
         echo "BK_EVENT_ID=$(jq -r '.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
         echo "BK_FAILURE_STATE=$(jq -r '.state' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-        echo "BK_COMMIT_SHA=$(jq -r '.commit.sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+        echo "BK_COMMIT_SHA=$(jq -r '.sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
         echo "BK_TARGET_URL=$(jq -r '.target_url // empty' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
         echo "BK_BRANCHES=$(jq -c '[.branches[].name]' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
         echo "BK_PR_NUMBERS=" >> "$GITHUB_ENV"
