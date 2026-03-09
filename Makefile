@@ -2,7 +2,7 @@
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
 GH_AW_VERSION := v0.56.0
-GH_AW_BUILD_VERSION := d67a5c331b07e3bcbe9bf5b9a200b680c6148a15
+GH_AW_BUILD_VERSION := e0993dfc79bafc3e268b143cd957374b70b33e77
 GH_AW_COMPAT_VERSION := v0.49.4
 GH_AW_MODULE_REPO := github.com/github/gh-aw
 GH_AW_SOURCE_REPO := github.com/strawgate/gh-aw
@@ -134,10 +134,10 @@ setup-gh-aw:
 			GOBIN="$(CURDIR)/.bin" go install $(GH_AW_MODULE_REPO)/cmd/gh-aw@$(GH_AW_BUILD_VERSION); \
 		else \
 			TMPDIR=$$(mktemp -d); \
-			git clone --filter=blob:none "https://$(GH_AW_SOURCE_REPO).git" "$$TMPDIR/gh-aw-src" >/dev/null 2>&1; \
-			git -C "$$TMPDIR/gh-aw-src" checkout "$(GH_AW_BUILD_VERSION)" >/dev/null 2>&1; \
+			git clone --filter=blob:none "https://$(GH_AW_SOURCE_REPO).git" "$$TMPDIR/gh-aw-src" >/dev/null 2>&1 && \
+			git -C "$$TMPDIR/gh-aw-src" checkout "$(GH_AW_BUILD_VERSION)" >/dev/null 2>&1 && \
 			( cd "$$TMPDIR/gh-aw-src" && GOBIN="$(CURDIR)/.bin" go install ./cmd/gh-aw ); \
-			rm -rf "$$TMPDIR"; \
+			status=$$?; rm -rf "$$TMPDIR"; exit $$status; \
 		fi && \
 		echo "✓ gh-aw compiler installed: $$(.bin/gh-aw version 2>/dev/null || echo 'gh aw version dev')"; \
 	fi

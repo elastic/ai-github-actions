@@ -35,6 +35,11 @@ on:
         type: string
         required: false
         default: ""
+      target-pr-number:
+        description: "Explicit PR number to target (used for manual/dispatch triggers)"
+        type: string
+        required: false
+        default: ""
       allowed-bot-users:
         description: "Allowlisted bot actor usernames (comma-separated)"
         type: string

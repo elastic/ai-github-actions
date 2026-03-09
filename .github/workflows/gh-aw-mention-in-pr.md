@@ -182,6 +182,7 @@ Based on what's asked, do the appropriate thing.
   - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
 - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
 - Call `ready_to_push_to_pr` to confirm the branch is safe to push.
+- If `ready_to_push_to_pr` results in any additional edits (including merge-conflict resolutions), rerun the same required repo commands against the final state before pushing. If required commands cannot be run, explain why and do not push.
 - Use `push_to_pull_request_branch` to push your changes.
 - After pushing, resolve every review thread that your changes fully address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
 - **Important completion step**: when feedback is completed and no further reviewer action is needed, resolving the corresponding thread is required. Do not leave fully addressed threads open.
@@ -195,6 +196,7 @@ Based on what's asked, do the appropriate thing.
 - Follow the merge-conflict/update-branch guidance in `ready_to_push_to_pr` and resolve conflicts with a merge-based flow. Do **not** use `git rebase` or other history-rewrite flows.
 - If conflicts are too complex to resolve confidently (large structural changes, binary files, ambiguous intent), reply explaining what you found and suggest the author resolve locally.
 - If the request includes additional work (code fixes, review feedback), complete all of it before pushing — `push_to_pull_request_branch` can only be called once. Resolve merge conflicts first, then make other requested changes on top, then push everything together.
+- After resolving conflicts (and any follow-up changes), rerun required repo commands (lint/build/test) on the final tree. If required commands cannot be run, explain why and do not push.
 - Call `ready_to_push_to_pr`, then use `push_to_pull_request_branch`, and reply summarizing what was resolved and how conflicts were handled.
 
 **If asked a question about the code:**
