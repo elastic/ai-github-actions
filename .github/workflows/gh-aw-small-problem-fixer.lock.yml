@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"afe56d0e86f83aaa0963af33896406a5756e2b4c1c2cbdce90329f446a7c7a69"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"8a4aea8396318c8a72bd33a8abb39cf77ae2b8fd27ae405e34994e692eeb2719"}
 
 name: "Small Problem Fixer"
 "on":

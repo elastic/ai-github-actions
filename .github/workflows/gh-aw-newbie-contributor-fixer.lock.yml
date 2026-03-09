@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"11d2b6bfad853e901951181b2c46ac84cdd7a01427fcb53afe9922c1816b8f58"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"43b0b618c93aa6eb3e3297529b3ec862e9742e6a4426fc44909f9ed2c3130649"}
 
 name: "Newbie Contributor Fixer"
 "on":
