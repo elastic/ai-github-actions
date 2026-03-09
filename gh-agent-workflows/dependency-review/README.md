@@ -4,7 +4,7 @@ Analyze Dependabot, Renovate, and Updatecli dependency update PRs.
 
 ## How it works
 
-Triggered when Dependabot, Renovate, or Updatecli opens or updates a PR. Classifies each dependency by ecosystem (GitHub Actions, Go, npm, Python, Java, Buildkite, etc.), runs shared checks (changelog, usage analysis, compatibility, testability), and applies ecosystem-specific checks where relevant. Posts a structured analysis comment and optionally labels the PR `needs-human-review`, `higher-risk`, or `oblt-aw/ai/merge-ready`.
+Triggered when Dependabot, Renovate, or Updatecli opens or updates a PR. Classifies each dependency by ecosystem (GitHub Actions, Go, npm, Python, Java, Buildkite, etc.), runs shared checks (changelog, usage analysis, compatibility, testability), and applies ecosystem-specific checks where relevant. Posts a structured analysis comment and optionally labels the PR.
 
 ## Quick Install
 
@@ -29,11 +29,12 @@ See [example.yml](example.yml) for the full workflow file.
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated). For Updatecli, add your repo's updatecli bot actor here (e.g. `github-actions[bot]` or a custom app bot). | No | `github-actions[bot]` |
+| `merge-ready-label` | Label to apply when all dependency updates are safe to merge without human review (e.g. `merge-ready`). If empty, no merge-ready label is applied. | No | `""` |
 
 ## Safe Outputs
 
 - `add-comment` — post an analysis comment on the PR (max 1)
-- `add-labels` — label the PR with `needs-human-review`, `higher-risk`, or `oblt-aw/ai/merge-ready` (max 3)
+- `add-labels` — apply `needs-human-review` or `higher-risk` when issues are detected; apply the configured `merge-ready-label` (if set) when the PR is safe to merge (max 3)
 
 ## Manual usage with mention-in-pr
 

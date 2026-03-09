@@ -44,6 +44,11 @@ on:
         type: string
         required: false
         default: "github-actions[bot]"
+      merge-ready-label:
+        description: "Label to apply when all dependency updates are safe to merge without human review (e.g. 'merge-ready'). If empty, no merge-ready label is applied."
+        type: string
+        required: false
+        default: ""
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string
@@ -74,10 +79,49 @@ safe-outputs:
   activation-comments: false
   add-labels:
     max: 3
-    allowed:
-      - "needs-human-review"
-      - "higher-risk"
-      - "oblt-aw/ai/merge-ready"
+  steps:
+    - name: Pre-sanitize labels from input allowlist
+      uses: actions/github-script@v7
+      env:
+        MERGE_READY_LABEL: ${{ inputs.merge-ready-label }}
+      with:
+        script: |
+          const fs = require('fs');
+          const outputPath = process.env.GH_AW_AGENT_OUTPUT;
+          if (!outputPath || !fs.existsSync(outputPath)) {
+            core.info('No GH_AW_AGENT_OUTPUT file found; skipping.');
+            return;
+          }
+          const fixed = new Set(['needs-human-review', 'higher-risk']);
+          const extra = String(process.env.MERGE_READY_LABEL || '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+          const allowed = new Set([...fixed, ...extra]);
+          const doc = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+          if (!Array.isArray(doc.items)) {
+            core.warning('agent output has no items array; skipping.');
+            return;
+          }
+          let removed = 0;
+          let dropped = 0;
+          doc.items = doc.items.filter((item) => {
+            if (item?.type !== 'add_labels' || !Array.isArray(item.labels)) {
+              return true;
+            }
+            const before = item.labels.length;
+            item.labels = item.labels
+              .map((v) => String(v).trim())
+              .filter((v) => v && allowed.has(v));
+            removed += Math.max(0, before - item.labels.length);
+            if (item.labels.length === 0) {
+              dropped++;
+              return false;
+            }
+            return true;
+          });
+          fs.writeFileSync(outputPath, JSON.stringify(doc));
+          core.info(`Sanitized label ops: removed=${removed}, dropped_messages=${dropped}`);
 strict: false
 timeout-minutes: 60
 steps:
@@ -237,10 +281,9 @@ Based on the analysis, determine if labels should be applied:
 - **`higher-risk`**: Apply when:
   - The updated dependency is used only in workflows triggered by push-to-main, release, schedule, or workflow_dispatch (cannot be validated in PR context)
 
-- **`oblt-aw/ai/merge-ready`**: Apply when:
-  - No issues were found and the dependency update is safe to merge without human review
+${{ inputs.merge-ready-label != '' && format('- **`{0}`**: Apply when all dependency updates are safe and no issues were found — the PR can be merged without human review.', inputs.merge-ready-label) || '' }}
 
-Only apply `needs-human-review`, `higher-risk`, and `oblt-aw/ai/merge-ready` labels.
+Only apply `needs-human-review`, `higher-risk`${{ inputs.merge-ready-label != '' && format(', and `{0}`', inputs.merge-ready-label) || '' }} labels.
 
 ### Step 5: Post Analysis Comment
 
