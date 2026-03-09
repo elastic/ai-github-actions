@@ -2,10 +2,12 @@
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
 GH_AW_VERSION := v0.57.0
-GH_AW_BUILD_VERSION := 4e5c0a017ef232ec1397e3fa80f59c3ab8f5e6a6
+GH_AW_BUILD_VERSION := 8ca4b8efcb88ace2157f0e8dafdb7e679918e508
 GH_AW_COMPAT_VERSION := v0.49.4
 GH_AW_MODULE_REPO := github.com/github/gh-aw
 GH_AW_SOURCE_REPO := github.com/strawgate/gh-aw
+GH_AW_SETUP_ACTION_REPO := $(patsubst github.com/%,%,$(GH_AW_SOURCE_REPO))
+GH_AW_SETUP_ACTION_REF := $(GH_AW_BUILD_VERSION)
 
 # Workflows that must be compiled with the compat compiler
 # (no-sandbox workflows hit a threat-detection bug in newer versions)
@@ -43,7 +45,7 @@ define download-file
 	fi
 endef
 
-.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile sync lint-workflows lint-actions test docs-install docs-serve docs-build release
+.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile postprocess-setup-action sync lint-workflows lint-actions test docs-install docs-serve docs-build release
 
 help:
 	@echo "This repository contains GitHub Actions workflows and gh-agent-workflows templates."
@@ -176,7 +178,12 @@ compile: setup-gh-aw setup-gh-aw-compat sync
 	else \
 		echo "No compat workflows to compile"; \
 	fi
+	@$(MAKE) postprocess-setup-action
 	@./scripts/backwards-compat.sh
+
+postprocess-setup-action:
+	@echo "Rewriting setup action references to $(GH_AW_SETUP_ACTION_REPO)@$(GH_AW_SETUP_ACTION_REF)..."
+	@python3 ./scripts/rewrite_setup_action_refs.py "$(GH_AW_SETUP_ACTION_REPO)" "$(GH_AW_SETUP_ACTION_REF)"
 
 setup-actionlint:
 	@echo "Setting up actionlint..."
