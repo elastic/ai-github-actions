@@ -18,7 +18,7 @@ jobs:
       github.event.pull_request.user.login == 'renovate[bot]' ||
       startsWith(github.head_ref, 'updatecli')
     uses: ./.github/workflows/gh-aw-dependency-review.lock.yml
-    with:
+    # with:
       # Configure which labels the agent may apply and define their semantics in additional-instructions.
       # classification-labels: "needs-human-review,higher-risk,merge-ready"
       # additional-instructions: |
