@@ -18,7 +18,7 @@ inputs:
     required: false
     default: ""
   author-associations:
-    description: "Only include PRs whose author has one of these associations (comma-separated). Empty means no filter. Values: OWNER, MEMBER, COLLABORATOR, CONTRIBUTOR, FIRST_TIME_CONTRIBUTOR, FIRST_TIMER, NONE."
+    description: "Only include PRs whose author has one of these associations (comma-separated). Bot authors (login ending in [bot]) are always allowed. Empty means no filter. Values: OWNER, MEMBER, COLLABORATOR, CONTRIBUTOR, FIRST_TIME_CONTRIBUTOR, FIRST_TIMER, NONE."
     required: false
     default: "OWNER,MEMBER,COLLABORATOR"
   opt-out-label:
@@ -82,6 +82,7 @@ runs:
                     isDraft
                     mergeStateStatus
                     authorAssociation
+                    author { login }
                     labels(first: 50) {
                       nodes { name }
                     }
@@ -95,7 +96,7 @@ runs:
           const allPrs = result.repository.pullRequests.nodes;
           core.info(`GraphQL returned ${allPrs.length} open PR(s)`);
           for (const pr of allPrs) {
-            core.info(`  PR #${pr.number}: mergeStateStatus=${pr.mergeStateStatus}, isDraft=${pr.isDraft}, authorAssociation=${pr.authorAssociation}`);
+            core.info(`  PR #${pr.number}: mergeStateStatus=${pr.mergeStateStatus}, isDraft=${pr.isDraft}, author=${pr.author?.login}, authorAssociation=${pr.authorAssociation}`);
           }
 
           const prs = [];
@@ -104,8 +105,9 @@ runs:
             const matchesInclude =
               includeLabels.size === 0 || [...includeLabels].some((label) => labels.has(label));
             const matchesExclude = [...excludeLabels].some((label) => labels.has(label));
+            const isBot = pr.author?.login?.endsWith("[bot]") ?? false;
             const matchesAssociation =
-              allowedAssociations.size === 0 || allowedAssociations.has(pr.authorAssociation);
+              isBot || allowedAssociations.size === 0 || allowedAssociations.has(pr.authorAssociation);
             const conflicted = pr.mergeStateStatus === "DIRTY";
             if (!pr.isDraft && matchesInclude && !matchesExclude && matchesAssociation && conflicted) {
               prs.push({ number: pr.number });
