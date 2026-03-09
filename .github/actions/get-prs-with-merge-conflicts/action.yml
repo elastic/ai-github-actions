@@ -1,0 +1,72 @@
+name: "Get PRs With Merge Conflicts"
+description: "Wait briefly, then list open non-draft PRs with mergeStateStatus DIRTY"
+
+inputs:
+  github-token:
+    description: "GitHub token used for API calls"
+    required: true
+  settle-seconds:
+    description: "Seconds to wait before checking merge conflict state"
+    required: false
+    default: "60"
+  opt-out-label:
+    description: "Skip PRs with this label"
+    required: false
+    default: "no-address-merge-conflicts"
+
+outputs:
+  prs:
+    description: "JSON array of conflicted PR objects, e.g. [{\"number\":123}]"
+    value: ${{ steps.detect.outputs.prs }}
+  count:
+    description: "Count of conflicted PRs"
+    value: ${{ steps.detect.outputs.count }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Wait for mergeability state to settle
+      shell: bash
+      run: sleep "${{ inputs.settle-seconds }}"
+
+    - name: Detect open PRs with merge conflicts
+      id: detect
+      uses: actions/github-script@v7
+      env:
+        REPOSITORY: ${{ github.repository }}
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const [owner, repo] = process.env.REPOSITORY.split("/");
+          const optOutLabel = core.getInput("opt-out-label");
+          const result = await github.graphql(
+            `query($owner: String!, $repo: String!) {
+              repository(owner: $owner, name: $repo) {
+                pullRequests(first: 100, states: OPEN, orderBy: { field: UPDATED_AT, direction: DESC }) {
+                  nodes {
+                    number
+                    isDraft
+                    mergeStateStatus
+                    labels(first: 50) {
+                      nodes { name }
+                    }
+                  }
+                }
+              }
+            }`,
+            { owner, repo },
+          );
+
+          const prs = [];
+          for (const pr of result.repository.pullRequests.nodes) {
+            const labels = new Set((pr.labels?.nodes ?? []).map((l) => l.name));
+            const optedIn = !labels.has(optOutLabel);
+            const conflicted = pr.mergeStateStatus === "DIRTY";
+            if (!pr.isDraft && optedIn && conflicted) {
+              prs.push({ number: pr.number });
+            }
+          }
+
+          core.info(`Found ${prs.length} conflicted PR(s) without opt-out label '${optOutLabel}'.`);
+          core.setOutput("prs", JSON.stringify(prs));
+          core.setOutput("count", String(prs.length));
