@@ -28,35 +28,47 @@ safe-inputs:
       contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
       pr_template = find('.github/pull_request_template.md', '.github/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE/pull_request_template.md')
       agents_md = find('AGENTS.md', 'agents.md', '.github/agents.md', '.github/AGENTS.md')
-      # Generate diff of all local changes vs upstream for self-review
-      # Try --merge-base (vs common ancestor), fall back to
-      # @{upstream} 2-dot (vs upstream tip), then HEAD (uncommitted only)
+      # Generate diff of local changes for self-review.
+      # Prefer anchoring to original PR head when available so base->PR merge
+      # commits do not flood the self-review with upstream-only changes.
       diff_text = ''
-      for diff_cmd in [
+      diff_cmds = []
+      if pr_head_sha:
+          diff_cmds.append(['git', 'diff', pr_head_sha])
+      diff_cmds.extend([
           ['git', 'diff', '--merge-base', '@{upstream}'],
           ['git', 'diff', '@{upstream}'],
           ['git', 'diff', 'HEAD'],
-      ]:
+      ])
+      for diff_cmd in diff_cmds:
           result = run(diff_cmd)
           if result.stdout.strip():
               diff_text = result.stdout.strip()
               break
       stat_text = ''
-      for stat_cmd in [
+      stat_cmds = []
+      if pr_head_sha:
+          stat_cmds.append(['git', 'diff', '--stat', pr_head_sha])
+      stat_cmds.extend([
           ['git', 'diff', '--stat', '--merge-base', '@{upstream}'],
           ['git', 'diff', '--stat', '@{upstream}'],
           ['git', 'diff', '--stat', 'HEAD'],
-      ]:
+      ])
+      for stat_cmd in stat_cmds:
           result = run(stat_cmd)
           if result.stdout.strip():
               stat_text = result.stdout.strip()
               break
       # Capture commit messages so the sub-agent knows what changed and why
       commits_text = ''
-      for log_cmd in [
+      log_cmds = []
+      if pr_head_sha:
+          log_cmds.append(['git', 'log', '--format=### %s%n%n%b', f'{pr_head_sha}..HEAD'])
+      log_cmds.extend([
           ['git', 'log', '--format=### %s%n%n%b', '@{upstream}..HEAD'],
           ['git', 'log', '--format=### %s%n%n%b', '-10'],
-      ]:
+      ])
+      for log_cmd in log_cmds:
           result = run(log_cmd)
           if result.stdout.strip():
               commits_text = result.stdout.strip()
