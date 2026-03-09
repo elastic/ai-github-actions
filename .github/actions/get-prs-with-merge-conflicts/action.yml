@@ -9,8 +9,16 @@ inputs:
     description: "Seconds to wait before checking merge conflict state"
     required: false
     default: "60"
+  include-labels:
+    description: "Only include PRs that have at least one of these labels (comma-separated). Empty means no include filter."
+    required: false
+    default: ""
+  exclude-labels:
+    description: "Exclude PRs that have any of these labels (comma-separated)."
+    required: false
+    default: ""
   opt-out-label:
-    description: "Skip PRs with this label"
+    description: "Deprecated: exclude PRs with this label (kept for backward compatibility)"
     required: false
     default: "no-address-merge-conflicts"
 
@@ -38,7 +46,19 @@ runs:
         github-token: ${{ inputs.github-token }}
         script: |
           const [owner, repo] = process.env.REPOSITORY.split("/");
-          const optOutLabel = core.getInput("opt-out-label");
+          const parseLabelSet = (input) =>
+            new Set(
+              input
+                .split(",")
+                .map((label) => label.trim().toLowerCase())
+                .filter((label) => label.length > 0),
+            );
+          const includeLabels = parseLabelSet(core.getInput("include-labels"));
+          const excludeLabels = parseLabelSet(core.getInput("exclude-labels"));
+          const optOutLabel = core.getInput("opt-out-label").trim().toLowerCase();
+          if (optOutLabel) {
+            excludeLabels.add(optOutLabel);
+          }
           const result = await github.graphql(
             `query($owner: String!, $repo: String!) {
               repository(owner: $owner, name: $repo) {
@@ -59,14 +79,18 @@ runs:
 
           const prs = [];
           for (const pr of result.repository.pullRequests.nodes) {
-            const labels = new Set((pr.labels?.nodes ?? []).map((l) => l.name));
-            const optedIn = !labels.has(optOutLabel);
+            const labels = new Set((pr.labels?.nodes ?? []).map((l) => l.name.toLowerCase()));
+            const matchesInclude =
+              includeLabels.size === 0 || [...includeLabels].some((label) => labels.has(label));
+            const matchesExclude = [...excludeLabels].some((label) => labels.has(label));
             const conflicted = pr.mergeStateStatus === "DIRTY";
-            if (!pr.isDraft && optedIn && conflicted) {
+            if (!pr.isDraft && matchesInclude && !matchesExclude && conflicted) {
               prs.push({ number: pr.number });
             }
           }
 
-          core.info(`Found ${prs.length} conflicted PR(s) without opt-out label '${optOutLabel}'.`);
+          core.info(
+            `Found ${prs.length} conflicted PR(s). includeLabels=${JSON.stringify([...includeLabels])}, excludeLabels=${JSON.stringify([...excludeLabels])}`,
+          );
           core.setOutput("prs", JSON.stringify(prs));
           core.setOutput("count", String(prs.length));
