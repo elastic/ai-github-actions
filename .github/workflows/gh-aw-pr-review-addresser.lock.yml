@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"f6d4761b855b304622e7b7ec720fa631f95d110a5e58cb154f182e739b81f8ac"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"b4f246f35147621052bc48b5f494e7449cb62f2c73a40a033bdeac6bf591313d"}
 
 name: "PR Review Addresser"
 "on":
@@ -413,10 +413,10 @@ jobs:
           
           ### Step 5: Respond
           
-          Call `add_comment` on the PR with a brief summary of:
+          Call `add_comment` on the PR with a concise to the point summary of:
           - Which review threads were addressed with code changes
           - Which threads you replied to instead of fixing
-          - Tests run and their results
+          - Tests run and their results (in a collapsed summary/details block)
           
           Do NOT duplicate thread-specific explanations in the summary comment — those belong in the inline replies you already posted via `reply_to_pull_request_review_comment`.
           
