@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"6a97149b9068d63553efb261178b94d2999bcfeb1be6079ee2e95780ce484f20"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"94360f9758af5419f95dcfab26a62656c936ab52713461e8ac847ee86dcdcce8"}
 
 name: "Dependency Review"
 "on":
@@ -87,7 +87,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: ${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-dependency-review-${{ inputs.target-pr-number || github.event.pull_request.number }}
 
 run-name: "Dependency Review"
 
@@ -159,6 +159,7 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GH_AW_EXPR_23557367: ${{ inputs.target-pr-number || github.event.pull_request.number }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
@@ -309,7 +310,7 @@ jobs:
           ## Context
           
           - **Repository**: __GH_AW_GITHUB_REPOSITORY__
-          - **PR**: #__GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__ — __GH_AW_GITHUB_EVENT_PULL_REQUEST_TITLE__
+          - **PR**: #__GH_AW_EXPR_23557367__ — __GH_AW_GITHUB_EVENT_PULL_REQUEST_TITLE__
           - **PR Author**: __GH_AW_GITHUB_ACTOR__
           
           ## Constraints
@@ -320,7 +321,7 @@ jobs:
           
           ### Step 1: Gather Context
           
-          1. Call `pull_request_read` with method `get` on PR #__GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__ to get full PR details (author, description, branches).
+          1. Call `pull_request_read` with method `get` on PR #__GH_AW_EXPR_23557367__ to get full PR details (author, description, branches).
           2. Call `pull_request_read` with method `get_diff` to see exactly what changed.
           3. Call `pull_request_read` with method `get_files` to get the list of changed files.
           
@@ -508,10 +509,10 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
-          GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
           GH_AW_GITHUB_EVENT_PULL_REQUEST_TITLE: ${{ github.event.pull_request.title }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
+          GH_AW_EXPR_23557367: ${{ inputs.target-pr-number || github.event.pull_request.number }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -522,6 +523,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_EXPR_23557367: ${{ inputs.target-pr-number || github.event.pull_request.number }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
@@ -544,6 +546,7 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
+                GH_AW_EXPR_23557367: process.env.GH_AW_EXPR_23557367,
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
@@ -584,7 +587,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-dependency-review-${{ inputs.target-pr-number || github.event.pull_request.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""

@@ -46,7 +46,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"a00b82191979abd0a50d1514387286608e462c3a117eb63bbe703011d7a4dc25"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"cd9fb1a0b171c559449be449f6d93a62ed7b39060e47b837f8f8fa9329eb6787"}
 
 name: "Mention in PR by ID"
 "on":

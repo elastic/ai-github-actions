@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"3da2e5297adb285830733833802549d00963e31c3ef918b226ac8553646fe464"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"f6c7452b5a9120ba4115b727697e7c4621b23e0338e8d3c3819308471273dbd3"}
 
 name: "PR Actions Fixer"
 "on":
