@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"fd86a3a209dd005d7e85b281db93511310309c05cb2affd7349e45252d65c473"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"18824bd8f31a3bc7694efe19a0d03cbfce72a34edf32e629d5047b3b52b3a324"}
 
 name: "Release Update Check"
 "on":
