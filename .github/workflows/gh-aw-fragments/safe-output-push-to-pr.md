@@ -13,6 +13,7 @@ safe-inputs:
               return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
 
       # Guard: detect history rewrites (rebase/reset/cherry-pick)
+      pr_head_sha = ''
       pr_json_path = '/tmp/pr-context/pr.json'
       if os.path.isfile(pr_json_path):
           with open(pr_json_path) as f:
