@@ -26,15 +26,15 @@ See [example.yml](example.yml) for the full workflow file.
 
 | Input | Description | Required | Default |
 | --- | --- | --- | --- |
-| `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
+| `additional-instructions` | Repo-specific instructions appended to the agent prompt. Use this to define label semantics for `classification-labels`. | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated). For Updatecli, add your repo's updatecli bot actor here (e.g. `github-actions[bot]` or a custom app bot). | No | `github-actions[bot]` |
-| `merge-ready-label` | Label to apply when all dependency updates are safe to merge without human review (e.g. `merge-ready`). If empty, no merge-ready label is applied. | No | `""` |
+| `classification-labels` | Comma-separated list of labels the agent may apply (e.g. `needs-human-review,higher-risk,merge-ready`). If empty, no labels are applied. Define label semantics in `additional-instructions`. | No | `""` |
 
 ## Safe Outputs
 
 - `add-comment` — post an analysis comment on the PR (max 1)
-- `add-labels` — apply `needs-human-review` or `higher-risk` when issues are detected; apply the configured `merge-ready-label` (if set) when the PR is safe to merge (max 3)
+- `add-labels` — apply labels from the configured `classification-labels` allowlist (max 3); semantics defined via `additional-instructions`
 
 ## Manual usage with mention-in-pr
 

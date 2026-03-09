@@ -44,8 +44,8 @@ on:
         type: string
         required: false
         default: "github-actions[bot]"
-      merge-ready-label:
-        description: "Label to apply when all dependency updates are safe to merge without human review (e.g. 'merge-ready'). If empty, no merge-ready label is applied."
+      classification-labels:
+        description: "Comma-separated list of labels the agent may apply (e.g. 'needs-human-review,higher-risk,merge-ready'). If empty, no labels are applied. Define label semantics in additional-instructions."
         type: string
         required: false
         default: ""
@@ -83,7 +83,7 @@ safe-outputs:
     - name: Pre-sanitize labels from input allowlist
       uses: actions/github-script@v7
       env:
-        MERGE_READY_LABEL: ${{ inputs.merge-ready-label }}
+        CLASSIFICATION_LABELS: ${{ inputs.classification-labels }}
       with:
         script: |
           const fs = require('fs');
@@ -92,12 +92,16 @@ safe-outputs:
             core.info('No GH_AW_AGENT_OUTPUT file found; skipping.');
             return;
           }
-          const fixed = new Set(['needs-human-review', 'higher-risk']);
-          const extra = String(process.env.MERGE_READY_LABEL || '')
-            .split(',')
-            .map((s) => s.trim())
-            .filter(Boolean);
-          const allowed = new Set([...fixed, ...extra]);
+          const allowed = new Set(
+            String(process.env.CLASSIFICATION_LABELS || '')
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          );
+          if (allowed.size === 0) {
+            core.info('No allowed labels provided; skipping.');
+            return;
+          }
           const doc = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
           if (!Array.isArray(doc.items)) {
             core.warning('agent output has no items array; skipping.');
@@ -269,21 +273,13 @@ Apply the following additional checks based on the dependency ecosystem:
 
 ### Step 4: Determine Labels
 
-Based on the analysis, determine if labels should be applied:
+Based on the analysis, determine if any labels from the configured `classification-labels` set should be applied:
 
-- **`needs-human-review`**: Apply when ANY of these conditions are met:
-  - A dependency update introduces breaking changes that affect this repo's usage
-  - A GitHub Actions commit SHA is not verified
-  - A Buildkite plugin moves from SHA-pinned to mutable tag, or between mutable tags
-  - The changelog indicates breaking changes
-  - A major version bump in any ecosystem (e.g. v1 → v2 in Go, major semver in npm/Python/Java)
-
-- **`higher-risk`**: Apply when:
-  - The updated dependency is used only in workflows triggered by push-to-main, release, schedule, or workflow_dispatch (cannot be validated in PR context)
-
-${{ inputs.merge-ready-label != '' && format('- **`{0}`**: Apply when all dependency updates are safe and no issues were found — the PR can be merged without human review.', inputs.merge-ready-label) || '' }}
-
-Only apply `needs-human-review`, `higher-risk`${{ inputs.merge-ready-label != '' && format(', and `{0}`', inputs.merge-ready-label) || '' }} labels.
+- **Allowed classification labels**: `${{ inputs.classification-labels }}`
+- Parse `${{ inputs.classification-labels }}` as a comma-separated list and treat that list as the only valid labels for this step.
+- If `${{ inputs.classification-labels }}` is empty, skip this step entirely.
+- Use `${{ inputs.additional-instructions }}` to understand what each label means and when to apply it.
+- Never apply a label that is not in the parsed classification label list.
 
 ### Step 5: Post Analysis Comment
 
