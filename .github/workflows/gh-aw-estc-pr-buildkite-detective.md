@@ -102,7 +102,7 @@ steps:
         echo "BK_FAILURE_STATE=$(jq -r '.state' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
         echo "BK_COMMIT_SHA=$(jq -r '.commit.sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
         echo "BK_TARGET_URL=$(jq -r '.target_url // empty' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-        echo "BK_BRANCHES=$(jq -c '[.branches[].name]' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+        echo "BK_BRANCHES=$(jq -c '[(.branches // [])[].name]' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
         echo "BK_PR_NUMBERS=" >> "$GITHUB_ENV"
       else
         echo "BK_EVENT_ID=$(jq -r '.check_run.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
@@ -110,7 +110,7 @@ steps:
         echo "BK_COMMIT_SHA=$(jq -r '.check_run.head_sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
         echo "BK_TARGET_URL=$(jq -r '.check_run.details_url // empty' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
         echo "BK_BRANCHES=" >> "$GITHUB_ENV"
-        echo "BK_PR_NUMBERS=$(jq -c '[.check_run.pull_requests[].number]' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
+        echo "BK_PR_NUMBERS=$(jq -rc '[(.check_run.pull_requests // [])[].number] | if length == 0 then "" else . end' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
       fi
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
@@ -168,7 +168,7 @@ Classify each failure to guide your investigation:
 1. Use the commit SHA provided in the Context section above. If it is empty, discover it from the PR's commit statuses or check runs.
 2. Find the associated pull request(s):
    - If **PR Numbers** in the Context section above is non-empty (e.g., from `check_run` events), use those PR numbers directly with `pull_request_read` method `get`.
-   - Otherwise, use `bash` + `gh api repos/${{ github.repository }}/commits/{commit_sha}/pulls` to find PRs containing the commit SHA. If no results, also try searching open PRs whose head branch matches one of the **Branches** listed in the Context section.
+   - Otherwise, use `bash` + `gh api repos/${{ github.repository }}/commits/{commit_sha}/pulls` to find PRs containing the commit SHA. Filter the results to keep only PRs whose `state` is `"open"` and, when **Branches** is available, whose `head.ref` matches one of the listed branches. If no candidates remain, also try searching open PRs whose head branch matches one of the **Branches** listed in the Context section.
    - If no PR is found after all attempts, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
 3. For each matching PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status for downstream analysis.
 
