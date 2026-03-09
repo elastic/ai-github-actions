@@ -96,6 +96,13 @@ safe-outputs:
   max-patch-size: 10240
 timeout-minutes: 60
 steps:
+  - name: Checkout target PR branch (workflow_call)
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ inputs.target-pr-number }}
+    run: |
+      set -euo pipefail
+      gh pr checkout "$PR_NUMBER"
   - name: Ensure origin refs for PR patch generation
     env:
       GITHUB_TOKEN: ${{ github.token }}
