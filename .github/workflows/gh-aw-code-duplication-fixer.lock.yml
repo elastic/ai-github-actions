@@ -108,7 +108,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@4e5c0a017ef232ec1397e3fa80f59c3ab8f5e6a6 # v0.57.0
+        uses: strawgate/gh-aw/actions/setup@8ca4b8efcb88ace2157f0e8dafdb7e679918e508 # v0.57.0
         with:
           destination: /opt/gh-aw/actions
       - name: Generate agentic run info
@@ -488,7 +488,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@4e5c0a017ef232ec1397e3fa80f59c3ab8f5e6a6 # v0.57.0
+        uses: strawgate/gh-aw/actions/setup@8ca4b8efcb88ace2157f0e8dafdb7e679918e508 # v0.57.0
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -1141,6 +1141,7 @@ jobs:
             /tmp/gh-aw/agent-stdio.log
             /tmp/gh-aw/agent/
             /tmp/gh-aw/aw-*.patch
+            /tmp/gh-aw/aw-*.bundle
           if-no-files-found: ignore
       # --- Threat Detection (inline) ---
       - name: Check if detection needed
@@ -1284,7 +1285,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@4e5c0a017ef232ec1397e3fa80f59c3ab8f5e6a6 # v0.57.0
+        uses: strawgate/gh-aw/actions/setup@8ca4b8efcb88ace2157f0e8dafdb7e679918e508 # v0.57.0
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1390,7 +1391,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@4e5c0a017ef232ec1397e3fa80f59c3ab8f5e6a6 # v0.57.0
+        uses: strawgate/gh-aw/actions/setup@8ca4b8efcb88ace2157f0e8dafdb7e679918e508 # v0.57.0
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1436,7 +1437,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@4e5c0a017ef232ec1397e3fa80f59c3ab8f5e6a6 # v0.57.0
+        uses: strawgate/gh-aw/actions/setup@8ca4b8efcb88ace2157f0e8dafdb7e679918e508 # v0.57.0
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
