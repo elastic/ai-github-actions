@@ -2,19 +2,21 @@
 
 # AI GitHub Actions
 
-*40+ AI agents. Zero new tabs to monitor. Your repo (almost) runs itself.*
+*Drop-in AI agents for GitHub repos. They triage issues, review PRs, diagnose CI failures, and continuously improve your codebase — all through standard GitHub Actions.*
 
 ---
 
 ## Get Started in 60 Seconds
 
-**1. Create a Copilot PAT** (the link pre-fills name, description, and scope):
+The agents use GitHub Copilot as their AI engine. You create a personal access token (PAT) so the workflows can authenticate.
+
+**1. Create a Copilot PAT** — this link pre-fills the name, description, and scope:
 
 [Create COPILOT_GITHUB_TOKEN →](https://github.com/settings/personal-access-tokens/new?name=COPILOT_GITHUB_TOKEN&description=GitHub+Agentic+Workflows+-+Copilot+engine+authentication&user_copilot_requests=read){ .md-button .md-button--primary }
 
 Set the expiry to longer than the 30-day default (e.g., 90 days or 1 year).
 
-**2. Store the secret and install the core workflows** — navigate to the repository you want to configure and run:
+**2. Store the secret and install the core workflows** — `cd` into the repo you want to configure and run:
 
 ```bash
 printf '%s' 'YOUR_PAT_HERE' | gh secret set COPILOT_GITHUB_TOKEN
@@ -27,16 +29,25 @@ curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent
 curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/mention-in-pr/example.yml \
   -o .github/workflows/trigger-mention-in-pr.yml && \
 curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-review/example.yml \
-  -o .github/workflows/trigger-pr-review.yml
+  -o .github/workflows/trigger-pr-review.yml && \
+curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-actions-detective/example.yml \
+  -o .github/workflows/trigger-pr-actions-detective.yml
 ```
 
-This gives you [Issue Triage](#core-workflows), [Mention in Issue / PR](#core-workflows), and [PR Review](#core-workflows) — commit, push, and you're live. Add more workflows from the sections below as needed.
+**3. Commit and push.** That's it — you now have five agents working for you:
+
+- **New issues** are automatically triaged, labeled, and given an implementation plan.
+- **Pull requests** get AI code reviews with severity-ranked inline comments.
+- **Failed CI checks** are diagnosed with root-cause analysis and fix suggestions.
+- **Type `/ai` in any issue or PR** to ask for help, get code written, or push fixes.
+
+See the [full setup docs](workflows/gh-agent-workflows.md) for secrets, inputs, and customization options.
 
 ---
 
 ## Core Workflows
 
-These four workflows are the foundation — install them first and you'll cover most day-to-day development needs:
+These five workflows ship with the install command above:
 
 | Workflow | Trigger | What it does |
 | --- | --- | --- |
@@ -44,23 +55,23 @@ These four workflows are the foundation — install them first and you'll cover 
 | **[Mention in Issue](workflows/gh-agent-workflows/mention-in-issue.md)** | `/ai` in issues | Answer questions, debug, create PRs |
 | **[Mention in PR](workflows/gh-agent-workflows/mention-in-pr.md)** | `/ai` in PRs | Review, fix code, push changes |
 | **[PR Review](workflows/gh-agent-workflows/pr-review.md)** | PR opened / updated | AI code review with severity-ranked inline comments |
+| **[PR Actions Detective](workflows/gh-agent-workflows/pr-actions-detective.md)** | Failed PR checks | Diagnose CI failures and recommend fixes |
 
 ---
 
 ## Repository Maintenance
 
-Keep your issues and PRs clean and well-organized:
+Add-on workflows that keep your issues and PRs clean:
 
 | Workflow | What it does |
 | --- | --- |
 | [Duplicate Issue Detector](workflows/gh-agent-workflows/duplicate-issue-detector.md) | Flag duplicate issues with links to originals |
 | [Stale Issues](workflows/gh-agent-workflows/stale-issues.md) | Find resolved issues and manage their lifecycle |
 | [Update PR Body](workflows/gh-agent-workflows/update-pr-body.md) | Auto-populate PR descriptions from diffs and linked issues |
-| [PR Actions Detective](workflows/gh-agent-workflows/pr-actions-detective.md) | Diagnose CI failures and recommend fixes |
 
-??? tip "Install repository maintenance workflows"
+??? tip "Install these workflows"
 
-    Navigate to your repo and run:
+    `cd` into your repo and run:
 
     ```bash
     mkdir -p .github/workflows && \
@@ -69,28 +80,26 @@ Keep your issues and PRs clean and well-organized:
     curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues-investigator/example.yml \
       -o .github/workflows/trigger-stale-issues-investigator.yml && \
     curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/update-pr-body/example.yml \
-      -o .github/workflows/trigger-update-pr-body.yml && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-actions-detective/example.yml \
-      -o .github/workflows/trigger-pr-actions-detective.yml
+      -o .github/workflows/trigger-update-pr-body.yml
     ```
 
 ---
 
 ## Codebase Maintenance
 
-Scheduled agents that continuously improve your codebase:
+Scheduled agents that continuously find and fix problems:
 
 | Workflow | What it does |
 | --- | --- |
-| [Bug Hunting](workflows/gh-agent-workflows/bugs.md) | Find and fix reproducible bugs |
-| [Code Duplication](workflows/gh-agent-workflows/code-duplication.md) | Detect and consolidate duplicate code |
+| [Bug Hunting](workflows/gh-agent-workflows/bugs.md) | Find reproducible bugs and open PRs to fix them |
+| [Code Duplication](workflows/gh-agent-workflows/code-duplication.md) | Detect duplicate code and consolidate it |
 | [Test Coverage](workflows/gh-agent-workflows/test-coverage.md) | Find coverage gaps and add targeted tests |
 | [Code Simplifier](workflows/gh-agent-workflows/code-simplifier.md) | Simplify overcomplicated code with high-confidence refactors |
-| [Docs Patrol](workflows/gh-agent-workflows/docs-patrol-overview.md) | Catch stale documentation |
+| [Docs Patrol](workflows/gh-agent-workflows/docs-patrol-overview.md) | Catch stale documentation and flag it |
 
-??? tip "Install codebase maintenance workflows"
+??? tip "Install these workflows"
 
-    Navigate to your repo and run:
+    `cd` into your repo and run:
 
     ```bash
     mkdir -p .github/workflows && \
@@ -106,7 +115,7 @@ Scheduled agents that continuously improve your codebase:
       -o .github/workflows/trigger-docs-patrol.yml
     ```
 
-[Browse all workflows →](workflows/gh-agent-workflows.md){ .md-button }
+[Browse all 40+ workflows →](workflows/gh-agent-workflows.md){ .md-button }
 
 ---
 
