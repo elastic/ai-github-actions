@@ -94,7 +94,7 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Workflow Run ID**: ${{ inputs.workflow-run-id }}
+- **Workflow Run URL**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ inputs.workflow-run-id }}
 
 ## Constraints
 
