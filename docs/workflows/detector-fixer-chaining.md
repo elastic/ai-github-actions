@@ -89,11 +89,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh api repos/${{ github.repository }}/issues/${{ needs.detect.outputs.created_issue_number }}/assignees \
-            --method POST --field "assignees[]=copilot"
+          gh issue edit ${{ needs.detect.outputs.created_issue_number }} \
+            --repo ${{ github.repository }} \
+            --add-assignee @copilot
 ```
 
-Copilot will pick up the assignment, read the issue, and open a PR — using its own session and context window. No `COPILOT_GITHUB_TOKEN` is needed for the handoff job itself since assignment only requires `issues: write`.
+Copilot picks up the assignment, reads the issue, and opens a PR — using its own session and context window. No `COPILOT_GITHUB_TOKEN` is needed for the handoff job itself since assignment only requires `issues: write`.
 
 ## Complete examples
 
