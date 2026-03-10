@@ -14,17 +14,23 @@
 
 Set the expiry to longer than the 30-day default (e.g., 90 days or 1 year).
 
-**2. Store the secret and run the setup script** from the repository you want to configure (requires `gh`, `git`, and `curl`):
+**2. Store the secret and install the core workflows** — navigate to the repository you want to configure and run:
 
 ```bash
 printf '%s' 'YOUR_PAT_HERE' | gh secret set COPILOT_GITHUB_TOKEN
-curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/scripts/quick-setup.sh \
-  | bash -s --
+
+mkdir -p .github/workflows && \
+curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/issue-triage/example.yml \
+  -o .github/workflows/trigger-issue-triage.yml && \
+curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/mention-in-issue/example.yml \
+  -o .github/workflows/trigger-mention-in-issue.yml && \
+curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/mention-in-pr/example.yml \
+  -o .github/workflows/trigger-mention-in-pr.yml && \
+curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-review/example.yml \
+  -o .github/workflows/trigger-pr-review.yml
 ```
 
-This installs the core workflows, sets up `agentics-maintenance.yml`, creates a branch, and opens a PR. Use `--continuous-improvement` to also install codebase maintenance workflows.
-
-Or set up manually — see the [full setup docs](workflows/gh-agent-workflows.md).
+This gives you [Issue Triage](#core-workflows), [Mention in Issue / PR](#core-workflows), and [PR Review](#core-workflows) — commit, push, and you're live. Add more workflows from the sections below as needed.
 
 ---
 
@@ -38,22 +44,6 @@ These four workflows are the foundation — install them first and you'll cover 
 | **[Mention in Issue](workflows/gh-agent-workflows/mention-in-issue.md)** | `/ai` in issues | Answer questions, debug, create PRs |
 | **[Mention in PR](workflows/gh-agent-workflows/mention-in-pr.md)** | `/ai` in PRs | Review, fix code, push changes |
 | **[PR Review](workflows/gh-agent-workflows/pr-review.md)** | PR opened / updated | AI code review with severity-ranked inline comments |
-
-??? tip "Install core workflows"
-
-    Navigate to your repo and run:
-
-    ```bash
-    mkdir -p .github/workflows && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/issue-triage/example.yml \
-      -o .github/workflows/trigger-issue-triage.yml && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/mention-in-issue/example.yml \
-      -o .github/workflows/trigger-mention-in-issue.yml && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/mention-in-pr/example.yml \
-      -o .github/workflows/trigger-mention-in-pr.yml && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-review/example.yml \
-      -o .github/workflows/trigger-pr-review.yml
-    ```
 
 ---
 
