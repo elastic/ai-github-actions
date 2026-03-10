@@ -87,7 +87,7 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Workflow Run ID**: ${{ github.event.workflow_run.id }}
+- **Workflow Run URL**: ${{ github.event.workflow_run.html_url }}
 - **Conclusion**: ${{ github.event.workflow_run.conclusion }}
 
 ## Constraints
@@ -152,7 +152,7 @@ Use this exact shape:
 [concise explanation]
 
 ## Evidence
-- Workflow: [name]
+- Workflow: [link to workflow run URL]
 - Job/step: [name]
 - Key log excerpt: [snippet]
 

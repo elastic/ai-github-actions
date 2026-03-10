@@ -92,7 +92,7 @@ Analyze failed GitHub Actions CI runs on protected branches (e.g. `main`) in ${{
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Workflow Run ID**: ${{ github.event.workflow_run.id }}
+- **Workflow Run URL**: ${{ github.event.workflow_run.html_url }}
 - **Conclusion**: ${{ github.event.workflow_run.conclusion }}
 - **Default Branch**: ${{ github.event.repository.default_branch }}
 
