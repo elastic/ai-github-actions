@@ -11,7 +11,7 @@ Find under-tested code and automatically add focused tests.
 Install the detector alone if you want to review test coverage reports before acting.
 
 ```bash
-mkdir -p .github/workflows && curl -sL \
+mkdir -p .github/workflows && curl -fsSL \
   https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-coverage-detector/example.yml \
   -o .github/workflows/test-coverage-detector.yml
 ```
@@ -22,9 +22,9 @@ Install both for autonomous detection and test improvement.
 
 ```bash
 mkdir -p .github/workflows && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-coverage-detector/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-coverage-detector/example.yml \
   -o .github/workflows/test-coverage-detector.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-improver/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-improver/example.yml \
   -o .github/workflows/test-improver.yml
 ```
 

@@ -11,7 +11,7 @@ Find reproducible bugs and automatically fix them.
 Install Bug Hunter alone if you want to review bug reports before acting on them.
 
 ```bash
-mkdir -p .github/workflows && curl -sL \
+mkdir -p .github/workflows && curl -fsSL \
   https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/bug-hunter/example.yml \
   -o .github/workflows/bug-hunter.yml
 ```
@@ -22,9 +22,9 @@ Install both for a fully autonomous bug-finding and fixing pipeline.
 
 ```bash
 mkdir -p .github/workflows && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/bug-hunter/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/bug-hunter/example.yml \
   -o .github/workflows/bug-hunter.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/bug-exterminator/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/bug-exterminator/example.yml \
   -o .github/workflows/bug-exterminator.yml
 ```
 

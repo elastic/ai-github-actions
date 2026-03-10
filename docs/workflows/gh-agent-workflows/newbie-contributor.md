@@ -9,7 +9,7 @@ Review documentation from a new contributor's perspective and automatically fix 
 ### Patrol only (human reviews issues)
 
 ```bash
-mkdir -p .github/workflows && curl -sL \
+mkdir -p .github/workflows && curl -fsSL \
   https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol/example.yml \
   -o .github/workflows/newbie-contributor-patrol.yml
 ```
@@ -18,9 +18,9 @@ mkdir -p .github/workflows && curl -sL \
 
 ```bash
 mkdir -p .github/workflows && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol/example.yml \
   -o .github/workflows/newbie-contributor-patrol.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-fixer/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-fixer/example.yml \
   -o .github/workflows/newbie-contributor-fixer.yml
 ```
 
@@ -28,11 +28,11 @@ curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent
 
 ```bash
 mkdir -p .github/workflows && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol/example.yml \
   -o .github/workflows/newbie-contributor-patrol.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/estc-newbie-contributor-patrol-external/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/estc-newbie-contributor-patrol-external/example.yml \
   -o .github/workflows/estc-newbie-contributor-patrol-external.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-fixer/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-fixer/example.yml \
   -o .github/workflows/newbie-contributor-fixer.yml
 ```
 

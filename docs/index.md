@@ -22,15 +22,15 @@ Set the expiry to longer than the 30-day default (e.g., 90 days or 1 year).
 printf '%s' 'YOUR_PAT_HERE' | gh secret set COPILOT_GITHUB_TOKEN
 
 mkdir -p .github/workflows && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/issue-triage/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/issue-triage/example.yml \
   -o .github/workflows/trigger-issue-triage.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/mention-in-issue/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/mention-in-issue/example.yml \
   -o .github/workflows/trigger-mention-in-issue.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/mention-in-pr/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/mention-in-pr/example.yml \
   -o .github/workflows/trigger-mention-in-pr.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-review/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-review/example.yml \
   -o .github/workflows/trigger-pr-review.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-actions-detective/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-actions-detective/example.yml \
   -o .github/workflows/trigger-pr-actions-detective.yml
 ```
 
@@ -75,11 +75,11 @@ Add-on workflows that keep your issues and PRs clean:
 
     ```bash
     mkdir -p .github/workflows && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/duplicate-issue-detector/example.yml \
+    curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/duplicate-issue-detector/example.yml \
       -o .github/workflows/trigger-duplicate-issue-detector.yml && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues-investigator/example.yml \
+    curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues-investigator/example.yml \
       -o .github/workflows/trigger-stale-issues-investigator.yml && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/update-pr-body/example.yml \
+    curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/update-pr-body/example.yml \
       -o .github/workflows/trigger-update-pr-body.yml
     ```
 
@@ -103,15 +103,15 @@ Scheduled agents that continuously find and fix problems:
 
     ```bash
     mkdir -p .github/workflows && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/bug-hunter/example.yml \
+    curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/bug-hunter/example.yml \
       -o .github/workflows/trigger-bug-hunter.yml && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-duplication-detector/example.yml \
+    curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-duplication-detector/example.yml \
       -o .github/workflows/trigger-code-duplication-detector.yml && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-coverage-detector/example.yml \
+    curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-coverage-detector/example.yml \
       -o .github/workflows/trigger-test-coverage-detector.yml && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-simplifier/example.yml \
+    curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-simplifier/example.yml \
       -o .github/workflows/trigger-code-simplifier.yml && \
-    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/docs-patrol/example.yml \
+    curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/docs-patrol/example.yml \
       -o .github/workflows/trigger-docs-patrol.yml
     ```
 

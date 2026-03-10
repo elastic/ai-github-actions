@@ -11,7 +11,7 @@ Find duplicate and misplaced functions, then consolidate them automatically.
 Install the detector alone if you want to review refactoring recommendations before acting.
 
 ```bash
-mkdir -p .github/workflows && curl -sL \
+mkdir -p .github/workflows && curl -fsSL \
   https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-duplication-detector/example.yml \
   -o .github/workflows/code-duplication-detector.yml
 ```
@@ -22,9 +22,9 @@ Install both for autonomous detection and consolidation.
 
 ```bash
 mkdir -p .github/workflows && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-duplication-detector/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-duplication-detector/example.yml \
   -o .github/workflows/code-duplication-detector.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-duplication-fixer/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-duplication-fixer/example.yml \
   -o .github/workflows/code-duplication-fixer.yml
 ```
 

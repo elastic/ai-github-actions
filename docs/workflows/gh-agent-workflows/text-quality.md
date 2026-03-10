@@ -9,7 +9,7 @@ Find text issues and automatically fix them.
 ### Auditor only (human reviews issues)
 
 ```bash
-mkdir -p .github/workflows && curl -sL \
+mkdir -p .github/workflows && curl -fsSL \
   https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/text-auditor/example.yml \
   -o .github/workflows/text-auditor.yml
 ```
@@ -18,9 +18,9 @@ mkdir -p .github/workflows && curl -sL \
 
 ```bash
 mkdir -p .github/workflows && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/text-auditor/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/text-auditor/example.yml \
   -o .github/workflows/text-auditor.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/text-beautifier/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/text-beautifier/example.yml \
   -o .github/workflows/text-beautifier.yml
 ```
 
