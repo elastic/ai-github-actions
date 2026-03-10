@@ -39,6 +39,22 @@ These four workflows are the foundation — install them first and you'll cover 
 | **[Mention in PR](workflows/gh-agent-workflows/mention-in-pr.md)** | `/ai` in PRs | Review, fix code, push changes |
 | **[PR Review](workflows/gh-agent-workflows/pr-review.md)** | PR opened / updated | AI code review with severity-ranked inline comments |
 
+??? tip "Install core workflows"
+
+    Navigate to your repo and run:
+
+    ```bash
+    mkdir -p .github/workflows && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/issue-triage/example.yml \
+      -o .github/workflows/trigger-issue-triage.yml && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/mention-in-issue/example.yml \
+      -o .github/workflows/trigger-mention-in-issue.yml && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/mention-in-pr/example.yml \
+      -o .github/workflows/trigger-mention-in-pr.yml && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-review/example.yml \
+      -o .github/workflows/trigger-pr-review.yml
+    ```
+
 ---
 
 ## Repository Maintenance
@@ -51,6 +67,22 @@ Keep your issues and PRs clean and well-organized:
 | [Stale Issues](workflows/gh-agent-workflows/stale-issues.md) | Find resolved issues and manage their lifecycle |
 | [Update PR Body](workflows/gh-agent-workflows/update-pr-body.md) | Auto-populate PR descriptions from diffs and linked issues |
 | [PR Actions Detective](workflows/gh-agent-workflows/pr-actions-detective.md) | Diagnose CI failures and recommend fixes |
+
+??? tip "Install repository maintenance workflows"
+
+    Navigate to your repo and run:
+
+    ```bash
+    mkdir -p .github/workflows && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/duplicate-issue-detector/example.yml \
+      -o .github/workflows/trigger-duplicate-issue-detector.yml && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues-investigator/example.yml \
+      -o .github/workflows/trigger-stale-issues-investigator.yml && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/update-pr-body/example.yml \
+      -o .github/workflows/trigger-update-pr-body.yml && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/pr-actions-detective/example.yml \
+      -o .github/workflows/trigger-pr-actions-detective.yml
+    ```
 
 ---
 
@@ -65,6 +97,24 @@ Scheduled agents that continuously improve your codebase:
 | [Test Coverage](workflows/gh-agent-workflows/test-coverage.md) | Find coverage gaps and add targeted tests |
 | [Code Simplifier](workflows/gh-agent-workflows/code-simplifier.md) | Simplify overcomplicated code with high-confidence refactors |
 | [Docs Patrol](workflows/gh-agent-workflows/docs-patrol-overview.md) | Catch stale documentation |
+
+??? tip "Install codebase maintenance workflows"
+
+    Navigate to your repo and run:
+
+    ```bash
+    mkdir -p .github/workflows && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/bug-hunter/example.yml \
+      -o .github/workflows/trigger-bug-hunter.yml && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-duplication-detector/example.yml \
+      -o .github/workflows/trigger-code-duplication-detector.yml && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-coverage-detector/example.yml \
+      -o .github/workflows/trigger-test-coverage-detector.yml && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-simplifier/example.yml \
+      -o .github/workflows/trigger-code-simplifier.yml && \
+    curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/docs-patrol/example.yml \
+      -o .github/workflows/trigger-docs-patrol.yml
+    ```
 
 [Browse all workflows →](workflows/gh-agent-workflows.md){ .md-button }
 
