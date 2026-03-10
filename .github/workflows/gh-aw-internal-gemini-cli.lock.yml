@@ -32,12 +32,12 @@
 #     - gh-aw-fragments/playwright-mcp-explorer.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
-#     - gh-aw-fragments/safe-output-add-comment-issue.md
+#     - gh-aw-fragments/safe-output-add-comment-issue-or-pr.md
 #     - gh-aw-fragments/safe-output-create-issue.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"a0aef95c91a2c913a80d7fad222bd58d183bb44abbae69cb74815a34b65d382d"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"2923c718d5fbdff7b949a90010e221e810e5fa23edca2bf620cb77b551bab573"}
 
 name: "Internal Gemini CLI"
 "on":
@@ -1336,6 +1336,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: write
     concurrency:
       group: "gh-aw-conclusion-gh-aw-internal-gemini-cli"
       cancel-in-progress: false
@@ -1458,6 +1459,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: write
     timeout-minutes: 15
     env:
       GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/gh-aw-internal-gemini-cli"

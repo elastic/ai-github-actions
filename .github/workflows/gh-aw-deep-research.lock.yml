@@ -36,12 +36,12 @@
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
-#     - gh-aw-fragments/safe-output-add-comment-issue.md
+#     - gh-aw-fragments/safe-output-add-comment-issue-or-pr.md
 #     - gh-aw-fragments/safe-output-create-issue.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"1e2946b06d364573fd4d5dc775b780d569bc4e24238c6bd141c1420bd3b5e6a2"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"1c92ebb735e097ba00e609a0f1d21393baf14ab5b41b812133cbfaad0b0f3b01"}
 
 name: "Internal Gemini CLI Web Search"
 "on":
@@ -1318,6 +1318,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: write
     concurrency:
       group: "gh-aw-conclusion-gh-aw-internal-gemini-cli-web-search"
       cancel-in-progress: false
@@ -1440,6 +1441,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: write
     timeout-minutes: 15
     env:
       GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/gh-aw-internal-gemini-cli-web-search"
