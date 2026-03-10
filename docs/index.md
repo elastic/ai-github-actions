@@ -2,7 +2,7 @@
 
 # AI GitHub Actions
 
-*Drop-in AI agents for GitHub repos. They triage issues, review PRs, diagnose CI failures, and continuously improve your codebase — all through standard GitHub Actions.*
+*Drop-in AI agents for GitHub repos. They triage issues, review PRs, diagnose CI failures, and continuously improve your codebase — all through standard GitHub Actions. Get started with our 5 core workflows with more than 40 additional workflows available to use as needed.*
 
 ---
 
