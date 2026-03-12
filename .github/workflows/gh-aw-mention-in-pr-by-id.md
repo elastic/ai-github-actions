@@ -143,7 +143,7 @@ Assist with pull request #${{ inputs.target-pr-number }} on ${{ github.repositor
 2. Handle the request in `${{ inputs.prompt }}` with focused changes and evidence.
 3. Do not modify, review, comment on, or resolve threads for any PR other than #${{ inputs.target-pr-number }}.
 4. Use safe outputs only against PR #${{ inputs.target-pr-number }}.
-5. If no code/review action is needed, call `add_comment` with a concise response.
+5. **You MUST call `add_comment` before finishing** unless you submitted a PR review in this run. This is the only way the user sees your response — terminal output is not visible on the PR. If you pushed code, summarize what you changed, what commands you ran, and any issues you could not resolve. If you submitted a PR review, do NOT call `add_comment` unless the user explicitly asked for one or the review submission failed.
 
 **If asked to review the PR:**
 - Call `ready_to_code_review` to prepare the review approach based on PR size.

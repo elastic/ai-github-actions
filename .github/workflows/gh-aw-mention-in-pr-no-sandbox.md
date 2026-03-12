@@ -188,7 +188,11 @@ Based on what's asked, do the appropriate thing:
 
 ### Step 3: Respond
 
-If you did not submit a PR review, call `add_comment` with your response. If you submitted a review, do NOT call `add_comment` unless explicitly requested or to report a review submission failure.
+**You MUST call `add_comment` before finishing** unless you already submitted a PR review in this run. This is the only way the user sees your response — terminal output is not visible on the PR.
+
+- **Pushed code?** Call `add_comment` summarizing what you changed, what commands you ran (and their results), and any issues you could not resolve.
+- **Answered a question or couldn't act?** Call `add_comment` with your response.
+- **Submitted a PR review?** Do NOT call `add_comment` unless the user explicitly asked for one or the review submission failed.
 
 **Additional tools:**
 - `ready_to_push_to_pr` — run pre-push safety checks before pushing PR changes

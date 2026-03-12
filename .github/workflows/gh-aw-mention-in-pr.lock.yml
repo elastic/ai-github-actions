@@ -47,7 +47,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"4e7704afed78a6f7933911f10d4f15d434e1628981d8b63f041c3c4cacfc66a6"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"5f31ae7a674bfc6f395f6c2772dc954f692cffd3ba83d21a242fcf39087fdaf2"}
 
 name: "Mention in PR"
 "on":
@@ -567,7 +567,11 @@ jobs:
           
           ### Step 3: Respond
           
-          If you did not submit a PR review, call `add_comment` with your response. If you submitted a review, do NOT call `add_comment` unless explicitly requested or to report a review submission failure.
+          **You MUST call `add_comment` before finishing** unless you already submitted a PR review in this run. This is the only way the user sees your response — terminal output is not visible on the PR.
+          
+          - **Pushed code?** Call `add_comment` summarizing what you changed, what commands you ran (and their results), and any issues you could not resolve.
+          - **Answered a question or couldn't act?** Call `add_comment` with your response.
+          - **Submitted a PR review?** Do NOT call `add_comment` unless the user explicitly asked for one or the review submission failed.
           
           **Additional tools:**
           

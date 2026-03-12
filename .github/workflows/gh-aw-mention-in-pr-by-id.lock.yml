@@ -46,7 +46,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"a499fc33135e2e752e7bb293aede8deb27187c5aae052237d75ef80f219c0e8e"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"37bd9307560e4722aaedf56f45ce08da41c2a188d37d160c6358d1f19e67a043"}
 
 name: "Mention in PR by ID"
 "on":
@@ -456,7 +456,7 @@ jobs:
           2. Handle the request in `__GH_AW_INPUTS_PROMPT__` with focused changes and evidence.
           3. Do not modify, review, comment on, or resolve threads for any PR other than #__GH_AW_EXPR_91DD53F2__.
           4. Use safe outputs only against PR #__GH_AW_EXPR_91DD53F2__.
-          5. If no code/review action is needed, call `add_comment` with a concise response.
+          5. **You MUST call `add_comment` before finishing** unless you submitted a PR review in this run. This is the only way the user sees your response — terminal output is not visible on the PR. If you pushed code, summarize what you changed, what commands you ran, and any issues you could not resolve. If you submitted a PR review, do NOT call `add_comment` unless the user explicitly asked for one or the review submission failed.
           
           **If asked to review the PR:**
           - Call `ready_to_code_review` to prepare the review approach based on PR size.
