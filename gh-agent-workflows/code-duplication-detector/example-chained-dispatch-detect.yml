@@ -1,0 +1,38 @@
+name: Code Duplication - Detect
+on:
+  schedule:
+    - cron: "0 12 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  detect:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-duplication-detector.lock.yml@v0
+    with:
+      languages: TypeScript, JavaScript
+      file-globs: "src/**/*.ts, src/**/*.js"
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+  dispatch-fix:
+    needs: detect
+    if: needs.detect.outputs.created_issue_number != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'code-duplication-fix.yml',
+              ref: '${{ github.ref }}',
+              inputs: {
+                'issue-url': '${{ needs.detect.outputs.created_issue_url }}'
+              }
+            })

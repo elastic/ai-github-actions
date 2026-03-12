@@ -1,0 +1,22 @@
+name: Code Duplication - Fix
+on:
+  workflow_dispatch:
+    inputs:
+      issue-url:
+        description: "URL of the issue to fix"
+        required: true
+
+permissions:
+  actions: read
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  fix:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-duplication-fixer.lock.yml@v0
+    with:
+      additional-instructions: |
+        Focus on the duplication described in ${{ inputs.issue-url }}
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
