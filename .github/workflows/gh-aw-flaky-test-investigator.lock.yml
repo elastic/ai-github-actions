@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"c399aa3796716736cf5336b1c8f7f732c18421a159be8016aa3fe7fc631b47d6"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"9e84dc8fc73238637aeb6fb9188c7183d40c10765a22204335fa5489a1eacd22"}
 
 name: "Flaky Test Investigator"
 "on":
@@ -564,12 +564,12 @@ jobs:
           persist-credentials: false
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
-      - if: hashFiles('go.mod') != ''
+      - if: hashFiles(inputs['go-version-file'] || 'go.mod') != ''
         name: Setup Go
-        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
         with:
           cache: true
-          go-version-file: go.mod
+          go-version-file: ${{ inputs['go-version-file'] || 'go.mod' }}
       - if: hashFiles('.python-version') != ''
         name: Setup Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5

@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"f7433722bcb83e7647f81fbb49b3daad8a3bf9ec49e9cedbcddbe0a0cd9fea84"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"a44c57a44a6d2a8d087b53e7c00f43eb8f940e9429444db640009a70e8ae1619"}
 
 name: "PR Actions Fixer"
 "on":
@@ -511,12 +511,12 @@ jobs:
           persist-credentials: false
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
-      - if: hashFiles('go.mod') != ''
+      - if: hashFiles(inputs['go-version-file'] || 'go.mod') != ''
         name: Setup Go
-        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
         with:
           cache: true
-          go-version-file: go.mod
+          go-version-file: ${{ inputs['go-version-file'] || 'go.mod' }}
       - if: hashFiles('.python-version') != ''
         name: Setup Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5

@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"18824bd8f31a3bc7694efe19a0d03cbfce72a34edf32e629d5047b3b52b3a324"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"3be175f13c28e51a37d2f33c2eb022415abd39d87ee16eb1511567105577a8cb"}
 
 name: "Release Update Check"
 "on":
@@ -465,12 +465,12 @@ jobs:
           persist-credentials: false
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
-      - if: hashFiles('go.mod') != ''
+      - if: hashFiles(inputs['go-version-file'] || 'go.mod') != ''
         name: Setup Go
-        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
         with:
           cache: true
-          go-version-file: go.mod
+          go-version-file: ${{ inputs['go-version-file'] || 'go.mod' }}
       - if: hashFiles('.python-version') != ''
         name: Setup Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5

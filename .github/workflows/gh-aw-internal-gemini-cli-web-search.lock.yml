@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"1c92ebb735e097ba00e609a0f1d21393baf14ab5b41b812133cbfaad0b0f3b01"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"f5cee6bdc5d9fe48cff9f512b58ec673cde593d8572b55d00f754e63a762007c"}
 
 name: "Internal Gemini CLI Web Search"
 "on":
@@ -517,12 +517,12 @@ jobs:
           persist-credentials: false
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
-      - if: hashFiles('go.mod') != ''
+      - if: hashFiles(inputs['go-version-file'] || 'go.mod') != ''
         name: Setup Go
-        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
         with:
           cache: true
-          go-version-file: go.mod
+          go-version-file: ${{ inputs['go-version-file'] || 'go.mod' }}
       - if: hashFiles('.python-version') != ''
         name: Setup Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5

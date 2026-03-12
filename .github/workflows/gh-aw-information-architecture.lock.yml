@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"aaa5c2a12f44cb6d6fb6cdeb829817060c198fad097fa941ae9b5da49c59b7c5"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"222c5112cef56655be96ab36b14ced9fbe8986d02f4136a1950d6161af7a75bf"}
 
 name: "Information Architecture"
 "on":
@@ -587,12 +587,12 @@ jobs:
           persist-credentials: false
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
-      - if: hashFiles('go.mod') != ''
+      - if: hashFiles(inputs['go-version-file'] || 'go.mod') != ''
         name: Setup Go
-        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
         with:
           cache: true
-          go-version-file: go.mod
+          go-version-file: ${{ inputs['go-version-file'] || 'go.mod' }}
       - if: hashFiles('.python-version') != ''
         name: Setup Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5

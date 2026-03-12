@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"b20e014fe9ddfa088ff69894e70eccceb97fa2c714ef08404938a4a542de238b"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"74958e88b3d60f17a931e0cb8ebed409edd9a6d5f51e2fb7c9b78eb2fa7ccfe9"}
 
 name: "Mention in Issue (no sandbox)"
 "on":
@@ -551,15 +551,14 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - name: Setup Go
-        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
-        with:
-          go-version: '1.25'
-          cache: false
-      - name: Capture GOROOT for AWF chroot mode
-        run: echo "GOROOT=$(go env GOROOT)" >> "$GITHUB_ENV"
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
+      - if: hashFiles(inputs['go-version-file'] || 'go.mod') != ''
+        name: Setup Go
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6
+        with:
+          cache: true
+          go-version-file: ${{ inputs['go-version-file'] || 'go.mod' }}
       - if: hashFiles('.python-version') != ''
         name: Setup Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5

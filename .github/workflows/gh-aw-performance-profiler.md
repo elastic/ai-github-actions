@@ -51,6 +51,11 @@ on:
         type: string
         required: false
         default: "[performance-profiler]"
+      go-version-file:
+        description: "Path to the Go version file"
+        type: string
+        required: false
+        default: "go.mod"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true

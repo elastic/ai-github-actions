@@ -1,10 +1,10 @@
 ---
 steps:
   - name: Setup Go
-    if: hashFiles('go.mod') != ''
-    uses: actions/setup-go@v5
+    if: hashFiles(inputs['go-version-file'] || 'go.mod') != ''
+    uses: actions/setup-go@v6
     with:
-      go-version-file: go.mod
+      go-version-file: ${{ inputs['go-version-file'] || 'go.mod' }}
       cache: true
 
   - name: Setup Python
