@@ -1,3 +1,6 @@
+# Detect workflow — pairs with code-duplication-fix.yml (see example-chained-dispatch-fix.yml).
+# Copy both files into .github/workflows/ and ensure the workflow_id below matches
+# the fix workflow filename.
 name: Code Duplication - Detect
 on:
   schedule:
