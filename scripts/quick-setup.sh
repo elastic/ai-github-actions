@@ -127,8 +127,8 @@ default_workflows=(
 )
 continuous_improvement_workflows=(
   bug-hunter
-  bug-exterminator
-  code-simplifier
+  code-complexity-detector
+  code-duplication-detector
   docs-patrol
   newbie-contributor-patrol
   product-manager-impersonator
@@ -137,9 +137,7 @@ continuous_improvement_workflows=(
   stale-issues-investigator
   stale-issues-remediator
   test-coverage-detector
-  test-improver
   breaking-change-detector
-  code-duplication-detector
   update-pr-body
 )
 

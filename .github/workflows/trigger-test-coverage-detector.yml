@@ -8,12 +8,23 @@ on:
 
 permissions:
   actions: read
-  contents: read
+  contents: write
   issues: write
-  pull-requests: read
+  pull-requests: write
 
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-test-coverage-detector.lock.yml
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+  create_pr_from_issue:
+    needs: run
+    if: ${{ needs.run.outputs.created_issue_number != '' }}
+    uses: ./.github/workflows/gh-aw-create-pr-from-issue.lock.yml
+    with:
+      target-issue-number: ${{ needs.run.outputs.created_issue_number }}
+      additional-instructions: "Create a focused pull request that resolves this issue."
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}

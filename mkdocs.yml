@@ -45,7 +45,7 @@ nav:
           - Detector / Fixer Chaining: workflows/detector-fixer-chaining.md
           - Bug Hunting: workflows/gh-agent-workflows/bugs.md
           - Code Duplication: workflows/gh-agent-workflows/code-duplication.md
-          - Code Simplifier: workflows/gh-agent-workflows/code-simplifier.md
+          - Code Complexity: workflows/gh-agent-workflows/code-complexity.md
           - Test Coverage: workflows/gh-agent-workflows/test-coverage.md
           - Docs Patrol: workflows/gh-agent-workflows/docs-patrol-overview.md
           - Text Quality: workflows/gh-agent-workflows/text-quality.md

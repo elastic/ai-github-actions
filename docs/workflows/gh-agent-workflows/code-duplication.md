@@ -2,7 +2,7 @@
 
 Find duplicate and misplaced functions, then consolidate them automatically.
 
-**Code Duplication Detector** scans source files to find semantically related functions that live in different files, duplicate implementations of the same logic, and functions that belong in a different module. **Code Duplication Fixer** picks up those reports and opens a PR with behavior-preserving refactors. Most runs of either workflow end with `noop`.
+**Code Duplication Detector** scans source files to find semantically related functions that live in different files, duplicate implementations of the same logic, and functions that belong in a different module. Chain it to [Create PR from Issue](../detector-fixer-chaining.md) for a fully autonomous detect-and-fix loop. Most runs end with `noop`.
 
 ## Quick install
 
@@ -16,16 +16,14 @@ mkdir -p .github/workflows && curl -fsSL \
   -o .github/workflows/code-duplication-detector.yml
 ```
 
-### Full loop (detector + fixer)
+### Chained (detector + fixer)
 
-Install both for autonomous detection and consolidation.
+Install the chained example for autonomous detection and consolidation.
 
 ```bash
-mkdir -p .github/workflows && \
-curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-duplication-detector/example.yml \
-  -o .github/workflows/code-duplication-detector.yml && \
-curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-duplication-fixer/example.yml \
-  -o .github/workflows/code-duplication-fixer.yml
+mkdir -p .github/workflows && curl -fsSL \
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-duplication-detector/example-chained.yml \
+  -o .github/workflows/code-duplication-detect-and-fix.yml
 ```
 
 ---
@@ -73,51 +71,6 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-duplication-detector.lock.yml@v0
     with:
       languages: "go,python,typescript"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-```
-
----
-
-## Code Duplication Fixer
-
-Picks up open issues filed by the detector (labeled `refactor` or with `[refactor]` in the title), selects one well-scoped finding, refactors the duplicate or misplaced code, runs tests, and opens a PR. Only acts on safe, behavior-preserving refactors.
-
-### Trigger
-
-| Event | Schedule |
-| --- | --- |
-| `schedule` | Weekdays |
-| `workflow_dispatch` | Manual |
-
-### Inputs
-
-| Input | Description | Default |
-| --- | --- | --- |
-| `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
-| `setup-commands` | Shell commands run before the agent starts | `""` |
-
-### Safe outputs
-
-- `create-pull-request` — open a PR with the refactor (max 1)
-
-### Example workflow
-
-```yaml
-name: Code Duplication Fixer
-on:
-  schedule:
-    - cron: "0 14 * * 1-5"
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  issues: read
-  pull-requests: write
-
-jobs:
-  run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-duplication-fixer.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
