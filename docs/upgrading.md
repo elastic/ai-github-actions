@@ -32,6 +32,65 @@ That enables same-run chaining patterns like:
 - caller checks `if: needs.run.outputs.created_issue_number != ''`
 - caller immediately starts `gh-aw-create-pr-from-issue`
 
+## Dedicated fixer removal (breaking)
+
+Six dedicated fixer workflows have been removed. Any detector can now chain directly to `create-pr-from-issue` in the same workflow run, making these standalone fixers redundant.
+
+### Removed workflows
+
+| Removed workflow | Replacement |
+| --- | --- |
+| `gh-aw-bug-exterminator.lock.yml` | Chain Bug Hunter → `gh-aw-create-pr-from-issue.lock.yml` |
+| `gh-aw-code-duplication-fixer.lock.yml` | Chain Code Duplication Detector → `gh-aw-create-pr-from-issue.lock.yml` |
+| `gh-aw-text-beautifier.lock.yml` | Chain Text Auditor → `gh-aw-create-pr-from-issue.lock.yml` |
+| `gh-aw-newbie-contributor-fixer.lock.yml` | Chain Newbie Contributor Patrol → `gh-aw-create-pr-from-issue.lock.yml` |
+| `gh-aw-test-improver.lock.yml` | Chain Test Coverage Detector → `gh-aw-create-pr-from-issue.lock.yml` |
+| `gh-aw-code-simplifier.lock.yml` | Chain Code Complexity Detector → `gh-aw-create-pr-from-issue.lock.yml` |
+
+### Migration
+
+Replace any `uses:` reference to a removed fixer with the chained pattern. For example, if you had separate Bug Hunter and Bug Exterminator workflows:
+
+```yaml
+# Before (two separate workflows)
+# bug-hunter.yml — runs on schedule, creates issues
+# bug-exterminator.yml — runs on schedule, picks up issues and creates PRs
+
+# After (single chained workflow)
+name: Bug Hunt & Fix
+on:
+  schedule:
+    - cron: "0 11 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  detect:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+  fix:
+    needs: detect
+    if: needs.detect.outputs.created_issue_number != ''
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
+    with:
+      target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+```
+
+See [Detector / Fixer Chaining](workflows/detector-fixer-chaining.md) for the full pattern and more examples.
+
+### New workflow
+
+- **Code Complexity Detector** — Scans source files for overly complex code (deep nesting, redundant conditionals, style outliers) and files a simplification report. Replaces the Code Simplifier. See [Code Complexity](workflows/gh-agent-workflows/code-complexity.md).
+
 ## v0.2.x → Latest (breaking changes)
 
 - `stale-issues` was split: rename to `stale-issues-investigator` and add `stale-issues-remediator` if you want automatic objection handling + auto-close.
@@ -43,7 +102,6 @@ That enables same-run chaining patterns like:
 - `gh-aw-deep-research.lock.yml` → `gh-aw-internal-gemini-cli-web-search.lock.yml`
 - `gh-aw-docs-drift.lock.yml` → `gh-aw-docs-patrol.lock.yml`
 - `gh-aw-pr-ci-detective.lock.yml` → `gh-aw-pr-actions-detective.lock.yml`
-- `gh-aw-test-improvement.lock.yml` → `gh-aw-test-improver.lock.yml`
 - `gh-aw-estc-downstream-health.lock.yml` → `internal-downstream-health.lock.yml`
 - `gh-aw-stale-issues.lock.yml` → `gh-aw-stale-issues-investigator.lock.yml`
 

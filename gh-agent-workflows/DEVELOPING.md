@@ -69,7 +69,7 @@ workflow (gh-aw-docs-patrol.md)
 For scheduled fixes (fixers):
 
 ```text
-workflow (gh-aw-text-beautifier.md)
+workflow (gh-aw-small-problem-fixer.md)
  ├── gh-aw-fragments/scheduled-fix.md     # shared fix framework
  ├── gh-aw-fragments/workflow-edit-guardrails.md
  ├── gh-aw-fragments/safe-output-create-pr.md

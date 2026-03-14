@@ -45,11 +45,9 @@ jobs:
             agent-efficiency
             agent-suggestions
             breaking-change-detector
-            bug-exterminator
             bug-hunter
+            code-complexity-detector
             code-duplication-detector
-            code-duplication-fixer
-            code-simplifier
             docs-patrol
             duplicate-issue-detector
             estc-docs-patrol-external
@@ -61,7 +59,6 @@ jobs:
             issue-triage
             mention-in-issue
             mention-in-pr
-            newbie-contributor-fixer
             newbie-contributor-patrol
             performance-profiler
             pr-actions-detective
@@ -74,9 +71,7 @@ jobs:
             small-problem-fixer
             stale-issues
             test-coverage-detector
-            test-improver
             text-auditor
-            text-beautifier
             update-pr-body
           )
 

@@ -37,4 +37,4 @@ See [example.yml](example.yml) for the full workflow file.
 
 ## Pairing
 
-This workflow is the read-only companion to [Test Improver](../test-improver/). The detector finds test coverage gaps; the improver adds the tests.
+This detector finds test coverage gaps. Chain it to [Create PR from Issue](../../docs/workflows/detector-fixer-chaining.md) to automatically fix findings.
