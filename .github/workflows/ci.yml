@@ -31,6 +31,18 @@ jobs:
       - uses: actions/checkout@v6
       - name: Check nav matches catalog
         run: python3 scripts/check-nav-catalog.py
+  no-dotless-github:
+    name: Reject github/ without dot prefix
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Ensure github/ directory does not exist
+        run: |
+          if [ -d "github" ]; then
+            echo "::error::Found 'github/' directory — files belong in '.github/' instead."
+            find github/ -type f
+            exit 1
+          fi
   make-compile:
     name: Verify compiled workflows
     runs-on: ubuntu-latest
