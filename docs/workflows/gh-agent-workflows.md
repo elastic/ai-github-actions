@@ -97,6 +97,7 @@ Stale Issues Investigator pairs with [Stale Issues Remediator](gh-agent-workflow
 | [Project Summary](gh-agent-workflows/project-summary.md) | Daily schedule | Summarize recent activity and priorities |
 | [Release Update Check](gh-agent-workflows/release-update.md) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
 | [Small Problem Fixer](gh-agent-workflows/small-problem-fixer.md) | Weekday schedule | Fix small, related issues and open a focused PR |
+| [UX Design Patrol](gh-agent-workflows/ux-design-patrol.md) | Weekday schedule | Detect UI/UX design drift and file consolidation reports |
 
 ### Elastic-specific workflows
 
