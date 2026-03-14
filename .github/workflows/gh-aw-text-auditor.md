@@ -5,12 +5,13 @@ description: "Find typos, unclear error messages, and awkward user-facing text, 
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
+  - gh-aw-fragments/vault-token.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-create-issue.md
-  - gh-aw-fragments/previous-findings.md
+  - gh-aw-fragments/previous-findings-target-repo.md
   - gh-aw-fragments/pick-three-keep-many.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
@@ -75,9 +76,21 @@ on:
         type: string
         required: false
         default: "[text-auditor]"
+      target-repo:
+        description: "Optional owner/repo slug to create issues in a remote repository"
+        type: string
+        required: false
+        default: ""
+      token-policy:
+        description: "Optional vault token policy used to mint an ephemeral GitHub token"
+        type: string
+        required: false
+        default: ""
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      GITHUB_TOKEN:
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -99,6 +112,7 @@ safe-outputs:
   noop:
   create-issue:
     max: 1
+    target-repo: "${{ inputs.target-repo || '' }}"
     title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: false
     expires: 7d
