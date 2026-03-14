@@ -5,6 +5,7 @@ description: "Generic scheduled audit — investigate the repository and file an
 imports:
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
+  - gh-aw-fragments/vault-token.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
@@ -31,8 +32,18 @@ on:
         description: "Title prefix for created issues, e.g. '[my-audit]'"
         type: string
         required: true
+      target-repo:
+        description: "Optional owner/repo slug to create issues in a remote repository"
+        type: string
+        required: false
+        default: ""
       issue-label:
         description: "Label to apply to created issues (must already exist in the target repo)"
+        type: string
+        required: false
+        default: ""
+      token-policy:
+        description: "Optional vault token policy used to mint an ephemeral GitHub token"
         type: string
         required: false
         default: ""
@@ -59,6 +70,8 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      GH_AW_GITHUB_TOKEN:
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -84,12 +97,13 @@ steps:
   - name: List previous findings
     if: ${{ !inputs.close-older-issues }}
     env:
-      GH_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || github.token }}
       TITLE_PREFIX: ${{ inputs.title-prefix }}
+      TARGET_REPO: ${{ inputs.target-repo || github.repository }}
     run: |
       set -euo pipefail
       gh issue list \
-        --repo "$GITHUB_REPOSITORY" \
+        --repo "$TARGET_REPO" \
         --search "in:title \"$TITLE_PREFIX\"" \
         --state all \
         --limit 100 \

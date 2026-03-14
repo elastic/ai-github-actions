@@ -2,6 +2,7 @@
 safe-outputs:
   create-issue:
     max: 1
+    target-repo: "${{ inputs.target-repo || '' }}"
     title-prefix: "${{ inputs.title-prefix }} "
     close-older-issues: ${{ inputs.close-older-issues }}
     expires: 7d
