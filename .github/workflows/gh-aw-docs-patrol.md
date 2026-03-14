@@ -70,7 +70,7 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
-      GH_AW_GITHUB_TOKEN:
+      GITHUB_TOKEN:
         required: false
   roles: [admin, maintainer, write]
   bots:
