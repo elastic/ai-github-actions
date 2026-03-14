@@ -147,7 +147,7 @@ Some workflows require additional provider-specific secrets (for example, `PR Bu
 Any workflow that uses safe-outputs with `expires` (create-issue, create-pull-request, create-discussion) requires the `agentics-maintenance` workflow so expired items are closed automatically. Install it once per repo:
 
 ````bash
-mkdir -p .github/workflows && curl -sL \
+mkdir -p .github/workflows && curl -fsSL \
   https://raw.githubusercontent.com/elastic/ai-github-actions/v0/.github/workflows/agentics-maintenance.yml \
   -o .github/workflows/agentics-maintenance.yml
 ````

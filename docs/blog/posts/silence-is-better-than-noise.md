@@ -48,7 +48,7 @@ This is not because we do not trust the agents. It is because we trust the proce
 
 We run over 40 agents. That sounds like a lot until you understand why: 40 focused agents beat one confused generalist every time.
 
-Each agent has a narrow scope and a clear mission. Bug Hunter hunts bugs. Flaky Test Investigator investigates flaky tests. Code Simplifier simplifies code. They do not overlap, and they do not try to be clever outside their lane.
+Each agent has a narrow scope and a clear mission. Bug Hunter hunts bugs. Flaky Test Investigator investigates flaky tests. Code Complexity Detector finds overcomplicated code. They do not overlap, and they do not try to be clever outside their lane.
 
 This is why we have separate Bug Hunter and Flaky Test Investigator agents instead of one "code quality bot." A single agent trying to find bugs, diagnose flaky tests, detect duplication, audit security, and suggest refactors will do all of those things poorly. Specialization lets us tune each agent's prompt, intensity, and evaluation criteria independently. It lets us turn off one agent without affecting the others. And it makes failures easy to diagnose — when something goes wrong, you know exactly which agent did it and why.
 

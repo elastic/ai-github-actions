@@ -2,7 +2,7 @@
 
 Find text issues and automatically fix them.
 
-**Text Auditor** scans user-facing text sources — CLI output, error messages, documentation, and help text — for typos, grammatical errors, unclear messages, and inconsistent terminology. Chain it to [Create PR from Issue](../detector-fixer-chaining.md) for a fully autonomous detect-and-fix loop. Most runs end with `noop`.
+**Text Auditor** scans user-facing text sources — CLI output, error messages, documentation, and help text — for typos, grammatical errors, unclear messages, and inconsistent terminology. You can [chain it to Create PR from Issue](../detector-fixer-chaining.md) for a fully autonomous detect-and-fix loop. Most runs end with `noop`.
 
 ## Quick install
 

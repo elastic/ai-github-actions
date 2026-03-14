@@ -133,7 +133,7 @@ jobs:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
-Each detector directory includes an `example-chained.yml` you can copy directly.
+Most detector directories include an `example-chained.yml` you can copy directly. For detectors without one, follow the pattern above.
 
 ## When to chain vs. separate schedules
 

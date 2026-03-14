@@ -52,7 +52,7 @@ These two agents sit at the proactive end of the quality spectrum. [Framework Be
 
 ## The Quality Spectrum
 
-Step back and look at this squad as a progression. Bug Hunter sits at the reactive end: find real bugs hurting users right now. Flaky Test Investigator moves upstream: find test infrastructure problems before they erode confidence. Code Duplication Detector shifts to structural issues: find patterns that will cause bugs eventually. Refactor Opportunist and Code Simplifier work at the architecture level: improve code so bugs are harder to introduce. And Framework Best Practices and Autonomy Atomicity Analyzer push even further into proactive territory -- preventing entire categories of problems by getting the design right.
+Step back and look at this squad as a progression. Bug Hunter sits at the reactive end: find real bugs hurting users right now. Flaky Test Investigator moves upstream: find test infrastructure problems before they erode confidence. Code Duplication Detector shifts to structural issues: find patterns that will cause bugs eventually. Refactor Opportunist and Code Complexity Detector work at the architecture level: improve code so bugs are harder to introduce. And Framework Best Practices and Autonomy Atomicity Analyzer push even further into proactive territory -- preventing entire categories of problems by getting the design right.
 
 Reactive to proactive. No single agent covers the whole spectrum, but together the Quality Crew covers every stage from "something is broken" to "let's make sure it never breaks."
 

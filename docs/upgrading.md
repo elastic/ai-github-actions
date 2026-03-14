@@ -45,7 +45,7 @@ Six dedicated fixer workflows have been removed. Any detector can now chain dire
 | `gh-aw-text-beautifier.lock.yml` | Chain Text Auditor → `gh-aw-create-pr-from-issue.lock.yml` |
 | `gh-aw-newbie-contributor-fixer.lock.yml` | Chain Newbie Contributor Patrol → `gh-aw-create-pr-from-issue.lock.yml` |
 | `gh-aw-test-improver.lock.yml` | Chain Test Coverage Detector → `gh-aw-create-pr-from-issue.lock.yml` |
-| `gh-aw-code-simplifier.lock.yml` | New Code Complexity Detector → `gh-aw-create-pr-from-issue.lock.yml` |
+| `gh-aw-code-simplifier.lock.yml` | Chain Code Complexity Detector → `gh-aw-create-pr-from-issue.lock.yml` |
 
 ### Migration
 
