@@ -6,10 +6,7 @@ Generic base workflow for scheduled fixers — pick up an open issue and create 
 
 The fix agent follows a standard 5-step process (gather candidates, select target, implement, quality gate, create PR) defined by the `scheduled-fix` fragment. You provide the **Fix Assignment** via the `additional-instructions` input, which tells the agent how to find issues, what kind of changes to make, and any domain-specific constraints.
 
-This is the base workflow. For domain-specific fixers, see the specialized workflows:
-- [Bug Exterminator](../bug-exterminator/) — fix bug-hunter issues
-- [Text Beautifier](../text-beautifier/) — fix text-auditor issues
-- [Code Duplication Fixer](../code-duplication-fixer/) — fix code-duplication-detector issues
+This is the base workflow for building custom fixers. For most use cases, chain a detector directly to [Create PR from Issue](../create-pr-from-issue/) instead of writing a dedicated fixer.
 
 ## Quick Install
 

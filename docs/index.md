@@ -63,7 +63,7 @@ Scheduled agents that continuously improve your codebase:
 | [Bug Hunting](workflows/gh-agent-workflows/bugs.md) | Find and fix reproducible bugs |
 | [Code Duplication](workflows/gh-agent-workflows/code-duplication.md) | Detect and consolidate duplicate code |
 | [Test Coverage](workflows/gh-agent-workflows/test-coverage.md) | Find coverage gaps and add targeted tests |
-| [Code Simplifier](workflows/gh-agent-workflows/code-simplifier.md) | Simplify overcomplicated code with high-confidence refactors |
+| [Code Complexity](workflows/gh-agent-workflows/code-complexity.md) | Find overly complex code and file simplification reports |
 | [Docs Patrol](workflows/gh-agent-workflows/docs-patrol-overview.md) | Catch stale documentation |
 
 [Browse all workflows →](workflows/gh-agent-workflows.md){ .md-button }

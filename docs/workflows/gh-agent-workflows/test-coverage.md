@@ -2,7 +2,7 @@
 
 Find under-tested code and automatically add focused tests.
 
-**Test Coverage Detector** identifies code paths with no or minimal test coverage by running coverage tools (when available) and analyzing recent changes for missing tests. **Test Improver** adds focused tests that validate real behavior and cleans up redundant tests. Most runs of either workflow end with `noop`.
+**Test Coverage Detector** identifies code paths with no or minimal test coverage by running coverage tools (when available) and analyzing recent changes for missing tests. Chain it to [Create PR from Issue](../detector-fixer-chaining.md) for a fully autonomous detect-and-fix loop. Most runs end with `noop`.
 
 ## Quick install
 
@@ -11,21 +11,19 @@ Find under-tested code and automatically add focused tests.
 Install the detector alone if you want to review test coverage reports before acting.
 
 ```bash
-mkdir -p .github/workflows && curl -sL \
+mkdir -p .github/workflows && curl -fsSL \
   https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-coverage-detector/example.yml \
   -o .github/workflows/test-coverage-detector.yml
 ```
 
-### Full loop (detector + fixer)
+### Chained (detector + fixer)
 
-Install both for autonomous detection and test improvement.
+Install the chained example for autonomous detection and test improvement.
 
 ```bash
-mkdir -p .github/workflows && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-coverage-detector/example.yml \
-  -o .github/workflows/test-coverage-detector.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-improver/example.yml \
-  -o .github/workflows/test-improver.yml
+mkdir -p .github/workflows && curl -fsSL \
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-coverage-detector/example-chained.yml \
+  -o .github/workflows/test-coverage-detect-and-fix.yml
 ```
 
 ---
@@ -70,52 +68,6 @@ permissions:
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-test-coverage-detector.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-```
-
----
-
-## Test Improver (fixer)
-
-Identifies code paths with no or minimal test coverage, adds focused tests that validate real behavior, and removes or consolidates clearly redundant tests. Only opens a PR for changes that would catch actual regressions — not trivial getters or incidental coverage.
-
-### Trigger
-
-| Event | Schedule |
-| --- | --- |
-| `schedule` | Weekly |
-| `workflow_dispatch` | Manual |
-
-### Inputs
-
-| Input | Description | Default |
-| --- | --- | --- |
-| `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
-| `setup-commands` | Shell commands run before the agent starts | `""` |
-
-### Safe outputs
-
-- `create-pull-request` — open a PR with test improvements
-
-### Example workflow
-
-```yaml
-name: Test Improver
-on:
-  schedule:
-    - cron: "0 9 * * 1"
-  workflow_dispatch:
-
-permissions:
-  actions: read
-  contents: write
-  issues: write
-  pull-requests: write
-
-jobs:
-  run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-test-improver.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

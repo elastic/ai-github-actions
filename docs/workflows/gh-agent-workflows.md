@@ -26,7 +26,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 The quick setup script includes two opinionated sets:
 
 - **Starter repo operations set (default):** `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
-- **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `bug-exterminator`, `code-simplifier`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues-investigator`, `stale-issues-remediator`, `test-coverage-detector`, `test-improver`, `breaking-change-detector`, `code-duplication-detector`, `update-pr-body`
+- **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `code-complexity-detector`, `code-duplication-detector`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues-investigator`, `stale-issues-remediator`, `test-coverage-detector`, `breaking-change-detector`, `update-pr-body`
 
 ## Available workflows
 
@@ -67,19 +67,20 @@ These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves 
 
 #### Detector / fixer pairs
 
-Many scheduled workflows follow a **detector / fixer** pattern: the detector finds issues and files reports, then the fixer picks up those reports and creates PRs to resolve them. Install both for a fully autonomous loop, or use the detector alone for human-in-the-loop review.
+Many scheduled workflows follow a **detector** pattern: the detector finds issues and files reports. Any detector can chain to [Create PR from Issue](detector-fixer-chaining.md) in the same workflow run for a fully autonomous detect-and-fix loop. Or use the detector alone for human-in-the-loop review.
 
-**Single-run chaining:** Instead of running detector and fixer on separate schedules, you can chain them in one workflow run so the fixer acts immediately on findings. See [Detector / Fixer Chaining](detector-fixer-chaining.md).
+| Detector | Domain |
+| --- | --- |
+| [Bug Hunter](gh-agent-workflows/bug-hunter.md) | Reproducible bugs |
+| [Code Complexity Detector](gh-agent-workflows/code-complexity.md) | Overly complex code |
+| [Code Duplication Detector](gh-agent-workflows/code-duplication-detector.md) | Duplicate / clustered code |
+| [Docs Patrol](gh-agent-workflows/docs-patrol.md) | Stale internal documentation |
+| [Newbie Contributor Patrol](gh-agent-workflows/newbie-contributor-patrol.md) | Onboarding documentation gaps |
+| [Stale Issues Investigator](gh-agent-workflows/stale-issues-investigator.md) | Stale issue lifecycle |
+| [Test Coverage Detector](gh-agent-workflows/test-coverage.md) | Test coverage gaps |
+| [Text Auditor](gh-agent-workflows/text-auditor.md) | User-facing text quality |
 
-| Detector | Fixer | Domain |
-| --- | --- | --- |
-| [Bug Hunter](gh-agent-workflows/bug-hunter.md) | [Bug Exterminator](gh-agent-workflows/bug-exterminator.md) | Reproducible bugs |
-| [Code Duplication Detector](gh-agent-workflows/code-duplication-detector.md) | [Code Duplication Fixer](gh-agent-workflows/code-duplication-fixer.md) | Duplicate / clustered code |
-| [Docs Patrol](gh-agent-workflows/docs-patrol.md) | — | Stale internal documentation |
-| [Newbie Contributor Patrol](gh-agent-workflows/newbie-contributor-patrol.md) | [Newbie Contributor Fixer](gh-agent-workflows/newbie-contributor-fixer.md) | Onboarding documentation gaps |
-| [Stale Issues Investigator](gh-agent-workflows/stale-issues-investigator.md) | [Stale Issues Remediator](gh-agent-workflows/stale-issues-remediator.md) | Stale issue lifecycle |
-| [Test Coverage Detector](gh-agent-workflows/test-coverage.md) | [Test Improver](gh-agent-workflows/test-coverage.md#test-improver-fixer) | Test coverage gaps |
-| [Text Auditor](gh-agent-workflows/text-auditor.md) | [Text Beautifier](gh-agent-workflows/text-beautifier.md) | User-facing text quality |
+Stale Issues Investigator pairs with [Stale Issues Remediator](gh-agent-workflows/stale-issues-remediator.md) for label-based lifecycle management (not issue-driven chaining).
 
 #### Standalone scheduled workflows
 
@@ -88,7 +89,6 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Agent Suggestions](gh-agent-workflows/agent-suggestions.md) | Weekly schedule | Suggest new agent workflows based on repo and downstream needs |
 | [Autonomy Atomicity Analyzer](gh-agent-workflows/autonomy-atomicity-analyzer.md) | Weekday schedule | Find patterns that block concurrent development by multiple agents or developers |
 | [Breaking Change Detector](gh-agent-workflows/breaking-change-detector.md) | Weekday schedule | Detect undocumented public breaking changes |
-| [Code Simplifier](gh-agent-workflows/code-simplifier.md) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | [Flaky Test Investigator](gh-agent-workflows/flaky-test-investigator.md) | Weekday schedule + failed CI runs | Identify repeated flaky failures and file root-cause-first triage reports |
 | [Framework Best Practices](gh-agent-workflows/framework-best-practices.md) | Weekday schedule | Find where library-native features could replace hand-rolled solutions |
 | [Information Architecture](gh-agent-workflows/information-architecture.md) | Weekday schedule | Audit UI information architecture for navigation, placement, and consistency |
@@ -97,7 +97,6 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Project Summary](gh-agent-workflows/project-summary.md) | Daily schedule | Summarize recent activity and priorities |
 | [Release Update Check](gh-agent-workflows/release-update.md) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
 | [Small Problem Fixer](gh-agent-workflows/small-problem-fixer.md) | Weekday schedule | Fix small, related issues and open a focused PR |
-| [Test Improver](gh-agent-workflows/test-improver.md) | Weekly schedule | Add targeted tests and clean up redundant coverage |
 
 ### Elastic-specific workflows
 

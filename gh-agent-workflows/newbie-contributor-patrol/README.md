@@ -37,4 +37,4 @@ See [example.yml](example.yml) for the full workflow file.
 
 ## Pairing
 
-This workflow is the detector half. Pair with [Newbie Contributor Fixer](../newbie-contributor-fixer/) to automatically fix the issues it finds.
+This detector finds onboarding documentation gaps. Chain it to [Create PR from Issue](../../docs/workflows/detector-fixer-chaining.md) to automatically fix findings.

@@ -26,9 +26,9 @@ Same concept, different scope. This agent also runs on a weekday schedule, but i
 
 This one is not scheduled — it is triggered by the `/docs-review` command on pull requests. When someone opens a PR that touches documentation, they can invoke this agent to review the changes for style guide compliance, correct `applies_to` frontmatter, and consistency with existing docs. It is human-coordinated: you decide when to call it and on which PRs. Think of it as a specialized reviewer that never forgets the style guide.
 
-## [Newbie Contributor Patrol](../../workflows/gh-agent-workflows/newbie-contributor-patrol.md) and [Newbie Contributor Fixer](../../workflows/gh-agent-workflows/newbie-contributor-fixer.md)
+## [Newbie Contributor Patrol](../../workflows/gh-agent-workflows/newbie-contributor.md)
 
-These run on a weekday schedule as a detector/fixer pair. The Newbie Contributor Patrol scans for onboarding documentation gaps — things a new contributor would struggle with. Missing setup steps, unexplained prerequisites, jargon without context. When it finds gaps, the Newbie Contributor Fixer creates PRs to fill them. There is also an External variant that cross-references published documentation to make sure the public onboarding path is just as clear as the internal one.
+The Newbie Contributor Patrol runs on a weekly schedule, scanning for onboarding documentation gaps — things a new contributor would struggle with. Missing setup steps, unexplained prerequisites, jargon without context. When it finds gaps, chain it to Create PR from Issue for automatic fixes. There is also an External variant that cross-references published documentation to make sure the public onboarding path is just as clear as the internal one.
 
 ## How They Complement Each Other
 

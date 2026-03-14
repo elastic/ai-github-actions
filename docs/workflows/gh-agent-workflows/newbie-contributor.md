@@ -2,38 +2,34 @@
 
 Review documentation from a new contributor's perspective and automatically fix gaps.
 
-**Newbie Contributor Patrol** reads all contributor-facing documentation as if it were a new contributor's first encounter with the project — following getting-started paths, checking for missing prerequisites, and flagging blocking gaps. An **Elastic-specific** variant also cross-references published Elastic documentation. **Newbie Contributor Fixer** picks up patrol issues and opens PRs with documentation improvements. Most runs end with `noop`.
+**Newbie Contributor Patrol** reads all contributor-facing documentation as if it were a new contributor's first encounter with the project — following getting-started paths, checking for missing prerequisites, and flagging blocking gaps. An **Elastic-specific** variant also cross-references published Elastic documentation. Chain it to [Create PR from Issue](../detector-fixer-chaining.md) for a fully autonomous detect-and-fix loop. Most runs end with `noop`.
 
 ## Quick install
 
 ### Patrol only (human reviews issues)
 
 ```bash
-mkdir -p .github/workflows && curl -sL \
+mkdir -p .github/workflows && curl -fsSL \
   https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol/example.yml \
   -o .github/workflows/newbie-contributor-patrol.yml
 ```
 
-### Full loop (patrol + fixer)
+### Chained (patrol + fixer)
 
 ```bash
-mkdir -p .github/workflows && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol/example.yml \
-  -o .github/workflows/newbie-contributor-patrol.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-fixer/example.yml \
-  -o .github/workflows/newbie-contributor-fixer.yml
+mkdir -p .github/workflows && curl -fsSL \
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol/example-chained.yml \
+  -o .github/workflows/newbie-contributor-patrol-and-fix.yml
 ```
 
-### All three (patrol + external + fixer)
+### Patrol + external (Elastic-specific)
 
 ```bash
 mkdir -p .github/workflows && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-patrol/example.yml \
   -o .github/workflows/newbie-contributor-patrol.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/estc-newbie-contributor-patrol-external/example.yml \
-  -o .github/workflows/estc-newbie-contributor-patrol-external.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/newbie-contributor-fixer/example.yml \
-  -o .github/workflows/newbie-contributor-fixer.yml
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/estc-newbie-contributor-patrol-external/example.yml \
+  -o .github/workflows/estc-newbie-contributor-patrol-external.yml
 ```
 
 ---
@@ -122,51 +118,6 @@ permissions:
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-newbie-contributor-patrol-external.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-```
-
----
-
-## Newbie Contributor Fixer
-
-Picks up open issues filed by the patrol (labeled `newbie-contributor` or with `[newbie-contributor]` in the title), applies the suggested documentation improvements, and opens a PR. Focuses on filling gaps in the contributor onboarding path — missing prerequisites, broken commands, undocumented requirements.
-
-### Trigger
-
-| Event | Schedule |
-| --- | --- |
-| `schedule` | Weekdays |
-| `workflow_dispatch` | Manual |
-
-### Inputs
-
-| Input | Description | Default |
-| --- | --- | --- |
-| `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
-| `setup-commands` | Shell commands run before the agent starts | `""` |
-
-### Safe outputs
-
-- `create-pull-request` — open a PR with documentation fixes (max 1)
-
-### Example workflow
-
-```yaml
-name: Newbie Contributor Fixer
-on:
-  schedule:
-    - cron: "0 14 * * 1-5"
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  issues: read
-  pull-requests: write
-
-jobs:
-  run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-newbie-contributor-fixer.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

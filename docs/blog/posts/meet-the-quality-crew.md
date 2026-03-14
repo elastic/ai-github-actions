@@ -22,9 +22,7 @@ That bar is intentional. We learned early that a bug-hunting agent filing noisy,
 
 When Bug Hunter does find something, it's real. And that's where its partner comes in.
 
-## [Bug Exterminator](../../workflows/gh-agent-workflows/bug-exterminator.md) -- The Closer
-
-Bug Exterminator picks up Bug Hunter's findings and creates pull requests to fix them. This is the detector/fixer pair pattern we use across the factory: one agent finds, another agent fixes. Bug Hunter doesn't worry about writing patches. Bug Exterminator doesn't worry about whether the finding is valid -- it trusts the quality bar that Bug Hunter already enforced.
+When Bug Hunter files a report, chain it to [Create PR from Issue](../../workflows/detector-fixer-chaining.md) and a second agent picks up the finding and creates a pull request to fix it. Bug Hunter doesn't worry about writing patches. The fixer doesn't worry about whether the finding is valid -- it trusts the quality bar that Bug Hunter already enforced.
 
 ## [Flaky Test Investigator](../../workflows/gh-agent-workflows/flaky-test-investigator.md) -- The Pattern Matcher
 
@@ -32,21 +30,21 @@ Flaky tests corrode confidence in your entire test suite. The Flaky Test Investi
 
 It runs on a weekday schedule and also triggers on failed CI runs. When it finds a pattern, it files a root-cause-first triage report: here's the test, here's the pattern, here's why it's flaky. That framing matters. Developers don't need to know a test is flaky -- they already know. They need to know *why*.
 
-## [Code Duplication Detector](../../workflows/gh-agent-workflows/code-duplication-detector.md) and [Code Duplication Fixer](../../workflows/gh-agent-workflows/code-duplication-fixer.md)
+## [Code Duplication Detector](../../workflows/gh-agent-workflows/code-duplication.md)
 
-Another detector/fixer pair. The Code Duplication Detector scans for duplicate and clustered code -- not just exact copies, but structurally similar blocks doing the same thing in slightly different ways. The Code Duplication Fixer takes those findings and creates PRs that consolidate into shared abstractions.
+The Code Duplication Detector scans for duplicate and clustered code -- not just exact copies, but structurally similar blocks doing the same thing in slightly different ways. Chain it to Create PR from Issue and the fixer takes those findings and creates PRs that consolidate into shared abstractions.
 
 Unintentional duplication is a maintenance burden that compounds. When three components each implement their own validation logic, a bug fix in one leaves the other two broken. These agents catch that drift before it causes real damage.
 
-## [Refactor Opportunist](../../workflows/gh-agent-workflows/refactor-opportunist.md) and [Code Simplifier](../../workflows/gh-agent-workflows/code-simplifier.md)
+## [Refactor Opportunist](../../workflows/gh-agent-workflows/refactor-opportunist.md) and [Code Complexity Detector](../../workflows/gh-agent-workflows/code-complexity.md)
 
 These two agents work the middle of the quality spectrum. They aren't hunting for bugs -- they're hunting for code that works but could work better.
 
-The Refactor Opportunist runs on a weekday schedule, scanning for functions that have grown too large, abstractions that no longer match their usage, and patterns that have drifted from codebase conventions. The Code Simplifier takes a tighter focus, targeting overcomplicated code with high-confidence simplifications. Neither agent touches anything it isn't confident about. A bad refactor is worse than no refactor.
+The Refactor Opportunist runs on a weekday schedule, scanning for functions that have grown too large, abstractions that no longer match their usage, and patterns that have drifted from codebase conventions. The Code Complexity Detector takes a tighter focus, targeting overcomplicated code -- deep nesting, redundant conditionals, style outliers -- and filing simplification reports. Neither agent touches anything it isn't confident about. A bad refactor is worse than no refactor.
 
-## [Text Auditor](../../workflows/gh-agent-workflows/text-auditor.md) and [Text Beautifier](../../workflows/gh-agent-workflows/text-beautifier.md)
+## [Text Auditor](../../workflows/gh-agent-workflows/text-quality.md)
 
-User-facing strings deserve the same care as code. The Text Auditor scans for grammar issues, unclear phrasing, and inconsistent terminology across all user-visible text. The Text Beautifier creates PRs to fix what the Auditor finds. Same detector/fixer pattern, applied to language instead of logic.
+User-facing strings deserve the same care as code. The Text Auditor scans for grammar issues, unclear phrasing, and inconsistent terminology across all user-visible text. Chain it to Create PR from Issue and the fixer creates PRs to fix what the Auditor finds. Same detect-and-fix pattern, applied to language instead of logic.
 
 ## [Framework Best Practices](../../workflows/gh-agent-workflows/framework-best-practices.md) and [Autonomy Atomicity Analyzer](../../workflows/gh-agent-workflows/autonomy-atomicity-analyzer.md)
 

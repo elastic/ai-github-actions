@@ -33,11 +33,7 @@ Pre-built workflows with domain-specific prompts. These import the same base fra
 - [Stale Issues Investigator](stale-issues-investigator/) — detect stale issues
 - [Stale Issues Remediator](stale-issues-remediator/) — process and close stale issues
 - [Test Coverage Detector](test-coverage-detector/) — find under-tested code paths
-**Fixers** (create PRs):
-- [Bug Exterminator](bug-exterminator/) — fix bug-hunter issues
-- [Text Beautifier](text-beautifier/) — fix text-auditor issues
-- [Code Duplication Fixer](code-duplication-fixer/) — fix code-duplication-detector issues
-- [Test Improver](test-improver/) — fix test-coverage-detector issues
+- [Code Complexity Detector](code-complexity-detector/) — find overly complex code
 
 **Event-driven** (comment on PRs):
 - [Dependency Review](dependency-review/) — analyze Dependabot/Renovate dependency update PRs across ecosystems (GitHub Actions, Go, npm, Python, Java, Buildkite)
@@ -70,8 +66,8 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 
 `--continuous-improvement` adds:
 - `bug-hunter`
-- `bug-exterminator`
-- `code-simplifier`
+- `code-complexity-detector`
+- `code-duplication-detector`
 - `docs-patrol`
 - `newbie-contributor-patrol`
 - `product-manager-impersonator`
@@ -80,9 +76,7 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 - `stale-issues-investigator`
 - `stale-issues-remediator`
 - `test-coverage-detector`
-- `test-improver`
 - `breaking-change-detector`
-- `code-duplication-detector`
 - `update-pr-body`
 
 ## Elastic-specific Workflows
