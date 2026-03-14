@@ -67,6 +67,35 @@ jobs:
 
 This pattern gives you: **Audit creates issue -> same workflow: if issue was created, then start `create-pr-from-issue`**.
 
+## Detector creates issue -> assign to Copilot
+
+Instead of chaining to a fixer workflow, you can assign the created issue to GitHub's Copilot coding agent and let it open a PR. This is useful when you don't have a dedicated fixer workflow or want to use Copilot's native implementation flow.
+
+```yaml
+jobs:
+  detect:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+  assign-to-copilot:
+    needs: detect
+    if: needs.detect.outputs.created_issue_number != ''
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Assign issue to Copilot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue edit ${{ needs.detect.outputs.created_issue_number }} \
+            --repo ${{ github.repository }} \
+            --add-assignee @copilot
+```
+
+Copilot picks up the assignment, reads the issue, and opens a PR — using its own session and context window. No `COPILOT_GITHUB_TOKEN` is needed for the handoff job itself since assignment only requires `issues: write`.
+
 ## Complete examples
 
 ### Bug Hunter + Bug Exterminator
@@ -141,6 +170,7 @@ jobs:
 | Approach | Best for |
 |---|---|
 | **Chained** (single run) | Fully autonomous loops where you want immediate action on findings |
+| **Assign to Copilot** | Lightweight handoff — detector creates the issue, Copilot implements it natively |
 | **Separate schedules** | Human-in-the-loop review — run the detector, review its issues, then let the fixer run later |
 | **Detector only** | When you only want reports, not automatic fixes |
 

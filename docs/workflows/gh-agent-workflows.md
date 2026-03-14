@@ -23,9 +23,9 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 
 ## Recommended workflow sets
 
-The quick setup script includes two opinionated sets:
+The [quick setup script](https://github.com/elastic/ai-github-actions/blob/main/scripts/quick-setup.sh) bundles two opinionated sets. The [homepage](../index.md) shows how to install the core workflows with a single copy-paste command.
 
-- **Starter repo operations set (default):** `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
+- **Core (default):** `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
 - **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `bug-exterminator`, `code-simplifier`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues-investigator`, `stale-issues-remediator`, `test-coverage-detector`, `test-improver`, `breaking-change-detector`, `code-duplication-detector`, `update-pr-body`
 
 ## Available workflows
@@ -148,7 +148,7 @@ Some workflows require additional provider-specific secrets (for example, `PR Bu
 Any workflow that uses safe-outputs with `expires` (create-issue, create-pull-request, create-discussion) requires the `agentics-maintenance` workflow so expired items are closed automatically. Install it once per repo:
 
 ````bash
-mkdir -p .github/workflows && curl -sL \
+mkdir -p .github/workflows && curl -fsSL \
   https://raw.githubusercontent.com/elastic/ai-github-actions/v0/.github/workflows/agentics-maintenance.yml \
   -o .github/workflows/agentics-maintenance.yml
 ````
