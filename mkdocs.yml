@@ -55,6 +55,7 @@ nav:
           - Framework Best Practices: workflows/gh-agent-workflows/framework-best-practices.md
           - Small Problem Fixer: workflows/gh-agent-workflows/small-problem-fixer.md
           - Performance Profiler: workflows/gh-agent-workflows/performance-profiler.md
+          - UX Design Patrol: workflows/gh-agent-workflows/ux-design-patrol.md
       - Planning & Insights:
           - Plan: workflows/gh-agent-workflows/plan.md
           - Agent Suggestions: workflows/gh-agent-workflows/agent-suggestions.md

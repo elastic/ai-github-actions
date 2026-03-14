@@ -98,6 +98,7 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Release Update Check](gh-agent-workflows/release-update.md) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
 | [Small Problem Fixer](gh-agent-workflows/small-problem-fixer.md) | Weekday schedule | Fix small, related issues and open a focused PR |
 | [Test Improver](gh-agent-workflows/test-improver.md) | Weekly schedule | Add targeted tests and clean up redundant coverage |
+| [UX Design Patrol](gh-agent-workflows/ux-design-patrol.md) | Weekday schedule | Detect UI/UX design drift and file consolidation reports |
 
 ### Elastic-specific workflows
 
