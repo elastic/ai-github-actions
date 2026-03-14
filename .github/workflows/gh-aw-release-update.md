@@ -78,6 +78,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -92,7 +94,7 @@ Check for new releases of `elastic/ai-github-actions` and open a PR that updates
 ## Constraints
 
 - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request.
-- **CANNOT**: Push directly to the repository — use `create_pull_request`.
+- **CANNOT**: Push directly to the repository — use `ready_to_make_pr` then `create_pull_request`.
 - **Only one PR per run.**
 - Only update workflow references to `elastic/ai-github-actions/.github/workflows/gh-aw-*.lock.yml@...`.
 - If no updates are needed, call `noop` with a brief reason.
@@ -124,7 +126,7 @@ rg -n "elastic/ai-github-actions/.github/workflows/gh-aw-.*\\.lock\\.yml@\\S+" .
 ## Step 4: Create the PR
 
 1. Commit the changes locally.
-2. Call `create_pull_request` with:
+2. Call `ready_to_make_pr`, then call `create_pull_request` with:
    - **Title**: `Update ai-github-actions workflows to <latest tag>`
    - **Body**: Summary of updated refs (old → new), release note highlights that matter, suggested workflow updates, and tests run (if none, say "Not run (workflow reference updates only)").
 

@@ -80,6 +80,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -90,7 +92,7 @@ Analyze failed GitHub Actions CI runs on protected branches (e.g. `main`) in ${{
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Workflow Run ID**: ${{ github.event.workflow_run.id }}
+- **Workflow Run URL**: ${{ github.event.workflow_run.html_url }}
 - **Conclusion**: ${{ github.event.workflow_run.conclusion }}
 - **Default Branch**: ${{ github.event.repository.default_branch }}
 
@@ -109,6 +111,7 @@ Analyze failed GitHub Actions CI runs on protected branches (e.g. `main`) in ${{
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/jobs \
        --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
      ````
+   - If none of the jobs have a `failure` conclusion, call `noop` with message "No failed jobs in workflow run; nothing to report" and stop.
    - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
      ````bash
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/logs \

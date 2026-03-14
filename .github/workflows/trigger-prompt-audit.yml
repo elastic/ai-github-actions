@@ -30,7 +30,7 @@ jobs:
            - **PR workflows**: `pr-review`, `mention-in-pr`, `mention-in-pr-no-sandbox`, `mention-in-pr-by-id`, `pr-review-addresser`, `pr-actions-detective`, `pr-actions-fixer`, `estc-docs-pr-review`, `estc-pr-buildkite-detective`
            - **Issue workflows**: `mention-in-issue`, `mention-in-issue-no-sandbox`, `issue-triage`, `issue-fixer`
            - **Scheduled audits/detectors**: `scheduled-audit`, `bug-hunter`, `docs-patrol`, `breaking-change-detector`, `code-duplication-detector`, `stale-issues`, `text-auditor`, `dependency-review`, `framework-best-practices`, etc.
-           - **Fixers/improvers**: `scheduled-fix`, `code-simplifier`, `code-duplication-fixer`, `small-problem-fixer`, `test-improver`, `text-beautifier`, `newbie-contributor-fixer`, `refactor-opportunist`, etc.
+           - **Fixers**: `scheduled-fix`, `small-problem-fixer`, `refactor-opportunist`, `create-pr-from-issue`, etc.
            - **Other**: `plan`, `deep-research`, `project-summary`, `update-pr-body`, etc.
         3. Read each prompt file. Focus on families with multiple similar workflows first (PR workflows, issue workflows).
 

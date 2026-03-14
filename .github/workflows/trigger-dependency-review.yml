@@ -18,8 +18,14 @@ jobs:
       github.event.pull_request.user.login == 'renovate[bot]' ||
       startsWith(github.head_ref, 'updatecli')
     uses: ./.github/workflows/gh-aw-dependency-review.lock.yml
-    # For updatecli: uncomment and set your repo's updatecli bot actor (it varies per repo).
     # with:
-    #   allowed-bot-users: "github-actions[bot]"
+      # Configure which labels the agent may apply and define their semantics in additional-instructions.
+      # classification-labels: "needs-human-review,higher-risk,merge-ready"
+      # additional-instructions: |
+      #   - `needs-human-review`: Apply when breaking changes are found, a major version bump, unverified SHA, or mutable tag move.
+      #   - `higher-risk`: Apply when the dependency is only used in push/release/schedule/dispatch workflows.
+      #   - `merge-ready`: Apply when all dependency updates are safe to merge without human review.
+      # For updatecli: uncomment and set your repo's updatecli bot actor (it varies per repo).
+      # allowed-bot-users: "github-actions[bot]"
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

@@ -83,6 +83,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -95,7 +97,9 @@ Create a periodic project summary with actionable highlights from recent activit
    - If a previous report exists, use its `createdAt` as the start date. Otherwise, use **14 days ago**.
 
 2. **Collect activity since the start date**
+   - Build one shared bot identity set once and reuse it consistently: `${{ inputs.allowed-bot-users }}` plus common bot accounts (for example `dependabot[bot]` and `renovate[bot]`).
    - `git log --since="<start-date>" --oneline --stat` for commit count and notable changes.
+   - Use non-bot commit count for activity thresholding. Exclude commits authored or committed by identities in the bot set (including merge commits that only represent bot-authored PR activity).
    - `github-search_issues` for issues created or updated since the start date (exclude project-summary issues).
    - `github-search_pull_requests` for PRs created since the start date.
    - `github-search_pull_requests` for PRs merged since the start date.
@@ -105,12 +109,12 @@ Create a periodic project summary with actionable highlights from recent activit
    - PRs ready to merge or awaiting review.
    - Urgent or blocking issues (labels like `urgent`, `blocking`, `priority`, `P0`, `P1`).
    - Decisions needed (labels like `needs decision`, `discussion`, `question`).
-   - Stale items: open issues or PRs with no updates in 30+ days.
+   - Stale items: open issues or PRs with no updates in 30+ days, excluding items authored by identities in the shared bot set unless there is clear significant impact requiring human attention.
 
 ### Activity Threshold (Noop)
 
 Call `noop` with message **"Project summary skipped — no meaningful activity since last report"** when:
-- Total activity (commits + new issues + new PRs + merged PRs) since the last report is fewer than **3**, and
+- Total activity (non-bot commits + non-bot new issues + non-bot new PRs + non-bot merged PRs) since the last report is fewer than **3**, and
 - There are **no** urgent, decision-needed, or stale items.
 
 ### Issue Format
@@ -142,7 +146,8 @@ Call `noop` with message **"Project summary skipped — no meaningful activity s
 
 **Guidelines:**
 - Include direct links to issues/PRs and a short rationale for each item.
-- If a section is empty, write `None`.
+- If a section is empty, **omit it entirely** rather than writing `None`. Only include sections that have meaningful content. A summary with 2 substantive sections is more useful than one with 6 sections marked `None`.
 - Do not repeat items already covered in the previous report unless status materially changed.
+- Exclude bot-authored PRs and issues (e.g., from agentic workflows, dependabot, renovate) from activity counts, stale-item selection, and the Recent Progress section unless they represent significant changes. Bot activity should not inflate the summary or trigger a report on otherwise quiet days.
 
 ${{ inputs.additional-instructions }}

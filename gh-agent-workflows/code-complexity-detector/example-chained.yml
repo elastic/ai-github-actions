@@ -1,0 +1,28 @@
+name: Code Complexity Detect & Fix
+on:
+  schedule:
+    - cron: "0 13 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  detect:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-complexity-detector.lock.yml@v0
+    with:
+      languages: "go,python,typescript"
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+  fix:
+    needs: detect
+    if: needs.detect.outputs.created_issue_number != ''
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
+    with:
+      target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

@@ -14,6 +14,7 @@ imports:
   - gh-aw-fragments/pick-three-keep-many.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
+  - gh-aw-fragments/code-quality-audit.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
@@ -55,6 +56,11 @@ on:
         type: string
         required: false
         default: ""
+      severity-threshold:
+        description: "Minimum severity to include in the report. 'high' = only duplications causing active maintenance problems. 'medium' (default) = also include clear consolidation opportunities. 'low' = also include minor near-duplicates."
+        type: string
+        required: false
+        default: "medium"
       title-prefix:
         description: "Title prefix for created issues (e.g. '[refactor]')"
         type: string
@@ -94,6 +100,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 

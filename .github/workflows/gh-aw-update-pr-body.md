@@ -87,6 +87,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -98,6 +100,13 @@ Keep the pull request body in sync with the actual state of the code changes in 
 
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
+- **Runtime-managed footer override input**: `${{ inputs.messages-footer }}`
+- **Default runtime footer text (used when no override is provided)**:
+
+```text
+---
+The body of this PR is automatically managed by the workflow runtime.
+```
 
 ## Edit Level Configuration
 
@@ -111,6 +120,7 @@ The following edit levels are configured for this run. Each dimension is indepen
 | **style** | `${{ inputs.edit-style }}` | How aggressively to improve writing clarity, conciseness, and tone |
 
 Level semantics:
+
 - **`high`** — apply the agent's best judgment; proactively improve this dimension throughout the body
 - **`low`** — make only conservative fixes for clear problems; do not restructure or rewrite
 - **`none`** — do not touch this dimension at all; leave it exactly as the author wrote it
@@ -169,13 +179,23 @@ Assess the PR body across each configured dimension. Use the level to determine 
 
 Based on your analysis, compile the full list of changes warranted across all non-`none` dimensions. Group them by dimension.
 
+Before proposing body changes, normalize footer content:
+
+- Identify and remove any existing footer block(s) that match either:
+  - the configured runtime-managed footer override input (when present), or
+  - the default runtime footer text above.
+- If the PR body contains repeated copies of that same footer, remove all copies from the authored content you are editing.
+- Treat this cleanup as mechanical deduplication, not a style/format rewrite.
+
 Do **not** propose changes when:
+
 - The dimension level is `none`
 - The level is `low` and the issue is minor (style preference, slight improvement, optional detail)
 - An update would erase useful context (motivation, design decisions, issue links) the author provided
 - The body is a reasonable high-level summary even if some details differ
 
 **Never willingly add any of the following to the PR body** (even in `high` mode):
+
 - Commit counts, file counts, or insertion/deletion statistics (e.g., "2 commits, 143 files changed, 12,613 insertions")
 - Scope or size summaries — the reviewer can see these in the GitHub UI
 - Lists of every file changed — link to relevant code instead
@@ -187,6 +207,7 @@ Do **not** propose changes when:
 **If any changes are warranted:**
 
 Call `update_pull_request` **exactly once** with a `replace` operation to write a body that applies all warranted changes. You may only call this tool once per run — additional calls will be rejected by validation. The updated body must:
+
 - Apply only the changes identified in Step 4 — do not make unplanned edits
 - Preserve the original structure, formatting, and wording of sections untouched by warranted changes
 - Preserve the original motivation and context (including issue links like `Fixes #N`)

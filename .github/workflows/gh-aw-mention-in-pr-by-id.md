@@ -94,17 +94,15 @@ strict: false
 safe-outputs:
   activation-comments: false
   max-patch-size: 10240
-  add-comment:
-    target: "${{ inputs.target-pr-number }}"
-  create-pull-request-review-comment:
-    target: "${{ inputs.target-pr-number }}"
-  submit-pull-request-review:
-    target: "${{ inputs.target-pr-number }}"
-  push-to-pull-request-branch:
-    target: "${{ inputs.target-pr-number }}"
-    github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 timeout-minutes: 60
 steps:
+  - name: Checkout target PR branch (workflow_call)
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ inputs.target-pr-number }}
+    run: |
+      set -euo pipefail
+      gh pr checkout "$PR_NUMBER"
   - name: Ensure origin refs for PR patch generation
     env:
       GITHUB_TOKEN: ${{ github.token }}
@@ -118,6 +116,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -156,5 +156,15 @@ Assist with pull request #${{ inputs.target-pr-number }} on ${{ github.repositor
   4. **Check existing threads** — if this issue was already flagged (resolved or unresolved), do not duplicate.
 - Leave inline comments per the **Code Review Reference** for each finding that survives verification. Then call `submit_pull_request_review`.
 - **Bot-authored PRs**: If the PR author is `github-actions[bot]`, submit a `COMMENT` review only — `APPROVE` and `REQUEST_CHANGES` will fail.
+
+**If asked to fix code or address review feedback:**
+- Read `/tmp/pr-context/unresolved_threads.json` to identify open review feedback.
+- Implement the requested code changes and run relevant lint/build/test commands for the modified area.
+- Call `ready_to_push_to_pr` to confirm the branch is safe to push.
+- Use `push_to_pull_request_branch` to push your changes once.
+- Resolve every thread that is fully addressed by your changes using `resolve_pull_request_review_thread` and the thread GraphQL node ID (`id`, e.g., `PRRT_kwDO...`).
+- Do **not** resolve threads you disagreed with, skipped, or only partially addressed; instead, leave a `reply_to_pull_request_review_comment` explaining status when needed.
+- **Important completion step**: feedback is not fully complete until fully addressed threads are marked resolved via safe output.
+- If `resolve_pull_request_review_thread` fails for fully addressed threads, call `add_comment` listing the thread IDs and failure reason.
 
 ${{ inputs.additional-instructions }}

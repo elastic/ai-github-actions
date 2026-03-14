@@ -34,11 +34,11 @@ The event-driven agents are always listening in the background, but the schedule
 
 ## The Late Shift
 
-> **3:00 PM** — Code quality time. Code Simplifier looks for logic that can be expressed more clearly — overly nested conditionals, unnecessary abstractions, functions doing too many things. Refactor Opportunist identifies larger structural improvements: modules that should be split, interfaces that should be unified, dead code that should be removed. Docs Patrol checks that documentation stays in sync with the code it describes.
+> **3:00 PM** — Code quality time. Code Complexity Detector looks for logic that can be expressed more clearly — overly nested conditionals, unnecessary abstractions, functions doing too many things. Refactor Opportunist identifies larger structural improvements: modules that should be split, interfaces that should be unified, dead code that should be removed. Docs Patrol checks that documentation stays in sync with the code it describes.
 
 > **4:00 PM** — Community and hygiene. Newbie Contributor Patrol scans for issues that would make good first contributions and ensures they are labeled and well-described. Autonomy Atomicity Analyzer checks that our agents and workflows are properly decomposed — each one doing one thing well. Stale Issues sweeps through the issue tracker and flags anything that has gone cold.
 
-> **5:00 PM** — The weekly crew clocks in on their designated days. Information Architecture reviews the overall structure of the documentation site. UX Design Patrol evaluates the product from a design perspective, looking for inconsistencies and usability issues. Small Problem Fixer picks up trivial issues — typos, missing semicolons, outdated comments — and just fixes them directly. Test Improver reviews the test suite for gaps, weak assertions, and missing edge cases.
+> **5:00 PM** — The weekly crew clocks in on their designated days. Information Architecture reviews the overall structure of the documentation site. UX Design Patrol evaluates the product from a design perspective, looking for inconsistencies and usability issues. Small Problem Fixer picks up trivial issues — typos, missing semicolons, outdated comments — and just fixes them directly.
 
 ## After Hours
 
@@ -62,9 +62,9 @@ All times UTC, weekdays unless noted.
 | 12:00 PM | Smoke Connect Button Enablement *(custom)*, Observability Ideas Man *(custom)*, Code Duplication Detector |
 | 1:00 PM | Smoke Reset Visibility *(custom)*, Vector Search Ideas Man *(custom)*, Framework Best Practices |
 | 2:00 PM | Flaky Test Investigator, Performance Profiler, Breaking Change Detector |
-| 3:00 PM | Code Simplifier, Refactor Opportunist, Docs Patrol |
+| 3:00 PM | Code Complexity Detector, Refactor Opportunist, Docs Patrol |
 | 4:00 PM | Newbie Contributor Patrol, Autonomy Atomicity Analyzer, Stale Issues |
-| 5:00 PM | Information Architecture, UX Design Patrol, Small Problem Fixer, Test Improver *(weekly)* |
+| 5:00 PM | Information Architecture, UX Design Patrol, Small Problem Fixer |
 
 **Event-driven (anytime):** PR Review, PR Actions Detective, Branch Actions Detective, Issue Triage, Duplicate Issue Detector, Update PR Body
 

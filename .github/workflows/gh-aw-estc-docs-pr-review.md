@@ -16,7 +16,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-${{ github.workflow }}-docs-pr-review-${{ github.event.pull_request.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-docs-pr-review-${{ inputs.target-pr-number || github.event.pull_request.number }}"
 on:
   workflow_call:
     inputs:
@@ -32,6 +32,11 @@ on:
         default: ""
       setup-commands:
         description: "Shell commands to run before the agent starts (dependency install, build, etc.)"
+        type: string
+        required: false
+        default: ""
+      target-pr-number:
+        description: "Explicit PR number to target (used for manual/dispatch triggers)"
         type: string
         required: false
         default: ""
@@ -67,7 +72,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: ${{ github.workflow }}-estc-docs-pr-review-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-estc-docs-pr-review-${{ inputs.target-pr-number || github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
   contents: read
@@ -125,6 +130,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -135,7 +142,7 @@ You are an expert Elastic technical writer reviewing documentation pull requests
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **PR**: #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
+- **PR**: #${{ inputs.target-pr-number || github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
 
 ## Constraints
 
@@ -147,10 +154,10 @@ Follow these steps in order.
 
 ### Step 1: Gather Context
 
-1. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get the full PR details (author, description, branches, **labels**).
-3. If the PR description references issues (e.g., "Fixes #123", "Closes #456"), call `issue_read` with method `get` on each linked issue to understand the motivation and acceptance criteria. Note any product, deployment, or version context mentioned.
-4. Call `pull_request_read` with method `get_review_comments` to check existing review threads. Note which files already have threads and whether threads are resolved, unresolved, or outdated.
-5. Call `pull_request_read` with method `get_reviews` to see prior review submissions from this bot. Do not repeat points already made in prior reviews.
+1. Call `pull_request_read` with method `get` on PR #${{ inputs.target-pr-number || github.event.pull_request.number }} to get the full PR details (author, description, branches, **labels**).
+2. If the PR description references issues (e.g., "Fixes #123", "Closes #456"), call `issue_read` with method `get` on each linked issue to understand the motivation and acceptance criteria. Note any product, deployment, or version context mentioned.
+3. Call `pull_request_read` with method `get_review_comments` to check existing review threads. Note which files already have threads and whether threads are resolved, unresolved, or outdated.
+4. Call `pull_request_read` with method `get_reviews` to see prior review submissions from this bot. Do not repeat points already made in prior reviews.
 
 ### Step 2: Load Review Guidelines
 
@@ -192,7 +199,7 @@ Fetch changed files with `pull_request_read` method `get_files` using `per_page:
    2. Read the surrounding context — is this addressed elsewhere in the file or PR?
    3. Is this a genuine violation of the loaded guidelines or a consistency requirement?
    4. Would an Elastic technical writer agree this is a real issue?
-8. **Leave inline comments NOW** — call `create_pull_request_review_comment` for every verified issue in this file before moving on.
+8. **Leave inline comments now** — call `create_pull_request_review_comment` for every verified issue in this file before moving on.
 
 **Repeat for the next file.** After all files in the page, fetch `page: 2` and continue until all changed files are reviewed.
 

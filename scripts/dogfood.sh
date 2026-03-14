@@ -18,9 +18,6 @@ cd "$REPO_ROOT"
 
 # Workflows that are not dogfooded in this repository.
 EXCLUDED_WORKFLOWS=(
-  "bug-exterminator"
-  "code-duplication-fixer"
-  "code-simplifier"
   "estc-actions-resource-not-accessible-detector"
   "estc-docs-patrol-external"
   "estc-newbie-contributor-patrol-external"
@@ -29,7 +26,6 @@ EXCLUDED_WORKFLOWS=(
   "log-searching-agent"
   "mention-in-issue-no-sandbox"
   "mention-in-pr-no-sandbox"
-  "newbie-contributor-fixer"
   "performance-profiler"
   "pr-actions-fixer"
   "pr-review-addresser"
@@ -38,8 +34,19 @@ EXCLUDED_WORKFLOWS=(
   "scheduled-audit"
   "scheduled-fix"
   "small-problem-fixer"
-  "test-improver"
-  "text-beautifier"
+)
+
+# Workflows that should auto-chain issue -> remediation PR in generated dogfood triggers.
+# These entries refer to gh-agent-workflows/<name>/example.yml directories.
+REMEDIATION_WORKFLOWS=(
+  "bug-hunter"
+  "code-complexity-detector"
+  "code-duplication-detector"
+  "docs-patrol"
+  "framework-best-practices"
+  "newbie-contributor-patrol"
+  "test-coverage-detector"
+  "text-auditor"
 )
 
 echo "Syncing workflow files..."
@@ -70,10 +77,11 @@ for f in gh-agent-workflows/*/example.yml; do
   overrides="gh-agent-workflows/$dir/dogfood-with.yml"
   if [[ -f "$overrides" ]]; then
     awk -v of="$overrides" '
-      /^    with:/ { in_with=1; next }
+      /^  [^ ]+:/ { current_job=$0; sub(/^  /, "", current_job); sub(/:$/, "", current_job) }
+      current_job=="run" && /^    with:/ { in_with=1; next }
       in_with && /^    [a-z]/ { in_with=0 }
       in_with { next }
-      /^    secrets:/ {
+      current_job=="run" && /^    secrets:/ {
         print "    with:"
         while ((getline line < of) > 0) {
           print "      " line
@@ -94,6 +102,51 @@ for f in gh-agent-workflows/*/example.yml; do
     sed '/COPILOT_GITHUB_TOKEN:/a\
       EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
     echo "    + injected EXTRA_COMMIT_GITHUB_TOKEN secret"
+  fi
+
+  # Append automatic issue -> PR remediation chain for selected workflows.
+  add_remediation=false
+  for remediation in "${REMEDIATION_WORKFLOWS[@]}"; do
+    [[ "$dir" == "$remediation" ]] && add_remediation=true && break
+  done
+  if [[ "$add_remediation" == "true" ]]; then
+    # Ensure permissions allow downstream remediation workflow call.
+    awk '
+      BEGIN { in_permissions=0; have_actions=0 }
+      /^permissions:/ { in_permissions=1; print; next }
+      in_permissions {
+        if (/^jobs:/) {
+          if (!have_actions) print "  actions: read"
+          in_permissions=0
+          print
+          next
+        }
+        if ($0 ~ /^  contents: /) sub(/read$/, "write")
+        if ($0 ~ /^  pull-requests: /) sub(/read$/, "write")
+        if ($0 ~ /^  actions: /) {
+          if ($0 ~ /none$/) sub(/none$/, "read")
+          have_actions=1
+        }
+        print
+        next
+      }
+      { print }
+    ' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
+
+    cat >> "$target" <<'EOF'
+
+  create_pr_from_issue:
+    needs: run
+    if: ${{ needs.run.outputs.created_issue_number != '' }}
+    uses: ./.github/workflows/gh-aw-create-pr-from-issue.lock.yml
+    with:
+      target-issue-number: ${{ needs.run.outputs.created_issue_number }}
+      additional-instructions: "Create a focused pull request that resolves this issue."
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
+EOF
+    echo "    + appended remediation chain jobs"
   fi
 done
 

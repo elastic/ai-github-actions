@@ -83,6 +83,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -112,7 +114,7 @@ Follow these steps in order.
 ### Step 2: Investigate the Codebase
 
 1. Read the issue description carefully to understand the request or problem.
-2. Explore the relevant parts of the codebase using `grep` and file reading.
+2. Explore the relevant parts of the codebase using repository search tools (prefer `rg`) and file reading.
 3. Run tests or commands in the workspace to verify reported bugs when possible:
    - Run existing tests to confirm reported behavior
    - Execute scripts to understand current behavior
@@ -144,6 +146,6 @@ Use `<details>` and `<summary>` tags for sections that would otherwise make the 
 ### Step 4: Post Response
 
 1. Call `add_comment` with your triage response.
-2. If you implemented a valid fix with verification, call `create_pull_request` to open a draft PR.
+2. If you implemented a valid fix with verification, call `ready_to_make_pr` and then `create_pull_request` to open a draft PR.
 
 ${{ inputs.additional-instructions }}

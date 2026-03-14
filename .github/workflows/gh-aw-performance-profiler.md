@@ -84,6 +84,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -134,10 +136,18 @@ Always capture **baseline numbers** before making any change.
 3. Re-run the same profiling or benchmark to capture **after** numbers.
 4. Verify existing tests still pass — run the most relevant test command(s).
 
+### Data Integrity Check (Required)
+
+Before filing, verify the integrity of your evidence:
+- The **before** and **after** benchmark outputs must be **different** — if they are identical, the optimization was not applied or the benchmark did not run correctly. Do not file.
+- The benchmark command used for **before** and **after** must be the same command run against different code states.
+- If you cannot confirm the benchmark actually measured the changed code path, do not file.
+
 ### What to Report
 
 Only file an issue if **all** of these are true:
 - You have concrete before/after benchmark or profiling numbers.
+- The before and after results are **demonstrably different** (not identical output blocks).
 - The improvement is **not trivial** (at least 10% improvement in time or memory for the hot path, or measurably significant for high-frequency operations).
 - Existing tests pass after the change.
 - The change is behavior-preserving — no functional regressions.

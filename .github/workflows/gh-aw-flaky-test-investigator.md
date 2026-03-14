@@ -83,6 +83,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -119,17 +121,30 @@ Detect flaky tests by combining open issues likely related to flakiness and rece
 - Do not report one-off or non-reproducible failures lacking repeat evidence.
 - Do not include items already tracked by a current open issue/PR unless new, material evidence changes prioritization.
 
+### Triage Reports (When Root Cause Is Unclear)
+
+When a **clear repeated failure pattern** exists (3+ occurrences across different runs) but the root cause cannot be definitively identified from available CI logs alone, file a **triage report** instead of a full investigation. A triage report:
+
+- Documents the failure pattern (test name, frequency, error signatures)
+- Lists affected runs with links
+- Provides candidate hypotheses ranked by likelihood based on available evidence
+- Suggests concrete investigation steps a developer could take (e.g., "add timing instrumentation to X", "check if Y resource is shared across parallel jobs")
+- Does NOT recommend retries, timeouts, or quarantine as solutions
+
+Use the issue title format: `Flaky pattern: [test name] — triage needed`
+
 ### Quality Gate — When to Noop
 
 Call `noop` when:
-- no repeated flaky pattern is found, or
+- no repeated flaky pattern is found (fewer than 3 occurrences), or
 - all repeated failures are already actively tracked with sufficient detail, or
-- a root cause cannot be clearly identified from the available evidence, or
-- the only available remediation is a workaround (retry, timeout, quarantine) rather than a true fix.
+- the failure occurred only once and lacks repeat evidence.
 
 ### Issue Format
 
-**Issue title:** Brief flaky-test investigation summary for the window
+**Issue title:**
+- Root cause identified: Brief flaky-test investigation summary for the window
+- Root cause unclear but repeated pattern exists: `Flaky pattern: [test name] — triage needed`
 
 **Issue body:**
 
@@ -144,11 +159,15 @@ Call `noop` when:
 > - Frequency: [count]
 > - Representative error: [short snippet]
 >
-> **Root cause:** [specific, evidence-based — only include if truly identified; otherwise do not file an issue]
-> **Recommended fix:** [concrete root-cause fix steps]
+> **Root cause:** [specific, evidence-based — include only when truly identified]
+> **Recommended fix:** [concrete root-cause fix steps — include only when root cause is identified]
+>
+> **If triage report:**
+> - Candidate hypotheses: [ranked by likelihood]
+> - Suggested investigation steps: [concrete next checks]
 >
 > ## Suggested Actions
-> - [ ] [Concrete fix task]
+> - [ ] [Concrete fix task or investigation task]
 > - [ ] [Validation task to confirm stability]
 
 ${{ inputs.additional-instructions }}

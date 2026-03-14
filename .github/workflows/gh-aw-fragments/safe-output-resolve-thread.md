@@ -2,6 +2,7 @@
 safe-outputs:
   resolve-pull-request-review-thread:
     max: ${{ inputs.resolve-pull-request-review-thread-max }}
+    target: "${{ inputs.target-pr-number || 'triggering' }}"
 ---
 
 ## resolve-pull-request-review-thread Limitations

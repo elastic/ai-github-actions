@@ -27,48 +27,49 @@ nav:
       - blog/index.md
   - Workflows:
       - Overview: workflows/gh-agent-workflows.md
-      - Human-coordinated:
-          - Mention in PR: workflows/gh-agent-workflows/mention-in-pr.md
+      - Core Workflows:
+          - Issue Triage: workflows/gh-agent-workflows/issue-triage.md
           - Mention in Issue: workflows/gh-agent-workflows/mention-in-issue.md
-          - Plan: workflows/gh-agent-workflows/plan.md
-          - Mention in Issue (no sandbox): workflows/gh-agent-workflows/mention-in-issue-no-sandbox.md
-          - Mention in PR (no sandbox): workflows/gh-agent-workflows/mention-in-pr-no-sandbox.md
-      - Event-driven:
-          - Automatic Issue Triage: workflows/gh-agent-workflows/issue-triage.md
-          - Dependency Review: workflows/gh-agent-workflows/dependency-review.md
+          - Mention in PR: workflows/gh-agent-workflows/mention-in-pr.md
           - PR Review: workflows/gh-agent-workflows/pr-review.md
+      - Repository Maintenance:
           - Duplicate Issue Detector: workflows/gh-agent-workflows/duplicate-issue-detector.md
+          - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
           - Update PR Body: workflows/gh-agent-workflows/update-pr-body.md
-          - PR Review (Fork): workflows/gh-agent-workflows/pr-review-fork.md
           - Issue Fixer: workflows/gh-agent-workflows/issue-fixer.md
           - PR Actions Detective: workflows/gh-agent-workflows/pr-actions-detective.md
           - PR Actions Fixer: workflows/gh-agent-workflows/pr-actions-fixer.md
+          - Dependency Review: workflows/gh-agent-workflows/dependency-review.md
+          - PR Review (Fork): workflows/gh-agent-workflows/pr-review-fork.md
+      - Codebase Maintenance:
+          - Detector / Fixer Chaining: workflows/detector-fixer-chaining.md
+          - Bug Hunting: workflows/gh-agent-workflows/bugs.md
+          - Code Duplication: workflows/gh-agent-workflows/code-duplication.md
+          - Code Complexity: workflows/gh-agent-workflows/code-complexity.md
+          - Test Coverage: workflows/gh-agent-workflows/test-coverage.md
+          - Docs Patrol: workflows/gh-agent-workflows/docs-patrol-overview.md
+          - Text Quality: workflows/gh-agent-workflows/text-quality.md
+          - Newbie Contributor: workflows/gh-agent-workflows/newbie-contributor.md
+          - Breaking Change Detector: workflows/gh-agent-workflows/breaking-change-detector.md
+          - Flaky Test Investigator: workflows/gh-agent-workflows/flaky-test-investigator.md
+          - Framework Best Practices: workflows/gh-agent-workflows/framework-best-practices.md
+          - Small Problem Fixer: workflows/gh-agent-workflows/small-problem-fixer.md
+          - Performance Profiler: workflows/gh-agent-workflows/performance-profiler.md
+          - UX Design Patrol: workflows/gh-agent-workflows/ux-design-patrol.md
+      - Planning & Insights:
+          - Plan: workflows/gh-agent-workflows/plan.md
+          - Agent Suggestions: workflows/gh-agent-workflows/agent-suggestions.md
+          - Autonomy Atomicity Analyzer: workflows/gh-agent-workflows/autonomy-atomicity-analyzer.md
+          - Information Architecture: workflows/gh-agent-workflows/information-architecture.md
+          - Product Manager Impersonator: workflows/gh-agent-workflows/product-manager-impersonator.md
+          - Project Summary: workflows/gh-agent-workflows/project-summary.md
+          - Release Update Check: workflows/gh-agent-workflows/release-update.md
       - Base Workflows:
           - Scheduled Audit: workflows/gh-agent-workflows/scheduled-audit.md
           - Scheduled Fix: workflows/gh-agent-workflows/scheduled-fix.md
-      - Scheduled:
-          - Detector / Fixer Chaining: workflows/detector-fixer-chaining.md
-          - Detector / Fixer Pairs:
-              - Bug Hunting: workflows/gh-agent-workflows/bugs.md
-              - Code Duplication: workflows/gh-agent-workflows/code-duplication.md
-              - Docs Patrol: workflows/gh-agent-workflows/docs-patrol-overview.md
-              - Newbie Contributor: workflows/gh-agent-workflows/newbie-contributor.md
-              - Test Coverage: workflows/gh-agent-workflows/test-coverage.md
-              - Text Quality: workflows/gh-agent-workflows/text-quality.md
-          - Standalone Scheduled:
-              - Agent Suggestions: workflows/gh-agent-workflows/agent-suggestions.md
-              - Autonomy Atomicity Analyzer: workflows/gh-agent-workflows/autonomy-atomicity-analyzer.md
-              - Breaking Change Detector: workflows/gh-agent-workflows/breaking-change-detector.md
-              - Code Simplifier: workflows/gh-agent-workflows/code-simplifier.md
-              - Flaky Test Investigator: workflows/gh-agent-workflows/flaky-test-investigator.md
-              - Framework Best Practices: workflows/gh-agent-workflows/framework-best-practices.md
-              - Information Architecture: workflows/gh-agent-workflows/information-architecture.md
-              - Performance Profiler: workflows/gh-agent-workflows/performance-profiler.md
-              - Product Manager Impersonator: workflows/gh-agent-workflows/product-manager-impersonator.md
-              - Project Summary: workflows/gh-agent-workflows/project-summary.md
-              - Release Update Check: workflows/gh-agent-workflows/release-update.md
-              - Small Problem Fixer: workflows/gh-agent-workflows/small-problem-fixer.md
-              - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
+      - Advanced:
+          - Mention in Issue (no sandbox): workflows/gh-agent-workflows/mention-in-issue-no-sandbox.md
+          - Mention in PR (no sandbox): workflows/gh-agent-workflows/mention-in-pr-no-sandbox.md
       - Elastic-specific:
           - Docs PR Review (Elastic-specific): workflows/gh-agent-workflows/estc-docs-pr-review.md
           - PR Buildkite Detective (Elastic-specific): workflows/gh-agent-workflows/estc-pr-buildkite-detective.md
@@ -84,6 +85,8 @@ nav:
   - Release: release.md
 markdown_extensions:
   - admonition
+  - pymdownx.details
+  - pymdownx.superfences
   - attr_list
   - md_in_html
   - toc:

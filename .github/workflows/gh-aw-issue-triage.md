@@ -75,6 +75,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -104,7 +106,7 @@ Follow these steps in order.
 
 1. Read the issue description carefully to understand the request or problem.
 2. Use the **Pick Three, Keep One** pattern for the investigation phase: spawn 3 `general-purpose` sub-agents, each exploring the codebase from a different angle (e.g., different areas of the codebase related to the issue, different hypotheses about root cause, different related issues/PRs). Include the issue description, repo conventions, and the full context from Step 1 in each sub-agent prompt. Each sub-agent should return its best findings with file paths and evidence, or recommend `noop`.
-3. Explore the relevant parts of the codebase using `grep` and file reading.
+3. Explore the relevant parts of the codebase using repository search tools (prefer `rg`) and file reading.
 4. Run tests or commands in the workspace to verify reported bugs when possible:
    - Run existing tests to confirm reported behavior
    - Execute scripts to understand current behavior

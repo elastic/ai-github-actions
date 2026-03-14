@@ -8,7 +8,7 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-add-comment-pr.md
+  - gh-aw-fragments/safe-output-add-comment-pr-hide-older.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -28,6 +28,11 @@ on:
         default: ""
       setup-commands:
         description: "Shell commands to run before the agent starts (dependency install, build, etc.)"
+        type: string
+        required: false
+        default: ""
+      target-pr-number:
+        description: "Explicit PR number to target (used for manual/dispatch triggers)"
         type: string
         required: false
         default: ""
@@ -59,6 +64,7 @@ on:
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
+    - "buildkite-limited-access[bot]"
 concurrency:
   group: ${{ github.workflow }}-estc-pr-buildkite-detective-${{ github.run_id }}
   cancel-in-progress: false
@@ -83,26 +89,40 @@ network:
     - "buildkite.com"
 safe-outputs:
   activation-comments: false
+  noop:
 strict: false
 timeout-minutes: 30
 steps:
   - name: Resolve event context
     run: |
       set -euo pipefail
-      echo "BK_EVENT_NAME=$GITHUB_EVENT_NAME" >> "$GITHUB_ENV"
-      if [ "$GITHUB_EVENT_NAME" = "status" ]; then
-        echo "BK_EVENT_ID=$(jq -r '.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-        echo "BK_FAILURE_STATE=$(jq -r '.state' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-        echo "BK_COMMIT_SHA=$(jq -r '.sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-      else
-        echo "BK_EVENT_ID=$(jq -r '.check_run.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-        echo "BK_FAILURE_STATE=$(jq -r '.check_run.conclusion' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-        echo "BK_COMMIT_SHA=$(jq -r '.check_run.head_sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-      fi
+      mkdir -p /tmp/gh-aw
+      {
+        echo "event_name: $GITHUB_EVENT_NAME"
+        if [ "$GITHUB_EVENT_NAME" = "status" ]; then
+          echo "event_id: $(jq -r '.id' "$GITHUB_EVENT_PATH")"
+          echo "failure_state: $(jq -r '.state' "$GITHUB_EVENT_PATH")"
+          echo "commit_sha: $(jq -r '.commit.sha' "$GITHUB_EVENT_PATH")"
+          echo "target_url: $(jq -r '.target_url // empty' "$GITHUB_EVENT_PATH")"
+          echo "branches: $(jq -r '[(.branches // [])[].name] | join(", ")' "$GITHUB_EVENT_PATH")"
+          echo "pr_numbers:"
+        else
+          echo "event_id: $(jq -r '.check_run.id' "$GITHUB_EVENT_PATH")"
+          echo "failure_state: $(jq -r '.check_run.conclusion' "$GITHUB_EVENT_PATH")"
+          echo "commit_sha: $(jq -r '.check_run.head_sha' "$GITHUB_EVENT_PATH")"
+          echo "target_url: $(jq -r '.check_run.details_url // empty' "$GITHUB_EVENT_PATH")"
+          echo "branches:"
+          echo "pr_numbers: $(jq -r '[(.check_run.pull_requests // [])[].number | tostring] | join(", ")' "$GITHUB_EVENT_PATH")"
+        fi
+      } > /tmp/gh-aw/buildkite-event.txt
+      echo "Buildkite event context:"
+      cat /tmp/gh-aw/buildkite-event.txt
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -113,11 +133,9 @@ Analyze failed Buildkite CI builds for pull requests in ${{ github.repository }}
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Event Name**: ${{ env.BK_EVENT_NAME }}
-- **Event ID**: ${{ env.BK_EVENT_ID }}
-- **Failure State**: ${{ env.BK_FAILURE_STATE }}
-- **Commit SHA**: ${{ env.BK_COMMIT_SHA }}
 - **Buildkite Organization**: ${{ inputs.buildkite-org }}
+
+**Read `/tmp/gh-aw/buildkite-event.txt` first.** It contains the event context (commit SHA, target URL, PR numbers, branches, failure state) extracted from the GitHub event payload.
 
 ## Constraints
 
@@ -147,9 +165,12 @@ Classify each failure to guide your investigation:
 
 ### Step 1: Gather Context
 
-1. Use the commit SHA provided in the Context section above. If it is empty, discover it from the PR's commit statuses or check runs.
-2. Call `list_pull_requests` for the repository (open PRs), then call `pull_request_read` with method `get` on candidates and keep PRs where `head.sha` matches the failed commit SHA. If none match, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
-3. For each matching PR, keep author, branches, and fork status for downstream analysis.
+1. Read `/tmp/gh-aw/buildkite-event.txt` to get the event context. Use the `commit_sha` value. If it is empty, discover it from the PR's commit statuses or check runs.
+2. Find the associated pull request(s):
+   - If `pr_numbers` is non-empty (from `check_run` events), use those PR numbers directly with `pull_request_read` method `get`.
+   - Otherwise, use `bash` + `gh api repos/${{ github.repository }}/commits/{commit_sha}/pulls` to find PRs containing the commit SHA. Filter the results to keep only PRs whose `state` is `"open"` and, when `branches` is non-empty, whose `head.ref` matches one of the listed branches. If no candidates remain, also try searching open PRs whose head branch matches one of the branches.
+   - If no PR is found after all attempts, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
+3. For each matching PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status for downstream analysis.
 
 ### Step 2: Find the Buildkite Build
 

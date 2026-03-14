@@ -9,12 +9,15 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
+  - gh-aw-fragments/network-ecosystems.md
   - gh-aw-fragments/playwright-mcp-explorer.md
-  - gh-aw-fragments/safe-output-add-comment-issue.md
+  - gh-aw-fragments/safe-output-add-comment-issue-or-pr.md
   - gh-aw-fragments/safe-output-create-issue.md
 engine:
   id: gemini
   model: ${{ inputs.model }}
+  env:
+    GEMINI_MAX_ATTEMPTS: "10"
   concurrency:
     group: "gh-aw-gemini-${{ github.workflow }}-internal-gemini-cli-${{ github.event.issue.number }}"
 on:
@@ -82,6 +85,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 

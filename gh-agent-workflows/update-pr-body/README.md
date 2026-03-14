@@ -2,6 +2,8 @@
 
 Keep pull request bodies in sync with the code changes on every commit.
 
+The updater also deduplicates any previously appended runtime footer text in the PR body before rewriting, so repeated runs do not stack duplicate footer blocks.
+
 ## Quick Install
 
 ```bash

@@ -93,6 +93,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -137,21 +139,26 @@ For each unresolved review thread:
 ### Step 3: Validate and Push
 
 1. Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the changes and include results. If required commands cannot be run, explain why and do not push changes.
-2. Use `push_to_pull_request_branch` to push your changes.
-3. **Fork PRs**: If this is a fork PR, you cannot push. Reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation.
+2. Use `ready_to_push_to_pr` to check if the changes are ready to push.
+3. Use `push_to_pull_request_branch` to push your changes.
+4. **Fork PRs**: If this is a fork PR, you cannot push. Reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation.
 
 ### Step 4: Resolve Addressed Threads
 
 Skip this step for fork PRs where you could not push.
 
-After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads from any reviewer — external reviewers, bots, and your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer. Fall back to `pull_request_read` with method `get_review_comments` if the pre-fetched data is unavailable.
+After pushing, resolve every review thread that your changes fully address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads from any reviewer — external reviewers, bots, and your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer. Fall back to `pull_request_read` with method `get_review_comments` if the pre-fetched data is unavailable.
+
+**Important completion requirement**: when feedback is completed and no further reviewer action is needed, resolving the corresponding thread is required. Do not leave fully addressed threads open.
+
+If `resolve_pull_request_review_thread` fails for any fully addressed thread, call `add_comment` and list the specific thread IDs that could not be resolved with the failure reason.
 
 ### Step 5: Respond
 
-Call `add_comment` on the PR with a brief summary of:
+Call `add_comment` on the PR with a concise to the point summary of:
 - Which review threads were addressed with code changes
 - Which threads you replied to instead of fixing
-- Tests run and their results
+- Tests run and their results (in a collapsed summary/details block)
 
 Do NOT duplicate thread-specific explanations in the summary comment — those belong in the inline replies you already posted via `reply_to_pull_request_review_comment`.
 

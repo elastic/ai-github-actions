@@ -113,6 +113,7 @@ safe-inputs:
           '',
           'Look for bugs, logic errors, missed edge cases, and style issues.',
           'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+          'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
           '',
           '## What NOT to flag',
           '',
@@ -146,4 +147,3 @@ Before calling `create_pull_request`, call `ready_to_make_pr` and apply its chec
 - **Committed changes required**: You must have locally committed changes before creating a PR.
 - **Base branch**: The PR targets the repository's default branch.
 - **Max per run**: Typically 1 PR creation per workflow run.
-- You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.

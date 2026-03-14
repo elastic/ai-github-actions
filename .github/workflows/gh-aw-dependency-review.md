@@ -15,7 +15,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-dependency-review-${{ inputs.target-pr-number || github.event.pull_request.number }}"
 on:
   workflow_call:
     inputs:
@@ -34,11 +34,21 @@ on:
         type: string
         required: false
         default: ""
+      target-pr-number:
+        description: "Explicit PR number to target (used for manual/dispatch triggers)"
+        type: string
+        required: false
+        default: ""
       allowed-bot-users:
         description: "Allowlisted bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
+      classification-labels:
+        description: "Comma-separated list of labels the agent may apply (e.g. 'needs-human-review,higher-risk,merge-ready'). If empty, no labels are applied. Define label semantics in additional-instructions."
+        type: string
+        required: false
+        default: ""
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string
@@ -53,7 +63,7 @@ on:
     - "dependabot[bot]"
     - "renovate[bot]"
 concurrency:
-  group: ${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}
+  group: ${{ github.workflow }}-dependency-review-${{ inputs.target-pr-number || github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
   actions: read
@@ -69,9 +79,56 @@ safe-outputs:
   activation-comments: false
   add-labels:
     max: 3
-    allowed:
-      - "needs-human-review"
-      - "higher-risk"
+  steps:
+    - name: Pre-sanitize labels from input allowlist
+      uses: actions/github-script@v7
+      env:
+        CLASSIFICATION_LABELS: ${{ inputs.classification-labels }}
+      with:
+        script: |
+          const fs = require('fs');
+          const outputPath = process.env.GH_AW_AGENT_OUTPUT;
+          if (!outputPath || !fs.existsSync(outputPath)) {
+            core.info('No GH_AW_AGENT_OUTPUT file found; skipping.');
+            return;
+          }
+          const doc = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+          if (!Array.isArray(doc.items)) {
+            core.warning('agent output has no items array; skipping.');
+            return;
+          }
+          const allowed = new Set(
+            String(process.env.CLASSIFICATION_LABELS || '')
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          );
+          if (allowed.size === 0) {
+            const before = doc.items.length;
+            doc.items = doc.items.filter((item) => item?.type !== 'add_labels');
+            fs.writeFileSync(outputPath, JSON.stringify(doc));
+            core.info(`No allowed labels provided; removed ${before - doc.items.length} add_labels operations.`);
+            return;
+          }
+          let removed = 0;
+          let dropped = 0;
+          doc.items = doc.items.filter((item) => {
+            if (item?.type !== 'add_labels' || !Array.isArray(item.labels)) {
+              return true;
+            }
+            const before = item.labels.length;
+            item.labels = item.labels
+              .map((v) => String(v).trim())
+              .filter((v) => v && allowed.has(v));
+            removed += Math.max(0, before - item.labels.length);
+            if (item.labels.length === 0) {
+              dropped++;
+              return false;
+            }
+            return true;
+          });
+          fs.writeFileSync(outputPath, JSON.stringify(doc));
+          core.info(`Sanitized label ops: removed=${removed}, dropped_messages=${dropped}`);
 strict: false
 timeout-minutes: 60
 steps:
@@ -79,6 +136,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -89,7 +148,7 @@ Analyze dependency update pull requests (Dependabot, Renovate, Updatecli) in ${{
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **PR**: #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
+- **PR**: #${{ inputs.target-pr-number || github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
 - **PR Author**: ${{ github.actor }}
 
 ## Constraints
@@ -100,7 +159,7 @@ This workflow is read-only. You can read files, search code, run commands, and c
 
 ### Step 1: Gather Context
 
-1. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get full PR details (author, description, branches).
+1. Call `pull_request_read` with method `get` on PR #${{ inputs.target-pr-number || github.event.pull_request.number }} to get full PR details (author, description, branches).
 2. Call `pull_request_read` with method `get_diff` to see exactly what changed.
 3. Call `pull_request_read` with method `get_files` to get the list of changed files.
 
@@ -217,19 +276,13 @@ Apply the following additional checks based on the dependency ecosystem:
 
 ### Step 4: Determine Labels
 
-Based on the analysis, determine if labels should be applied:
+Based on the analysis, determine if any labels from the configured `classification-labels` set should be applied:
 
-- **`needs-human-review`**: Apply when ANY of these conditions are met:
-  - A dependency update introduces breaking changes that affect this repo's usage
-  - A GitHub Actions commit SHA is not verified
-  - A Buildkite plugin moves from SHA-pinned to mutable tag, or between mutable tags
-  - The changelog indicates breaking changes
-  - A major version bump in any ecosystem (e.g. v1 → v2 in Go, major semver in npm/Python/Java)
-
-- **`higher-risk`**: Apply when:
-  - The updated dependency is used only in workflows triggered by push-to-main, release, schedule, or workflow_dispatch (cannot be validated in PR context)
-
-Only apply `needs-human-review` and `higher-risk` labels.
+- **Allowed classification labels**: `${{ inputs.classification-labels }}`
+- Parse `${{ inputs.classification-labels }}` as a comma-separated list and treat that list as the only valid labels for this step.
+- If `${{ inputs.classification-labels }}` is empty, skip this step entirely.
+- Use `${{ inputs.additional-instructions }}` to understand what each label means and when to apply it.
+- Never apply a label that is not in the parsed classification label list.
 
 ### Step 5: Post Analysis Comment
 

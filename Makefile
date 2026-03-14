@@ -1,8 +1,13 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.51.6
+GH_AW_VERSION := v0.58.1
+GH_AW_BUILD_VERSION := f88acb16745a5fbd9de1879b0d0b87e2416a99c1
 GH_AW_COMPAT_VERSION := v0.49.4
+GH_AW_MODULE_REPO := github.com/github/gh-aw
+GH_AW_SOURCE_REPO := github.com/strawgate/gh-aw
+GH_AW_SETUP_ACTION_REPO := $(patsubst github.com/%,%,$(GH_AW_SOURCE_REPO))
+GH_AW_SETUP_ACTION_REF := $(GH_AW_BUILD_VERSION)
 
 # Workflows that must be compiled with the compat compiler
 # (no-sandbox workflows hit a threat-detection bug in newer versions)
@@ -40,7 +45,7 @@ define download-file
 	fi
 endef
 
-.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile sync lint-workflows lint-actions test docs-install docs-serve docs-build release
+.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile postprocess-setup-action sync lint-workflows lint-actions test docs-install docs-serve docs-build release
 
 help:
 	@echo "This repository contains GitHub Actions workflows and gh-agent-workflows templates."
@@ -121,14 +126,22 @@ setup-gh-aw:
 		echo "Error: Go is required to install gh-aw compiler."; \
 		echo "Install Go: https://go.dev/dl/"; \
 		exit 1; \
-	elif case "$(GH_AW_VERSION)" in v*) true ;; *) false ;; esac && \
-	     [ -x ".bin/gh-aw" ] && .bin/gh-aw version 2>/dev/null | grep -q "$(GH_AW_VERSION)"; then \
-		echo "✓ gh-aw compiler already installed: $(GH_AW_VERSION)"; \
+	elif case "$(GH_AW_BUILD_VERSION)" in v*) true ;; *) false ;; esac && \
+	     [ -x ".bin/gh-aw" ] && .bin/gh-aw version 2>/dev/null | grep -q "$(GH_AW_BUILD_VERSION)"; then \
+		echo "✓ gh-aw compiler already installed: $(GH_AW_BUILD_VERSION)"; \
 	else \
-		echo "Installing gh-aw compiler $(GH_AW_VERSION) from github/gh-aw..."; \
-		$(if $(filter v%,$(GH_AW_VERSION)),,GONOSUMDB=github.com/github/gh-aw) \
-		GOBIN="$(CURDIR)/.bin" go install github.com/github/gh-aw/cmd/gh-aw@$(GH_AW_VERSION) && \
-		echo "✓ gh-aw compiler installed: $$(.bin/gh-aw version)"; \
+		echo "Installing gh-aw compiler $(GH_AW_BUILD_VERSION) from $(GH_AW_SOURCE_REPO)..."; \
+		if [ "$(GH_AW_SOURCE_REPO)" = "$(GH_AW_MODULE_REPO)" ]; then \
+			$(if $(filter v%,$(GH_AW_BUILD_VERSION)),,GONOSUMDB=$(GH_AW_MODULE_REPO)) \
+			GOBIN="$(CURDIR)/.bin" go install $(GH_AW_MODULE_REPO)/cmd/gh-aw@$(GH_AW_BUILD_VERSION); \
+		else \
+			TMPDIR=$$(mktemp -d); \
+			git clone --filter=blob:none "https://$(GH_AW_SOURCE_REPO).git" "$$TMPDIR/gh-aw-src" >/dev/null 2>&1 && \
+			git -C "$$TMPDIR/gh-aw-src" checkout "$(GH_AW_BUILD_VERSION)" >/dev/null 2>&1 && \
+			( cd "$$TMPDIR/gh-aw-src" && GOBIN="$(CURDIR)/.bin" go install ./cmd/gh-aw ); \
+			status=$$?; rm -rf "$$TMPDIR"; exit $$status; \
+		fi && \
+		echo "✓ gh-aw compiler installed: $$(.bin/gh-aw version 2>/dev/null || echo 'gh aw version dev')"; \
 	fi
 
 setup-gh-aw-compat:
@@ -165,7 +178,12 @@ compile: setup-gh-aw setup-gh-aw-compat sync
 	else \
 		echo "No compat workflows to compile"; \
 	fi
+	@$(MAKE) postprocess-setup-action
 	@./scripts/backwards-compat.sh
+
+postprocess-setup-action:
+	@echo "Rewriting setup action references to $(GH_AW_SETUP_ACTION_REPO)@$(GH_AW_SETUP_ACTION_REF)..."
+	@python3 ./scripts/rewrite_setup_action_refs.py "$(GH_AW_SETUP_ACTION_REPO)" "$(GH_AW_SETUP_ACTION_REF)"
 
 setup-actionlint:
 	@echo "Setting up actionlint..."
@@ -190,7 +208,7 @@ lint-workflows: setup-actionlint
 		find claude-workflows -name "example.yml" -o -name "example.yaml"; \
 		find .github/workflows -maxdepth 1 \( \
 			-name "trigger-*.yml" -o -name "trigger-*.yaml" -o \
-			-name "agentics-maintenance.yml" -o -name "ci.yml" -o \
+			-name "ci.yml" -o \
 			-name "release.yml" -o -name "smoke-test-install.yml" \
 		\); \
 	) 2>/dev/null | while read -r file; do \
