@@ -2,7 +2,7 @@
 steps:
   - name: List previous findings
     env:
-      GH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || github.token }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN || github.token }}
       TITLE_PREFIX: ${{ inputs.title-prefix }}
       TARGET_REPO: ${{ inputs.target-repo || github.repository }}
     run: |

@@ -71,7 +71,7 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
-      GH_AW_GITHUB_TOKEN:
+      GITHUB_TOKEN:
         required: false
   roles: [admin, maintainer, write]
   bots:
@@ -98,7 +98,7 @@ steps:
   - name: List previous findings
     if: ${{ !inputs.close-older-issues }}
     env:
-      GH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || github.token }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN || github.token }}
       TITLE_PREFIX: ${{ inputs.title-prefix }}
       TARGET_REPO: ${{ inputs.target-repo || github.repository }}
     run: |
