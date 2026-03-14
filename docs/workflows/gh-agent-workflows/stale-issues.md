@@ -11,7 +11,7 @@ Find resolved issues, label them as stale, and automatically close them after a 
 Install the investigator alone if you want to review stale-issue reports and handle closure manually.
 
 ```bash
-mkdir -p .github/workflows && curl -sL \
+mkdir -p .github/workflows && curl -fsSL \
   https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues-investigator/example.yml \
   -o .github/workflows/stale-issues-investigator.yml
 ```
@@ -22,9 +22,9 @@ Install both for a fully autonomous stale-issue lifecycle.
 
 ```bash
 mkdir -p .github/workflows && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues-investigator/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues-investigator/example.yml \
   -o .github/workflows/stale-issues-investigator.yml && \
-curl -sL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues-remediator/example.yml \
+curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/stale-issues-remediator/example.yml \
   -o .github/workflows/stale-issues-remediator.yml
 ```
 

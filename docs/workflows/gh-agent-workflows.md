@@ -23,9 +23,9 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 
 ## Recommended workflow sets
 
-The quick setup script includes two opinionated sets:
+The [quick setup script](https://github.com/elastic/ai-github-actions/blob/main/scripts/quick-setup.sh) bundles two opinionated sets. The [homepage](../index.md) shows how to install the core workflows with a single copy-paste command.
 
-- **Starter repo operations set (default):** `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
+- **Core (default):** `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
 - **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `code-complexity-detector`, `code-duplication-detector`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues-investigator`, `stale-issues-remediator`, `test-coverage-detector`, `breaking-change-detector`, `update-pr-body`
 
 ## Available workflows

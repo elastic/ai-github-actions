@@ -36,6 +36,35 @@ jobs:
 
 The fix job only runs when the detector actually created an issue. The generic `create-pr-from-issue` workflow reads the issue body and implements a fix, so any detector can chain to it without a dedicated fixer workflow.
 
+## Detector creates issue -> assign to Copilot
+
+Instead of chaining to a fixer workflow, you can assign the created issue to GitHub's Copilot coding agent and let it open a PR. This is useful when you don't have a dedicated fixer workflow or want to use Copilot's native implementation flow.
+
+```yaml
+jobs:
+  detect:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+  assign-to-copilot:
+    needs: detect
+    if: needs.detect.outputs.created_issue_number != ''
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Assign issue to Copilot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue edit ${{ needs.detect.outputs.created_issue_number }} \
+            --repo ${{ github.repository }} \
+            --add-assignee @copilot
+```
+
+Copilot picks up the assignment, reads the issue, and opens a PR — using its own session and context window. No `COPILOT_GITHUB_TOKEN` is needed for the handoff job itself since assignment only requires `issues: write`.
+
 ## Complete examples
 
 ### Bug Hunter → Create PR from Issue
@@ -140,8 +169,8 @@ Most detector directories include an `example-chained.yml` you can copy directly
 | Approach | Best for |
 |---|---|
 | **Chained** (single run) | Fully autonomous loops where you want immediate action on findings |
+| **Assign to Copilot** | Lightweight handoff — detector creates the issue, Copilot implements it natively |
 | **Detector only** | Human-in-the-loop review — run the detector, review its issues, then manually fix or assign |
-| **Detector + separate `create-pr-from-issue`** | When you want a human to review issues before the fixer runs on its own schedule |
 
 ## Notes
 
