@@ -47,7 +47,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"4e7704afed78a6f7933911f10d4f15d434e1628981d8b63f041c3c4cacfc66a6"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"df6bebffb074b7500035365e9a95957f2157b6fd29ea6b9df74a90988cb17cd1"}
 
 name: "Mention in PR"
 "on":
@@ -718,51 +718,33 @@ jobs:
           persist-credentials: false
       - name: Setup Go
         uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        if: hashFiles('go.mod') != ''
         with:
           go-version: '1.25'
           cache: false
       - name: Capture GOROOT for AWF chroot mode
         run: echo "GOROOT=$(go env GOROOT)" >> "$GITHUB_ENV"
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        if: hashFiles('.node-version') != '' || hashFiles('.nvmrc') != ''
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        if: hashFiles('.python-version') != ''
+        with:
+          python-version: '3.12'
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@4eb9f110bac952a8b68ecf92e3b5c7a987594ba6 # v1.292.0
+        if: hashFiles('.ruby-version') != ''
+        with:
+          ruby-version: '3.3'
+      - name: Setup uv
+        uses: astral-sh/setup-uv@e06108dd0aef18192324c70427afc47652e63a82 # v7.5.0
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
-      - if: hashFiles('.python-version') != ''
-        name: Setup Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version-file: .python-version
-      - if: hashFiles('.node-version') != ''
-        name: Setup Node.js (.node-version)
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
-        with:
-          node-version-file: .node-version
-      - if: hashFiles('.node-version') == '' && hashFiles('.nvmrc') != ''
-        name: Setup Node.js (.nvmrc)
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
-        with:
-          node-version-file: .nvmrc
-      - if: hashFiles('.ruby-version') != ''
-        name: Setup Ruby
-        uses: ruby/setup-ruby@4eb9f110bac952a8b68ecf92e3b5c7a987594ba6 # v1
-        with:
-          bundler-cache: true
-          ruby-version: .ruby-version
-      - id: setup-uv
-        if: hashFiles('pyproject.toml', 'uv.lock') != ''
-        name: Setup uv
-        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
-      - env:
-          UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
-          WORKSPACE: ${{ github.workspace }}
-        if: hashFiles('pyproject.toml', 'uv.lock') != ''
-        name: Expose uv in workspace
-        run: |
-          set -euo pipefail
-          install_dir="$WORKSPACE/.gh-aw-tools/bin"
-          mkdir -p "$install_dir"
-          cp "$UV_PATH" "$install_dir/uv"
-          chmod +x "$install_dir/uv"
-          echo "$install_dir" >> "$GITHUB_PATH"
-        shell: bash
       - name: Configure Copilot CLI settings
         run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi\n"
         shell: bash
