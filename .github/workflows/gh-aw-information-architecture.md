@@ -75,6 +75,7 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "${{ inputs.title-prefix }} "
+    close-older-key: "${{ inputs.title-prefix }}"
 timeout-minutes: 90
 steps:
   - name: Repo-specific setup

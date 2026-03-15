@@ -81,6 +81,7 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "${{ inputs.title-prefix }} "
+    close-older-key: "${{ inputs.title-prefix }}"
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90

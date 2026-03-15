@@ -56,6 +56,7 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "[agent-deep-dive] "
+    close-older-key: "agent-deep-dive"
     close-older-issues: false
     expires: 14d
 timeout-minutes: 60

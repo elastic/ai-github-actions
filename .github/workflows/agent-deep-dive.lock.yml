@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"07b88cf85bf97107f38c28470228888eeb00f69acfdb3b558ab218f8193a843f"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"9eded7411c3404bb4f50e19a0c4a3d23bbe72c2c130a3f506a88bb2075165801"}
 
 name: "Internal: Agent Deep Dive"
 "on":
@@ -79,7 +79,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@f88acb16745a5fbd9de1879b0d0b87e2416a99c1 # v0.58.1
+        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.58.3
         with:
           destination: /opt/gh-aw/actions
       - name: Generate agentic run info
@@ -528,7 +528,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@f88acb16745a5fbd9de1879b0d0b87e2416a99c1 # v0.58.1
+        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.58.3
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -624,6 +624,8 @@ jobs:
             await main();
       - name: Install GitHub Copilot CLI
         run: /opt/gh-aw/actions/install_copilot_cli.sh latest
+        env:
+          GH_HOST: github.com
       - name: Install AWF binary
         run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.24.1
       - name: Determine automatic lockdown mode for GitHub MCP Server
@@ -1306,7 +1308,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@f88acb16745a5fbd9de1879b0d0b87e2416a99c1 # v0.58.1
+        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.58.3
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1414,7 +1416,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@f88acb16745a5fbd9de1879b0d0b87e2416a99c1 # v0.58.1
+        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.58.3
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
@@ -1438,7 +1440,7 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "*.githubusercontent.com,*.jsr.io,*.pythonhosted.org,*.rvm.io,anaconda.org,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.rubygems.org,api.snapcraft.io,archive.ubuntu.com,artifacts.elastic.co,azure.archive.ubuntu.com,binstar.org,bootstrap.pypa.io,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.jsdelivr.net,cloud.elastic.co,codeload.github.com,conda.anaconda.org,conda.binstar.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,deb.nodesource.com,deno.land,ela.st,elastic.co,esm.sh,files.pythonhosted.org,gems.rubyforge.org,gems.rubyonrails.org,get.pnpm.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,host.docker.internal,index.crates.io,index.rubygems.org,json-schema.org,json.schemastore.org,jsr.io,keyserver.ubuntu.com,lfs.github.com,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,packagecloud.io,packages.cloud.google.com,packages.microsoft.com,pip.pypa.io,pkg.go.dev,ppa.launchpad.net,proxy.golang.org,public-code-search.fastmcp.app,pypi.org,pypi.python.org,raw.githubusercontent.com,registry.bower.io,registry.npmjs.com,registry.npmjs.org,registry.yarnpkg.com,repo.anaconda.com,repo.continuum.io,repo.yarnpkg.com,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,security.ubuntu.com,skimdb.npmjs.com,static.crates.io,storage.googleapis.com,sum.golang.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,www.elastic.co,www.npmjs.com,www.npmjs.org,yarnpkg.com"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":false,\"expires\":336,\"max\":1,\"title_prefix\":\"[agent-deep-dive] \"},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":false,\"close_older_key\":\"agent-deep-dive\",\"expires\":336,\"max\":1,\"title_prefix\":\"[agent-deep-dive] \"},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

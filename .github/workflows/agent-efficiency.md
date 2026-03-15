@@ -47,6 +47,7 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "[agent-efficiency] "
+    close-older-key: "agent-efficiency"
     close-older-issues: false
     expires: 7d
 timeout-minutes: 60
