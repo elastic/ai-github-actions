@@ -109,8 +109,8 @@ Scheduled agents that continuously find and fix problems:
       -o .github/workflows/trigger-code-duplication-detector.yml && \
     curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/test-coverage-detector/example.yml \
       -o .github/workflows/trigger-test-coverage-detector.yml && \
-    curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-simplifier/example.yml \
-      -o .github/workflows/trigger-code-simplifier.yml && \
+    curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/code-complexity-detector/example.yml \
+      -o .github/workflows/trigger-code-complexity-detector.yml && \
     curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/docs-patrol/example.yml \
       -o .github/workflows/trigger-docs-patrol.yml
     ```
