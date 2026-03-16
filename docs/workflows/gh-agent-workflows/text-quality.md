@@ -60,7 +60,7 @@ permissions:
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-text-auditor.lock.yml@v0
-    with:
+    # with:
       # edit-typos: low
       # edit-grammar: low
       # edit-clarity: low
