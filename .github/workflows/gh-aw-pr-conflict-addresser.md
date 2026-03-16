@@ -77,6 +77,8 @@ safe-outputs:
     pull-requests: true
     discussions: false
     target: "${{ inputs.target-pr-number }}"
+  push-to-pull-request-branch:
+    target: "${{ inputs.target-pr-number }}"
 timeout-minutes: 30
 steps:
   - name: Checkout target PR branch
