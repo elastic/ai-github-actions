@@ -2,7 +2,7 @@
 safe-outputs:
   reply-to-pull-request-review-comment:
     max: 10
-    target: "${{ inputs.target-pr-number || 'triggering' }}"
+    target: "triggering"
 ---
 
 ## reply-to-pull-request-review-comment Limitations

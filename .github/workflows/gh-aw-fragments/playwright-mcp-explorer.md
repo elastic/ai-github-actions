@@ -59,11 +59,11 @@ steps:
       When you don't know what's on the page, save a snapshot to disk and
       search it:
       ```
-      browser_snapshot(filename="/tmp/gh-aw/agent/page.md")
+      browser_snapshot(filename="/tmp/gh-aw/mcp-logs/page.md")
       ```
       Then grep for elements:
       ```bash
-      grep 'button.*Save\|button.*Submit' /tmp/gh-aw/agent/page.md
+      grep 'button.*Save\|button.*Submit' /tmp/gh-aw/mcp-logs/page.md
       ```
       Use the `ref` value from grep results with `browser_click(ref="...")`.
 

@@ -1,13 +1,9 @@
-name: Mention in PR by ID
+name: Trigger PR Conflict Addresser
 on:
   workflow_dispatch:
     inputs:
       pull-request-number:
-        description: "PR number to target (e.g. 123)"
-        required: true
-        type: string
-      prompt:
-        description: "Prompt for the agent (review/fix/explain/etc.)"
+        description: "PR number with merge conflicts (e.g. 123)"
         required: true
         type: string
 
@@ -20,9 +16,9 @@ permissions:
 
 jobs:
   run:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-mention-in-pr-by-id.lock.yml@v0
+    uses: ./.github/workflows/gh-aw-pr-conflict-addresser.lock.yml
     with:
       target-pr-number: ${{ inputs.pull-request-number }}
-      prompt: ${{ inputs.prompt }}
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
