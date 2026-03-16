@@ -9,7 +9,7 @@ steps:
       # Playwright MCP Tools
 
       Use Playwright MCP tools for interactive browser automation.
-      Use these tools to explore the app step by step — do NOT write Node.js scripts.
+      Unless otherwise instructed, use the MCP tools directly rather than writing standalone Node.js scripts.
 
       ## Available tools
 
@@ -70,12 +70,12 @@ steps:
       Only take snapshots when you need to discover unknown elements.
       If you know the button name or role, use `browser_run_code` instead.
 
-      ## Why MCP tools instead of scripts
+      ## Error handling in `browser_run_code`
 
-      MCP tools are interactive: you see the page state after each action and
-      decide what to do next. This is ideal for exploratory testing where you
-      need to adapt based on what you find. Scripts are fire-and-forget — if
-      a selector is wrong, you don't find out until the script fails.
+      `browser_run_code` blocks can fail mid-execution if a selector doesn't
+      match. Keep blocks focused — if a sequence has uncertain steps, split
+      it into separate `browser_run_code` calls so you can inspect and adapt
+      between them.
 
       ## Measuring DOM properties
 
