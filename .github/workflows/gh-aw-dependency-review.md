@@ -15,7 +15,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-${{ github.workflow }}-dependency-review-${{ inputs.target-pr-number || github.event.pull_request.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}"
 on:
   workflow_call:
     inputs:
@@ -31,11 +31,6 @@ on:
         default: ""
       setup-commands:
         description: "Shell commands to run before the agent starts (dependency install, build, etc.)"
-        type: string
-        required: false
-        default: ""
-      target-pr-number:
-        description: "Explicit PR number to target (used for manual/dispatch triggers)"
         type: string
         required: false
         default: ""
@@ -63,7 +58,7 @@ on:
     - "dependabot[bot]"
     - "renovate[bot]"
 concurrency:
-  group: ${{ github.workflow }}-dependency-review-${{ inputs.target-pr-number || github.event.pull_request.number }}
+  group: ${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
   actions: read
@@ -148,7 +143,7 @@ Analyze dependency update pull requests (Dependabot, Renovate, Updatecli) in ${{
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **PR**: #${{ inputs.target-pr-number || github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
+- **PR**: #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
 - **PR Author**: ${{ github.actor }}
 
 ## Constraints
@@ -159,7 +154,7 @@ This workflow is read-only. You can read files, search code, run commands, and c
 
 ### Step 1: Gather Context
 
-1. Call `pull_request_read` with method `get` on PR #${{ inputs.target-pr-number || github.event.pull_request.number }} to get full PR details (author, description, branches).
+1. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get the full PR details (author, description, branches).
 2. Call `pull_request_read` with method `get_diff` to see exactly what changed.
 3. Call `pull_request_read` with method `get_files` to get the list of changed files.
 

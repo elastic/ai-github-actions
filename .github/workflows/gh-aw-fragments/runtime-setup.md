@@ -42,14 +42,12 @@ steps:
     shell: bash
     env:
       UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
-      WORKSPACE: ${{ github.workspace }}
     run: |
       set -euo pipefail
-      install_dir="$WORKSPACE/.gh-aw-tools/bin"
-      mkdir -p "$install_dir"
-      cp "$UV_PATH" "$install_dir/uv"
-      chmod +x "$install_dir/uv"
-      echo "$install_dir" >> "$GITHUB_PATH"
+      # AWF-friendly location: gh-aw scans /opt/hostedtoolcache/**/bin paths.
+      toolcache_bin="/opt/hostedtoolcache/gh-aw-tools/current/x64/bin"
+      sudo mkdir -p "$toolcache_bin"
+      sudo ln -sf "$UV_PATH" "$toolcache_bin/uv"
   
   - name: Configure Copilot CLI settings
     shell: bash

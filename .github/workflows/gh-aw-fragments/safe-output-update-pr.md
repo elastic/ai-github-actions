@@ -1,7 +1,7 @@
 ---
 safe-outputs:
   update-pull-request:
-    target: "${{ inputs.target-pr-number || 'triggering' }}"
+    target: "triggering"
     max: 1
 ---
 

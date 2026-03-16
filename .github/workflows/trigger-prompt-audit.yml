@@ -27,7 +27,7 @@ jobs:
 
         1. Read `/tmp/prompt-audit/README.md` for a manifest of all extracted prompt files and their line counts.
         2. Group the prompts into families by reading the filenames:
-           - **PR workflows**: `pr-review`, `mention-in-pr`, `mention-in-pr-no-sandbox`, `mention-in-pr-by-id`, `pr-review-addresser`, `pr-actions-detective`, `pr-actions-fixer`, `estc-docs-pr-review`, `estc-pr-buildkite-detective`
+           - **PR workflows**: `pr-review`, `mention-in-pr`, `mention-in-pr-no-sandbox`, `pr-conflict-addresser`, `pr-review-addresser`, `pr-actions-detective`, `pr-actions-fixer`, `estc-docs-pr-review`, `estc-pr-buildkite-detective`
            - **Issue workflows**: `mention-in-issue`, `mention-in-issue-no-sandbox`, `issue-triage`, `issue-fixer`
            - **Scheduled audits/detectors**: `scheduled-audit`, `bug-hunter`, `docs-patrol`, `breaking-change-detector`, `code-duplication-detector`, `stale-issues`, `text-auditor`, `dependency-review`, `framework-best-practices`, etc.
            - **Fixers**: `scheduled-fix`, `small-problem-fixer`, `refactor-opportunist`, `create-pr-from-issue`, etc.

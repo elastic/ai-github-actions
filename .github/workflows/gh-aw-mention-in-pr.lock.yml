@@ -47,7 +47,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"4e7704afed78a6f7933911f10d4f15d434e1628981d8b63f041c3c4cacfc66a6"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"b3a07f9158df0e6a0511c12e229e9fb84451490945cf5e19bd3345941e2f5707"}
 
 name: "Mention in PR"
 "on":
@@ -93,11 +93,6 @@ name: "Mention in PR"
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
         required: false
         type: string
-      target-pr-number:
-        default: ""
-        description: Explicit PR number to target (used for manual/dispatch triggers)
-        required: false
-        type: string
     outputs:
       comment_id:
         description: ID of the first added comment
@@ -121,7 +116,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: ${{ github.workflow }}-mention-pr-${{ inputs.target-pr-number || github.event.issue.number }}
+  group: ${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || github.event.issue.number }}
 
 run-name: "Mention in PR"
 
@@ -136,6 +131,7 @@ jobs:
       issues: write
       pull-requests: write
     outputs:
+      artifact_prefix: ${{ steps.artifact-prefix.outputs.prefix }}
       body: ${{ steps.sanitized.outputs.body }}
       comment_id: ""
       comment_repo: ""
@@ -145,9 +141,14 @@ jobs:
       title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.57.0
+        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.58.3
         with:
           destination: /opt/gh-aw/actions
+      - name: Compute artifact prefix
+        id: artifact-prefix
+        env:
+          INPUTS_JSON: ${{ toJSON(inputs) }}
+        run: bash /opt/gh-aw/actions/compute_artifact_prefix.sh
       - name: Generate agentic run info
         id: generate_aw_info
         env:
@@ -162,7 +163,7 @@ jobs:
           GH_AW_INFO_STAGED: "false"
           GH_AW_INFO_ALLOWED_DOMAINS: '["agents-md-generator.fastmcp.app","artifacts.elastic.co","clojure","cloud.elastic.co","containers","dart","defaults","dotnet","ela.st","elastic.co","elastic.dev","elastic.github.io","elixir","fonts","github","github-actions","go","haskell","java","kotlin","linux-distros","node","node-cdns","perl","php","playwright","public-code-search.fastmcp.app","python","ruby","rust","scala","swift","terraform","www.elastic.co","zig"]'
           GH_AW_INFO_FIREWALL_ENABLED: "true"
-          GH_AW_INFO_AWF_VERSION: "v0.23.0"
+          GH_AW_INFO_AWF_VERSION: "v0.24.1"
           GH_AW_INFO_AWMG_VERSION: ""
           GH_AW_INFO_FIREWALL_TYPE: "squid"
           GH_AW_COMPILED_STRICT: "false"
@@ -176,15 +177,21 @@ jobs:
         run: /opt/gh-aw/actions/validate_multi_secret.sh COPILOT_GITHUB_TOKEN 'GitHub Copilot CLI' https://github.github.com/gh-aw/reference/engines/#github-copilot-default
         env:
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      - name: Cross-repo setup guidance
+        if: failure() && steps.resolve-host-repo.outputs.target_repo != github.repository
+        run: |
+          echo "::error::COPILOT_GITHUB_TOKEN must be configured in the CALLER repository's secrets."
+          echo "::error::For cross-repo workflow_call, secrets must be set in the repository that triggers the workflow."
+          echo "::error::See: https://github.github.com/gh-aw/patterns/central-repo-ops/#cross-repo-setup"
       - name: Checkout .github and .agents folders
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          persist-credentials: false
           sparse-checkout: |
             .github
             .agents
           sparse-checkout-cone-mode: true
           fetch-depth: 1
-          persist-credentials: false
       - name: Add eyes reaction for immediate feedback
         id: react
         if: github.event_name == 'issues' || github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment' || github.event_name == 'discussion' || github.event_name == 'discussion_comment' || (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.id == github.repository_id)
@@ -225,12 +232,12 @@ jobs:
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
-          GH_AW_EXPR_95B47D04: ${{ inputs.target-pr-number || github.event.issue.number }}
+          GH_AW_EXPR_AE61BB68: ${{ github.event.pull_request.number || github.event.issue.number }}
+          GH_AW_EXPR_DF6A62B0: ${{ github.event.pull_request.title || github.event.issue.title }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
           GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
           GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
@@ -484,7 +491,7 @@ jobs:
           ## Context
           
           - **Repository**: __GH_AW_GITHUB_REPOSITORY__
-          - **PR**: #__GH_AW_EXPR_95B47D04__ — __GH_AW_GITHUB_EVENT_ISSUE_TITLE__
+          - **PR**: #__GH_AW_EXPR_AE61BB68__ — __GH_AW_EXPR_DF6A62B0__
           - **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
           - **Request**: "__GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT__"
           - **Explicit prompt**: "__GH_AW_INPUTS_PROMPT__"
@@ -506,7 +513,7 @@ jobs:
           2. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
           3. Read `/tmp/pr-context/comments.json` and `/tmp/pr-context/review_comments.json` to understand the conversation context and what's being asked.
           4. Read `/tmp/pr-context/reviews.json` to check prior review submissions — note any prior verdicts to avoid redundant reviews.
-          5. Do not modify, review, comment on, or resolve threads for any PR other than #__GH_AW_EXPR_95B47D04__.
+          5. Do not modify, review, comment on, or resolve threads for any PR other than #__GH_AW_EXPR_AE61BB68__.
           
           ### Step 2: Handle the Request
           
@@ -586,11 +593,11 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_INPUTS_MODEL: ${{ inputs.model }}
           GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
-          GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
+          GH_AW_EXPR_AE61BB68: ${{ github.event.pull_request.number || github.event.issue.number }}
+          GH_AW_EXPR_DF6A62B0: ${{ github.event.pull_request.title || github.event.issue.title }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_INPUTS_PROMPT: ${{ inputs.prompt }}
-          GH_AW_EXPR_95B47D04: ${{ inputs.target-pr-number || github.event.issue.number }}
           GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
         with:
           script: |
@@ -604,12 +611,12 @@ jobs:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
           GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
-          GH_AW_EXPR_95B47D04: ${{ inputs.target-pr-number || github.event.issue.number }}
+          GH_AW_EXPR_AE61BB68: ${{ github.event.pull_request.number || github.event.issue.number }}
+          GH_AW_EXPR_DF6A62B0: ${{ github.event.pull_request.title || github.event.issue.title }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
           GH_AW_GITHUB_EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
-          GH_AW_GITHUB_EVENT_ISSUE_TITLE: ${{ github.event.issue.title }}
           GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
@@ -631,12 +638,12 @@ jobs:
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
                 GH_AW_EXPR_7F2A702A: process.env.GH_AW_EXPR_7F2A702A,
-                GH_AW_EXPR_95B47D04: process.env.GH_AW_EXPR_95B47D04,
+                GH_AW_EXPR_AE61BB68: process.env.GH_AW_EXPR_AE61BB68,
+                GH_AW_EXPR_DF6A62B0: process.env.GH_AW_EXPR_DF6A62B0,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
                 GH_AW_GITHUB_EVENT_ISSUE_NUMBER: process.env.GH_AW_GITHUB_EVENT_ISSUE_NUMBER,
-                GH_AW_GITHUB_EVENT_ISSUE_TITLE: process.env.GH_AW_GITHUB_EVENT_ISSUE_TITLE,
                 GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER: process.env.GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER,
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
@@ -657,9 +664,9 @@ jobs:
         run: bash /opt/gh-aw/actions/print_prompt_summary.sh
       - name: Upload activation artifact
         if: success()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: activation
+          name: ${{ steps.artifact-prefix.outputs.prefix }}activation
           path: |
             /tmp/gh-aw/aw_info.json
             /tmp/gh-aw/aw-prompts/prompt.txt
@@ -674,7 +681,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-${{ inputs.target-pr-number || github.event.issue.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
@@ -686,6 +693,7 @@ jobs:
       GH_AW_SAFE_OUTPUTS_TOOLS_PATH: /opt/gh-aw/safeoutputs/tools.json
       GH_AW_WORKFLOW_ID_SANITIZED: ghawmentioninpr
     outputs:
+      artifact_prefix: ${{ needs.activation.outputs.artifact_prefix }}
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
       detection_conclusion: ${{ steps.detection_conclusion.outputs.conclusion }}
       detection_success: ${{ steps.detection_conclusion.outputs.success }}
@@ -696,7 +704,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.57.0
+        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.58.3
         with:
           destination: /opt/gh-aw/actions
       - name: Checkout repository
@@ -729,7 +737,7 @@ jobs:
           node-version-file: .nvmrc
       - if: hashFiles('.ruby-version') != ''
         name: Setup Ruby
-        uses: ruby/setup-ruby@6ca151fd1bfcfd6fe0c4eb6837eb0584d0134a0c # v1
+        uses: ruby/setup-ruby@4eb9f110bac952a8b68ecf92e3b5c7a987594ba6 # v1
         with:
           bundler-cache: true
           ruby-version: .ruby-version
@@ -739,16 +747,9 @@ jobs:
         uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
       - env:
           UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
-          WORKSPACE: ${{ github.workspace }}
         if: hashFiles('pyproject.toml', 'uv.lock') != ''
         name: Expose uv in workspace
-        run: |
-          set -euo pipefail
-          install_dir="$WORKSPACE/.gh-aw-tools/bin"
-          mkdir -p "$install_dir"
-          cp "$UV_PATH" "$install_dir/uv"
-          chmod +x "$install_dir/uv"
-          echo "$install_dir" >> "$GITHUB_PATH"
+        run: "set -euo pipefail\n# AWF-friendly location: gh-aw scans /opt/hostedtoolcache/**/bin paths.\ntoolcache_bin=\"/opt/hostedtoolcache/gh-aw-tools/current/x64/bin\"\nsudo mkdir -p \"$toolcache_bin\"\nsudo ln -sf \"$UV_PATH\" \"$toolcache_bin/uv\"\n"
         shell: bash
       - name: Configure Copilot CLI settings
         run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi\n"
@@ -766,7 +767,7 @@ jobs:
       - name: Write review instructions to disk
         run: "mkdir -p /tmp/pr-context\ncat > /tmp/pr-context/review-instructions.md << 'REVIEW_EOF'\n# Review Instructions for Sub-agents\n\nYou are a code review sub-agent. Read these instructions, then review the PR files in the order provided in your prompt.\n\n## Context\n\nBefore reviewing files, read these to understand the PR:\n\n1. `/tmp/pr-context/pr.json` — PR title, description, author, and branches. Understand what the PR is trying to accomplish.\n2. `/tmp/agents.md` — Repository coding conventions and guidelines (skip if missing).\n3. `/tmp/pr-context/review_comments.json` — Existing review threads. Note which files already have threads so you don't duplicate.\n4. `/tmp/pr-context/issue-*.json` — Linked issue details (if any). Understand the motivation and acceptance criteria.\n\n## Process\n\nReview the PR diff file by file in your assigned order. For each changed file:\n\n1. **Read the diff** for this file from `/tmp/pr-context/diffs/<filename>.diff` to understand what changed. Each line is prefixed with its line number (e.g., `405\\t+ code`). Lines with numbers are commentable; lines without numbers are deleted lines (LEFT side only). If the diff is empty or truncated (e.g., binary files or very large changes), fall back to reading the full file from the workspace and comparing against context.\n2. **Read the full file from the workspace.** The PR branch is checked out locally — open the file directly to get complete contents with line numbers.\n3. **Check existing threads** for this file from `/tmp/pr-context/threads/<filename>.json` (if it exists). Skip issues that are already under discussion — each thread has `isResolved` and `isOutdated` fields.\n4. **Identify potential issues** matching the review criteria below.\n5. **Quick-check each issue** before including it:\n   - What specific code pattern or change triggers this concern?\n   - Is there an obvious guard, handler, or mitigation visible in the immediate context?\n   - Can you describe a concrete failure scenario (the `evidence` field)? If you cannot articulate what specific input or state triggers the problem, drop the finding.\n   - If the issue is clearly handled, skip it. If you're unsure, include it — the parent will verify.\n6. **Add to your findings list.** Do NOT leave inline comments — you don't have that tool. Return findings in this format:\n\n```\n- file: path/to/file\n  line: 42\n  severity: HIGH\n  title: Brief title\n  description: What the issue is and why it matters\n  evidence: The specific code pattern and failure scenario\n  suggestion: corrected code here (optional — only if you can provide a concrete fix)\n```\n\n**Review every file in your assigned order.** Files reviewed earlier get more attention, which is why different sub-agents use different orderings.\n\n**Check existing threads** — per-file threads are at `/tmp/pr-context/threads/<filename>.json` (step 3 above). The full list is at `/tmp/pr-context/review_comments.json`. Do not flag issues that are already under discussion (resolved or unresolved). For outdated threads, only re-flag if the issue still applies to the current diff.\n\n**Return your full findings list** when done, or an empty list if no issues were found.\n\n## Review Criteria\n\nFocus on these categories in priority order:\n\n1. Security vulnerabilities (injection, XSS, auth bypass, secrets exposure)\n2. Logic bugs that could cause runtime failures or incorrect behavior\n3. Data integrity issues (race conditions, missing transactions, corruption risk)\n4. Performance bottlenecks (N+1 queries, memory leaks, blocking operations)\n5. Error handling gaps (unhandled exceptions, missing validation)\n6. Breaking changes to public APIs without migration path\n7. Missing or incorrect test coverage for critical paths\n\n## What NOT to Flag\n\nOnly review the diff — do not flag issues in unchanged code, pre-existing problems not introduced by this PR, or style preferences handled by linters or formatters.\n\n**Common false positives** — these patterns look like issues but usually aren't. Before flagging anything in these categories, confirm the problem is real by reading the surrounding code:\n\n- **Security — input already sanitized:** Don't flag injection or XSS risks when inputs are sanitized upstream, parameterized queries are used, or the framework auto-escapes output.\n- **Null/undefined — guarded elsewhere:** Don't flag potential null dereferences if the value is guaranteed by a type guard, assertion, schema validation, or upstream null check.\n- **Error handling — handled at a different layer:** Don't flag missing try/catch if the caller, middleware, or framework catches and handles the error (e.g., Express error middleware, React error boundaries).\n- **Performance — theoretical, not practical:** Don't flag algorithmic complexity (e.g., O(n^2)) unless N is demonstrably large enough to matter in the actual usage context. \"This could be slow\" without evidence is not actionable.\n- **Validation — exists at another layer:** Don't flag missing input validation if it's handled by an API gateway, middleware, schema validator, or type system.\n- **Test coverage — trivial or generated code:** Don't flag missing tests for trivial getters/setters, auto-generated code, or simple delegation methods.\n- **Style or naming — not in coding guidelines:** Don't flag naming conventions or code style unless they violate the repository's documented coding guidelines (from `/tmp/agents.md` or CONTRIBUTING docs).\n\n**Existing review threads** — check BEFORE flagging any issue:\n\n- **Resolved with reviewer reply** (e.g. \"This is intentional\") — reviewer's decision is final. Do NOT re-flag.\n- **Resolved without reply** — author likely fixed it. Do NOT re-raise unless the fix introduced a new problem.\n- **Unresolved** — already flagged. Do NOT duplicate.\n- **Outdated** — only re-flag if the issue still applies to the current diff.\n\nWhen in doubt, do not duplicate. Redundant comments erode trust.\n\nFinding no issues is a valid and valuable outcome. An empty findings list is better than findings that waste the author's time or erode trust. Do not manufacture findings to justify your review — if the code is sound, return an empty list.\n\n## Severity Classification\n\nDetermine severity AFTER investigating the issue, not before. First identify the problem and trace through the code, then assign a severity based on the evidence you found.\n\n- 🔴 CRITICAL — Must fix before merge (security vulnerabilities, data corruption, production-breaking bugs)\n- 🟠 HIGH — Should fix before merge (logic errors, missing validation, significant performance issues)\n- 🟡 MEDIUM — Address soon, non-blocking (error handling gaps, suboptimal patterns, missing edge cases)\n- ⚪ LOW — Author discretion (minor improvements, documentation gaps)\n- 💬 NITPICK — Truly optional (stylistic preferences, alternative approaches)\n\n## Review Intensity\n\nThe review intensity is `${{ inputs.intensity || 'balanced' }}`.\n\n- **conservative**: High evidence bar. Only flag when you can demonstrate a concrete failure scenario. If you can construct a reasonable counterargument, do not flag. Approval with zero findings is the expected outcome for most PRs.\n- **balanced**: Standard evidence bar. Flag when you can point to specific code that would fail. If the issue is ambiguous, lean toward not flagging.\n- **aggressive**: Lower evidence bar. Flag when evidence exists even if the failure scenario is not fully confirmed. Improvement suggestions welcome but must cite specific code.\n\n## Calibration Examples\n\nUse these examples to calibrate your judgment. Each pair shows a real issue and a similar-looking pattern that is NOT an issue.\n\n### Example 1: Null/Undefined Access\n\n**True positive — flag this:**\n\n```js\n// PR adds this handler\napp.get('/user/:id', async (req, res) => {\n  const user = await db.findUser(req.params.id);\n  res.json({ name: user.name, email: user.email });\n});\n```\n\nWhy flag: `db.findUser()` can return `null` when no user matches the ID. Accessing `user.name` will throw a TypeError at runtime. No upstream guard exists — the route handler is the entry point.\n\n**False positive — do NOT flag this:**\n\n```ts\n// PR adds this line inside an existing function\nconst settings = user.getSettings();\n```\n\nWhy skip: Reading the full file reveals `user` is typed as `User` (not `User | null`), and the calling function only runs after `authenticateUser()` middleware which guarantees a valid user object. The null case is handled at a different layer.\n\n### Example 2: SQL Injection\n\n**True positive — flag this:**\n\n```python\n# PR adds this query\ncursor.execute(f\"SELECT * FROM orders WHERE customer_id = '{customer_id}'\")\n```\n\nWhy flag: String interpolation in a SQL query with user-controlled input (`customer_id` comes from the request). No parameterization or sanitization anywhere in the call chain.\n\n**False positive — do NOT flag this:**\n\n```python\n# PR adds this query\ncursor.execute(f\"SELECT * FROM orders WHERE status = '{OrderStatus.PENDING.value}'\")\n```\n\nWhy skip: The interpolated value is a hardcoded enum constant (`OrderStatus.PENDING`), not user input. There is no injection vector.\n\n### Example 3: Borderline — Do NOT Flag\n\n```go\n// PR adds this function\nfunc processItems(items []Item) []Result {\n    results := make([]Result, 0)\n    for _, item := range items {\n        for _, tag := range item.Tags {\n            results = append(results, process(item, tag))\n        }\n    }\n    return results\n}\n```\n\nThis looks like an O(n*m) performance concern. But without evidence that `items` or `Tags` are large in practice, this is speculative. The function processes a bounded dataset (items from a single user request). Do not flag theoretical performance issues without evidence of real-world impact.\nREVIEW_EOF"
       - name: Write Playwright instructions to disk
-        run: "cat > /tmp/playwright-instructions.md << 'EOF'\n# Playwright MCP Tools\n\nUse Playwright MCP tools for interactive browser automation.\nUse these tools to explore the app step by step — do NOT write Node.js scripts.\n\n## Available tools\n\n- `browser_navigate` — go to a URL\n- `browser_click` — click an element\n- `browser_type` — type text into an input\n- `browser_snapshot` — get an accessibility tree (YAML) of the current page\n- `browser_take_screenshot` — capture a screenshot\n- `browser_console_execute` — run JavaScript in the browser console\n\n## Why MCP tools instead of scripts\n\nMCP tools are interactive: you see the page state after each action and\ndecide what to do next. This is ideal for exploratory testing where you\nneed to adapt based on what you find. Scripts are fire-and-forget — if\na selector is wrong, you don't find out until the script fails.\n\n## Measuring DOM properties\n\nFor programmatic checks (e.g. element heights, contrast), use\n`browser_console_execute`:\n\n```javascript\n(() => {\n  const els = document.querySelectorAll('input, button, [role=\"combobox\"], [role=\"button\"]');\n  return JSON.stringify(Array.from(els)\n    .map(el => {\n      const r = el.getBoundingClientRect();\n      return { tag: el.tagName, h: Math.round(r.height), top: Math.round(r.top), text: el.textContent?.trim().slice(0, 20) };\n    })\n    .filter(el => el.top > 50 && el.top < 250));\n})()\n```\n\n## Handling failures\n\n- Do not retry the same action more than twice — the page is in a different state than expected.\n- Diagnose before moving on: use `browser_take_screenshot` and `browser_snapshot` to see what's on the page.\n- Adapt (different selector, different path) or report the failure as a finding.\n- Never claim you verified something you didn't — if it failed and you skipped it, say so.\nEOF"
+        run: "cat > /tmp/playwright-instructions.md << 'EOF'\n# Playwright MCP Tools\n\nUse Playwright MCP tools for interactive browser automation.\nUnless otherwise instructed, use the MCP tools directly rather than writing standalone Node.js scripts.\n\n## Available tools\n\n- `browser_navigate` — go to a URL\n- `browser_click` — click an element\n- `browser_type` — type text into an input\n- `browser_snapshot` — get an accessibility tree (YAML) of the current page\n- `browser_take_screenshot` — capture a visual screenshot (PNG/JPEG)\n- `browser_run_code` — run a Playwright code snippet\n- `browser_wait_for` — wait for text to appear/disappear\n- `browser_press_key` — press a keyboard key\n\n## Automatic snapshots are disabled\n\n`browser_click`, `browser_type`, `browser_wait_for`, and\n`browser_run_code` do NOT return page state. You choose when to\ninspect the page.\n\n## Batch actions with `browser_run_code`\n\nWhen you know the UI structure (button names, input labels), batch\nmultiple actions in a single `browser_run_code` call using Playwright's\nrole selectors. This is much more efficient than individual tool calls:\n\n```js\nasync (page) => {\n  await page.getByRole('button', { name: 'Settings' }).click();\n  await page.getByRole('combobox', { name: 'Theme' }).selectOption('dark');\n  await page.getByRole('button', { name: 'Save' }).click();\n  return 'Settings saved';\n}\n```\n\n**Keep return values small** — return only what you need:\n```js\nasync (page) => {\n  const res = await page.request.post(url, {data});\n  const json = await res.json();\n  // Good: ~50 chars\n  return JSON.stringify({success: json.success, errors: json.errors?.length || 0});\n  // Bad: entire response body (can be 20K+ chars)\n}\n```\n\n## Discover elements with snapshots\n\nWhen you don't know what's on the page, save a snapshot to disk and\nsearch it:\n```\nbrowser_snapshot(filename=\"/tmp/gh-aw/mcp-logs/page.md\")\n```\nThen grep for elements:\n```bash\ngrep 'button.*Save\\|button.*Submit' /tmp/gh-aw/mcp-logs/page.md\n```\nUse the `ref` value from grep results with `browser_click(ref=\"...\")`.\n\nOnly take snapshots when you need to discover unknown elements.\nIf you know the button name or role, use `browser_run_code` instead.\n\n## Error handling in `browser_run_code`\n\n`browser_run_code` blocks can fail mid-execution if a selector doesn't\nmatch. Keep blocks focused — if a sequence has uncertain steps, split\nit into separate `browser_run_code` calls so you can inspect and adapt\nbetween them.\n\n## Measuring DOM properties\n\nFor programmatic checks (e.g. element heights, contrast), use\n`browser_run_code`:\n\n```javascript\nasync (page) => {\n  const els = await page.locator('input, button, [role=\"combobox\"]').all();\n  const results = [];\n  for (const el of els.slice(0, 10)) {\n    const box = await el.boundingBox();\n    const text = await el.textContent();\n    if (box) results.push({ h: Math.round(box.height), text: text?.trim().slice(0, 20) });\n  }\n  return JSON.stringify(results);\n}\n```\n\n## Handling failures\n\n- Do not retry the same action more than twice — the page is in a different state than expected.\n- Diagnose before moving on: save a snapshot to disk and grep it, or use `browser_take_screenshot` for a visual check.\n- Adapt (different selector, different path) or report the failure as a finding.\n- Never claim you verified something you didn't — if it failed and you skipped it, say so.\nEOF"
       - env:
           GITHUB_TOKEN: ${{ github.token }}
           REPO_NAME: ${{ github.repository }}
@@ -809,8 +810,10 @@ jobs:
             await main();
       - name: Install GitHub Copilot CLI
         run: /opt/gh-aw/actions/install_copilot_cli.sh latest
-      - name: Install awf binary
-        run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.23.0
+        env:
+          GH_HOST: github.com
+      - name: Install AWF binary
+        run: bash /opt/gh-aw/actions/install_awf_binary.sh v0.24.1
       - name: Determine automatic lockdown mode for GitHub MCP Server
         id: determine-automatic-lockdown
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -822,19 +825,21 @@ jobs:
             const determineAutomaticLockdown = require('/opt/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.23.0 ghcr.io/github/gh-aw-firewall/api-proxy:0.23.0 ghcr.io/github/gh-aw-firewall/squid:0.23.0 ghcr.io/github/gh-aw-mcpg:v0.1.8 ghcr.io/github/github-mcp-server:v0.32.0 mcr.microsoft.com/playwright/mcp node:lts-alpine
+        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.24.1 ghcr.io/github/gh-aw-firewall/api-proxy:0.24.1 ghcr.io/github/gh-aw-firewall/squid:0.24.1 ghcr.io/github/gh-aw-mcpg:v0.1.15 ghcr.io/github/github-mcp-server:v0.32.0 mcr.microsoft.com/playwright/mcp node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p /opt/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > /opt/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"add_comment":{"max":1,"target":"${{ inputs.target-pr-number || 'triggering' }}"},"create_pull_request_review_comment":{"max":"${{ inputs.create-pull-request-review-comment-max }}"},"missing_data":{},"missing_tool":{},"noop":{"max":1},"push_to_pull_request_branch":{"max":0,"target":"${{ inputs.target-pr-number || 'triggering' }}"},"resolve_pull_request_review_thread":{"max":"${{ inputs.resolve-pull-request-review-thread-max }}"},"submit_pull_request_review":{"max":1}}
+          {"add_comment":{"max":1,"target":"triggering"},"create_pull_request_review_comment":{"max":"${{ inputs.create-pull-request-review-comment-max }}"},"missing_data":{},"missing_tool":{},"noop":{"max":1},"push_to_pull_request_branch":{"max":1,"target":"triggering"},"reply_to_pull_request_review_comment":{"max":10,"target":"triggering"},"resolve_pull_request_review_thread":{"max":"${{ inputs.resolve-pull-request-review-thread-max }}"},"submit_pull_request_review":{"max":1}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
+      - name: Write Safe Outputs Tools
+        run: |
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Add a comment to an existing GitHub issue, pull request, or discussion. Use this to provide feedback, answer questions, or add information to an existing conversation. For creating new items, use create_issue, create_discussion, or create_pull_request instead. IMPORTANT: Comments are subject to validation constraints enforced by the MCP server - maximum 65536 characters for the complete comment (including footer which is added automatically), 10 mentions (@username), and 50 links. Exceeding these limits will result in an immediate error with specific guidance. NOTE: By default, this tool requires discussions:write permission. If your GitHub App lacks Discussions permission, set 'discussions: false' in the workflow's safe-outputs.add-comment configuration to exclude this permission. CONSTRAINTS: Maximum 1 comment(s) can be added. Target: ${{ inputs.target-pr-number || 'triggering' }}.",
+              "description": "Add a comment to an existing GitHub issue, pull request, or discussion. Use this to provide feedback, answer questions, or add information to an existing conversation. For creating new items, use create_issue, create_discussion, or create_pull_request instead. IMPORTANT: Comments are subject to validation constraints enforced by the MCP server - maximum 65536 characters for the complete comment (including footer which is added automatically), 10 mentions (@username), and 50 links. Exceeding these limits will result in an immediate error with specific guidance. NOTE: By default, this tool requires discussions:write permission. If your GitHub App lacks Discussions permission, set 'discussions: false' in the workflow's safe-outputs.add-comment configuration to exclude this permission. CONSTRAINTS: Maximum 1 comment(s) can be added. Target: triggering.",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -871,7 +876,7 @@ jobs:
               "name": "add_comment"
             },
             {
-              "description": "Create a review comment on a specific line of code in a pull request. Use this for inline code review feedback, suggestions, or questions about specific code changes. For general PR comments not tied to specific lines, use add_comment instead. CONSTRAINTS: Comments will be on the RIGHT side of the diff.",
+              "description": "Create a review comment on a specific line of code in a pull request. Use this for inline code review feedback, suggestions, or questions about specific code changes. For general PR comments not tied to specific lines, use add_comment instead. When the workflow is configured with `target: \"*\"`, you must specify `pull_request_number` to indicate which PR to target. CONSTRAINTS: Comments will be on the RIGHT side of the diff.",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -892,6 +897,17 @@ jobs:
                   },
                   "path": {
                     "description": "File path relative to the repository root (e.g., 'src/auth/login.js'). Must be a file that was changed in the PR.",
+                    "type": "string"
+                  },
+                  "pull_request_number": {
+                    "description": "Pull request number to add the review comment to. This is the numeric ID from the GitHub URL (e.g., 876 in github.com/owner/repo/pull/876). If omitted, adds the comment to the PR that triggered this workflow. Required when the workflow target is '*' (any PR) — omitting it will cause the comment to fail.",
+                    "type": [
+                      "number",
+                      "string"
+                    ]
+                  },
+                  "repo": {
+                    "description": "Target repository in 'owner/repo' format. If omitted, uses the configured target repository. Must be in the allowed-repos list if specified.",
                     "type": "string"
                   },
                   "secrecy": {
@@ -1187,6 +1203,9 @@ jobs:
                   "required": true,
                   "type": "string"
                 },
+                "pull_request_number": {
+                  "optionalPositiveInteger": true
+                },
                 "repo": {
                   "type": "string",
                   "maxLength": 256
@@ -1278,6 +1297,28 @@ jobs:
                 },
                 "pull_request_number": {
                   "issueOrPRNumber": true
+                }
+              }
+            },
+            "reply_to_pull_request_review_comment": {
+              "defaultMax": 10,
+              "fields": {
+                "body": {
+                  "required": true,
+                  "type": "string",
+                  "sanitize": true,
+                  "maxLength": 65000
+                },
+                "comment_id": {
+                  "required": true,
+                  "positiveInteger": true
+                },
+                "pull_request_number": {
+                  "optionalPositiveInteger": true
+                },
+                "repo": {
+                  "type": "string",
+                  "maxLength": 256
                 }
               }
             },
@@ -1373,7 +1414,7 @@ jobs:
           export DEBUG="*"
           
           export GH_AW_ENGINE="copilot"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.8'
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_LOCKDOWN -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.15'
           
           mkdir -p /home/runner/.copilot
           cat << GH_AW_MCP_CONFIG_EOF | bash /opt/gh-aw/actions/start_mcp_gateway.sh
@@ -1383,6 +1424,7 @@ jobs:
                 "type": "stdio",
                 "container": "ghcr.io/github/github-mcp-server:v0.32.0",
                 "env": {
+                  "GITHUB_HOST": "\${GITHUB_SERVER_URL}",
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
@@ -1393,7 +1435,7 @@ jobs:
                 "type": "stdio",
                 "container": "mcr.microsoft.com/playwright/mcp",
                 "args": ["--init", "--network", "host", "--security-opt", "seccomp=unconfined", "--ipc=host"],
-                "entrypointArgs": ["--output-dir", "/tmp/gh-aw/mcp-logs/playwright", "--no-sandbox"],
+                "entrypointArgs": ["--output-dir", "/tmp/gh-aw/mcp-logs/playwright", "--no-sandbox", "--snapshot-mode", "none"],
                 "mounts": ["/tmp/gh-aw/mcp-logs:/tmp/gh-aw/mcp-logs:rw"]
               },
               "public-code-search": {
@@ -1420,9 +1462,9 @@ jobs:
           }
           GH_AW_MCP_CONFIG_EOF
       - name: Download activation artifact
-        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: activation
+          name: ${{ needs.activation.outputs.artifact_prefix }}activation
           path: /tmp/gh-aw
       - name: Clean git credentials
         run: bash /opt/gh-aw/actions/clean_git_credentials.sh
@@ -1434,16 +1476,19 @@ jobs:
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
           # shellcheck disable=SC1003
-          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains "*.docker.com,*.docker.io,*.githubusercontent.com,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,elastic.github.io,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org" --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.23.0 --skip-pull --enable-api-proxy \
+          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains "*.docker.com,*.docker.io,*.githubusercontent.com,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,elastic.github.io,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org" --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.24.1 --skip-pull --enable-api-proxy \
             -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --allow-all-tools --allow-all-paths --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           COPILOT_MODEL: ${{ inputs.model }}
           GH_AW_MCP_CONFIG: /home/runner/.copilot/mcp-config.json
+          GH_AW_PHASE: agent
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GH_AW_VERSION: dev
           GITHUB_API_URL: ${{ github.api_url }}
+          GITHUB_AW: true
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
@@ -1516,13 +1561,11 @@ jobs:
       - name: Append agent step summary
         if: always()
         run: bash /opt/gh-aw/actions/append_agent_step_summary.sh
-      - name: Upload Safe Outputs
+      - name: Copy Safe Outputs
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: safe-output
-          path: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          if-no-files-found: warn
+        run: |
+          mkdir -p /tmp/gh-aw
+          cp "$GH_AW_SAFE_OUTPUTS" /tmp/gh-aw/safeoutputs.jsonl 2>/dev/null || true
       - name: Ingest agent output
         id: collect_output
         if: always()
@@ -1538,21 +1581,6 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/collect_ndjson_output.cjs');
             await main();
-      - name: Upload sanitized agent output
-        if: always() && env.GH_AW_AGENT_OUTPUT
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: agent-output
-          path: ${{ env.GH_AW_AGENT_OUTPUT }}
-          if-no-files-found: warn
-      - name: Upload engine output files
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
-        with:
-          name: agent_outputs
-          path: |
-            /tmp/gh-aw/sandbox/agent/logs/
-            /tmp/gh-aw/redacted-urls.log
-          if-no-files-found: ignore
       - name: Parse agent logs for step summary
         if: always()
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -1591,15 +1619,19 @@ jobs:
       - name: Upload agent artifacts
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: agent-artifacts
+          name: ${{ needs.activation.outputs.artifact_prefix }}agent
           path: |
             /tmp/gh-aw/aw-prompts/prompt.txt
+            /tmp/gh-aw/sandbox/agent/logs/
+            /tmp/gh-aw/redacted-urls.log
             /tmp/gh-aw/mcp-logs/
             /tmp/gh-aw/sandbox/firewall/logs/
             /tmp/gh-aw/agent-stdio.log
             /tmp/gh-aw/agent/
+            /tmp/gh-aw/safeoutputs.jsonl
+            /tmp/gh-aw/agent_output.json
             /tmp/gh-aw/aw-*.patch
             /tmp/gh-aw/aw-*.bundle
           if-no-files-found: ignore
@@ -1669,14 +1701,17 @@ jobs:
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
           # shellcheck disable=SC1003
-          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,github.com,host.docker.internal,raw.githubusercontent.com,registry.npmjs.org,telemetry.enterprise.githubcopilot.com" --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.23.0 --skip-pull --enable-api-proxy \
+          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains "api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,github.com,host.docker.internal,raw.githubusercontent.com,registry.npmjs.org,telemetry.enterprise.githubcopilot.com" --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.24.1 --skip-pull --enable-api-proxy \
             -- /bin/bash -c '/usr/local/bin/copilot --add-dir /tmp/gh-aw/ --log-level all --log-dir /tmp/gh-aw/sandbox/agent/logs/ --add-dir "${GITHUB_WORKSPACE}" --disable-builtin-mcps --allow-tool '\''shell(cat)'\'' --allow-tool '\''shell(grep)'\'' --allow-tool '\''shell(head)'\'' --allow-tool '\''shell(jq)'\'' --allow-tool '\''shell(ls)'\'' --allow-tool '\''shell(tail)'\'' --allow-tool '\''shell(wc)'\'' --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/threat-detection/detection.log
         env:
           COPILOT_AGENT_RUNNER_TYPE: STANDALONE
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           COPILOT_MODEL: ${{ inputs.model }}
+          GH_AW_PHASE: detection
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_VERSION: dev
           GITHUB_API_URL: ${{ github.api_url }}
+          GITHUB_AW: true
           GITHUB_HEAD_REF: ${{ github.head_ref }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
@@ -1699,9 +1734,9 @@ jobs:
             await main();
       - name: Upload threat detection log
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: threat-detection.log
+          name: ${{ needs.activation.outputs.artifact_prefix }}detection
           path: /tmp/gh-aw/threat-detection/detection.log
           if-no-files-found: ignore
       - name: Set detection conclusion
@@ -1744,22 +1779,22 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.57.0
+        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.58.3
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
         id: download-agent-output
         continue-on-error: true
-        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: agent-output
-          path: /tmp/gh-aw/safeoutputs/
+          name: ${{ needs.activation.outputs.artifact_prefix }}agent
+          path: /tmp/gh-aw/
       - name: Setup agent output environment variable
         if: steps.download-agent-output.outcome == 'success'
         run: |
-          mkdir -p /tmp/gh-aw/safeoutputs/
-          find "/tmp/gh-aw/safeoutputs/" -type f -print
-          echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/safeoutputs/agent_output.json" >> "$GITHUB_ENV"
+          mkdir -p /tmp/gh-aw/
+          find "/tmp/gh-aw/" -type f -print
+          echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/agent_output.json" >> "$GITHUB_ENV"
       - name: Process No-Op Messages
         id: noop
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -1803,6 +1838,7 @@ jobs:
           GH_AW_CODE_PUSH_FAILURE_COUNT: ${{ needs.safe_outputs.outputs.code_push_failure_count }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {0}]({{run_url}})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.', github.workflow) }}\",\"activationComments\":\"false\"}"
           GH_AW_GROUP_REPORTS: "false"
+          GH_AW_FAILURE_REPORT_AS_ISSUE: "true"
           GH_AW_TIMEOUT_MINUTES: "60"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1836,7 +1872,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.57.0
+        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.58.3
         with:
           destination: /opt/gh-aw/actions
       - name: Check team membership for workflow
@@ -1883,27 +1919,27 @@ jobs:
       push_commit_url: ${{ steps.process_safe_outputs.outputs.push_commit_url }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.57.0
+        uses: strawgate/gh-aw/actions/setup@da413c61d4c63eb528f47f2bba95f020555d48e5 # v0.58.3
         with:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
         id: download-agent-output
         continue-on-error: true
-        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: agent-output
-          path: /tmp/gh-aw/safeoutputs/
+          name: ${{ needs.activation.outputs.artifact_prefix }}agent
+          path: /tmp/gh-aw/
       - name: Setup agent output environment variable
         if: steps.download-agent-output.outcome == 'success'
         run: |
-          mkdir -p /tmp/gh-aw/safeoutputs/
-          find "/tmp/gh-aw/safeoutputs/" -type f -print
-          echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/safeoutputs/agent_output.json" >> "$GITHUB_ENV"
+          mkdir -p /tmp/gh-aw/
+          find "/tmp/gh-aw/" -type f -print
+          echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/agent_output.json" >> "$GITHUB_ENV"
       - name: Download patch artifact
         continue-on-error: true
-        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: agent-artifacts
+          name: ${{ needs.activation.outputs.artifact_prefix }}agent
           path: /tmp/gh-aw/
       - name: Checkout repository
         if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'push_to_pull_request_branch'))
@@ -1935,7 +1971,7 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "*.docker.com,*.docker.io,*.githubusercontent.com,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,elastic.github.io,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1,\"target\":\"${{ inputs.target-pr-number || 'triggering' }}\"},\"create_pull_request_review_comment\":{\"max\":\"${{ inputs.create-pull-request-review-comment-max }}\",\"side\":\"RIGHT\",\"target\":\"${{ inputs.target-pr-number || 'triggering' }}\"},\"missing_data\":{},\"missing_tool\":{},\"push_to_pull_request_branch\":{\"if_no_changes\":\"warn\",\"max_patch_size\":10240,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"AGENTS.md\"],\"protected_files_policy\":\"allowed\",\"protected_path_prefixes\":[\".github/\",\".agents/\"],\"target\":\"${{ inputs.target-pr-number || 'triggering' }}\"},\"reply_to_pull_request_review_comment\":{\"max\":10,\"target\":\"${{ inputs.target-pr-number || 'triggering' }}\"},\"resolve_pull_request_review_thread\":{\"max\":\"${{ inputs.resolve-pull-request-review-thread-max }}\",\"target\":\"${{ inputs.target-pr-number || 'triggering' }}\"},\"submit_pull_request_review\":{\"footer\":\"if-body\",\"max\":1,\"target\":\"${{ inputs.target-pr-number || 'triggering' }}\"}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1,\"target\":\"triggering\"},\"create_pull_request_review_comment\":{\"max\":\"${{ inputs.create-pull-request-review-comment-max }}\",\"side\":\"RIGHT\",\"target\":\"triggering\"},\"missing_data\":{},\"missing_tool\":{},\"push_to_pull_request_branch\":{\"if_no_changes\":\"warn\",\"max_patch_size\":10240,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"AGENTS.md\"],\"protected_files_policy\":\"allowed\",\"protected_path_prefixes\":[\".github/\",\".agents/\"],\"target\":\"triggering\"},\"reply_to_pull_request_review_comment\":{\"max\":10,\"target\":\"triggering\"},\"resolve_pull_request_review_thread\":{\"max\":\"${{ inputs.resolve-pull-request-review-thread-max }}\",\"target\":\"triggering\"},\"submit_pull_request_review\":{\"footer\":\"if-body\",\"max\":1,\"target\":\"triggering\"}}"
           GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1944,11 +1980,11 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('/opt/gh-aw/actions/safe_output_handler_manager.cjs');
             await main();
-      - name: Upload safe output items manifest
+      - name: Upload Safe Output Items Manifest
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
-          name: safe-output-items
+          name: ${{ needs.activation.outputs.artifact_prefix }}safe-output-items
           path: /tmp/safe-output-items.jsonl
           if-no-files-found: warn
 

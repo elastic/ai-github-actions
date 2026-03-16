@@ -6,7 +6,7 @@ safe-outputs:
     pull-requests: true
     discussions: false
     hide-older-comments: true
-    target: "${{ inputs.target-pr-number || 'triggering' }}"
+    target: "triggering"
 ---
 
 ## add-comment Limitations

@@ -2,7 +2,7 @@
 safe-outputs:
   create-pull-request-review-comment:
     max: ${{ inputs.create-pull-request-review-comment-max }}
-    target: "${{ inputs.target-pr-number || 'triggering' }}"
+    target: "triggering"
 ---
 
 ## create-pull-request-review-comment

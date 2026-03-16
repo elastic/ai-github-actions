@@ -146,7 +146,7 @@ safe-inputs:
       print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template, 'diff_line_count': diff_line_count}))
 safe-outputs:
   push-to-pull-request-branch:
-    target: "${{ inputs.target-pr-number || 'triggering' }}"
+    target: "triggering"
     github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
     protected-files: allowed
 ---

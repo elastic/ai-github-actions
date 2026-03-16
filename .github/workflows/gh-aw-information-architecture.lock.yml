@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"367cb16c070b82f538a9804f33f9d0496a0a2f111ff6015499af2a6f74a0a9a3"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"158105ecc158279064ae6f89773eddd78d6a821196bae5d52d64b3cb5c0f538d"}
 
 name: "Information Architecture"
 "on":
@@ -633,16 +633,9 @@ jobs:
         uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
       - env:
           UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
-          WORKSPACE: ${{ github.workspace }}
         if: hashFiles('pyproject.toml', 'uv.lock') != ''
         name: Expose uv in workspace
-        run: |
-          set -euo pipefail
-          install_dir="$WORKSPACE/.gh-aw-tools/bin"
-          mkdir -p "$install_dir"
-          cp "$UV_PATH" "$install_dir/uv"
-          chmod +x "$install_dir/uv"
-          echo "$install_dir" >> "$GITHUB_PATH"
+        run: "set -euo pipefail\n# AWF-friendly location: gh-aw scans /opt/hostedtoolcache/**/bin paths.\ntoolcache_bin=\"/opt/hostedtoolcache/gh-aw-tools/current/x64/bin\"\nsudo mkdir -p \"$toolcache_bin\"\nsudo ln -sf \"$UV_PATH\" \"$toolcache_bin/uv\"\n"
         shell: bash
       - name: Configure Copilot CLI settings
         run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi\n"

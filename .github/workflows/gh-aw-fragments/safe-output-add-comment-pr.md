@@ -5,7 +5,7 @@ safe-outputs:
     issues: false
     pull-requests: true
     discussions: false
-    target: "${{ inputs.target-pr-number || 'triggering' }}"
+    target: "triggering"
 ---
 
 ## add-comment Limitations
