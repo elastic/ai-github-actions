@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"f35e7b7925b0278daf6afe657fedd8b8c130cbd169053322ccb6b4e496fb24b0"}
+# gh-aw-metadata: {"schema_version":"v2","frontmatter_hash":"5a2cfe0c8589c5f7c0ce854b4a50a2a5d6088d040a96687938594b97324c5f89"}
 
 name: "Create PR From Issue"
 "on":
@@ -500,51 +500,33 @@ jobs:
           persist-credentials: false
       - name: Setup Go
         uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        if: hashFiles('go.mod') != ''
         with:
           go-version: '1.25'
           cache: false
       - name: Capture GOROOT for AWF chroot mode
         run: echo "GOROOT=$(go env GOROOT)" >> "$GITHUB_ENV"
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        if: hashFiles('.node-version') != '' || hashFiles('.nvmrc') != ''
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Setup Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        if: hashFiles('.python-version') != ''
+        with:
+          python-version: '3.12'
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@4eb9f110bac952a8b68ecf92e3b5c7a987594ba6 # v1.292.0
+        if: hashFiles('.ruby-version') != ''
+        with:
+          ruby-version: '3.3'
+      - name: Setup uv
+        uses: astral-sh/setup-uv@e06108dd0aef18192324c70427afc47652e63a82 # v7.5.0
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
       - name: Create gh-aw temp directory
         run: bash /opt/gh-aw/actions/create_gh_aw_tmp_dir.sh
-      - if: hashFiles('.python-version') != ''
-        name: Setup Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version-file: .python-version
-      - if: hashFiles('.node-version') != ''
-        name: Setup Node.js (.node-version)
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
-        with:
-          node-version-file: .node-version
-      - if: hashFiles('.node-version') == '' && hashFiles('.nvmrc') != ''
-        name: Setup Node.js (.nvmrc)
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6
-        with:
-          node-version-file: .nvmrc
-      - if: hashFiles('.ruby-version') != ''
-        name: Setup Ruby
-        uses: ruby/setup-ruby@4eb9f110bac952a8b68ecf92e3b5c7a987594ba6 # v1
-        with:
-          bundler-cache: true
-          ruby-version: .ruby-version
-      - id: setup-uv
-        if: hashFiles('pyproject.toml', 'uv.lock') != ''
-        name: Setup uv
-        uses: astral-sh/setup-uv@e58605a9b6da7c637471fab8847a5e5a6b8df081 # v5
-      - env:
-          UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
-          WORKSPACE: ${{ github.workspace }}
-        if: hashFiles('pyproject.toml', 'uv.lock') != ''
-        name: Expose uv in workspace
-        run: |
-          set -euo pipefail
-          install_dir="$WORKSPACE/.gh-aw-tools/bin"
-          mkdir -p "$install_dir"
-          cp "$UV_PATH" "$install_dir/uv"
-          chmod +x "$install_dir/uv"
-          echo "$install_dir" >> "$GITHUB_PATH"
-        shell: bash
       - name: Configure Copilot CLI settings
         run: "set -euo pipefail\nmkdir -p ~/.copilot\nCONFIG=\"$HOME/.copilot/config.json\"\nif [ -f \"$CONFIG\" ]; then\n    jq '. + {\"chat.customAgentInSubagent.enabled\": true}' \"$CONFIG\" > \"$CONFIG.tmp\" && mv \"$CONFIG.tmp\" \"$CONFIG\"\nelse\n    echo '{\"chat.customAgentInSubagent.enabled\":true}' > \"$CONFIG\"\nfi\n"
         shell: bash
@@ -554,7 +536,7 @@ jobs:
         run: "set -euo pipefail\nif [ -f \"AGENTS.md\" ]; then\n  cp AGENTS.md /tmp/agents.md\n  echo \"Repository conventions copied from AGENTS.md to /tmp/agents.md\"\nelse\n  OWNER=\"${GITHUB_REPOSITORY%/*}\"\n  REPO=\"${GITHUB_REPOSITORY#*/}\"\n  summary=$(curl -sf --max-time 15 -X POST https://agents-md-generator.fastmcp.app/mcp \\\n    -H \"Content-Type: application/json\" \\\n    -H \"Accept: application/json, text/event-stream\" \\\n    -d \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":1,\\\"method\\\":\\\"tools/call\\\",\\\"params\\\":{\\\"name\\\":\\\"generate_agents_md\\\",\\\"arguments\\\":{\\\"owner\\\":\\\"${OWNER}\\\",\\\"repo\\\":\\\"${REPO}\\\"}}}\" \\\n    | sed 's/^data: //' \\\n    | jq -r '.result.structuredContent.summary // empty' 2>/dev/null) || true\n  if [ -n \"$summary\" ]; then\n    echo \"$summary\" > /tmp/agents.md\n    echo \"Repository conventions written to /tmp/agents.md\"\n  else\n    echo \"::warning::Could not fetch repository conventions; continuing without them\"\n  fi\nfi"
         shell: bash
       - name: Write Playwright instructions to disk
-        run: "cat > /tmp/playwright-instructions.md << 'EOF'\n# Playwright MCP Tools\n\nUse Playwright MCP tools for interactive browser automation.\nUse these tools to explore the app step by step — do NOT write Node.js scripts.\n\n## Available tools\n\n- `browser_navigate` — go to a URL\n- `browser_click` — click an element\n- `browser_type` — type text into an input\n- `browser_snapshot` — get an accessibility tree (YAML) of the current page\n- `browser_take_screenshot` — capture a screenshot\n- `browser_console_execute` — run JavaScript in the browser console\n\n## Why MCP tools instead of scripts\n\nMCP tools are interactive: you see the page state after each action and\ndecide what to do next. This is ideal for exploratory testing where you\nneed to adapt based on what you find. Scripts are fire-and-forget — if\na selector is wrong, you don't find out until the script fails.\n\n## Measuring DOM properties\n\nFor programmatic checks (e.g. element heights, contrast), use\n`browser_console_execute`:\n\n```javascript\n(() => {\n  const els = document.querySelectorAll('input, button, [role=\"combobox\"], [role=\"button\"]');\n  return JSON.stringify(Array.from(els)\n    .map(el => {\n      const r = el.getBoundingClientRect();\n      return { tag: el.tagName, h: Math.round(r.height), top: Math.round(r.top), text: el.textContent?.trim().slice(0, 20) };\n    })\n    .filter(el => el.top > 50 && el.top < 250));\n})()\n```\n\n## Handling failures\n\n- Do not retry the same action more than twice — the page is in a different state than expected.\n- Diagnose before moving on: use `browser_take_screenshot` and `browser_snapshot` to see what's on the page.\n- Adapt (different selector, different path) or report the failure as a finding.\n- Never claim you verified something you didn't — if it failed and you skipped it, say so.\nEOF"
+        run: "cat > /tmp/playwright-instructions.md << 'EOF'\n# Playwright MCP Tools\n\nUse Playwright MCP tools for interactive browser automation.\nUse these tools to explore the app step by step — do NOT write Node.js scripts.\n\n## Available tools\n\n- `browser_navigate` — go to a URL\n- `browser_click` — click an element\n- `browser_type` — type text into an input\n- `browser_snapshot` — get an accessibility tree (YAML) of the current page\n- `browser_take_screenshot` — capture a visual screenshot (PNG/JPEG)\n- `browser_run_code` — run a Playwright code snippet\n- `browser_wait_for` — wait for text to appear/disappear\n- `browser_press_key` — press a keyboard key\n\n## Automatic snapshots are disabled\n\n`browser_click`, `browser_type`, `browser_wait_for`, and\n`browser_run_code` do NOT return page state. You choose when to\ninspect the page.\n\n## Batch actions with `browser_run_code`\n\nWhen you know the UI structure (button names, input labels), batch\nmultiple actions in a single `browser_run_code` call using Playwright's\nrole selectors. This is much more efficient than individual tool calls:\n\n```js\nasync (page) => {\n  await page.getByRole('button', { name: 'Settings' }).click();\n  await page.getByRole('combobox', { name: 'Theme' }).selectOption('dark');\n  await page.getByRole('button', { name: 'Save' }).click();\n  return 'Settings saved';\n}\n```\n\n**Keep return values small** — return only what you need:\n```js\nasync (page) => {\n  const res = await page.request.post(url, {data});\n  const json = await res.json();\n  // Good: ~50 chars\n  return JSON.stringify({success: json.success, errors: json.errors?.length || 0});\n  // Bad: entire response body (can be 20K+ chars)\n}\n```\n\n## Discover elements with snapshots\n\nWhen you don't know what's on the page, save a snapshot to disk and\nsearch it:\n```\nbrowser_snapshot(filename=\"/tmp/gh-aw/agent/page.md\")\n```\nThen grep for elements:\n```bash\ngrep 'button.*Save\\|button.*Submit' /tmp/gh-aw/agent/page.md\n```\nUse the `ref` value from grep results with `browser_click(ref=\"...\")`.\n\nOnly take snapshots when you need to discover unknown elements.\nIf you know the button name or role, use `browser_run_code` instead.\n\n## Why MCP tools instead of scripts\n\nMCP tools are interactive: you see the page state after each action and\ndecide what to do next. This is ideal for exploratory testing where you\nneed to adapt based on what you find. Scripts are fire-and-forget — if\na selector is wrong, you don't find out until the script fails.\n\n## Measuring DOM properties\n\nFor programmatic checks (e.g. element heights, contrast), use\n`browser_run_code`:\n\n```javascript\nasync (page) => {\n  const els = await page.locator('input, button, [role=\"combobox\"]').all();\n  const results = [];\n  for (const el of els.slice(0, 10)) {\n    const box = await el.boundingBox();\n    const text = await el.textContent();\n    if (box) results.push({ h: Math.round(box.height), text: text?.trim().slice(0, 20) });\n  }\n  return JSON.stringify(results);\n}\n```\n\n## Handling failures\n\n- Do not retry the same action more than twice — the page is in a different state than expected.\n- Diagnose before moving on: save a snapshot to disk and grep it, or use `browser_take_screenshot` for a visual check.\n- Adapt (different selector, different path) or report the failure as a finding.\n- Never claim you verified something you didn't — if it failed and you skipped it, say so.\nEOF"
       - env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -999,7 +981,7 @@ jobs:
                 "type": "stdio",
                 "container": "mcr.microsoft.com/playwright/mcp",
                 "args": ["--init", "--network", "host", "--security-opt", "seccomp=unconfined", "--ipc=host"],
-                "entrypointArgs": ["--output-dir", "/tmp/gh-aw/mcp-logs/playwright", "--no-sandbox"],
+                "entrypointArgs": ["--output-dir", "/tmp/gh-aw/mcp-logs/playwright", "--no-sandbox", "--snapshot-mode", "none"],
                 "mounts": ["/tmp/gh-aw/mcp-logs:/tmp/gh-aw/mcp-logs:rw"]
               },
               "public-code-search": {
