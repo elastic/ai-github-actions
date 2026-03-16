@@ -1,6 +1,7 @@
 ---
 tools:
   playwright:
+    args: ["--snapshot-mode", "none"]
 steps:
   - name: Write Playwright instructions to disk
     run: |
@@ -16,8 +17,58 @@ steps:
       - `browser_click` — click an element
       - `browser_type` — type text into an input
       - `browser_snapshot` — get an accessibility tree (YAML) of the current page
-      - `browser_take_screenshot` — capture a screenshot
-      - `browser_console_execute` — run JavaScript in the browser console
+      - `browser_take_screenshot` — capture a visual screenshot (PNG/JPEG)
+      - `browser_run_code` — run a Playwright code snippet
+      - `browser_wait_for` — wait for text to appear/disappear
+      - `browser_press_key` — press a keyboard key
+
+      ## Automatic snapshots are disabled
+
+      `browser_click`, `browser_type`, `browser_wait_for`, and
+      `browser_run_code` do NOT return page state. You choose when to
+      inspect the page.
+
+      ## Batch actions with `browser_run_code`
+
+      When you know the UI structure (button names, input labels), batch
+      multiple actions in a single `browser_run_code` call using Playwright's
+      role selectors. This is much more efficient than individual tool calls:
+
+      ```js
+      async (page) => {
+        await page.getByRole('button', { name: 'Settings' }).click();
+        await page.getByRole('combobox', { name: 'Theme' }).selectOption('dark');
+        await page.getByRole('button', { name: 'Save' }).click();
+        return 'Settings saved';
+      }
+      ```
+
+      **Keep return values small** — return only what you need:
+      ```js
+      async (page) => {
+        const res = await page.request.post(url, {data});
+        const json = await res.json();
+        // Good: ~50 chars
+        return JSON.stringify({success: json.success, errors: json.errors?.length || 0});
+        // Bad: entire response body (can be 20K+ chars)
+      }
+      ```
+
+      ## Discover elements with snapshots
+
+      When you don't know what's on the page, save a snapshot to disk and
+      search it:
+      ```
+      browser_snapshot(filename="/tmp/gh-aw/agent/page.md")
+      ```
+      Then grep for elements:
+      ```bash
+      grep 'button.*Save\|button.*Submit' /tmp/gh-aw/agent/page.md
+      ```
+      Use the `ref` value from grep results with `browser_click(ref="...")`.
+
+      Only take snapshots when you need to discover unknown elements.
+      If you know the button name or role, use `browser_run_code` instead.
 
       ## Why MCP tools instead of scripts
 
@@ -29,24 +80,25 @@ steps:
       ## Measuring DOM properties
 
       For programmatic checks (e.g. element heights, contrast), use
-      `browser_console_execute`:
+      `browser_run_code`:
 
       ```javascript
-      (() => {
-        const els = document.querySelectorAll('input, button, [role="combobox"], [role="button"]');
-        return JSON.stringify(Array.from(els)
-          .map(el => {
-            const r = el.getBoundingClientRect();
-            return { tag: el.tagName, h: Math.round(r.height), top: Math.round(r.top), text: el.textContent?.trim().slice(0, 20) };
-          })
-          .filter(el => el.top > 50 && el.top < 250));
-      })()
+      async (page) => {
+        const els = await page.locator('input, button, [role="combobox"]').all();
+        const results = [];
+        for (const el of els.slice(0, 10)) {
+          const box = await el.boundingBox();
+          const text = await el.textContent();
+          if (box) results.push({ h: Math.round(box.height), text: text?.trim().slice(0, 20) });
+        }
+        return JSON.stringify(results);
+      }
       ```
 
       ## Handling failures
 
       - Do not retry the same action more than twice — the page is in a different state than expected.
-      - Diagnose before moving on: use `browser_take_screenshot` and `browser_snapshot` to see what's on the page.
+      - Diagnose before moving on: save a snapshot to disk and grep it, or use `browser_take_screenshot` for a visual check.
       - Adapt (different selector, different path) or report the failure as a finding.
       - Never claim you verified something you didn't — if it failed and you skipped it, say so.
       EOF
