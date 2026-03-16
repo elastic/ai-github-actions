@@ -26,7 +26,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-${{ github.event.issue.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || github.event.issue.number }}"
 on:
   workflow_call:
     inputs:
@@ -80,7 +80,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: ${{ github.workflow }}-mention-pr-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || github.event.issue.number }}
   cancel-in-progress: true
 permissions:
   actions: read
@@ -123,7 +123,7 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **PR**: #${{ github.event.issue.number }} — ${{ github.event.issue.title }}
+- **PR**: #${{ github.event.pull_request.number || github.event.issue.number }} — ${{ github.event.pull_request.title || github.event.issue.title }}
 - **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
 - **Request**: "${{ steps.sanitized.outputs.text }}"
 - **Explicit prompt**: "${{ inputs.prompt }}"
@@ -145,7 +145,7 @@ PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md
 2. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
 3. Read `/tmp/pr-context/comments.json` and `/tmp/pr-context/review_comments.json` to understand the conversation context and what's being asked.
 4. Read `/tmp/pr-context/reviews.json` to check prior review submissions — note any prior verdicts to avoid redundant reviews.
-5. Do not modify, review, comment on, or resolve threads for any PR other than #${{ github.event.issue.number }}.
+5. Do not modify, review, comment on, or resolve threads for any PR other than #${{ github.event.pull_request.number || github.event.issue.number }}.
 
 ### Step 2: Handle the Request
 
