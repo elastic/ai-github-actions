@@ -67,7 +67,7 @@ These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves 
 
 #### Detector / fixer pairs
 
-Many scheduled workflows follow a **detector** pattern: the detector finds issues and files reports. Any detector can chain to [Create PR from Issue](detector-fixer-chaining.md) in the same workflow run for a fully autonomous detect-and-fix loop. Or use the detector alone for human-in-the-loop review.
+Many scheduled workflows follow a **detector** pattern: the detector finds issues and files reports. Any detector can chain to [Create PR from Issue](detector-fixer-chaining.md) in the same workflow run for a fully autonomous detect-and-fix loop. For comment-only responses (no PR), chain to [Create Comment On Issue](gh-agent-workflows/create-comment-on-issue.md). Or use the detector alone for human-in-the-loop review.
 
 | Detector | Domain |
 | --- | --- |

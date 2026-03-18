@@ -43,6 +43,7 @@ nav:
           - PR Review (Fork): workflows/gh-agent-workflows/pr-review-fork.md
       - Codebase Maintenance:
           - Detector / Fixer Chaining: workflows/detector-fixer-chaining.md
+          - Create Comment On Issue: workflows/gh-agent-workflows/create-comment-on-issue.md
           - Bug Hunting: workflows/gh-agent-workflows/bugs.md
           - Code Duplication: workflows/gh-agent-workflows/code-duplication.md
           - Code Complexity: workflows/gh-agent-workflows/code-complexity.md

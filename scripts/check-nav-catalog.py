@@ -8,7 +8,7 @@ either:
   1. As a direct nav entry (workflows/gh-agent-workflows/<slug>.md), or
   2. Mentioned in the content of a static overview page that IS in the nav
      (e.g. docs/workflows/gh-agent-workflows/bugs.md covers bug-hunter and
-     bug-exterminator via inline documentation).
+     create-pr-from-issue via inline documentation).
 
 Exits with a non-zero status and prints the missing slugs when drift is detected.
 
