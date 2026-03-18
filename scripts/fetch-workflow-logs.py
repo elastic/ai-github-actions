@@ -90,15 +90,19 @@ def download_run_logs(repo: str, run_id: int, token: str, output_dir: str) -> li
         return []
 
     saved = []
-    with zipfile.ZipFile(io.BytesIO(data)) as zf:
-        for name in zf.namelist():
-            if not name.endswith(".txt"):
-                continue
-            dest = os.path.join(run_dir, name.replace("/", "_"))
-            content = zf.read(name)
-            with open(dest, "wb") as f:
-                f.write(content)
-            saved.append(dest)
+    try:
+        with zipfile.ZipFile(io.BytesIO(data)) as zf:
+            for name in zf.namelist():
+                if not name.endswith(".txt"):
+                    continue
+                dest = os.path.join(run_dir, name.replace("/", "_"))
+                content = zf.read(name)
+                with open(dest, "wb") as f:
+                    f.write(content)
+                saved.append(dest)
+    except (zipfile.BadZipFile, zipfile.LargeZipFile) as e:
+        print(f"  Warning: could not parse logs zip for run {run_id}: {e}", file=sys.stderr)
+        return []
     return saved
 
 
