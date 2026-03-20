@@ -95,13 +95,112 @@ steps:
       } > /tmp/gh-aw/buildkite-event.txt
       echo "Buildkite event context:"
       cat /tmp/gh-aw/buildkite-event.txt
+  - name: Fetch Buildkite failure data
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
+    run: |
+      python3 - << 'PYEOF'
+      import json, os, re, subprocess, sys, urllib.request
+
+      REPO = os.environ['GITHUB_REPOSITORY']
+      BK_TOKEN = os.environ.get('BUILDKITE_API_TOKEN', '')
+      TAIL = 150
+      ANSI = re.compile(r'\x1b(?:\[[0-9;]*[A-Za-z]|_[^\x07]*\x07|[()][AB012]|[=>])')
+
+      def bk_get(url):
+          req = urllib.request.Request(url, headers={'Authorization': f'Bearer {BK_TOKEN}'})
+          with urllib.request.urlopen(req) as r:
+              return json.load(r)
+
+      def slugify(name):
+          name = re.sub(r'[^\w\s-]', '', name)
+          return re.sub(r'\s+', '-', name.strip()).lower()[:60].strip('-')
+
+      # Get PR number from the pre-written event context file
+      pr_number = None
+      try:
+          with open('/tmp/gh-aw/buildkite-event.txt') as f:
+              for line in f:
+                  if line.startswith('pr_numbers:'):
+                      nums = line.split(':', 1)[1].strip()
+                      if nums:
+                          pr_number = nums.split(',')[0].strip()
+                          break
+      except FileNotFoundError:
+          pass
+
+      if not pr_number:
+          print('No PR number found in event context; skipping Buildkite data fetch')
+          sys.exit(0)
+
+      checks_raw = subprocess.check_output(
+          ['gh', 'pr', 'checks', pr_number, '--repo', REPO, '--json', 'name,state,link'],
+      )
+
+      seen = {}
+      for c in json.loads(checks_raw):
+          link = c.get('link', '')
+          m = re.match(r'https://buildkite\.com/([^/]+)/([^/]+)/builds/(\d+)', link)
+          if m and m.group(0) not in seen:
+              seen[m.group(0)] = (m.group(1), m.group(2), m.group(3))
+
+      if not seen:
+          print('No Buildkite builds found in PR checks')
+          sys.exit(0)
+
+      os.makedirs('/tmp/gh-aw/buildkite-logs', exist_ok=True)
+      summary = []
+      total_failed = 0
+
+      for build_url, (org, pipeline, number) in seen.items():
+          build = bk_get(f'https://api.buildkite.com/v2/organizations/{org}/pipelines/{pipeline}/builds/{number}')
+          failed = [j for j in build.get('jobs', []) if j.get('state') == 'failed' and j.get('type') == 'script']
+          if not failed:
+              continue
+
+          summary.append(f'## Build: {build_url}')
+          summary.append(f'Pipeline: {pipeline}  State: {build["state"]}')
+          summary.append(f'Failed jobs: {len(failed)}')
+          summary.append('')
+
+          for job in failed:
+              total_failed += 1
+              slug = slugify(job.get('name', f'job-{job["id"]}'))
+              log_file = f'/tmp/gh-aw/buildkite-logs/{pipeline}-{slug}.txt'
+
+              summary.append(f'### {job["name"]}')
+              summary.append(f'Exit status: {job.get("exit_status")}')
+              summary.append(f'Command: {job.get("command", "").strip()}')
+              summary.append(f'Log: {log_file}')
+              summary.append('')
+
+              raw_url = job.get('raw_log_url', '')
+              if raw_url:
+                  req = urllib.request.Request(raw_url, headers={'Authorization': f'Bearer {BK_TOKEN}'})
+                  try:
+                      with urllib.request.urlopen(req) as r:
+                          lines = r.read().decode('utf-8', errors='replace').splitlines()
+                      with open(log_file, 'w') as f:
+                          f.write('\n'.join(ANSI.sub('', l) for l in lines[-TAIL:]))
+                  except Exception as e:
+                      with open(log_file, 'w') as f:
+                          f.write(f'Log unavailable: {e}\n')
+
+      if summary:
+          with open('/tmp/gh-aw/buildkite-failures.txt', 'w') as f:
+              f.write('\n'.join(summary))
+          print(f'Fetched {len(seen)} build(s), {total_failed} failed job(s)')
+      else:
+          print('No failed Buildkite jobs found')
+      PYEOF
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
