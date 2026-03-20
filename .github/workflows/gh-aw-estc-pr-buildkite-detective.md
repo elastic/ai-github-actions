@@ -6,7 +6,6 @@ imports:
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
-  - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment-pr-hide-older.md
   - gh-aw-fragments/network-ecosystems.md
@@ -41,21 +40,11 @@ on:
         type: string
         required: false
         default: ""
-      buildkite-org:
-        description: "Buildkite organization slug"
-        type: string
-        required: false
-        default: "elastic"
-      buildkite-pipeline:
-        description: "Buildkite pipeline slug (optional; auto-discovered from repository if empty)"
-        type: string
-        required: false
-        default: ""
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
       BUILDKITE_API_TOKEN:
-        required: false
+        required: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -73,16 +62,8 @@ tools:
     toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
-mcp-servers:
-  buildkite:
-    container: "buildkite/mcp-server"
-    env:
-      BUILDKITE_API_TOKEN: "${{ secrets.BUILDKITE_API_TOKEN }}"
-    entrypointArgs: ["stdio"]
-    allowed: ["*"]
 network:
   allowed:
-    - "api.buildkite.com"
     - "buildkite.com"
 safe-outputs:
   activation-comments: false
@@ -131,20 +112,18 @@ Analyze failed Buildkite CI builds for pull requests in ${{ github.repository }}
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Buildkite Organization**: ${{ inputs.buildkite-org }}
 
 **Read `/tmp/gh-aw/buildkite-event.txt` first.** It contains the event context (commit SHA, target URL, PR numbers, branches, failure state) extracted from the GitHub event payload.
 
 ## Constraints
 
-- **CAN**: Read files, search code, run tests and commands, query Buildkite via MCP, comment on PRs
+- **CAN**: Read files, search code, run tests and commands, comment on PRs
 - **CANNOT**: Push changes, merge PRs, or modify `.github/workflows/`
 
 ## Investigation Tools
 
 Use the right tool for each task:
 
-- **Buildkite MCP** (`list_pipelines`, `list_builds`, `get_build`, `get_job_logs`, `search_logs`, `tail_logs`, `list_annotations`): Query build information, job logs, and annotations
 - **`search_code`**: Search code in *other* public GitHub repositories — use for finding upstream API changes, reference implementations, or migration guides. Use `grep` and file reading for the local codebase.
 - **`web-fetch`**: Fetch documentation pages, changelogs, or API references for libraries and tools involved in the failure
 - **`bash`**: Run tests locally to verify your analysis, reproduce failures, or check dependency versions
@@ -170,39 +149,11 @@ Classify each failure to guide your investigation:
    - If no PR is found after all attempts, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
 3. For each matching PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status for downstream analysis.
 
-### Step 2: Find the Buildkite Build
+### Step 2: Read the Pre-Fetched Buildkite Data
 
-> **If `/tmp/gh-aw/buildkite-failures.txt` exists**: It contains a pre-fetched summary of all failed Buildkite jobs, with each job's log written to a separate file under `/tmp/gh-aw/buildkite-logs/`. Read the summary file first to understand which jobs failed and where their logs are, then read the individual log files to diagnose each failure. Skip Step 2a and 2b entirely.
+Read `/tmp/gh-aw/buildkite-failures.txt` — it contains a summary of all failed Buildkite jobs for this PR, with the path to each job's log file. Then read the individual log files listed in the summary (under `/tmp/gh-aw/buildkite-logs/`) to get the full failure output.
 
-> **If Buildkite MCP is unavailable** (connection error, 401, timeout, or empty token): Proceed with the **public pipeline** fallback described in Step 2b. Public Buildkite pipelines expose build pages and logs without authentication.
-
-#### Step 2a: Via Buildkite MCP (when API token is available)
-
-1. **Resolve the pipeline**: If `${{ inputs.buildkite-pipeline }}` is provided, use it. Otherwise, call `list_pipelines` for organization `${{ inputs.buildkite-org }}` and find the pipeline whose slug matches the repository name (extract the repo name from `${{ github.repository }}`). If multiple pipelines match, prefer an exact slug match.
-2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by `commit` = the commit SHA resolved in Step 1. Do **not** filter by branch — branch names in Buildkite use the format `fork:branch` (e.g. `elastic:my-feature`) for fork PRs, which is different from the GitHub branch name. If no match by SHA, fall back to listing recent builds and selecting the most recent failed one whose `pull_request.id` matches the PR number.
-3. **Collect failure evidence**:
-   - Call `get_build` with `job_state: failed` (not `broken`) to get the list of jobs that actually ran and failed. **`broken` jobs never ran** — they have no agent assigned due to infrastructure constraints (e.g. Windows/ARM agents not available for this PR) and contain no logs; skip them entirely.
-   - For each **`failed`** job:
-     - `tail_logs` — get the last 100 lines first; most build failures surface at the very end of the log (exit code, error summary, test failure list)
-     - `search_logs` with patterns specific to the failure type: for Go test failures use `=== FAIL:|FAIL\t`; for general errors use `[Ee]rror|[Ff]ailed|panic|traceback`
-     - Only use `read_logs` if you need earlier context not captured by `tail_logs`
-   - `list_annotations` — annotations in this pipeline are typically agent infrastructure metrics links, not failure summaries; check but do not rely on them for code failure diagnosis.
-
-#### Step 2b: Via public Buildkite pages (fallback when no API token)
-
-Use this path when the Buildkite MCP server is unavailable (missing token, 401, connection error).
-
-1. **Discover the Buildkite build URL** from the PR's commit statuses or check runs:
-   - Call `pull_request_read` with method `get_status` for the PR to retrieve commit status contexts.
-   - Look for status contexts or check runs whose `target_url` contains `buildkite.com`. The URL typically follows the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>`.
-
-1. **Fetch the public build page**: Use `web-fetch` to retrieve the Buildkite build URL found above. The page contains the build status, job list, and links to individual job logs.
-
-3. **Collect failure evidence from public pages**:
-   - Parse the fetched build page to identify failed jobs. Look for job links matching the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>#<job-uuid>`.
-   - For each failed job, use `web-fetch` to retrieve the job log page at `https://buildkite.com/<org>/<pipeline>/builds/<number>/jobs/<job-uuid>/log`.
-   - Extract error messages, stack traces, and the final output from the fetched log content.
-   - If the pipeline is not publicly accessible (403/404), note this in your comment and proceed with whatever evidence is available from GitHub status contexts.
+If the file does not exist, call `noop` with message "No pre-fetched Buildkite failure data found; nothing to do" and stop.
 
 ### Step 3: Analyze
 
