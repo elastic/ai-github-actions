@@ -120,6 +120,7 @@ steps:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -171,19 +172,21 @@ Classify each failure to guide your investigation:
 
 ### Step 2: Find the Buildkite Build
 
+> **If `/tmp/gh-aw/buildkite-failures.txt` exists**: It contains a pre-fetched summary of all failed Buildkite jobs, with each job's log written to a separate file under `/tmp/gh-aw/buildkite-logs/`. Read the summary file first to understand which jobs failed and where their logs are, then read the individual log files to diagnose each failure. Skip Step 2a and 2b entirely.
+
 > **If Buildkite MCP is unavailable** (connection error, 401, timeout, or empty token): Proceed with the **public pipeline** fallback described in Step 2b. Public Buildkite pipelines expose build pages and logs without authentication.
 
 #### Step 2a: Via Buildkite MCP (when API token is available)
 
 1. **Resolve the pipeline**: If `${{ inputs.buildkite-pipeline }}` is provided, use it. Otherwise, call `list_pipelines` for organization `${{ inputs.buildkite-org }}` and find the pipeline whose slug matches the repository name (extract the repo name from `${{ github.repository }}`). If multiple pipelines match, prefer an exact slug match.
-2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by the failed commit SHA resolved in Step 1. If no match by SHA, use the PR's head branch (from the `pull_request_read` response in Step 1) to filter builds and select the most recent failed one.
+2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by `commit` = the commit SHA resolved in Step 1. Do **not** filter by branch — branch names in Buildkite use the format `fork:branch` (e.g. `elastic:my-feature`) for fork PRs, which is different from the GitHub branch name. If no match by SHA, fall back to listing recent builds and selecting the most recent failed one whose `pull_request.id` matches the PR number.
 3. **Collect failure evidence**:
-   - Call `get_build` for the matched build to get overall status and job list.
-   - For each **failed** job:
-     - `get_job_logs` — retrieve the full log
-     - `search_logs` with patterns: `error|Error|ERROR`, `failed|Failed|FAILED`, `panic|exception|traceback`
-     - `tail_logs` — get the last 100 lines (often contains the final error and exit code)
-   - Call `list_annotations` to capture any warnings, errors, or context the pipeline attached to the build.
+   - Call `get_build` with `job_state: failed` (not `broken`) to get the list of jobs that actually ran and failed. **`broken` jobs never ran** — they have no agent assigned due to infrastructure constraints (e.g. Windows/ARM agents not available for this PR) and contain no logs; skip them entirely.
+   - For each **`failed`** job:
+     - `tail_logs` — get the last 100 lines first; most build failures surface at the very end of the log (exit code, error summary, test failure list)
+     - `search_logs` with patterns specific to the failure type: for Go test failures use `=== FAIL:|FAIL\t`; for general errors use `[Ee]rror|[Ff]ailed|panic|traceback`
+     - Only use `read_logs` if you need earlier context not captured by `tail_logs`
+   - `list_annotations` — annotations in this pipeline are typically agent infrastructure metrics links, not failure summaries; check but do not rely on them for code failure diagnosis.
 
 #### Step 2b: Via public Buildkite pages (fallback when no API token)
 
