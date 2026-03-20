@@ -75,12 +75,14 @@ tools:
   web-fetch:
 mcp-servers:
   buildkite:
-    url: "https://mcp.buildkite.com/mcp/readonly"
-    headers:
-      Authorization: "Bearer ${{ secrets.BUILDKITE_API_TOKEN }}"
+    container: "buildkite/mcp-server"
+    env:
+      BUILDKITE_API_TOKEN: "${{ secrets.BUILDKITE_API_TOKEN }}"
+    entrypointArgs: ["stdio"]
+    allowed: ["*"]
 network:
   allowed:
-    - "mcp.buildkite.com"
+    - "api.buildkite.com"
     - "buildkite.com"
 safe-outputs:
   activation-comments: false

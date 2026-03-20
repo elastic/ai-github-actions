@@ -4,7 +4,7 @@ Analyze failed PR checks backed by Buildkite and report findings (read-only).
 
 ## How it works
 
-Triggered automatically when a commit status or check run reports a failure. Looks up the related Buildkite build via MCP, analyzes failed jobs/logs/annotations, and posts a comment with root cause and recommended fixes. Read-only — never pushes changes.
+Triggered automatically when a commit status or check run reports a failure. Looks up the related Buildkite build via the [Buildkite MCP server](https://buildkite.com/docs/apis/mcp-server/local/installing) (`buildkite/mcp-server`, stdio), analyzes failed jobs/logs/annotations, and posts a comment with root cause and recommended fixes. Read-only — never pushes changes.
 
 ## Quick Install
 
