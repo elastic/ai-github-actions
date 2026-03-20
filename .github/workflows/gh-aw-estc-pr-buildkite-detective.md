@@ -50,7 +50,7 @@ on:
     - "${{ inputs.allowed-bot-users }}"
     - "buildkite-limited-access[bot]"
 concurrency:
-  group: ${{ github.workflow }}-estc-pr-buildkite-detective-${{ github.run_id }}
+  group: ${{ github.workflow }}-estc-pr-buildkite-detective-${{ github.event.check_run.id || github.run_id }}
   cancel-in-progress: false
 permissions:
   actions: read
@@ -262,23 +262,44 @@ If the file does not exist, call `noop` with message "No pre-fetched Buildkite f
 4. **Research if needed**: If the error involves an external library, API, or tool, use `web-fetch` to check documentation or changelogs for known issues, breaking changes, or migration guides.
 5. **Propose a fix**: Provide a concrete, minimal fix or remediation plan. If you can run tests locally to verify your theory, do so.
 6. **Handle inconclusive cases**: If logs are insufficient to determine root cause, state exactly what additional data is needed and suggest next steps the author can take.
+7. **Deduplication**: Before posting, check the most recent prior `PR Buildkite Detective` comment on the same PR (if any) and compare:
+   - failing job(s) and step(s),
+   - root cause summary, and
+   - recommended remediation.
+   If both the diagnosed issue and remediation are materially the same as the last detective report, call `noop` with a short "no meaningful change since last report" reason instead of posting another comment.
 
 ### Step 4: Respond
 
-Call `add_comment` on the PR with the following structure:
+Call `add_comment` on the PR using this structure:
 
-**Build**: Link to the Buildkite build
+```markdown
+### TL;DR
+[1-2 sentences: what failed and the immediate action needed]
 
-**What failed**: Which job(s) and step(s) failed
+## Remediation
+- [specific fix step]
+- [specific validation step]
 
-**Error**: The key error message(s) or stack trace
+<details>
+<summary>Investigation details</summary>
 
-**Root cause**: What caused the failure and why (with file paths and line numbers where applicable)
+## Root Cause
+[concise explanation with file paths and line numbers where applicable]
 
-**Recommended fix**: Specific steps to resolve, with code snippets if applicable
+## Evidence
+- Build: [link to Buildkite build]
+- Job/step: [name]
+- Key log excerpt: [snippet]
 
-**Verification**: Tests you ran locally (if any) and their results
+## Verification
+- [tests/commands run or "not run" with reason]
 
-Use `<details>` blocks for long log excerpts or stack traces to keep the comment scannable.
+## Follow-up
+- [optional next steps]
+
+</details>
+```
+
+Put the TL;DR and Remediation outside the `<details>` block so they are immediately visible. Put root cause evidence, log excerpts, tests run, and follow-up details inside the collapsed block.
 
 ${{ inputs.additional-instructions }}
