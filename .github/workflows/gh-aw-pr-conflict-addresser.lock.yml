@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"b175c1604d413328f6fa2c164f014d0d40f8c177287072addc7e31dd077e7422","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"50c8cfdb2021c2e8a3279de18abd8012e0f9b08af5d00a2adf925b84b107d34f","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "PR Conflict Addresser"
 "on":
@@ -50,7 +50,7 @@ name: "PR Conflict Addresser"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

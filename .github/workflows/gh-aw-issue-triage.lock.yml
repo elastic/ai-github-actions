@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"504640c476e0388d38f9a17b956737246e3d297997fbd1832c08efa5bca03df9","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"f48ba1076864c430cd748dffbf56d7169ea938477ad0e79c7ad2a5be0bef8bef","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Issue Triage"
 "on":
@@ -50,7 +50,7 @@ name: "Issue Triage"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

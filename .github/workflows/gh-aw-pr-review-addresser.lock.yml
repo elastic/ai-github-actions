@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"242e376a9f5969e2dc99bc3155c8529319580f68e6c845fa4b05424a0d3df749","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"c6bd75644611ba2b60b52bf5ecae9ac809c22965a4b3bacc731d4ca04734c889","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "PR Review Addresser"
 "on":
@@ -52,7 +52,7 @@ name: "PR Review Addresser"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

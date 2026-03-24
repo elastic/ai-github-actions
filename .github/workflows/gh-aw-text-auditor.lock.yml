@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"aafc22525bf31ad6f1ed4046ea584a210d876e0759131353227310f3133b4fee","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"b55edd1f0493fd5c9c216d54877ea6ba58dbbed43678466b96bb28fa28b05371","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Text Auditor"
 "on":
@@ -51,7 +51,7 @@ name: "Text Auditor"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       edit-clarity:

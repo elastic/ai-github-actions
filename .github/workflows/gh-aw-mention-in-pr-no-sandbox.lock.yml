@@ -46,7 +46,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"bdf8190fda8f968a1b2d4f1194dd4506f766a94e8a84276dcd4c11df8ad0ec40","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"a82aa8f5c41673e50893084b602fec7e7756be8d1a9b5fdaa2e5542f29cd4742","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Mention in PR (no sandbox)"
 "on":
@@ -59,7 +59,7 @@ name: "Mention in PR (no sandbox)"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       create-pull-request-review-comment-max:

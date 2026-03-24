@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"c122f6dd83f0eb0f5950040d4bd3951dcb11e4c06ae3676fa68a8562a056d458","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"0d3eeeba115b7232daab5c8c90c7b80a57b956101e29e01e15cc1bd121d602a7","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Update PR Body"
 "on":
@@ -53,7 +53,7 @@ name: "Update PR Body"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       edit-accuracy:

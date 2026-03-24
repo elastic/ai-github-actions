@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"bb67d6fd652cc88960c7a9554672c3e9e0dfbc9ac1bfdc4602aff9f25ebfc44f","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"eba9b8ca6f51ed58f88bc8403cd5ce8f049a9d2c0fb36cefa03b1fb7e73d5f1e","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Project Summary"
 "on":
@@ -51,7 +51,7 @@ name: "Project Summary"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

@@ -31,7 +31,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `file-globs` | Comma-separated file globs to analyze (overrides `languages`) | No | `""` |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
-| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 
 ## Safe Outputs
 

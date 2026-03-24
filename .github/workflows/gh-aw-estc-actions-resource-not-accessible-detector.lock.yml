@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"0ceac926f80e0a1c2aabdbfe81bd2a76878277922a989ad6f718724ab3c79c70","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"eb02f3a4c49010e2b8a73220055798a177efaf6e2231addc80ecb18a88870549","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Resource Not Accessible By Integration Detector"
 "on":
@@ -49,7 +49,7 @@ name: "Resource Not Accessible By Integration Detector"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       long-term-branches:

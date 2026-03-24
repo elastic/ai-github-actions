@@ -36,7 +36,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"

@@ -42,7 +42,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"88c5fe45c8491c19025d3e2365577f6bff8532455ca51446bea478ce70016387","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"17e866ef973e8406a4be640aea3f7559ad1478da9bc8fb6a36a00d8d125c116c","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Stale Issues Investigator"
 "on":
@@ -55,7 +55,7 @@ name: "Stale Issues Investigator"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

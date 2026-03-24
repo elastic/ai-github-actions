@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"c69ad21d07d0fe4650fef1944fbf2d9a80d136477c93fe53605a4f4fa8614f25","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"e4900fe1442b32ece4c3e6976ddd9ddf032ab27b85a876343ca31208e6fba673","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Estc Docs PR Review"
 "on":
@@ -55,7 +55,7 @@ name: "Estc Docs PR Review"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       create-pull-request-review-comment-max:

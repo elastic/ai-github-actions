@@ -33,7 +33,7 @@ See [example.yml](example.yml) for the full workflow file. You **must** customiz
 | `title-prefix` | Title prefix to search for in open issues, e.g. `[my-audit]` | **Yes** | — |
 | `issue-label` | Label to search for in open issues | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
-| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 | `draft-prs` | Create PRs as draft (true/false) | No | `true` |
 
 ## Safe Outputs

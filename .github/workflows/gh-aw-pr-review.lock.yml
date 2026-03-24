@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"fb157b1d600d7a7e78b6f4a2524296beae1bc053b84dfca7cfc34be826e3aa8b","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"496c49ee0d7feaee1683c55588ef7682c0ad719c304e9f803a643e7a98e6ae18","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "PR Review"
 "on":
@@ -59,7 +59,7 @@ name: "PR Review"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       create-pull-request-review-comment-max:

@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"5f80537029c2829eb7342cab6b8d7b791a85911af309da84aa294d3c62e61037","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"09f7d0c20e458acc363834fb159d072dffcf920e9e39207a4eac6b8b682ca44b","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Refactor Opportunist"
 "on":
@@ -52,7 +52,7 @@ name: "Refactor Opportunist"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

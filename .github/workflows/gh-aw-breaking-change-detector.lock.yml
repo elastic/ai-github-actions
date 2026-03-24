@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"4ca95ebbc23c4f137e0d01f54998a199b9fdf5b8a265bb8cedce86634c5050c4","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"84e9fba32ef8b8cff57117b168e0a980dc6f3f4a88111fe0f2211b4d536913de","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Breaking Change Detector"
 "on":
@@ -52,7 +52,7 @@ name: "Breaking Change Detector"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

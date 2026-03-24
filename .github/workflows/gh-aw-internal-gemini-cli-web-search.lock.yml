@@ -35,7 +35,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"830c402dcf2ed9d4813d8227381c1acc97a195f376aa83bf2fbd572f332a6636","agent_id":"gemini","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"e7e6f0f5e4f068537933e2841b946f6ad91c322722363cd78d0f0104b7d4b0bf","agent_id":"gemini","agent_model":"${{ inputs.model }}"}
 
 name: "Internal Gemini CLI Web Search"
 "on":
@@ -48,7 +48,7 @@ name: "Internal Gemini CLI Web Search"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:
