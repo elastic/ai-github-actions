@@ -1,8 +1,8 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.58.3
-GH_AW_BUILD_VERSION := da413c61d4c63eb528f47f2bba95f020555d48e5
+GH_AW_VERSION := v0.62.4
+GH_AW_BUILD_VERSION := 434db859afd7d2f407ada3180f80d4541f06f0a4
 GH_AW_COMPAT_VERSION := v0.49.4
 GH_AW_MODULE_REPO := github.com/github/gh-aw
 GH_AW_SOURCE_REPO := github.com/strawgate/gh-aw
@@ -126,8 +126,7 @@ setup-gh-aw:
 		echo "Error: Go is required to install gh-aw compiler."; \
 		echo "Install Go: https://go.dev/dl/"; \
 		exit 1; \
-	elif case "$(GH_AW_BUILD_VERSION)" in v*) true ;; *) false ;; esac && \
-	     [ -x ".bin/gh-aw" ] && .bin/gh-aw version 2>/dev/null | grep -q "$(GH_AW_BUILD_VERSION)"; then \
+	elif [ -x ".bin/gh-aw" ] && [ -f ".bin/.gh-aw-version" ] && [ "$$(cat .bin/.gh-aw-version 2>/dev/null)" = "$(GH_AW_BUILD_VERSION)" ]; then \
 		echo "✓ gh-aw compiler already installed: $(GH_AW_BUILD_VERSION)"; \
 	else \
 		echo "Installing gh-aw compiler $(GH_AW_BUILD_VERSION) from $(GH_AW_SOURCE_REPO)..."; \
@@ -141,6 +140,7 @@ setup-gh-aw:
 			( cd "$$TMPDIR/gh-aw-src" && GOBIN="$(CURDIR)/.bin" go install ./cmd/gh-aw ); \
 			status=$$?; rm -rf "$$TMPDIR"; exit $$status; \
 		fi && \
+		printf '%s' "$(GH_AW_BUILD_VERSION)" > .bin/.gh-aw-version && \
 		echo "✓ gh-aw compiler installed: $$(.bin/gh-aw version 2>/dev/null || echo 'gh aw version dev')"; \
 	fi
 
@@ -151,8 +151,7 @@ setup-gh-aw-compat:
 		echo "Error: Go is required to install gh-aw compiler."; \
 		echo "Install Go: https://go.dev/dl/"; \
 		exit 1; \
-	elif case "$(GH_AW_COMPAT_VERSION)" in v*) true ;; *) false ;; esac && \
-	     [ -x ".bin/gh-aw-compat" ] && .bin/gh-aw-compat version 2>/dev/null | grep -q "$(GH_AW_COMPAT_VERSION)"; then \
+	elif [ -x ".bin/gh-aw-compat" ] && [ -f ".bin/.gh-aw-compat-version" ] && [ "$$(cat .bin/.gh-aw-compat-version 2>/dev/null)" = "$(GH_AW_COMPAT_VERSION)" ]; then \
 		echo "✓ gh-aw compat compiler already installed: $(GH_AW_COMPAT_VERSION)"; \
 	else \
 		echo "Installing gh-aw compat compiler $(GH_AW_COMPAT_VERSION) from github/gh-aw..."; \
@@ -161,6 +160,7 @@ setup-gh-aw-compat:
 		GOBIN="$$TMPGOBIN" go install github.com/github/gh-aw/cmd/gh-aw@$(GH_AW_COMPAT_VERSION) && \
 		mv "$$TMPGOBIN/gh-aw" .bin/gh-aw-compat && \
 		rm -rf "$$TMPGOBIN" && \
+		printf '%s' "$(GH_AW_COMPAT_VERSION)" > .bin/.gh-aw-compat-version && \
 		echo "✓ gh-aw compat compiler installed: $$(.bin/gh-aw-compat version)"; \
 	fi
 

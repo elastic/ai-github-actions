@@ -40,12 +40,12 @@ Six dedicated fixer workflows have been removed. Any detector can now chain dire
 
 | Removed workflow | Replacement |
 | --- | --- |
-| `gh-aw-bug-exterminator.lock.yml` | Chain Bug Hunter → `gh-aw-create-pr-from-issue.lock.yml` |
-| `gh-aw-code-duplication-fixer.lock.yml` | Chain Code Duplication Detector → `gh-aw-create-pr-from-issue.lock.yml` |
-| `gh-aw-text-beautifier.lock.yml` | Chain Text Auditor → `gh-aw-create-pr-from-issue.lock.yml` |
-| `gh-aw-newbie-contributor-fixer.lock.yml` | Chain Newbie Contributor Patrol → `gh-aw-create-pr-from-issue.lock.yml` |
-| `gh-aw-test-improver.lock.yml` | Chain Test Coverage Detector → `gh-aw-create-pr-from-issue.lock.yml` |
-| `gh-aw-code-simplifier.lock.yml` | Chain Code Complexity Detector → `gh-aw-create-pr-from-issue.lock.yml` |
+| `gh-aw-bug-exterminator.lock.yml` | Chain Bug Hunter → [gh-aw-create-pr-from-issue](workflows/detector-fixer-chaining.md) |
+| `gh-aw-code-duplication-fixer.lock.yml` | Chain Code Duplication Detector → [gh-aw-create-pr-from-issue](workflows/detector-fixer-chaining.md) |
+| `gh-aw-text-beautifier.lock.yml` | Chain Text Auditor → [gh-aw-create-pr-from-issue](workflows/detector-fixer-chaining.md) |
+| `gh-aw-newbie-contributor-fixer.lock.yml` | Chain Newbie Contributor Patrol → [gh-aw-create-pr-from-issue](workflows/detector-fixer-chaining.md) |
+| `gh-aw-test-improver.lock.yml` | Chain Test Coverage Detector → [gh-aw-create-pr-from-issue](workflows/detector-fixer-chaining.md) |
+| `gh-aw-code-simplifier.lock.yml` | Chain Code Complexity Detector → [gh-aw-create-pr-from-issue](workflows/detector-fixer-chaining.md) |
 
 ### Migration
 
@@ -86,6 +86,24 @@ jobs:
 ```
 
 See [Detector / Fixer Chaining](workflows/detector-fixer-chaining.md) for the full pattern and more examples.
+
+### `mention-in-issue-by-id` (deprecated but still available)
+
+`mention-in-issue-by-id` remains available for backwards compatibility. For new workflows, prefer [Create Comment On Issue](workflows/gh-agent-workflows/create-comment-on-issue.md):
+
+```yaml
+# Deprecated (still works)
+uses: elastic/ai-github-actions/.github/workflows/gh-aw-mention-in-issue-by-id.lock.yml@v0
+with:
+  target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
+  prompt: "..."
+
+# Preferred (create-comment-on-issue)
+uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-comment-on-issue.lock.yml@v0
+with:
+  target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
+  prompt: "..."
+```
 
 ### New workflow
 

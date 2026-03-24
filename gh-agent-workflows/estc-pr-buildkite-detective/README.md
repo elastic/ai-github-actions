@@ -4,7 +4,7 @@ Analyze failed PR checks backed by Buildkite and report findings (read-only).
 
 ## How it works
 
-Triggered automatically when a commit status or check run reports a failure. Looks up the related Buildkite build via MCP, analyzes failed jobs/logs/annotations, and posts a comment with root cause and recommended fixes. Read-only — never pushes changes.
+Triggered automatically when a commit status or check run reports a failure. Uses `BUILDKITE_API_TOKEN` to fetch failed job logs from the Buildkite REST API, then analyzes the logs and posts a PR comment with root cause and recommended fixes. Read-only — never pushes changes.
 
 ## Quick Install
 
@@ -30,14 +30,13 @@ See [example.yml](example.yml) for the full workflow file.
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
-| `buildkite-org` | Buildkite organization slug | No | `elastic` |
-| `buildkite-pipeline` | Buildkite pipeline slug (auto-discovered if not provided) | No | `""` |
 
 ## Required Secrets
 
 - `COPILOT_GITHUB_TOKEN`
-- `BUILDKITE_API_TOKEN` *(optional — omit for public pipelines; the workflow will fetch logs from public Buildkite build pages instead)*
+- `BUILDKITE_API_TOKEN`
 
 ## Safe Outputs
 
-- `add-comment` — post a comment explaining the failure (max 3)
+- `add-comment` — post a comment explaining the failure (max 1, hides older detective comments)
+- `noop` — emitted when no failed jobs are found or diagnosis unchanged since last report
