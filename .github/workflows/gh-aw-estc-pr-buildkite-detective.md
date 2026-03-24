@@ -132,9 +132,14 @@ steps:
           print('Build is not associated with a PR; nothing to do')
           sys.exit(0)
 
-      failed = [j for j in build.get('jobs', []) if j.get('state') == 'failed' and j.get('type') == 'script']
+      if build['state'] == 'canceled':
+          print('Build was canceled; nothing to diagnose')
+          sys.exit(0)
+
+      failed = [j for j in build.get('jobs', [])
+                if j.get('state') in ('failed', 'timed_out') and j.get('type') == 'script']
       if not failed:
-          print('No failed jobs in build')
+          print(f'No failed script jobs in build (build state: {build["state"]})')
           sys.exit(0)
 
       summary = [
@@ -150,7 +155,7 @@ steps:
           log_file = f'/tmp/gh-aw/buildkite-logs/{bk_pipeline}-{slug}.txt'
 
           summary.append(f'### {job["name"]}')
-          summary.append(f'Exit status: {job.get("exit_status")}')
+          summary.append(f'State: {job["state"]}  Exit status: {job.get("exit_status")}')
           summary.append(f'Command: {job.get("command", "").strip()}')
           summary.append(f'Log: {log_file}')
           summary.append('')
