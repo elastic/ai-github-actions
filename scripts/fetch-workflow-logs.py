@@ -24,7 +24,6 @@ import os
 import sys
 import urllib.request
 import zipfile
-from datetime import datetime, timezone
 
 
 def github_api(path: str, token: str, accept: str = "application/vnd.github+json") -> bytes:
@@ -49,32 +48,55 @@ def _normalize_until(until: str | None) -> str | None:
     return until + "T23:59:59Z"
 
 
+def _iter_workflow_run_pages(repo: str, workflow: str, token: str):
+    """Yield workflow runs page-by-page in API order (newest-first)."""
+    page = 1
+    per_page = 100
+    while True:
+        path = f"/repos/{repo}/actions/workflows/{workflow}/runs?per_page={per_page}&page={page}"
+        data = json.loads(github_api(path, token))
+        batch = data.get("workflow_runs", [])
+        if not batch:
+            return
+        yield batch
+        page += 1
+
+
+def _run_matches_conclusion(run: dict, conclusion: str | None) -> bool:
+    if conclusion is None:
+        return True
+    return run.get("conclusion") == conclusion
+
+
+def _is_before_since_boundary(run: dict, since: str | None) -> bool:
+    if since is None:
+        return False
+    return run.get("created_at", "") < since
+
+
+def _is_after_until_boundary(run: dict, until: str | None) -> bool:
+    if until is None:
+        return False
+    return run.get("created_at", "") > until
+
+
 def list_workflow_runs(repo: str, workflow: str, token: str, since: str | None, until: str | None,
                        conclusion: str | None, last: int) -> list[dict]:
     """Return up to `last` workflow runs matching the filters."""
     until_normalized = _normalize_until(until)
     runs = []
-    page = 1
-    per_page = 100
-    while len(runs) < last:
-        path = f"/repos/{repo}/actions/workflows/{workflow}/runs?per_page={per_page}&page={page}"
-        data = json.loads(github_api(path, token))
-        batch = data.get("workflow_runs", [])
-        if not batch:
-            break
+    for batch in _iter_workflow_run_pages(repo=repo, workflow=workflow, token=token):
         for run in batch:
-            if conclusion and run.get("conclusion") != conclusion:
+            if not _run_matches_conclusion(run, conclusion):
                 continue
-            created = run.get("created_at", "")
-            if since and created < since:
+            if _is_before_since_boundary(run, since):
                 # Runs are sorted newest-first; once we go past since, stop paging
                 return runs
-            if until_normalized and created > until_normalized:
+            if _is_after_until_boundary(run, until_normalized):
                 continue
             runs.append(run)
             if len(runs) >= last:
-                break
-        page += 1
+                return runs
     return runs
 
 
@@ -102,7 +124,7 @@ def download_run_logs(repo: str, run_id: int, token: str, output_dir: str) -> li
     return saved
 
 
-def main() -> None:
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Download GitHub Actions workflow logs.")
     parser.add_argument("workflow", help="Workflow file name (e.g. trigger-pr-review.yml) or workflow ID")
     parser.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", ""),
@@ -119,8 +141,10 @@ def main() -> None:
                         help="Directory to save logs (default: /tmp/gh-aw/logs)")
     parser.add_argument("--token", default=os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN", ""),
                         help="GitHub token (default: $GH_TOKEN or $GITHUB_TOKEN)")
-    args = parser.parse_args()
+    return parser.parse_args()
 
+
+def _validate_args(args: argparse.Namespace) -> None:
     if not args.repo:
         print("Error: --repo is required (or set $GITHUB_REPOSITORY)", file=sys.stderr)
         sys.exit(1)
@@ -128,10 +152,12 @@ def main() -> None:
         print("Error: --token is required (or set $GH_TOKEN / $GITHUB_TOKEN)", file=sys.stderr)
         sys.exit(1)
 
+
+def _fetch_runs(args: argparse.Namespace) -> list[dict]:
     conclusion_filter = None if args.conclusion == "any" else args.conclusion
 
     print(f"Listing runs for {args.workflow} in {args.repo}...", file=sys.stderr)
-    runs = list_workflow_runs(
+    return list_workflow_runs(
         repo=args.repo,
         workflow=args.workflow,
         token=args.token,
@@ -141,10 +167,8 @@ def main() -> None:
         last=args.last,
     )
 
-    if not runs:
-        print("No matching runs found.", file=sys.stderr)
-        sys.exit(0)
 
+def _download_runs(args: argparse.Namespace, runs: list[dict]) -> list[dict]:
     print(f"Found {len(runs)} matching run(s). Downloading logs to {args.output_dir}...", file=sys.stderr)
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -163,11 +187,27 @@ def main() -> None:
             "html_url": url,
             "log_files": files,
         })
+    return results
 
-    # Write a manifest so callers know what was downloaded
-    manifest_path = os.path.join(args.output_dir, "manifest.json")
+
+def _write_manifest(results: list[dict], output_dir: str) -> str:
+    manifest_path = os.path.join(output_dir, "manifest.json")
     with open(manifest_path, "w") as f:
         json.dump(results, f, indent=2)
+    return manifest_path
+
+
+def main() -> None:
+    args = _parse_args()
+    _validate_args(args)
+    runs = _fetch_runs(args)
+
+    if not runs:
+        print("No matching runs found.", file=sys.stderr)
+        sys.exit(0)
+
+    results = _download_runs(args, runs)
+    manifest_path = _write_manifest(results, args.output_dir)
 
     print(f"\nDone. Manifest written to {manifest_path}", file=sys.stderr)
     print(manifest_path)
