@@ -37,6 +37,7 @@ nav:
           - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
           - Update PR Body: workflows/gh-agent-workflows/update-pr-body.md
           - Issue Fixer: workflows/gh-agent-workflows/issue-fixer.md
+          - Branch Actions Detective: workflows/gh-agent-workflows/branch-actions-detective.md
           - PR Actions Detective: workflows/gh-agent-workflows/pr-actions-detective.md
           - PR Actions Fixer: workflows/gh-agent-workflows/pr-actions-fixer.md
           - Dependency Review: workflows/gh-agent-workflows/dependency-review.md
