@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"88c5fe45c8491c19025d3e2365577f6bff8532455ca51446bea478ce70016387","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"3e8b582476002337f8f965127a5436b535062005a52fd680877ef508b2a2ddab","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Stale Issues Investigator"
 "on":
@@ -474,7 +474,7 @@ jobs:
           
           ### Labeling
           
-          For each issue included in the report, call `add_labels` with the `__GH_AW_EXPR_AACB8011__` label on that issue. This starts a 30-day grace period — maintainers can remove the label to prevent automatic closure by the remediator.
+          For each issue included in the report, call `add_labels` with the `__GH_AW_EXPR_AACB8011__` label on that issue before filing the report. This starts a 30-day grace period — maintainers can remove the label to prevent automatic closure by the remediator. These `add_labels` calls are intermediate side-effects; your terminal output is still either `create_issue` (the report) or `noop`.
           
           ### Issue Format
           

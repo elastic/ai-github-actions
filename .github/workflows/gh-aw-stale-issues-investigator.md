@@ -196,7 +196,7 @@ Only flag an issue if you have **strong evidence** from at least one of these ca
 
 ### Labeling
 
-For each issue included in the report, call `add_labels` with the `${{ inputs.stale-label }}` label on that issue. This starts a 30-day grace period — maintainers can remove the label to prevent automatic closure by the remediator.
+For each issue included in the report, call `add_labels` with the `${{ inputs.stale-label }}` label on that issue before filing the report. This starts a 30-day grace period — maintainers can remove the label to prevent automatic closure by the remediator. These `add_labels` calls are intermediate side-effects; your terminal output is still either `create_issue` (the report) or `noop`.
 
 ### Issue Format
 
