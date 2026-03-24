@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"1adcdd71e70a47cd1e09eeb7a752a3abb57c96698a3d1686efbde964b9a27c19","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"a6897c2d8cc59179fe83f6f896d3c87997d0925ee05221816fd0933e15a5a55c","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Internal: Downstream Health"
 "on":
@@ -50,7 +50,7 @@ name: "Internal: Downstream Health"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

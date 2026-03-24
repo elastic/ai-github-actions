@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"576e29fef10ba32fe9002e3b1b9a060f5f65277df469b9658b11717ac5523057","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"f7a62a33fced87d074a54f8de2db35eb00ba10add70f9d189dc788978aa566b6","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Mention in Issue (no sandbox)"
 "on":
@@ -52,7 +52,7 @@ name: "Mention in Issue (no sandbox)"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       draft-prs:

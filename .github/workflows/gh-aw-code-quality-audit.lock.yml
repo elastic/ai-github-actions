@@ -40,7 +40,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"115293084bebb7cb4e3816bf422d1f49b267963714fb244e4ea77aeeca3d5764","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"0a6a482e0f6d72c11733619a0c4c68f87067035d34e24e7e7380fc5ad4212c12","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Code Quality Audit"
 "on":
@@ -52,7 +52,7 @@ name: "Code Quality Audit"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

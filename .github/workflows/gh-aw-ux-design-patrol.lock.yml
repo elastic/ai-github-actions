@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"5415e7759706e708814a72b8297f92a7286518af8725629b5c79c13ccf06db1d","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"55e7b4554d248679993259b1913be8b965fc420855878e4e69b96b44213a1673","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "UX Design Patrol"
 "on":
@@ -52,7 +52,7 @@ name: "UX Design Patrol"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       lookback-window:

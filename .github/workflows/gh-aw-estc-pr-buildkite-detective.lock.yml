@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"17ab5d51e4e6fa4dd4949c2bff453989342eeeb6d518893a5c326a0ec8573245","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"98b25cba5146edcd2027382bdafc7759674390870b4dd24cd2fbeeaae5c56fe4","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -47,7 +47,7 @@ name: "PR Buildkite Detective"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

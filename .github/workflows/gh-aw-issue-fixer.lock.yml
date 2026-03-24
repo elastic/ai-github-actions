@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"dc382c574182b17e043d27178c620cff72e1467b88886680c83dfc923eb9fc5b","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"6be45d0ead429eede8688ed26eb965fb5795e2f0526d96407ad28f405ecef291","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Issue Fixer"
 "on":
@@ -50,7 +50,7 @@ name: "Issue Fixer"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       draft-prs:

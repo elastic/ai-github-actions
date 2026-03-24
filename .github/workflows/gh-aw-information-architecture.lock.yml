@@ -38,7 +38,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"158105ecc158279064ae6f89773eddd78d6a821196bae5d52d64b3cb5c0f538d","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"30087107107e781a594a6cea0fa3469ca006120c3e3c8c6a282eb62a4579ac66","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Information Architecture"
 "on":
@@ -51,7 +51,7 @@ name: "Information Architecture"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

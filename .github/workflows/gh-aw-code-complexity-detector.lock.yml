@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"cdd91d9d3d816604245d0b59c0bfa05136702810b0901ec4f40d9b3065445990","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"15683ec3a63958e3549d50b4ac492acb3f5e4d65a23ace9a38bcce15947ee660","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Code Complexity Detector"
 "on":
@@ -52,7 +52,7 @@ name: "Code Complexity Detector"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       file-globs:
