@@ -20,28 +20,28 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Find overly complex code and file a simplification report
+# DEPRECATED: Use gh-aw-create-comment-on-issue instead. AI assistant for a specific issue ID — answer questions, debug, and create PRs on demand
 #
 # Resolved workflow manifest:
 #   Imports:
-#     - gh-aw-fragments/code-quality-audit.md
 #     - gh-aw-fragments/elastic-tools.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
 #     - gh-aw-fragments/network-ecosystems.md
-#     - gh-aw-fragments/pick-three-keep-many.md
-#     - gh-aw-fragments/previous-findings.md
+#     - gh-aw-fragments/playwright-mcp-explorer.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
+#     - gh-aw-fragments/safe-output-add-comment-issue.md
 #     - gh-aw-fragments/safe-output-create-issue.md
-#     - gh-aw-fragments/scheduled-audit.md
+#     - gh-aw-fragments/safe-output-create-pr.md
+#     - gh-aw-fragments/workflow-edit-guardrails.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"cdd91d9d3d816604245d0b59c0bfa05136702810b0901ec4f40d9b3065445990","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"ff43def6e9cec2ef5aca7163c8d64d11cf42e39dc06c405afd7365902097414c","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
-name: "Code Complexity Detector"
+name: "Mention in Issue by ID"
 "on":
   workflow_call:
     inputs:
@@ -50,21 +50,11 @@ name: "Code Complexity Detector"
         description: Repo-specific instructions appended to the agent prompt
         required: false
         type: string
-      allowed-bot-users:
-        default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+      draft-prs:
+        default: true
+        description: Whether to create pull requests as drafts
         required: false
-        type: string
-      file-globs:
-        default: ""
-        description: Comma-separated file globs to analyze (overrides languages mapping)
-        required: false
-        type: string
-      languages:
-        default: go
-        description: Comma-separated languages to analyze (e.g., go,python,typescript). Ignored if file-globs is set.
-        required: false
-        type: string
+        type: boolean
       messages-footer:
         default: ""
         description: Footer appended to all agent comments and reviews
@@ -75,39 +65,51 @@ name: "Code Complexity Detector"
         description: AI model to use
         required: false
         type: string
+      prompt:
+        description: Prompt for the agent
+        required: true
+        type: string
       setup-commands:
         default: ""
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
         required: false
         type: string
-      severity-threshold:
-        default: medium
-        description: Minimum severity to include in the report. 'high' = only complexity causing active maintenance problems. 'medium' (default) = also include clear simplification opportunities. 'low' = also include minor complexity.
-        required: false
-        type: string
-      title-prefix:
-        default: "[complexity]"
-        description: Title prefix for created issues (e.g. '[complexity]')
-        required: false
+      target-issue-number:
+        description: Issue number to target
+        required: true
         type: string
     outputs:
+      comment_id:
+        description: ID of the first added comment
+        value: ${{ jobs.safe_outputs.outputs.comment_id }}
+      comment_url:
+        description: URL of the first added comment
+        value: ${{ jobs.safe_outputs.outputs.comment_url }}
       created_issue_number:
         description: Number of the first created issue
         value: ${{ jobs.safe_outputs.outputs.created_issue_number }}
       created_issue_url:
         description: URL of the first created issue
         value: ${{ jobs.safe_outputs.outputs.created_issue_url }}
+      created_pr_number:
+        description: Number of the first created pull request
+        value: ${{ jobs.safe_outputs.outputs.created_pr_number }}
+      created_pr_url:
+        description: URL of the first created pull request
+        value: ${{ jobs.safe_outputs.outputs.created_pr_url }}
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
 
 permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: ${{ github.workflow }}-code-complexity-detector
+  group: ${{ github.workflow }}-mention-issue-by-id-${{ inputs.target-issue-number }}
 
-run-name: "Code Complexity Detector"
+run-name: "Mention in Issue by ID"
 
 jobs:
   activation:
@@ -141,7 +143,7 @@ jobs:
           GH_AW_INFO_MODEL: "${{ inputs.model }}"
           GH_AW_INFO_VERSION: ""
           GH_AW_INFO_AGENT_VERSION: "latest"
-          GH_AW_INFO_WORKFLOW_NAME: "Code Complexity Detector"
+          GH_AW_INFO_WORKFLOW_NAME: "Mention in Issue by ID"
           GH_AW_INFO_EXPERIMENTAL: "false"
           GH_AW_INFO_SUPPORTS_TOOLS_ALLOWLIST: "true"
           GH_AW_INFO_STAGED: "false"
@@ -181,7 +183,7 @@ jobs:
       - name: Check workflow file timestamps
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-code-complexity-detector.lock.yml"
+          GH_AW_WORKFLOW_FILE: "gh-aw-mention-in-issue-by-id.lock.yml"
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -192,9 +194,8 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_EXPR_08E89BCD: ${{ inputs.severity-threshold }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_F67C4209: ${{ inputs.file-globs }}
+          GH_AW_EXPR_EA5D66D8: ${{ inputs.target-issue-number }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -203,8 +204,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-          GH_AW_INPUTS_LANGUAGES: ${{ inputs.languages }}
-          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
+          GH_AW_INPUTS_PROMPT: ${{ inputs.prompt }}
         run: |
           bash ${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh
           {
@@ -214,10 +214,14 @@ jobs:
           cat "${RUNNER_TEMP}/gh-aw/prompts/xpia.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/temp_folder_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/markdown.md"
+          cat "${RUNNER_TEMP}/gh-aw/prompts/playwright_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_prompt.md"
           cat << 'GH_AW_PROMPT_EOF'
           <safe-output-tools>
-          Tools: create_issue, missing_tool, missing_data, noop
+          Tools: add_comment, create_issue, create_pull_request, missing_tool, missing_data, noop
+          GH_AW_PROMPT_EOF
+          cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_create_pull_request.md"
+          cat << 'GH_AW_PROMPT_EOF'
           </safe-output-tools>
           <github-context>
           The following GitHub context information is available for this workflow:
@@ -319,9 +323,45 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
+          ## Workflow Editing Guardrails
+          
+          - If a requested change touches a workflow file under `.github/workflows/`, explain that the GitHub Actions token cannot push workflow changes and ask a maintainer to apply that change directly.
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
           ## Message Footer
           
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## Playwright MCP Tools
+          
+          Playwright MCP tools are available for interactive browser automation. Full instructions are in `/tmp/playwright-instructions.md` — read it before using any Playwright tools.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## add-comment Limitations
+          
+          - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
+          - **Mentions**: Max 10 `@` mentions per comment.
+          - **Links**: Max 50 URLs per comment.
+          - **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.
+          - **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.
+          - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures unless it's referencing the triggering issue.
+          
+          If you exceed 10 mentions or 50 links, the comment will be rejected.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist.
+          
+          ## create-pull-request Limitations
+          
+          - **Patch files**: Max 100 files per PR. If changes span more files, split into multiple focused PRs.
+          - **Patch size**: Max ~10 MB (10,240 KB). Keep changes focused.
+          - **Title**: Max 128 characters. Sanitized.
+          - **Body**: No explicit mention/link limits, but bot triggers (`fixes #123`, `closes #456`) are neutralized.
+          - **Committed changes required**: You must have locally committed changes before creating a PR.
+          - **Base branch**: The PR targets the repository's default branch.
+          - **Max per run**: Typically 1 PR creation per workflow run.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ## create-issue Limitations
@@ -334,268 +374,36 @@ jobs:
           - **Mentions**: `@mentions` in the body are neutralized (backticked).
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          ## Previous Findings
-          
-          Before filing a new issue, check `/tmp/previous-findings.json` for issues this agent has already filed.
-          
-          - Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
-          - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
-          - Only file a new issue when the finding is genuinely distinct from all previous findings.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
-          ### Pick Three, Keep Many
-          
-          Parallelize your work using sub-agents. Spawn multiple sub-agents, each approaching the task from a different angle — e.g., different focus areas, different heuristics, or different parts of the codebase. Each sub-agent works independently and should return its own list of findings.
-          
-          **How to spawn sub-agents:** Call `runSubagent` with the `agentType` and `model` specified by the workflow instructions below (defaulting to `agentType: "general-purpose"` and `model: "__GH_AW_INPUTS_MODEL__"` if none are specified). Sub-agents cannot see your conversation history, the other sub-agents' results, or any context you have gathered so far. Each prompt must be **fully self-contained** — include everything the sub-agent needs:
-          
-          - The full task description and objective (restate it, don't summarize)
-          - All repository context, conventions, and constraints you've gathered (e.g., from `/tmp/agents.md`)
-          - Any relevant data the sub-agent needs to do its job (diffs, file contents, existing threads)
-          - The quality criteria and output format you expect
-          - The specific angle that distinguishes this sub-agent from the others
-          
-          Err on the side of providing too much context rather than too little. A well-informed sub-agent with a 10,000-token prompt will produce far better results than one that has to rediscover the codebase from scratch.
-          
-          **Wait for all sub-agents to complete.** Do not proceed until every sub-agent has returned its result.
-          
-          **Merge and deduplicate findings** across all sub-agents:
-          1. If multiple sub-agents flagged the same issue, keep the version with the strongest evidence and clearest explanation.
-          2. If a finding is unique to one sub-agent, include it only if it passes the quality gate on its own merits — a finding flagged by only one sub-agent deserves extra scrutiny.
-          3. Drop any finding that does not meet the verification criteria.
-          
-          **Filter aggressively for quality.** Your job as the parent agent is to be the quality gate. Sub-agents cast a wide net; you decide what's worth keeping. For each surviving finding, verify it yourself — check that file paths exist, line numbers are accurate, the problem is real, and the finding is actionable. Discard anything vague, speculative, or already addressed. If no findings survive filtering, call `noop`.
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          You run on a schedule to investigate the repository and file an issue when something needs attention. Your specific assignment is described in the **Report Assignment** section below.
+          # Issue Assistant by ID
+          
+          **DEPRECATED:** Prefer `gh-aw-create-comment-on-issue` for new workflows. This workflow remains available for backwards compatibility.
+          
+          Assist with issue #__GH_AW_EXPR_EA5D66D8__ on __GH_AW_GITHUB_REPOSITORY__.
+          
+          ## Context
+          
+          - **Repository**: __GH_AW_GITHUB_REPOSITORY__
+          - **Issue**: #__GH_AW_EXPR_EA5D66D8__
+          - **Request**: "__GH_AW_INPUTS_PROMPT__"
           
           ## Constraints
           
-          This workflow is for detection and reporting only. You can read files, search code, run commands, and read PR/issue details — but your only output is either a single issue or a noop.
+          - **CAN**: Read files, search code, modify files locally, run tests and commands, comment on the targeted issue, create pull requests, create issues
+          - **CANNOT**: Directly push or commit to the repository - use `ready_to_make_pr` then `create_pull_request` to propose changes
           
-          ## Process
+          When creating pull requests, make the changes in the workspace first, call `ready_to_make_pr`, then use `create_pull_request` - branches are managed automatically.
           
-          Follow these steps in order.
+          ## Instructions
           
-          ### Step 1: Gather Context
-          
-          1. Read `/tmp/agents.md` for the repository's coding guidelines and conventions (skip if missing).
-          2. Follow the data gathering instructions in the **Report Assignment** section.
-          
-          ### Step 2: Analyze
-          
-          Follow the analysis instructions in the **Report Assignment** section to determine whether an issue should be filed. The Report Assignment defines:
-          - What data to gather and how
-          - What to look for
-          - What constitutes a finding worth reporting
-          - What to skip or ignore
-          
-          ### Step 3: Self-Review (Quality Gate)
-          
-          Before filing anything, critically evaluate every finding against these criteria:
-          
-          1. **Evidence is concrete** — you can point to exact file paths, line numbers, commit SHAs, or command outputs. No "I believe" or "it seems."
-          2. **Finding is actionable** — a maintainer reading the issue can act on it without re-investigating from scratch.
-          3. **Finding is not already tracked** — you checked open issues and recent PRs for duplicates.
-          4. **Finding is worth a human's time** — the issue is material enough that a maintainer would thank you for filing it, not close it as noise.
-          
-          If zero findings pass all four criteria, call `noop` with a brief reason and stop. **Noop is the expected outcome most days.** Filing nothing is a success when there is nothing worth filing.
-          
-          ### Step 4: Report
-          
-          If there are findings that pass the quality gate, call `create_issue` with a structured report. Use the issue format specified in the Report Assignment if one is provided, otherwise use this default format:
-          
-          **Issue title:** Brief summary of findings
-          
-          **Issue body:**
-          
-          > ## Findings
-          >
-          > ### 1. [Brief description]
-          >
-          > **Evidence:** [Links, references, or data supporting the finding]
-          > **Action needed:** [What should be done]
-          >
-          > ## Suggested Actions
-          >
-          > - [ ] [Actionable checkbox for each finding]
-          
-          **Guidelines:**
-          - Group related findings together
-          - Be specific about what needs to happen
-          - Include links and references where possible
-          - Make suggested actions concrete enough to act on without re-investigating
-          - If a finding is ambiguous, it does not pass the quality gate — drop it
-          
-          **Report Assignment:**
-          
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
-          
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
-          Analyze the codebase for quality issues and file a structured report when concrete, actionable findings exist.
-          
-          **The bar is high: only report issues backed by specific code evidence.** Most runs should end with `noop` — that means the code is in good shape for the dimension being audited. Filing nothing is a success when there is nothing worth filing.
-          
-          ### Severity Threshold: `__GH_AW_EXPR_08E89BCD__`
-          
-          Only include findings at or above the configured severity. Severity labels and meanings are defined by the importing workflow; this fragment uses the importing workflow's `__GH_AW_EXPR_08E89BCD__` semantics.
-          
-          ### Evidence Standard
-          
-          Every finding must include **all** of the following. Findings missing any element must be dropped:
-          
-          1. **Location** — File path(s) and precise location context (line numbers when available or another unambiguous locator required by the importing workflow).
-          2. **Evidence** — The specific code or configuration that exhibits the issue.
-          3. **What is wrong** — A clear, concrete explanation of the problem. Not "this could be better" but "this does X when it should do Y" or "this violates [specific standard/guideline]."
-          4. **Why it matters** — Concrete impact: who is affected, what breaks, what degrades, or what standard is violated. Reference the specific standard, guideline, or documentation (e.g., WCAG 2.1 SC 4.1.2, React docs on exhaustive-deps, framework migration guide).
-          5. **Suggested fix** — A concrete code change or approach, not a vague recommendation.
-          
-          ### Verification Pass (Required)
-          
-          After gathering findings from sub-agents, verify each one yourself:
-          
-          1. Read the file at the cited path and confirm the line numbers are accurate.
-          2. Confirm the code snippet matches what is actually in the file.
-          3. Confirm the issue is real — not a false positive from misunderstanding the code's intent.
-          4. Confirm the suggested fix would not break existing behavior.
-          5. Drop any finding where verification fails.
-          
-          ### Quality Gate — When to Noop
-          
-          Call `noop` if any of these are true:
-          - No findings survive the verification pass.
-          - All findings are below the severity threshold.
-          - All findings are already tracked by open issues.
-          - All findings are subjective style preferences rather than concrete quality issues.
-          - You cannot provide specific file paths and line numbers for any finding.
-          
-          ### Consolidation Rules
-          
-          - Group related findings (e.g., the same anti-pattern in multiple files) into a single numbered section.
-          - Prefer fewer, denser issues over frequent thin issues.
-          - If a pattern appears in many files, do a completeness pass: search the repo for all occurrences and list them, so maintainers can fix the whole family at once.
-          
-          ### Output Contract
-          
-          Follow the importing workflow's issue title/body template. This shared fragment defines quality gates and evidence requirements only; per-workflow report schemas remain source-of-truth for final output format.
-          
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
-          Find overly complex code and file a simplification report.
-          
-          **Inputs**
-          - **Languages**: `__GH_AW_INPUTS_LANGUAGES__`
-          - **File globs**: `__GH_AW_EXPR_F67C4209__`
-          
-          ### Data Gathering
-          
-          1. Determine file globs and store them as a space-delimited `GLOBS` list:
-             - If `file-globs` is set, split it on commas and trim whitespace.
-             - Otherwise, map `languages` (comma-separated) to globs using:
-               - go → `**/*.go`
-               - python → `**/*.py`
-               - javascript → `**/*.{js,mjs,cjs}`
-               - typescript → `**/*.{ts,tsx}`
-               - java → `**/*.java`
-               - ruby → `**/*.rb`
-               - csharp → `**/*.cs`
-               - rust → `**/*.rs`
-          2. Find all matching files (excluding tests and generated files):
-             ```bash
-             FILES=$(for glob in ${GLOBS}; do
-               rg --files \
-                 -g "${glob}" \
-                 -g "!**/*_test.*" \
-                 -g "!**/test_*" \
-                 -g "!**/*.spec.*" \
-                 -g "!**/*.test.*" \
-                 -g "!**/*.pb.*" \
-                 -g "!**/*_gen.*" \
-                 -g "!**/generated/**"
-             done | sort -u)
-             ```
-          3. If no files are found, call `noop` with a brief reason and stop.
-          4. Call Serena `activate_project` with `__GH_AW_GITHUB_WORKSPACE__`.
-          5. If there are more than 200 files, focus on the 200 largest by line count:
-             ```bash
-             printf '%s\n' "$FILES" | xargs wc -l | sort -nr | head -200 | awk '{print $2}'
-             ```
-          6. For each selected file, use `get_symbols_overview` (Serena) when supported; otherwise, extract functions/methods with language-appropriate `rg` patterns and light file inspection.
-          7. Use the **Pick Three, Keep Many** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each searching for complexity from a different angle (e.g., one measuring nesting depth and cyclomatic complexity, one looking for redundant conditionals and style outliers, one checking for inline logic that reimplements existing helpers). Include the file list, symbol inventory, and the full "How to Analyze" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
-          
-          ### How to Analyze
-          
-          1. Build an inventory by file and directory of:
-             - Module/package/namespace (when applicable)
-             - Function and method names (with receivers/classes if relevant)
-             - Rough line count per function
-          2. Identify complexity hotspots:
-             - **Deep nesting** (3+ levels of indentation within a function)
-             - **Redundant conditionals** (branches that collapse to simpler logic)
-             - **Long functions** (>50 lines with multiple responsibilities)
-             - **Style outliers** (verbose patterns where the rest of the codebase uses a concise idiom)
-             - **Inline reimplementation** (custom logic that duplicates an existing helper or standard library function)
-          3. Use Serena (`find_symbol`, `search_for_pattern`, `find_referencing_symbols`) when supported to trace helper reuse and identify reimplementations.
-          4. Focus on high-impact, actionable findings where a simplification is clearly safe and behavior-preserving.
-          
-          ### Bar for Merit
-          
-          A finding must clear at least one of these bars to be worth reporting:
-          
-          1. **Style conformance** — the code is a clear outlier compared to the rest of the codebase (e.g., one function uses a verbose pattern that every other function avoids).
-          2. **Helper reuse** — an existing utility or helper function already does what the code is reimplementing.
-          3. **Significant clarity improvement** — the change meaningfully reduces complexity (e.g., collapsing 10+ lines of tangled logic into 2–3 readable lines, early returns eliminating deep nesting, extracting a helper from repeated inline logic).
-          
-          **Do not report** micro-changes that swap one valid idiom for another (renaming variables, reordering equivalent expressions, replacing a two-line pattern with a one-liner). These are not worth a maintainer's time to review.
-          
-          ### What to Skip
-          
-          - Test or generated files
-          - Trivial helpers (<5 lines) unless they are style outliers
-          - Subjective complexity preferences — only flag code that is clearly overcomplicated, not "could be slightly cleaner"
-          - Functions that are long but straightforward (e.g., switch statements mapping many values)
-          
-          ### Issue Format
-          
-          **Issue title:** Code complexity findings (date)
-          
-          **Issue body:**
-          
-          > ## Summary
-          > - Files analyzed: [count]
-          > - Functions cataloged: [count]
-          > - Complexity hotspots found: [count]
-          >
-          > ## Findings
-          >
-          > ### 1. Deep nesting in function
-          > **File:** `path/to/file.ext`
-          > **Function:** `FuncName(...)`
-          > **Complexity:** [brief description — e.g., 4 levels of nesting, 3 nested conditionals]
-          > **Suggested simplification:** [early returns / extract helper / collapse conditionals]
-          >
-          > ### 2. Style outlier
-          > **File:** `path/to/file.ext`
-          > **Function:** `FuncName(...)`
-          > **Why outlier:** [brief explanation]
-          > **Suggested simplification:** [use existing helper / match codebase convention]
-          >
-          > ## Suggested Actions
-          > - [ ] [Concrete action for each finding]
-          >
-          > ## Analysis Metadata
-          > - Serena tools used: `activate_project`, `get_symbols_overview`, `find_symbol`, `search_for_pattern`
-          > - Analysis date: [timestamp]
-          
-          **Noop is the expected outcome most days.** Only create an issue when findings are:
-          - **Concrete**: You can name the exact functions, files, and what should change.
-          - **High-impact**: The simplification would meaningfully improve readability, not just satisfy an abstract ideal.
-          - **Non-controversial**: A maintainer would agree this is a clear improvement without debate.
-          
-          If findings are marginal or subjective, call `noop`.
+          1. Read issue #__GH_AW_EXPR_EA5D66D8__ first to understand the full thread and current context.
+          2. Handle the request in `__GH_AW_INPUTS_PROMPT__` with focused investigation and evidence from the codebase.
+          3. Do not comment on any issue except #__GH_AW_EXPR_EA5D66D8__.
+          4. Use safe outputs only against issue #__GH_AW_EXPR_EA5D66D8__ when commenting.
+          5. If asked to implement changes, make edits in the workspace, call `ready_to_make_pr`, then use `create_pull_request`.
+          6. If no code or PR action is needed, call `add_comment` with a concise, actionable response.
           
           __GH_AW_EXPR_49B959F1__
           
@@ -605,12 +413,10 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
-          GH_AW_EXPR_08E89BCD: ${{ inputs.severity-threshold }}
-          GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
+          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_F67C4209: ${{ inputs.file-globs }}
-          GH_AW_INPUTS_LANGUAGES: ${{ inputs.languages }}
+          GH_AW_INPUTS_PROMPT: ${{ inputs.prompt }}
+          GH_AW_EXPR_EA5D66D8: ${{ inputs.target-issue-number }}
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -621,9 +427,8 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_EXPR_08E89BCD: ${{ inputs.severity-threshold }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_F67C4209: ${{ inputs.file-globs }}
+          GH_AW_EXPR_EA5D66D8: ${{ inputs.target-issue-number }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
           GH_AW_GITHUB_EVENT_COMMENT_ID: ${{ github.event.comment.id }}
           GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: ${{ github.event.discussion.number }}
@@ -632,8 +437,7 @@ jobs:
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
           GH_AW_GITHUB_RUN_ID: ${{ github.run_id }}
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
-          GH_AW_INPUTS_LANGUAGES: ${{ inputs.languages }}
-          GH_AW_INPUTS_MODEL: ${{ inputs.model }}
+          GH_AW_INPUTS_PROMPT: ${{ inputs.prompt }}
           GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: ${{ needs.pre_activation.outputs.activated }}
         with:
           script: |
@@ -646,9 +450,8 @@ jobs:
             return await substitutePlaceholders({
               file: process.env.GH_AW_PROMPT,
               substitutions: {
-                GH_AW_EXPR_08E89BCD: process.env.GH_AW_EXPR_08E89BCD,
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
-                GH_AW_EXPR_F67C4209: process.env.GH_AW_EXPR_F67C4209,
+                GH_AW_EXPR_EA5D66D8: process.env.GH_AW_EXPR_EA5D66D8,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
                 GH_AW_GITHUB_EVENT_COMMENT_ID: process.env.GH_AW_GITHUB_EVENT_COMMENT_ID,
                 GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER: process.env.GH_AW_GITHUB_EVENT_DISCUSSION_NUMBER,
@@ -657,8 +460,7 @@ jobs:
                 GH_AW_GITHUB_REPOSITORY: process.env.GH_AW_GITHUB_REPOSITORY,
                 GH_AW_GITHUB_RUN_ID: process.env.GH_AW_GITHUB_RUN_ID,
                 GH_AW_GITHUB_WORKSPACE: process.env.GH_AW_GITHUB_WORKSPACE,
-                GH_AW_INPUTS_LANGUAGES: process.env.GH_AW_INPUTS_LANGUAGES,
-                GH_AW_INPUTS_MODEL: process.env.GH_AW_INPUTS_MODEL,
+                GH_AW_INPUTS_PROMPT: process.env.GH_AW_INPUTS_PROMPT,
                 GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED: process.env.GH_AW_NEEDS_PRE_ACTIVATION_OUTPUTS_ACTIVATED
               }
             });
@@ -684,16 +486,19 @@ jobs:
     needs: activation
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
       issues: read
       pull-requests: read
+    concurrency:
+      group: "gh-aw-copilot-${{ github.workflow }}-mention-issue-by-id-${{ inputs.target-issue-number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
       GH_AW_ASSETS_BRANCH: ""
       GH_AW_ASSETS_MAX_SIZE_KB: 0
       GH_AW_MCP_LOG_DIR: /tmp/gh-aw/mcp-logs/safeoutputs
-      GH_AW_WORKFLOW_ID_SANITIZED: ghawcodecomplexitydetector
+      GH_AW_WORKFLOW_ID_SANITIZED: ghawmentioninissuebyid
     outputs:
       artifact_prefix: ${{ needs.activation.outputs.artifact_prefix }}
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
@@ -718,18 +523,19 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+      - name: Setup Go
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        with:
+          go-version: '1.25'
+          cache: false
+      - name: Capture GOROOT for AWF chroot mode
+        run: echo "GOROOT=$(go env GOROOT)" >> "$GITHUB_ENV"
       - name: Create gh-aw temp directory
         run: bash ${RUNNER_TEMP}/gh-aw/actions/create_gh_aw_tmp_dir.sh
       - name: Configure gh CLI for GitHub Enterprise
         run: bash ${RUNNER_TEMP}/gh-aw/actions/configure_gh_for_ghe.sh
         env:
           GH_TOKEN: ${{ github.token }}
-      - if: hashFiles('go.mod') != ''
-        name: Setup Go
-        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5
-        with:
-          cache: true
-          go-version-file: go.mod
       - if: hashFiles('.python-version') != ''
         name: Setup Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
@@ -769,11 +575,8 @@ jobs:
         name: Fetch repository conventions
         run: "set -euo pipefail\nif [ -f \"AGENTS.md\" ]; then\n  cp AGENTS.md /tmp/agents.md\n  echo \"Repository conventions copied from AGENTS.md to /tmp/agents.md\"\nelse\n  OWNER=\"${GITHUB_REPOSITORY%/*}\"\n  REPO=\"${GITHUB_REPOSITORY#*/}\"\n  summary=$(curl -sf --max-time 15 -X POST https://agents-md-generator.fastmcp.app/mcp \\\n    -H \"Content-Type: application/json\" \\\n    -H \"Accept: application/json, text/event-stream\" \\\n    -d \"{\\\"jsonrpc\\\":\\\"2.0\\\",\\\"id\\\":1,\\\"method\\\":\\\"tools/call\\\",\\\"params\\\":{\\\"name\\\":\\\"generate_agents_md\\\",\\\"arguments\\\":{\\\"owner\\\":\\\"${OWNER}\\\",\\\"repo\\\":\\\"${REPO}\\\"}}}\" \\\n    | sed 's/^data: //' \\\n    | jq -r '.result.structuredContent.summary // empty' 2>/dev/null) || true\n  if [ -n \"$summary\" ]; then\n    echo \"$summary\" > /tmp/agents.md\n    echo \"Repository conventions written to /tmp/agents.md\"\n  else\n    echo \"::warning::Could not fetch repository conventions; continuing without them\"\n  fi\nfi"
         shell: bash
-      - env:
-          GH_TOKEN: ${{ github.token }}
-          TITLE_PREFIX: ${{ inputs.title-prefix }}
-        name: List previous findings
-        run: "set -euo pipefail\ngh issue list \\\n  --repo \"$GITHUB_REPOSITORY\" \\\n  --search \"in:title \\\"$TITLE_PREFIX\\\"\" \\\n  --state all \\\n  --limit 100 \\\n  --json number,title,state \\\n  > /tmp/previous-findings.json || { echo \"::warning::Failed to fetch previous findings — dedup will be skipped\"; echo \"[]\" > /tmp/previous-findings.json; }"
+      - name: Write Playwright instructions to disk
+        run: "cat > /tmp/playwright-instructions.md << 'EOF'\n# Playwright MCP Tools\n\nUse Playwright MCP tools for interactive browser automation.\nUnless otherwise instructed, use the MCP tools directly rather than writing standalone Node.js scripts.\n\n## Available tools\n\n- `browser_navigate` — go to a URL\n- `browser_click` — click an element\n- `browser_type` — type text into an input\n- `browser_snapshot` — get an accessibility tree (YAML) of the current page\n- `browser_take_screenshot` — capture a visual screenshot (PNG/JPEG)\n- `browser_run_code` — run a Playwright code snippet\n- `browser_wait_for` — wait for text to appear/disappear\n- `browser_press_key` — press a keyboard key\n\n## Automatic snapshots are disabled\n\n`browser_click`, `browser_type`, `browser_wait_for`, and\n`browser_run_code` do NOT return page state. You choose when to\ninspect the page.\n\n## Batch actions with `browser_run_code`\n\nWhen you know the UI structure (button names, input labels), batch\nmultiple actions in a single `browser_run_code` call using Playwright's\nrole selectors. This is much more efficient than individual tool calls:\n\n```js\nasync (page) => {\n  await page.getByRole('button', { name: 'Settings' }).click();\n  await page.getByRole('combobox', { name: 'Theme' }).selectOption('dark');\n  await page.getByRole('button', { name: 'Save' }).click();\n  return 'Settings saved';\n}\n```\n\n**Keep return values small** — return only what you need:\n```js\nasync (page) => {\n  const res = await page.request.post(url, {data});\n  const json = await res.json();\n  // Good: ~50 chars\n  return JSON.stringify({success: json.success, errors: json.errors?.length || 0});\n  // Bad: entire response body (can be 20K+ chars)\n}\n```\n\n## Discover elements with snapshots\n\nWhen you don't know what's on the page, save a snapshot to disk and\nsearch it:\n```\nbrowser_snapshot(filename=\"/tmp/gh-aw/mcp-logs/page.md\")\n```\nThen grep for elements:\n```bash\ngrep 'button.*Save\\|button.*Submit' /tmp/gh-aw/mcp-logs/page.md\n```\nUse the `ref` value from grep results with `browser_click(ref=\"...\")`.\n\nOnly take snapshots when you need to discover unknown elements.\nIf you know the button name or role, use `browser_run_code` instead.\n\n## Error handling in `browser_run_code`\n\n`browser_run_code` blocks can fail mid-execution if a selector doesn't\nmatch. Keep blocks focused — if a sequence has uncertain steps, split\nit into separate `browser_run_code` calls so you can inspect and adapt\nbetween them.\n\n## Measuring DOM properties\n\nFor programmatic checks (e.g. element heights, contrast), use\n`browser_run_code`:\n\n```javascript\nasync (page) => {\n  const els = await page.locator('input, button, [role=\"combobox\"]').all();\n  const results = [];\n  for (const el of els.slice(0, 10)) {\n    const box = await el.boundingBox();\n    const text = await el.textContent();\n    if (box) results.push({ h: Math.round(box.height), text: text?.trim().slice(0, 20) });\n  }\n  return JSON.stringify(results);\n}\n```\n\n## Handling failures\n\n- Do not retry the same action more than twice — the page is in a different state than expected.\n- Diagnose before moving on: save a snapshot to disk and grep it, or use `browser_take_screenshot` for a visual check.\n- Adapt (different selector, different path) or report the failure as a finding.\n- Never claim you verified something you didn't — if it failed and you skipped it, say so.\nEOF"
       - env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -825,21 +628,23 @@ jobs:
             const determineAutomaticLockdown = require('${{ runner.temp }}/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash ${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.24.5 ghcr.io/github/gh-aw-firewall/api-proxy:0.24.5 ghcr.io/github/gh-aw-firewall/squid:0.24.5 ghcr.io/github/gh-aw-mcpg:v0.1.20 ghcr.io/github/github-mcp-server:v0.32.0 ghcr.io/github/serena-mcp-server:latest node:lts-alpine
+        run: bash ${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.24.5 ghcr.io/github/gh-aw-firewall/api-proxy:0.24.5 ghcr.io/github/gh-aw-firewall/squid:0.24.5 ghcr.io/github/gh-aw-mcpg:v0.1.20 ghcr.io/github/github-mcp-server:v0.32.0 mcr.microsoft.com/playwright/mcp node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p ${RUNNER_TEMP}/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
           cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"create_issue":{"expires":168,"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
+          {"add_comment":{"max":1,"target":"${{ inputs.target-issue-number }}"},"create_issue":{"max":1},"create_pull_request":{"max":1},"missing_data":{},"missing_tool":{},"noop":{"max":1}}
           GH_AW_SAFE_OUTPUTS_CONFIG_EOF
       - name: Write Safe Outputs Tools
         run: |
           cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/tools_meta.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_META_EOF'
           {
             "description_suffixes": {
-              "create_issue": " CONSTRAINTS: Maximum 1 issue(s) can be created. Title will be prefixed with \"${{ inputs.title-prefix }} \"."
+              "add_comment": " CONSTRAINTS: Maximum 1 comment(s) can be added. Target: ${{ inputs.target-issue-number }}.",
+              "create_issue": " CONSTRAINTS: Maximum 1 issue(s) can be created.",
+              "create_pull_request": " CONSTRAINTS: Maximum 1 pull request(s) can be created."
             },
             "repo_params": {},
             "dynamic_tools": []
@@ -847,6 +652,24 @@ jobs:
           GH_AW_SAFE_OUTPUTS_TOOLS_META_EOF
           cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/validation.json << 'GH_AW_SAFE_OUTPUTS_VALIDATION_EOF'
           {
+            "add_comment": {
+              "defaultMax": 1,
+              "fields": {
+                "body": {
+                  "required": true,
+                  "type": "string",
+                  "sanitize": true,
+                  "maxLength": 65000
+                },
+                "item_number": {
+                  "issueOrPRNumber": true
+                },
+                "repo": {
+                  "type": "string",
+                  "maxLength": 256
+                }
+              }
+            },
             "create_issue": {
               "defaultMax": 1,
               "fields": {
@@ -871,6 +694,42 @@ jobs:
                 },
                 "temporary_id": {
                   "type": "string"
+                },
+                "title": {
+                  "required": true,
+                  "type": "string",
+                  "sanitize": true,
+                  "maxLength": 128
+                }
+              }
+            },
+            "create_pull_request": {
+              "defaultMax": 1,
+              "fields": {
+                "body": {
+                  "required": true,
+                  "type": "string",
+                  "sanitize": true,
+                  "maxLength": 65000
+                },
+                "branch": {
+                  "required": true,
+                  "type": "string",
+                  "sanitize": true,
+                  "maxLength": 256
+                },
+                "draft": {
+                  "type": "boolean"
+                },
+                "labels": {
+                  "type": "array",
+                  "itemType": "string",
+                  "itemSanitize": true,
+                  "itemMaxLength": 128
+                },
+                "repo": {
+                  "type": "string",
+                  "maxLength": 256
                 },
                 "title": {
                   "required": true,
@@ -990,6 +849,7 @@ jobs:
         run: |
           set -eo pipefail
           mkdir -p /tmp/gh-aw/mcp-config
+          mkdir -p /tmp/gh-aw/mcp-logs/playwright
           
           # Export gateway environment variables for MCP config and gateway script
           export MCP_GATEWAY_PORT="80"
@@ -1016,12 +876,26 @@ jobs:
                   "GITHUB_HOST": "\${GITHUB_SERVER_URL}",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_MCP_SERVER_TOKEN}",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search"
+                  "GITHUB_TOOLSETS": "repos,issues,pull_requests,search,actions"
                 },
                 "guard-policies": {
                   "allow-only": {
                     "min-integrity": "$GITHUB_MCP_GUARD_MIN_INTEGRITY",
                     "repos": "$GITHUB_MCP_GUARD_REPOS"
+                  }
+                }
+              },
+              "playwright": {
+                "type": "stdio",
+                "container": "mcr.microsoft.com/playwright/mcp",
+                "args": ["--init", "--network", "host", "--security-opt", "seccomp=unconfined", "--ipc=host"],
+                "entrypointArgs": ["--output-dir", "/tmp/gh-aw/mcp-logs/playwright", "--no-sandbox", "--snapshot-mode", "none"],
+                "mounts": ["/tmp/gh-aw/mcp-logs:/tmp/gh-aw/mcp-logs:rw"],
+                "guard-policies": {
+                  "write-sink": {
+                    "accept": [
+                      "*"
+                    ]
                   }
                 }
               },
@@ -1052,21 +926,6 @@ jobs:
                     ]
                   }
                 }
-              },
-              "serena": {
-                "type": "stdio",
-                "container": "ghcr.io/github/serena-mcp-server:latest",
-                "args": ["--network", "host"],
-                "entrypoint": "serena",
-                "entrypointArgs": ["start-mcp-server", "--context", "codex", "--project", "\${GITHUB_WORKSPACE}"],
-                "mounts": ["\${GITHUB_WORKSPACE}:\${GITHUB_WORKSPACE}:rw"],
-                "guard-policies": {
-                  "write-sink": {
-                    "accept": [
-                      "*"
-                    ]
-                  }
-                }
               }
             },
             "gateway": {
@@ -1088,7 +947,7 @@ jobs:
       - name: Execute GitHub Copilot CLI
         id: agentic_execution
         # Copilot CLI tool arguments (sorted):
-        timeout-minutes: 90
+        timeout-minutes: 60
         run: |
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
@@ -1249,6 +1108,8 @@ jobs:
             /tmp/gh-aw/agent/
             /tmp/gh-aw/safeoutputs.jsonl
             /tmp/gh-aw/agent_output.json
+            /tmp/gh-aw/aw-*.patch
+            /tmp/gh-aw/aw-*.bundle
           if-no-files-found: ignore
       # --- Threat Detection (inline) ---
       - name: Check if detection needed
@@ -1286,8 +1147,8 @@ jobs:
         if: always() && steps.detection_guard.outputs.run_detection == 'true'
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          WORKFLOW_NAME: "Code Complexity Detector"
-          WORKFLOW_DESCRIPTION: "Find overly complex code and file a simplification report"
+          WORKFLOW_NAME: "Mention in Issue by ID"
+          WORKFLOW_DESCRIPTION: "DEPRECATED: Use gh-aw-create-comment-on-issue instead. AI assistant for a specific issue ID — answer questions, debug, and create PRs on demand"
           HAS_PATCH: ${{ steps.collect_output.outputs.has_patch }}
         with:
           script: |
@@ -1383,10 +1244,11 @@ jobs:
     if: (always()) && ((needs.agent.result != 'skipped') || (needs.activation.outputs.lockdown_check_failed == 'true'))
     runs-on: ubuntu-slim
     permissions:
-      contents: read
+      contents: write
       issues: write
+      pull-requests: write
     concurrency:
-      group: "gh-aw-conclusion-gh-aw-code-complexity-detector"
+      group: "gh-aw-conclusion-gh-aw-mention-in-issue-by-id"
       cancel-in-progress: false
     outputs:
       noop_message: ${{ steps.noop.outputs.noop_message }}
@@ -1416,7 +1278,7 @@ jobs:
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
-          GH_AW_WORKFLOW_NAME: "Code Complexity Detector"
+          GH_AW_WORKFLOW_NAME: "Mention in Issue by ID"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1429,7 +1291,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Code Complexity Detector"
+          GH_AW_WORKFLOW_NAME: "Mention in Issue by ID"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1443,18 +1305,20 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Code Complexity Detector"
+          GH_AW_WORKFLOW_NAME: "Mention in Issue by ID"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_WORKFLOW_ID: "gh-aw-code-complexity-detector"
+          GH_AW_WORKFLOW_ID: "gh-aw-mention-in-issue-by-id"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.activation.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_INFERENCE_ACCESS_ERROR: ${{ needs.agent.outputs.inference_access_error }}
+          GH_AW_CODE_PUSH_FAILURE_ERRORS: ${{ needs.safe_outputs.outputs.code_push_failure_errors }}
+          GH_AW_CODE_PUSH_FAILURE_COUNT: ${{ needs.safe_outputs.outputs.code_push_failure_count }}
           GH_AW_LOCKDOWN_CHECK_FAILED: ${{ needs.activation.outputs.lockdown_check_failed }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {0}]({{run_url}})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.', github.workflow) }}\",\"activationComments\":\"false\"}"
           GH_AW_GROUP_REPORTS: "false"
           GH_AW_FAILURE_REPORT_AS_ISSUE: "true"
-          GH_AW_TIMEOUT_MINUTES: "90"
+          GH_AW_TIMEOUT_MINUTES: "60"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
@@ -1467,7 +1331,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Code Complexity Detector"
+          GH_AW_WORKFLOW_NAME: "Mention in Issue by ID"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
@@ -1478,6 +1342,20 @@ jobs:
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_noop_message.cjs');
+            await main();
+      - name: Handle Create Pull Request Error
+        id: handle_create_pr_error
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
+          GH_AW_WORKFLOW_NAME: "Mention in Issue by ID"
+          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        with:
+          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_create_pr_error.cjs');
             await main();
 
   pre_activation:
@@ -1495,7 +1373,6 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REQUIRED_ROLES: admin,maintainer,write
-          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -1511,23 +1388,28 @@ jobs:
     if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (needs.agent.outputs.detection_success == 'true')
     runs-on: ubuntu-slim
     permissions:
-      contents: read
+      contents: write
       issues: write
+      pull-requests: write
     timeout-minutes: 15
     env:
-      GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/gh-aw-code-complexity-detector"
+      GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/gh-aw-mention-in-issue-by-id"
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {0}]({{run_url}})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.', github.workflow) }}\",\"activationComments\":\"false\"}"
-      GH_AW_WORKFLOW_ID: "gh-aw-code-complexity-detector"
-      GH_AW_WORKFLOW_NAME: "Code Complexity Detector"
+      GH_AW_WORKFLOW_ID: "gh-aw-mention-in-issue-by-id"
+      GH_AW_WORKFLOW_NAME: "Mention in Issue by ID"
     outputs:
       code_push_failure_count: ${{ steps.process_safe_outputs.outputs.code_push_failure_count }}
       code_push_failure_errors: ${{ steps.process_safe_outputs.outputs.code_push_failure_errors }}
+      comment_id: ${{ steps.process_safe_outputs.outputs.comment_id }}
+      comment_url: ${{ steps.process_safe_outputs.outputs.comment_url }}
       create_discussion_error_count: ${{ steps.process_safe_outputs.outputs.create_discussion_error_count }}
       create_discussion_errors: ${{ steps.process_safe_outputs.outputs.create_discussion_errors }}
       created_issue_number: ${{ steps.process_safe_outputs.outputs.created_issue_number }}
       created_issue_url: ${{ steps.process_safe_outputs.outputs.created_issue_url }}
+      created_pr_number: ${{ steps.process_safe_outputs.outputs.created_pr_number }}
+      created_pr_url: ${{ steps.process_safe_outputs.outputs.created_pr_url }}
       process_safe_outputs_processed_count: ${{ steps.process_safe_outputs.outputs.processed_count }}
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
@@ -1548,6 +1430,34 @@ jobs:
           mkdir -p /tmp/gh-aw/
           find "/tmp/gh-aw/" -type f -print
           echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/agent_output.json" >> "$GITHUB_ENV"
+      - name: Download patch artifact
+        continue-on-error: true
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.activation.outputs.artifact_prefix }}agent
+          path: /tmp/gh-aw/
+      - name: Checkout repository
+        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.base_ref || github.event.pull_request.base.ref || github.ref_name || github.event.repository.default_branch }}
+          token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Configure Git credentials
+        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'create_pull_request'))
+        env:
+          REPO_NAME: ${{ github.repository }}
+          SERVER_URL: ${{ github.server_url }}
+          GIT_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global am.keepcr true
+          # Re-authenticate git with GitHub token
+          SERVER_URL_STRIPPED="${SERVER_URL#https://}"
+          git remote set-url origin "https://x-access-token:${GIT_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git"
+          echo "Git configured with standard GitHub Actions identity"
       - name: Configure GH_HOST for enterprise compatibility
         shell: bash
         run: |
@@ -1564,7 +1474,8 @@ jobs:
           GH_AW_ALLOWED_DOMAINS: "*.docker.com,*.docker.io,*.githubusercontent.com,*.gradle-enterprise.cloud,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,deps.files.ghostty.org,develocity.apache.org,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,docs.github.com,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,elastic.github.io,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,ge.spockframework.org,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.blog,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,maven.pkg.jetbrains.space,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,scala.jfrog.io,scans-in.gradle.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.googleapis.com,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"close_older_issues\":false,\"close_older_key\":\"${{ inputs.title-prefix }}\",\"expires\":168,\"max\":1,\"title_prefix\":\"${{ inputs.title-prefix }} \"},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"true\"}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1,\"target\":\"${{ inputs.target-issue-number }}\"},\"create_issue\":{\"max\":1},\"create_pull_request\":{\"draft\":\"${{ inputs.draft-prs }}\",\"max\":1,\"max_patch_size\":10240,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"AGENTS.md\"],\"protected_path_prefixes\":[\".github/\",\".agents/\"]},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"true\"}}"
+          GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

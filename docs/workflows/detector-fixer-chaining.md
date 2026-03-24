@@ -179,3 +179,4 @@ Most detector directories include an `example-chained.yml` you can copy directly
 - The caller workflow needs the union of both workflows' permissions (e.g., `contents: write` + `pull-requests: write` for the fixer).
 - Chaining does not replace the standalone examples — you can still run each workflow independently.
 - Any detector that uses the `create-issue` safe output can chain to `create-pr-from-issue`.
+- For comment-only responses (e.g., triage summaries, implementation guidance without opening a PR), chain to [Create Comment On Issue](gh-agent-workflows/create-comment-on-issue.md) instead.
