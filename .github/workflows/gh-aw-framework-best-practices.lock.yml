@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"e7f1f00d497914852010352fcaba4e1f93b7d2a877e4b8080c79ca8838327290","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"edd84717a9dc69125175e32c21bdbf67225f6eca224971f3faff358fa2927aab","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Framework Best Practices"
 "on":
@@ -52,7 +52,7 @@ name: "Framework Best Practices"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

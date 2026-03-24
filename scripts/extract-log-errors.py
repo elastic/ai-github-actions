@@ -31,7 +31,7 @@ from pathlib import Path
 DEFAULT_PATTERNS = [
     r"##\[error\]",
     r"##\[warning\]",
-    r"\bError:",
+    r"(?i)\berror:",
     r"\bfatal:",
     r"\bFAILED\b",
     r"exited with exit code [^0]",

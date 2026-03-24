@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"82eaa3736678ff7133fa02ad3654fa1d25826d51b5769c38b5005a3aaf5df9a8","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"1c3ef6379be38b477addfacd73905851bde1da7aaf22abab12e6a64bb4c0a429","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Branch Actions Detective"
 "on":
@@ -49,7 +49,7 @@ name: "Branch Actions Detective"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

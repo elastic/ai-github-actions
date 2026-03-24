@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"c324bbf63218eda2158f30d05fff5b0c71e4de132f91b51cb04ad1823ccef980","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"02b0e0381f02ad202c17b6862648650adbbf63ddf44dd4a193ae2a82b2fa8955","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Small Problem Fixer"
 "on":
@@ -49,7 +49,7 @@ name: "Small Problem Fixer"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       draft-prs:

@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"5e7e25ae748e195fdf770ddfc08f0d427ed46f82e2c513f89781988f1111d7b3","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"ec5c8f54447c3d8e0e93df8f10e35a8ab8095e31ffbcc63ce4f862c114e69f01","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Docs Patrol"
 "on":
@@ -52,7 +52,7 @@ name: "Docs Patrol"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       lookback-window:

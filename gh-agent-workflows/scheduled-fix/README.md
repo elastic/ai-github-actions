@@ -6,7 +6,7 @@ Generic base workflow for scheduled fixers — pick up an open issue and create 
 
 The fix agent follows a standard 5-step process (gather candidates, select target, implement, quality gate, create PR) defined by the `scheduled-fix` fragment. You provide the **Fix Assignment** via the `additional-instructions` input, which tells the agent how to find issues, what kind of changes to make, and any domain-specific constraints.
 
-This is the base workflow for building custom fixers. For most use cases, chain a detector directly to Create PR from Issue instead of writing a dedicated fixer. See [Detector / Fixer Chaining](../../docs/workflows/detector-fixer-chaining.md) for the pattern.
+This is the base workflow for building custom fixers. For most use cases, chain a detector directly to Create PR from Issue instead of writing a dedicated fixer. See [Detector / Fixer Chaining](../detector-fixer-chaining.md) for the pattern.
 
 ## Quick Install
 
@@ -33,7 +33,7 @@ See [example.yml](example.yml) for the full workflow file. You **must** customiz
 | `title-prefix` | Title prefix to search for in open issues, e.g. `[my-audit]` | **Yes** | — |
 | `issue-label` | Label to search for in open issues | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
-| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 | `draft-prs` | Create PRs as draft (true/false) | No | `true` |
 
 ## Safe Outputs

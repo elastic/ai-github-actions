@@ -37,7 +37,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"4918ef2c478e6a6a9f40daecf2935f0c5ff5155a0c8146a6faf11238824c5356","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"f7fbf06ffd3ebb43f17a1925aad287cdc7a119ae9c343307440e6c128231070d","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Newbie Contributor Patrol"
 "on":
@@ -50,7 +50,7 @@ name: "Newbie Contributor Patrol"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

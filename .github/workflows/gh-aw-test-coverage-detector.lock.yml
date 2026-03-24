@@ -39,7 +39,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"3549d0824e8f31ac00b1078ad13e17c4ff5f378dbb9f6d99cadfb0d2b5336b9c","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"f4e10e8e31c40478b1de7b2738e1a72c17760f1a14591eb5cf25ef27253caede","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Test Coverage Detector"
 "on":
@@ -52,7 +52,7 @@ name: "Test Coverage Detector"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

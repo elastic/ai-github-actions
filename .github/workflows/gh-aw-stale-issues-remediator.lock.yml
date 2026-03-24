@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"8357d319c38cc39179447515ebe44cba2b4d931ffc02810d21782982fa06a0cb","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"593ddc7e9f9f99cf9d5a27081c763875b4ab2415d46a08861d1ce95aeccc2d04","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Stale Issues Remediator"
 "on":
@@ -53,7 +53,7 @@ name: "Stale Issues Remediator"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       messages-footer:

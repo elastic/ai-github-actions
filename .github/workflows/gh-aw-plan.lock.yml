@@ -36,7 +36,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"f8ecedac57804691c977c94642fc5840b55bac4042255fd747ae8ac28242bece","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"5943a6babc38a51382816b8bda7f3268c18fc92e039d890e6ba603fcc1298e05","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Plan"
 "on":
@@ -49,7 +49,7 @@ name: "Plan"
         type: string
       allowed-bot-users:
         default: github-actions[bot]
-        description: Allowlisted bot actor usernames (comma-separated)
+        description: Allowed bot actor usernames (comma-separated)
         required: false
         type: string
       create-issue-max:
