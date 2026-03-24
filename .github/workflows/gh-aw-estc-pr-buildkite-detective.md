@@ -136,10 +136,29 @@ steps:
           print('Build was canceled; nothing to diagnose')
           sys.exit(0)
 
-      failed = [j for j in build.get('jobs', [])
-                if j.get('state') in ('failed', 'timed_out') and j.get('type') == 'script']
+      def collect_failed_jobs(build_data, pipeline_slug, build_url):
+          """Collect failed script jobs, following trigger jobs to child builds."""
+          FAIL_STATES = ('failed', 'timed_out')
+          results = []
+
+          for job in build_data.get('jobs', []):
+              if job.get('state') not in FAIL_STATES:
+                  continue
+              if job.get('type') == 'script':
+                  results.append((pipeline_slug, build_url, job))
+              elif job.get('type') == 'trigger':
+                  triggered = job.get('triggered_build') or {}
+                  child_url = triggered.get('web_url', '')
+                  cm = BK_URL_RE.search(child_url)
+                  if cm:
+                      child = bk_get(f'organizations/{cm.group(1)}/pipelines/{cm.group(2)}/builds/{cm.group(3)}')
+                      results.extend(collect_failed_jobs(child, cm.group(2), child_url))
+
+          return results
+
+      failed = collect_failed_jobs(build, bk_pipeline, m.group(0))
       if not failed:
-          print(f'No failed script jobs in build (build state: {build["state"]})')
+          print(f'No failed jobs in build (build state: {build["state"]})')
           sys.exit(0)
 
       summary = [
@@ -150,11 +169,12 @@ steps:
           '',
       ]
 
-      for job in failed:
+      for pipeline_slug, build_url, job in failed:
           slug = slugify(job.get('name', f'job-{job["id"]}'))
-          log_file = f'/tmp/gh-aw/buildkite-logs/{bk_pipeline}-{slug}.txt'
+          log_file = f'/tmp/gh-aw/buildkite-logs/{pipeline_slug}-{slug}.txt'
 
           summary.append(f'### {job["name"]}')
+          summary.append(f'Pipeline: {pipeline_slug}  Build: {build_url}')
           summary.append(f'State: {job["state"]}  Exit status: {job.get("exit_status")}')
           summary.append(f'Command: {job.get("command", "").strip()}')
           summary.append(f'Log: {log_file}')
