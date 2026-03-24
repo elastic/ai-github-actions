@@ -71,129 +71,101 @@ safe-outputs:
 strict: false
 timeout-minutes: 30
 steps:
-  - name: Resolve event context
-    run: |
-      set -euo pipefail
-      mkdir -p /tmp/gh-aw
-      {
-        echo "event_name: $GITHUB_EVENT_NAME"
-        if [ "$GITHUB_EVENT_NAME" = "status" ]; then
-          echo "event_id: $(jq -r '.id' "$GITHUB_EVENT_PATH")"
-          echo "failure_state: $(jq -r '.state' "$GITHUB_EVENT_PATH")"
-          echo "commit_sha: $(jq -r '.commit.sha' "$GITHUB_EVENT_PATH")"
-          echo "target_url: $(jq -r '.target_url // empty' "$GITHUB_EVENT_PATH")"
-          echo "branches: $(jq -r '[(.branches // [])[].name] | join(", ")' "$GITHUB_EVENT_PATH")"
-          echo "pr_numbers:"
-        else
-          echo "event_id: $(jq -r '.check_run.id' "$GITHUB_EVENT_PATH")"
-          echo "failure_state: $(jq -r '.check_run.conclusion' "$GITHUB_EVENT_PATH")"
-          echo "commit_sha: $(jq -r '.check_run.head_sha' "$GITHUB_EVENT_PATH")"
-          echo "target_url: $(jq -r '.check_run.details_url // empty' "$GITHUB_EVENT_PATH")"
-          echo "branches:"
-          echo "pr_numbers: $(jq -r '[(.check_run.pull_requests // [])[].number | tostring] | join(", ")' "$GITHUB_EVENT_PATH")"
-        fi
-      } > /tmp/gh-aw/buildkite-event.txt
-      echo "Buildkite event context:"
-      cat /tmp/gh-aw/buildkite-event.txt
-  - name: Fetch Buildkite failure data
+  - name: Resolve event context and fetch Buildkite data
     env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
-      GITHUB_REPOSITORY: ${{ github.repository }}
     run: |
       python3 - << 'PYEOF'
-      import json, os, re, subprocess, sys, urllib.request
+      import json, os, re, sys, urllib.request
 
-      REPO = os.environ['GITHUB_REPOSITORY']
-      BK_TOKEN = os.environ.get('BUILDKITE_API_TOKEN', '')
-      TAIL = 150
-      ANSI = re.compile(r'\x1b(?:\[[0-9;]*[A-Za-z]|_[^\x07]*\x07|[()][AB012]|[=>])')
+      BK_TOKEN = os.environ['BUILDKITE_API_TOKEN']
+      EVENT_NAME = os.environ['GITHUB_EVENT_NAME']
+      LOG_TAIL = 150
+      ANSI_RE = re.compile(r'\x1b(?:\[[0-9;]*[A-Za-z]|_[^\x07]*\x07|[()][AB012]|[=>])')
+      BK_URL_RE = re.compile(r'https://buildkite\.com/([^/]+)/([^/]+)/builds/(\d+)')
 
-      def bk_get(url):
+      os.makedirs('/tmp/gh-aw/buildkite-logs', exist_ok=True)
+
+      def bk_get(path):
+          url = f'https://api.buildkite.com/v2/{path}'
           req = urllib.request.Request(url, headers={'Authorization': f'Bearer {BK_TOKEN}'})
           with urllib.request.urlopen(req) as r:
               return json.load(r)
 
       def slugify(name):
-          name = re.sub(r'[^\w\s-]', '', name)
-          return re.sub(r'\s+', '-', name.strip()).lower()[:60].strip('-')
+          return re.sub(r'\s+', '-', re.sub(r'[^\w\s-]', '', name).strip()).lower()[:60].strip('-')
 
-      # Get PR number from the pre-written event context file
-      pr_number = None
-      try:
-          with open('/tmp/gh-aw/buildkite-event.txt') as f:
-              for line in f:
-                  if line.startswith('pr_numbers:'):
-                      nums = line.split(':', 1)[1].strip()
-                      if nums:
-                          pr_number = nums.split(',')[0].strip()
-                          break
-      except FileNotFoundError:
-          pass
+      with open(os.environ['GITHUB_EVENT_PATH']) as f:
+          event = json.load(f)
+
+      if EVENT_NAME == 'status':
+          commit_sha = event['commit']['sha']
+          target_url = event.get('target_url', '')
+      else:
+          cr = event['check_run']
+          commit_sha = cr['head_sha']
+          target_url = cr.get('details_url', '')
+
+      m = BK_URL_RE.search(target_url)
+      if not m:
+          print(f'No Buildkite build URL in target_url: {target_url}')
+          sys.exit(1)
+
+      bk_org, bk_pipeline, bk_number = m.group(1), m.group(2), m.group(3)
+      build = bk_get(f'organizations/{bk_org}/pipelines/{bk_pipeline}/builds/{bk_number}')
+
+      pr_info = build.get('pull_request') or {}
+      pr_number = pr_info.get('id', '')
+      branch = build.get('branch', '')
+
+      with open('/tmp/gh-aw/buildkite-event.txt', 'w') as f:
+          f.write(f'event_name: {EVENT_NAME}\n')
+          f.write(f'commit_sha: {commit_sha}\n')
+          f.write(f'build_url: {m.group(0)}\n')
+          f.write(f'pipeline: {bk_pipeline}\n')
+          f.write(f'branch: {branch}\n')
+          f.write(f'pr_number: {pr_number}\n')
+      print('Buildkite event context:')
+      print(open('/tmp/gh-aw/buildkite-event.txt').read())
 
       if not pr_number:
-          print('No PR number found in event context; skipping Buildkite data fetch')
+          print('Build is not associated with a PR; nothing to do')
           sys.exit(0)
 
-      checks_raw = subprocess.check_output(
-          ['gh', 'pr', 'checks', pr_number, '--repo', REPO, '--json', 'name,state,link'],
-      )
-
-      seen = {}
-      for c in json.loads(checks_raw):
-          link = c.get('link', '')
-          m = re.match(r'https://buildkite\.com/([^/]+)/([^/]+)/builds/(\d+)', link)
-          if m and m.group(0) not in seen:
-              seen[m.group(0)] = (m.group(1), m.group(2), m.group(3))
-
-      if not seen:
-          print('No Buildkite builds found in PR checks')
+      failed = [j for j in build.get('jobs', []) if j.get('state') == 'failed' and j.get('type') == 'script']
+      if not failed:
+          print('No failed jobs in build')
           sys.exit(0)
 
-      os.makedirs('/tmp/gh-aw/buildkite-logs', exist_ok=True)
-      summary = []
-      total_failed = 0
+      summary = [
+          f'## Build: {m.group(0)}',
+          f'Pipeline: {bk_pipeline}  State: {build["state"]}',
+          f'PR: #{pr_number}  Branch: {branch}',
+          f'Failed jobs: {len(failed)}',
+          '',
+      ]
 
-      for build_url, (org, pipeline, number) in seen.items():
-          build = bk_get(f'https://api.buildkite.com/v2/organizations/{org}/pipelines/{pipeline}/builds/{number}')
-          failed = [j for j in build.get('jobs', []) if j.get('state') == 'failed' and j.get('type') == 'script']
-          if not failed:
-              continue
+      for job in failed:
+          slug = slugify(job.get('name', f'job-{job["id"]}'))
+          log_file = f'/tmp/gh-aw/buildkite-logs/{bk_pipeline}-{slug}.txt'
 
-          summary.append(f'## Build: {build_url}')
-          summary.append(f'Pipeline: {pipeline}  State: {build["state"]}')
-          summary.append(f'Failed jobs: {len(failed)}')
+          summary.append(f'### {job["name"]}')
+          summary.append(f'Exit status: {job.get("exit_status")}')
+          summary.append(f'Command: {job.get("command", "").strip()}')
+          summary.append(f'Log: {log_file}')
           summary.append('')
 
-          for job in failed:
-              total_failed += 1
-              slug = slugify(job.get('name', f'job-{job["id"]}'))
-              log_file = f'/tmp/gh-aw/buildkite-logs/{pipeline}-{slug}.txt'
+          raw_url = job.get('raw_log_url', '')
+          if raw_url:
+              req = urllib.request.Request(raw_url, headers={'Authorization': f'Bearer {BK_TOKEN}'})
+              with urllib.request.urlopen(req) as r:
+                  lines = r.read().decode('utf-8', errors='replace').splitlines()
+              with open(log_file, 'w') as f:
+                  f.write('\n'.join(ANSI_RE.sub('', l) for l in lines[-LOG_TAIL:]))
 
-              summary.append(f'### {job["name"]}')
-              summary.append(f'Exit status: {job.get("exit_status")}')
-              summary.append(f'Command: {job.get("command", "").strip()}')
-              summary.append(f'Log: {log_file}')
-              summary.append('')
-
-              raw_url = job.get('raw_log_url', '')
-              if raw_url:
-                  req = urllib.request.Request(raw_url, headers={'Authorization': f'Bearer {BK_TOKEN}'})
-                  try:
-                      with urllib.request.urlopen(req) as r:
-                          lines = r.read().decode('utf-8', errors='replace').splitlines()
-                      with open(log_file, 'w') as f:
-                          f.write('\n'.join(ANSI.sub('', l) for l in lines[-TAIL:]))
-                  except Exception as e:
-                      with open(log_file, 'w') as f:
-                          f.write(f'Log unavailable: {e}\n')
-
-      if summary:
-          with open('/tmp/gh-aw/buildkite-failures.txt', 'w') as f:
-              f.write('\n'.join(summary))
-          print(f'Fetched {len(seen)} build(s), {total_failed} failed job(s)')
-      else:
-          print('No failed Buildkite jobs found')
+      with open('/tmp/gh-aw/buildkite-failures.txt', 'w') as f:
+          f.write('\n'.join(summary))
+      print(f'Fetched {len(failed)} failed job(s)')
       PYEOF
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
@@ -211,64 +183,42 @@ Analyze failed Buildkite CI builds for pull requests in ${{ github.repository }}
 ## Context
 
 - **Repository**: ${{ github.repository }}
-
-**Read `/tmp/gh-aw/buildkite-event.txt` first.** It contains the event context (commit SHA, target URL, PR numbers, branches, failure state) extracted from the GitHub event payload.
+- **Pre-fetched data**: `/tmp/gh-aw/buildkite-event.txt` (build URL, pipeline, branch, PR number, commit SHA) and `/tmp/gh-aw/buildkite-failures.txt` (failed job summary with log file paths under `/tmp/gh-aw/buildkite-logs/`)
 
 ## Constraints
 
 - **CAN**: Read files, search code, run tests and commands, comment on PRs
 - **CANNOT**: Push changes, merge PRs, or modify `.github/workflows/`
 
-## Investigation Tools
-
-Use the right tool for each task:
-
-- **`search_code`**: Search code in *other* public GitHub repositories — use for finding upstream API changes, reference implementations, or migration guides. Use `grep` and file reading for the local codebase.
-- **`web-fetch`**: Fetch documentation pages, changelogs, or API references for libraries and tools involved in the failure
-- **`bash`**: Run tests locally to verify your analysis, reproduce failures, or check dependency versions
-
-## Failure Categories
-
-Classify each failure to guide your investigation:
-
-- **Code bug**: Logic error, syntax error, type mismatch, nil/null dereference — trace to the specific source file and line
-- **Test failure**: Assertion mismatch, test timeout, flaky test — check if the test itself is wrong or if the code under test changed
-- **Dependency issue**: Missing package, version conflict, lockfile drift, network fetch failure — check dependency files and lockfiles
-- **Infrastructure**: Resource exhaustion, service unavailability, timeout, Docker pull failure — often transient; recommend retry if so
-- **Configuration**: Invalid settings, missing secrets/env vars, incorrect paths — check CI config, environment setup, and workflow definitions
-
 ## Instructions
 
-### Step 1: Gather Context
+### Step 1: Read Pre-Fetched Data
 
-1. Read `/tmp/gh-aw/buildkite-event.txt` to get the event context. Use the `commit_sha` value. If it is empty, discover it from the PR's commit statuses or check runs.
-2. Find the associated pull request(s):
-   - If `pr_numbers` is non-empty (from `check_run` events), use those PR numbers directly with `pull_request_read` method `get`.
-   - Otherwise, use `bash` + `gh api repos/${{ github.repository }}/commits/{commit_sha}/pulls` to find PRs containing the commit SHA. Filter the results to keep only PRs whose `state` is `"open"` and, when `branches` is non-empty, whose `head.ref` matches one of the listed branches. If no candidates remain, also try searching open PRs whose head branch matches one of the branches.
-   - If no PR is found after all attempts, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
-3. For each matching PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status for downstream analysis.
+1. Read `/tmp/gh-aw/buildkite-event.txt` for the PR number, build URL, branch, and commit SHA.
+2. Read `/tmp/gh-aw/buildkite-failures.txt` for the failed job summary. If it does not exist, call `noop` with "No Buildkite failure data" and stop.
+3. Read the individual log files listed in the summary (under `/tmp/gh-aw/buildkite-logs/`).
+4. Call `pull_request_read` with method `get` on the PR number to get the author, diff, and recent changes.
 
-### Step 2: Read the Pre-Fetched Buildkite Data
+### Step 2: Analyze
 
-Read `/tmp/gh-aw/buildkite-failures.txt` — it contains a summary of all failed Buildkite jobs for this PR, with the path to each job's log file. Then read the individual log files listed in the summary (under `/tmp/gh-aw/buildkite-logs/`) to get the full failure output.
+Classify each failure:
 
-If the file does not exist, call `noop` with message "No pre-fetched Buildkite failure data found; nothing to do" and stop.
+- **Code bug**: Logic error, syntax error, type mismatch, nil/null dereference
+- **Test failure**: Assertion mismatch, test timeout, flaky test
+- **Dependency issue**: Missing package, version conflict, lockfile drift
+- **Infrastructure**: Resource exhaustion, service unavailability, timeout — recommend retry if transient
+- **Configuration**: Invalid settings, missing secrets/env vars, incorrect paths
 
-### Step 3: Analyze
+For each:
 
-1. **Identify the failure**: Which job(s) and step(s) failed? What is the specific error message or stack trace?
-2. **Trace to source code**: Use `grep` and file reading to find the relevant source files. Check recent changes in the PR diff that may have introduced the failure.
-3. **Classify the failure**: Use the failure categories above to determine the type. This guides your fix recommendation.
-4. **Research if needed**: If the error involves an external library, API, or tool, use `web-fetch` to check documentation or changelogs for known issues, breaking changes, or migration guides.
-5. **Propose a fix**: Provide a concrete, minimal fix or remediation plan. If you can run tests locally to verify your theory, do so.
-6. **Handle inconclusive cases**: If logs are insufficient to determine root cause, state exactly what additional data is needed and suggest next steps the author can take.
-7. **Deduplication**: Before posting, check the most recent prior `PR Buildkite Detective` comment on the same PR (if any) and compare:
-   - failing job(s) and step(s),
-   - root cause summary, and
-   - recommended remediation.
-   If both the diagnosed issue and remediation are materially the same as the last detective report, call `noop` with a short "no meaningful change since last report" reason instead of posting another comment.
+1. Identify the specific error from the logs.
+2. Trace to source code using `grep` and file reading. Check recent PR changes that may have introduced the failure.
+3. If the error involves an external library or tool, use `web-fetch` to check docs/changelogs.
+4. Propose a concrete fix or, if inconclusive, state what additional data is needed.
 
-### Step 4: Respond
+**Deduplication**: Check the most recent prior detective comment on the PR. If the root cause and remediation are the same, call `noop` instead of posting a duplicate.
+
+### Step 3: Respond
 
 Call `add_comment` on the PR using this structure:
 
