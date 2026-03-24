@@ -30,11 +30,12 @@
 #     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
+#     - gh-aw-fragments/safe-output-add-comment-limitations.md
 #     - gh-aw-fragments/safe-output-add-comment-pr-hide-older.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"17ab5d51e4e6fa4dd4949c2bff453989342eeeb6d518893a5c326a0ec8573245","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"2333460bf4390b9aa4aa54fc778736aab588e9b9a6c5c71c8cdda77dc4cb20ce","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "PR Buildkite Detective"
 "on":
@@ -262,6 +263,12 @@ jobs:
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
           ## add-comment Limitations
           
           - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
@@ -272,8 +279,6 @@ jobs:
           - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
           
           If you exceed 10 mentions or 50 links, the comment will be rejected.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'

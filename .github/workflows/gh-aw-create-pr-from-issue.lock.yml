@@ -32,13 +32,14 @@
 #     - gh-aw-fragments/playwright-mcp-explorer.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
+#     - gh-aw-fragments/safe-output-add-comment-limitations.md
 #     - gh-aw-fragments/safe-output-add-comment-issue.md
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"e7feef367bc33174c3b59715d0c2aba08cca73f4975bd364c9ae6d4477c30fc3","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"b6c6b932baa61f8a5792e4e6f514e08699043216c6843cd948e3baac4f63da28","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Create PR From Issue"
 "on":
@@ -333,16 +334,7 @@ jobs:
           Playwright MCP tools are available for interactive browser automation. Full instructions are in `/tmp/playwright-instructions.md` — read it before using any Playwright tools.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          ## add-comment Limitations
-          
-          - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
-          - **Mentions**: Max 10 `@` mentions per comment.
-          - **Links**: Max 50 URLs per comment.
-          - **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.
-          - **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.
-          - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures unless it's referencing the triggering issue.
-          
-          If you exceed 10 mentions or 50 links, the comment will be rejected.
+          **Exception**: Bot trigger neutralization does not apply when referencing the triggering issue.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist.
@@ -358,6 +350,19 @@ jobs:
           - **Max per run**: Typically 1 PR creation per workflow run.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## add-comment Limitations
+          
+          - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
+          - **Mentions**: Max 10 `@` mentions per comment.
+          - **Links**: Max 50 URLs per comment.
+          - **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.
+          - **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.
+          - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
+          
+          If you exceed 10 mentions or 50 links, the comment will be rejected.
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'

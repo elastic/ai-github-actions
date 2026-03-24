@@ -31,13 +31,14 @@
 #     - gh-aw-fragments/network-ecosystems.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
+#     - gh-aw-fragments/safe-output-add-comment-limitations.md
 #     - gh-aw-fragments/safe-output-add-comment-issue.md
 #     - gh-aw-fragments/safe-output-create-pr.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"dc382c574182b17e043d27178c620cff72e1467b88886680c83dfc923eb9fc5b","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"846c9e03b4cad9b21f7e56c459f3ac6b4400a43859425329c9b3c61ba9003cf0","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Issue Fixer"
 "on":
@@ -337,16 +338,7 @@ jobs:
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          ## add-comment Limitations
-          
-          - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
-          - **Mentions**: Max 10 `@` mentions per comment.
-          - **Links**: Max 50 URLs per comment.
-          - **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.
-          - **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.
-          - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures unless it's referencing the triggering issue.
-          
-          If you exceed 10 mentions or 50 links, the comment will be rejected.
+          **Exception**: Bot trigger neutralization does not apply when referencing the triggering issue.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           Before calling `create_pull_request`, call `ready_to_make_pr` and apply its checklist.
@@ -362,6 +354,19 @@ jobs:
           - **Max per run**: Typically 1 PR creation per workflow run.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## add-comment Limitations
+          
+          - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
+          - **Mentions**: Max 10 `@` mentions per comment.
+          - **Links**: Max 50 URLs per comment.
+          - **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.
+          - **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.
+          - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
+          
+          If you exceed 10 mentions or 50 links, the comment will be rejected.
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'

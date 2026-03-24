@@ -32,12 +32,13 @@
 #     - gh-aw-fragments/playwright-mcp-explorer.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
+#     - gh-aw-fragments/safe-output-add-comment-limitations.md
 #     - gh-aw-fragments/safe-output-add-comment-issue.md
 #     - gh-aw-fragments/workflow-edit-guardrails.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"2d5c3e88cf9bf63e0786892214257640dc2e7f38f0ab9c3261da782556dfb385","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"bfbea8156257718d25108ae3437ff1988ad740356fff419a1c8cf22b554bdf17","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Create Comment On Issue"
 "on":
@@ -316,6 +317,12 @@ jobs:
           Playwright MCP tools are available for interactive browser automation. Full instructions are in `/tmp/playwright-instructions.md` — read it before using any Playwright tools.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
+          **Exception**: Bot trigger neutralization does not apply when referencing the triggering issue.
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
           ## add-comment Limitations
           
           - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
@@ -323,11 +330,9 @@ jobs:
           - **Links**: Max 50 URLs per comment.
           - **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.
           - **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.
-          - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures unless it's referencing the triggering issue.
+          - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
           
           If you exceed 10 mentions or 50 links, the comment will be rejected.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'

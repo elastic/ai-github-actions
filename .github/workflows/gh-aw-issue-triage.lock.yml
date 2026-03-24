@@ -33,11 +33,12 @@
 #     - gh-aw-fragments/playwright-mcp-explorer.md
 #     - gh-aw-fragments/rigor.md
 #     - gh-aw-fragments/runtime-setup.md
+#     - gh-aw-fragments/safe-output-add-comment-limitations.md
 #     - gh-aw-fragments/safe-output-add-comment-issue.md
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"504640c476e0388d38f9a17b956737246e3d297997fbd1832c08efa5bca03df9","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"f827ec8d0cd5f5c05777199acf7e4993060acd47006715ebea0d3760c8db4ba4","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Issue Triage"
 "on":
@@ -322,16 +323,7 @@ jobs:
           Playwright MCP tools are available for interactive browser automation. Full instructions are in `/tmp/playwright-instructions.md` — read it before using any Playwright tools.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
-          ## add-comment Limitations
-          
-          - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
-          - **Mentions**: Max 10 `@` mentions per comment.
-          - **Links**: Max 50 URLs per comment.
-          - **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.
-          - **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.
-          - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures unless it's referencing the triggering issue.
-          
-          If you exceed 10 mentions or 50 links, the comment will be rejected.
+          **Exception**: Bot trigger neutralization does not apply when referencing the triggering issue.
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
           ### Pick Three, Keep One
@@ -356,6 +348,19 @@ jobs:
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
+          
+          GH_AW_PROMPT_EOF
+          cat << 'GH_AW_PROMPT_EOF'
+          ## add-comment Limitations
+          
+          - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
+          - **Mentions**: Max 10 `@` mentions per comment.
+          - **Links**: Max 50 URLs per comment.
+          - **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.
+          - **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.
+          - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
+          
+          If you exceed 10 mentions or 50 links, the comment will be rejected.
           
           GH_AW_PROMPT_EOF
           cat << 'GH_AW_PROMPT_EOF'
