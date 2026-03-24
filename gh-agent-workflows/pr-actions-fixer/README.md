@@ -33,5 +33,5 @@ See [example.yml](example.yml) for the full workflow file.
 
 ## Safe Outputs
 
-- `add-comment` — post a comment explaining the failure (max 3)
+- `add-comment` — post a comment explaining the failure (max 1)
 - `push-to-pull-request-branch` — push a fix to the PR branch

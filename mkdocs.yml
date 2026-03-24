@@ -37,12 +37,14 @@ nav:
           - Stale Issues: workflows/gh-agent-workflows/stale-issues.md
           - Update PR Body: workflows/gh-agent-workflows/update-pr-body.md
           - Issue Fixer: workflows/gh-agent-workflows/issue-fixer.md
+          - Branch Actions Detective: workflows/gh-agent-workflows/branch-actions-detective.md
           - PR Actions Detective: workflows/gh-agent-workflows/pr-actions-detective.md
           - PR Actions Fixer: workflows/gh-agent-workflows/pr-actions-fixer.md
           - Dependency Review: workflows/gh-agent-workflows/dependency-review.md
           - PR Review (Fork): workflows/gh-agent-workflows/pr-review-fork.md
       - Codebase Maintenance:
           - Detector / Fixer Chaining: workflows/detector-fixer-chaining.md
+          - Create Comment On Issue: workflows/gh-agent-workflows/create-comment-on-issue.md
           - Bug Hunting: workflows/gh-agent-workflows/bugs.md
           - Code Duplication: workflows/gh-agent-workflows/code-duplication.md
           - Code Complexity: workflows/gh-agent-workflows/code-complexity.md
