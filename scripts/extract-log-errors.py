@@ -53,12 +53,12 @@ def find_log_files(path: str) -> list[str]:
 
 
 def extract_matches(filepath: str, patterns: list[re.Pattern], context: int) -> list[dict]:
-    """Return a list of match records with surrounding context."""
+    """Return match records with surrounding context from a readable log file."""
     try:
         with open(filepath, "r", encoding="utf-8", errors="replace") as f:
             lines = f.readlines()
-    except OSError as e:
-        return [{"file": filepath, "error": str(e)}]
+    except OSError:
+        return []
 
     matched_lines = find_matching_lines(lines, patterns)
     if not matched_lines:
@@ -123,36 +123,48 @@ def build_patterns(pattern_file: str | None) -> list[re.Pattern]:
     return patterns
 
 
-def collect_log_files(log_path: str | None, manifest_path: str | None) -> tuple[list[str], dict[str, dict]]:
+def collect_log_files(
+    log_path: str | None, manifest_path: str | None
+) -> tuple[list[str], dict[str, dict], dict[str, dict]]:
     if manifest_path:
         return collect_log_files_from_manifest(load_manifest(manifest_path))
     if log_path:
-        return find_log_files(log_path), {}
+        return find_log_files(log_path), {}, {}
     print("Error: provide a log path or --manifest", file=sys.stderr)
     sys.exit(1)
 
 
-def collect_log_files_from_manifest(manifest: list[dict]) -> tuple[list[str], dict[str, dict]]:
+def collect_log_files_from_manifest(
+    manifest: list[dict],
+) -> tuple[list[str], dict[str, dict], dict[str, dict]]:
     log_files: list[str] = []
     run_meta: dict[str, dict] = {}
+    file_run_meta: dict[str, dict] = {}
 
     for entry in manifest:
         run_id = str(entry["run_id"])
-        run_meta[run_id] = {
+        run_record = {
             "run_id": entry["run_id"],
             "conclusion": entry.get("conclusion", ""),
             "created_at": entry.get("created_at", ""),
             "html_url": entry.get("html_url", ""),
         }
+        run_meta[run_id] = run_record
         for log_file in entry.get("log_files", []):
             log_files.append(log_file)
+            file_run_meta[log_file] = run_record
 
-    return log_files, run_meta
+    return log_files, run_meta, file_run_meta
 
 
-def attach_run_metadata(matches: list[dict], run_meta: dict[str, dict]) -> None:
+def attach_run_metadata(
+    matches: list[dict], run_meta: dict[str, dict], file_run_meta: dict[str, dict]
+) -> None:
     for match in matches:
         filepath = match.get("file", "")
+        if filepath in file_run_meta:
+            match["run"] = file_run_meta[filepath]
+            continue
         parts = Path(filepath).parts
         for part in parts:
             if part in run_meta:
@@ -174,7 +186,12 @@ def emit_output(summary: dict, output_path: str | None) -> None:
 def emit_empty_output(output_path: str | None) -> None:
     if not output_path:
         return
-    empty = {"total_files_scanned": 0, "total_matches": 0, "matches": []}
+    empty = {
+        "total_files_scanned": 0,
+        "total_matches": 0,
+        "matches": [],
+        "file_errors": [],
+    }
     with open(output_path, "w") as f:
         json.dump(empty, f, indent=2)
 
@@ -194,7 +211,7 @@ def main() -> None:
     args = parser.parse_args()
 
     patterns = build_patterns(args.patterns)
-    log_files, run_meta = collect_log_files(args.log_path, args.manifest)
+    log_files, run_meta, file_run_meta = collect_log_files(args.log_path, args.manifest)
 
     if not log_files:
         print("No log files found.", file=sys.stderr)
@@ -204,16 +221,26 @@ def main() -> None:
     print(f"Scanning {len(log_files)} log file(s)...", file=sys.stderr)
 
     all_matches: list[dict] = []
+    file_errors: list[dict] = []
     for filepath in log_files:
+        if not os.path.isfile(filepath):
+            file_errors.append({"file": filepath, "error": "File not found"})
+            continue
+        if not os.access(filepath, os.R_OK):
+            file_errors.append({"file": filepath, "error": "File is not readable"})
+            continue
+
         matches = extract_matches(filepath, patterns, args.context)
         all_matches.extend(matches)
 
-    attach_run_metadata(all_matches, run_meta)
+    attach_run_metadata(all_matches, run_meta, file_run_meta)
+    attach_run_metadata(file_errors, run_meta, file_run_meta)
 
     summary = {
         "total_files_scanned": len(log_files),
         "total_matches": len(all_matches),
         "matches": all_matches,
+        "file_errors": file_errors,
     }
 
     emit_output(summary, args.output)

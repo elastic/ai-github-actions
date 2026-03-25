@@ -135,4 +135,44 @@ def test_main_writes_empty_output_for_empty_manifest_logs(tmp_path):
         "total_files_scanned": 0,
         "total_matches": 0,
         "matches": [],
+        "file_errors": [],
     }
+
+
+def test_main_manifest_separates_missing_file_errors_from_matches(tmp_path):
+    manifest = tmp_path / "manifest.json"
+    missing_file = tmp_path / "does-not-exist.txt"
+    manifest.write_text(
+        json.dumps(
+            [
+                {
+                    "run_id": 3001,
+                    "conclusion": "failure",
+                    "created_at": "2026-03-25T00:00:00Z",
+                    "html_url": "https://example.invalid/run/3001",
+                    "log_files": [str(missing_file)],
+                }
+            ]
+        )
+    )
+
+    output_path = tmp_path / "result.json"
+    result = run_script("--manifest", str(manifest), "--output", str(output_path), "--context", "0")
+
+    assert result.returncode == 0
+    summary = json.loads(output_path.read_text())
+    assert summary["total_files_scanned"] == 1
+    assert summary["total_matches"] == 0
+    assert summary["matches"] == []
+    assert summary["file_errors"] == [
+        {
+            "file": str(missing_file),
+            "error": "File not found",
+            "run": {
+                "run_id": 3001,
+                "conclusion": "failure",
+                "created_at": "2026-03-25T00:00:00Z",
+                "html_url": "https://example.invalid/run/3001",
+            },
+        }
+    ]
