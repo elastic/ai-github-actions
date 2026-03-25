@@ -139,8 +139,8 @@ steps:
       if not pr_number:
           skip('Build is not associated with a PR; skipping')
 
-      if build['state'] == 'canceled':
-          skip('Build was canceled; skipping')
+      if build['state'] not in ('failed', 'failing'):
+          skip(f'Build is not finished (state: {build["state"]}); skipping')
 
       def collect_failed_jobs(build_data, pipeline_slug, build_url):
           """Collect failed script jobs, following trigger jobs to child builds."""
