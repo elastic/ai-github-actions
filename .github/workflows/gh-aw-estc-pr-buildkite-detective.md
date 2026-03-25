@@ -74,9 +74,12 @@ steps:
   - name: Resolve event context and fetch Buildkite data
     env:
       BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_RUN_ID: ${{ github.run_id }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
     run: |
       python3 - << 'PYEOF'
-      import json, os, re, sys, urllib.request
+      import json, os, re, subprocess, sys, urllib.request
 
       BK_TOKEN = os.environ['BUILDKITE_API_TOKEN']
       EVENT_NAME = os.environ['GITHUB_EVENT_NAME']
@@ -128,13 +131,16 @@ steps:
       print('Buildkite event context:')
       print(open('/tmp/gh-aw/buildkite-event.txt').read())
 
+      def skip(reason):
+          subprocess.run(['bash', '-c', f'echo "::notice::{reason}"'], check=False)
+          print(reason)
+          sys.exit(1)
+
       if not pr_number:
-          print('Build is not associated with a PR; nothing to do')
-          sys.exit(0)
+          skip('Build is not associated with a PR; skipping')
 
       if build['state'] == 'canceled':
-          print('Build was canceled; nothing to diagnose')
-          sys.exit(0)
+          skip('Build was canceled; skipping')
 
       def collect_failed_jobs(build_data, pipeline_slug, build_url):
           """Collect failed script jobs, following trigger jobs to child builds."""
@@ -158,8 +164,7 @@ steps:
 
       failed = collect_failed_jobs(build, bk_pipeline, m.group(0))
       if not failed:
-          print(f'No failed jobs in build (build state: {build["state"]})')
-          sys.exit(0)
+          skip(f'No failed script jobs in build (build state: {build["state"]})')
 
       summary = [
           f'## Build: {m.group(0)}',
