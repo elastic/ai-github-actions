@@ -238,7 +238,7 @@ if [ "$skip_secret" = false ]; then
         exit 1
       fi
     else
-      echo "No COPILOT_GITHUB_TOKEN set and stdin is not a terminal." >&2
+      echo "COPILOT_GITHUB_TOKEN is not set, and stdin is not a terminal." >&2
       echo "Set COPILOT_GITHUB_TOKEN in your environment, or use --skip-secret." >&2
       exit 1
     fi

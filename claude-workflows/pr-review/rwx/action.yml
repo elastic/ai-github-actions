@@ -137,7 +137,7 @@ runs:
           This workflow allows code suggestions via inline comments in GitHub PR review comments.
           
           You CAN: Read/analyze code, review diffs, provide code suggestions (via ```suggestion blocks), write/modify files locally to verify your recommendations work, run tests to verify fixes
-          You CANNOT: Create branches, checkout branches, commit code to the repository
+          You CANNOT: Create branches, check out branches, commit code to the repository
           Do not push changes to the repository.
           
           **Important**: You can make local code changes to verify your recommendations work, but you cannot push those changes.
