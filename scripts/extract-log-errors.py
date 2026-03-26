@@ -171,14 +171,6 @@ def emit_output(summary: dict, output_path: str | None) -> None:
     print(output_text)
 
 
-def emit_empty_output(output_path: str | None) -> None:
-    if not output_path:
-        return
-    empty = {"total_files_scanned": 0, "total_matches": 0, "matches": []}
-    with open(output_path, "w") as f:
-        json.dump(empty, f, indent=2)
-
-
 def main() -> None:
     parser = argparse.ArgumentParser(description="Extract errors from GitHub Actions log files.")
     parser.add_argument("log_path", nargs="?", default=None,
@@ -198,17 +190,15 @@ def main() -> None:
 
     if not log_files:
         print("No log files found.", file=sys.stderr)
-        emit_empty_output(args.output)
-        sys.exit(0)
+        all_matches: list[dict] = []
+    else:
+        print(f"Scanning {len(log_files)} log file(s)...", file=sys.stderr)
+        all_matches = []
+        for filepath in log_files:
+            matches = extract_matches(filepath, patterns, args.context)
+            all_matches.extend(matches)
 
-    print(f"Scanning {len(log_files)} log file(s)...", file=sys.stderr)
-
-    all_matches: list[dict] = []
-    for filepath in log_files:
-        matches = extract_matches(filepath, patterns, args.context)
-        all_matches.extend(matches)
-
-    attach_run_metadata(all_matches, run_meta)
+        attach_run_metadata(all_matches, run_meta)
 
     summary = {
         "total_files_scanned": len(log_files),
