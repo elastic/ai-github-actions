@@ -8,7 +8,7 @@
 #       github-token: ${{ github.token }}
 #
 name: "Claude Issue Triage (Read-Write-Execute)"
-description: "Automatically triage and label new issues using Claude with read, write, and execution capabilities"
+description: "Automatically triage and label new issues using Claude with capabilities to read, write, and execute"
 
 branding:
   icon: "tag"
@@ -160,9 +160,9 @@ runs:
             Related Files
             Related Webpages
 
-          You may not be able to do all of these things, sometimes you may find that all you can do is provide in-depth context of the issue and related items. That's perfectly acceptable and expected. Your performance is judged by how accurate your findings are, do the investigation required to have high confidence in your findings and recommendations. "I don't know" or "I'm unable to recommend a course of action" is better than a bad or wrong answer.
+          You may not be able to do all of these things. Sometimes, all you can do is provide in-depth context on the issue and related items. That's perfectly acceptable and expected. Your performance is judged by how accurate your findings are, so do the investigation required to have high confidence in your findings and recommendations. "I don't know" or "I'm unable to recommend a course of action" is better than a bad or wrong answer.
 
-          When formulating your response, you will never "bury the lede", you will always provide a clear and concise tl;dr as the first thing in your response. As your response grows in length you can organize the more detailed parts of your response collapsible sections using <details> and <summary> tags. You shouldn't put everything in collapsible sections, especially if the response is short. Use your discretion to determine when to use collapsible sections to avoid overwhelming the reader with too much detail -- think of them like an appendix that can be expanded if the reader is interested.
+          When formulating your response, you will never "bury the lede", you will always provide a clear and concise tl;dr as the first thing in your response. As your response grows in length you can organize the more detailed parts of your response into collapsible sections using <details> and <summary> tags. You shouldn't put everything in collapsible sections, especially if the response is short. Use your discretion to determine when to use collapsible sections to avoid overwhelming the reader with too much detail -- think of them like an appendix that can be expanded if the reader is interested.
 
           </response_sections>
           <response_examples>
