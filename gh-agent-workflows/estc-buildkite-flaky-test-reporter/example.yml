@@ -1,0 +1,23 @@
+name: Buildkite Flaky Test Reporter
+on:
+  schedule:
+    - cron: "0 9 * * 1"  # every Monday at 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-buildkite-flaky-test-reporter.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
+    # with:
+    #   buildkite-organization-slug: "my-org"       # defaults to GitHub org name
+    #   buildkite-test-suite-slugs: "suite-a suite-b"  # defaults to all suites
+    #   min-occurrences: 2                            # minimum flaky occurrences
+    #   issue-label: "flaky-test"                     # label applied to new issues

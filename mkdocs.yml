@@ -75,6 +75,7 @@ nav:
       - Elastic-specific:
           - Docs PR Review (Elastic-specific): workflows/gh-agent-workflows/estc-docs-pr-review.md
           - PR Buildkite Detective (Elastic-specific): workflows/gh-agent-workflows/estc-pr-buildkite-detective.md
+          - Buildkite Flaky Test Reporter (Elastic-specific): workflows/gh-agent-workflows/estc-buildkite-flaky-test-reporter.md
           - Docs Patrol External (Elastic-specific): workflows/gh-agent-workflows/estc-docs-patrol-external.md
           - Newbie Contributor Patrol External (Elastic-specific): workflows/gh-agent-workflows/estc-newbie-contributor-patrol-external.md
           - Resource Not Accessible Detector (Elastic-specific): workflows/gh-agent-workflows/estc-actions-resource-not-accessible-detector.md

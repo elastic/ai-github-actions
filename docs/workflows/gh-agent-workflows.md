@@ -118,14 +118,17 @@ These workflows are tailored for Elastic's internal tooling and documentation pl
 
 #### Scheduled
 
+| Workflow | Trigger | Description |
+| --- | --- | --- |
+| [Buildkite Flaky Test Reporter (Elastic-specific)](gh-agent-workflows/estc-buildkite-flaky-test-reporter.md) | Weekly schedule | Fetch flaky tests from Buildkite Test Engine and file per-test GitHub issues or update existing ones |
+| [Resource Not Accessible Detector (Elastic-specific)](gh-agent-workflows/estc-actions-resource-not-accessible-detector.md) | Daily schedule | Detect `Resource not accessible by integration` CI errors and file one combined tracking issue |
+
+#### Scheduled (detector / fixer pairs)
+
 | Detector | Fixer | Domain |
 | --- | --- | --- |
 | [Docs Patrol External (Elastic-specific)](gh-agent-workflows/estc-docs-patrol-external.md) | — | Stale published Elastic docs |
 | [Newbie Contributor Patrol External (Elastic-specific)](gh-agent-workflows/estc-newbie-contributor-patrol-external.md) | — | Cross-referencing published Elastic docs |
-
-| Workflow | Trigger | Description |
-| --- | --- | --- |
-| [Resource Not Accessible Detector (Elastic-specific)](gh-agent-workflows/estc-actions-resource-not-accessible-detector.md) | Daily schedule | Detect `Resource not accessible by integration` CI errors and file one combined tracking issue |
 
 ## Secrets
 

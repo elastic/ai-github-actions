@@ -19,6 +19,7 @@ cd "$REPO_ROOT"
 # Workflows that are not dogfooded in this repository.
 EXCLUDED_WORKFLOWS=(
   "estc-actions-resource-not-accessible-detector"
+  "estc-buildkite-flaky-test-reporter"
   "estc-docs-patrol-external"
   "estc-newbie-contributor-patrol-external"
   "flaky-test-investigator"
