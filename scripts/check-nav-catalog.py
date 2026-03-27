@@ -65,8 +65,10 @@ def extract_nav_slugs(mkdocs_text: str) -> set[str]:
     nav_lines: list[str] = []
     for line in lines[nav_start:]:
         stripped = line.lstrip()
-        if not stripped or stripped.startswith("#"):
+        if not stripped:
             nav_lines.append(line)
+            continue
+        if stripped.startswith("#"):
             continue
 
         indent = len(line) - len(stripped)
