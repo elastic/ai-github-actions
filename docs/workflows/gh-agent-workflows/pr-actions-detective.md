@@ -29,11 +29,11 @@ mkdir -p .github/workflows && curl -fsSL \
 | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
-| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | `github-actions[bot]` |
+| `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | `github-actions[bot]` |
 
 ## Safe outputs
 
-- `add-comment` — post a comment explaining the failure (max 3)
+- `add-comment` — post a comment explaining the failure (max 1, hides older detective comments)
 - `noop` — emitted when no failed jobs are found or diagnosis unchanged since last report
 
 ## Example workflow
