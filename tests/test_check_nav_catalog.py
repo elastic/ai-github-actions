@@ -50,6 +50,19 @@ extra: workflows/gh-agent-workflows/outside-nav.md
     }
 
 
+def test_extract_nav_slugs_ignores_commented_nav_entries() -> None:
+    mkdocs = """
+site_name: docs
+nav:
+  - Home: index.md
+  # - Bug Hunter: workflows/gh-agent-workflows/bug-hunter.md
+  - Workflows:
+      - Create PR: workflows/gh-agent-workflows/create-pr-from-issue.md
+"""
+
+    assert check_nav_catalog.extract_nav_slugs(mkdocs) == {"create-pr-from-issue"}
+
+
 def test_extract_mentioned_slugs_from_links_and_directory_references() -> None:
     page = """
 See [Bug Hunter](gh-agent-workflows/bug-hunter.md#details) and
