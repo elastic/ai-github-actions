@@ -41,4 +41,4 @@ See [example.yml](example.yml) for the full workflow file.
 
 ## Pairing
 
-This detector finds complexity hotspots. Chain it to [Create PR from Issue](../detector-fixer-chaining.md) to automatically fix findings.
+This detector finds complexity hotspots. Chain it to [Create PR from Issue](../../docs/workflows/detector-fixer-chaining.md) to automatically fix findings.
