@@ -1,6 +1,7 @@
 ---
 safe-outputs:
   resolve-pull-request-review-thread:
+    # TODO(github/gh-aw#23768): restore `max: ${{ inputs.resolve-pull-request-review-thread-max }}`
     max: 10
     target: "triggering"
 ---
