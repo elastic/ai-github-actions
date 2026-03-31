@@ -99,7 +99,7 @@ runs:
           This workflow allows read, write, and execute capabilities but cannot push changes.
           
           You CAN: Read/analyze code, modify files, write code, run tests, execute commands
-          You CANNOT: Commit code, push changes, create branches, checkout branches, create pull requests
+          You CANNOT: Commit code, push changes, create branches, check out branches, create pull requests
           
           **Important**: You cannot push changes to the repository - you can only make changes locally and provide feedback or recommendations.
           </constraints>
