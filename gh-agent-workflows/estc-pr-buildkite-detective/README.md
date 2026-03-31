@@ -21,7 +21,7 @@ See [example.yml](example.yml) for the full workflow file.
 | Event | Types | Condition |
 | --- | --- | --- |
 | `status` | N/A | Commit status changed to `failure` |
-| `check_run` | `completed` | Check run completed with conclusion `failure` |
+| `check_run` | `completed` | Check run completed with conclusion `failure` and `details_url` contains `buildkite.com` |
 
 ## Inputs
 
