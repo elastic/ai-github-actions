@@ -520,7 +520,7 @@ class TestPushGuards:
 
 
 class TestCreateGuards:
-    """Test the merge-commit guard in the create fragment."""
+    """Test guards in the create fragment (bundle format supports merge commits)."""
 
     @pytest.fixture
     def py_code(self):
@@ -536,8 +536,8 @@ class TestCreateGuards:
         output = run_py_in_repo(py_code, str(repo))
         assert output["status"] == "ok"
 
-    def test_merge_commit_detected(self, py_code, tmp_path):
-        """A merge commit should be detected by the create guard."""
+    def test_merge_commit_allowed(self, py_code, tmp_path):
+        """Merge commits are allowed with patch-format: bundle."""
         repo = make_git_repo(tmp_path, with_upstream=True)
 
         # Create a side branch and merge it
@@ -552,8 +552,7 @@ class TestCreateGuards:
         subprocess.run(["git", "merge", "side", "--no-edit"], cwd=str(repo), check=True, capture_output=True)
 
         output = run_py_in_repo(py_code, str(repo))
-        assert output["status"] == "error"
-        assert "Merge commit" in output["error"]
+        assert output["status"] == "ok"
 
     def test_no_upstream_fails_closed(self, py_code, tmp_path):
         """Without an upstream ref, the create guard should fail closed."""
