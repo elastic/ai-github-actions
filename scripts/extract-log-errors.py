@@ -128,7 +128,7 @@ def collect_log_files(log_path: str | None, manifest_path: str | None) -> tuple[
         return collect_log_files_from_manifest(load_manifest(manifest_path))
     if log_path:
         return find_log_files(log_path), {}
-    print("Error: provide a log path or --manifest", file=sys.stderr)
+    print("Error: provide either a log path or --manifest.", file=sys.stderr)
     sys.exit(1)
 
 
