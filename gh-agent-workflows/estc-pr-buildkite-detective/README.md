@@ -39,4 +39,6 @@ See [example.yml](example.yml) for the full workflow file.
 ## Safe Outputs
 
 - `add-comment` — post a comment explaining the failure (max 1, hides older detective comments)
-- `noop` — emitted when no failed jobs are found or diagnosis unchanged since last report
+- `noop` — emitted when diagnosis is unchanged since the last report
+
+If the agent starts but the pre-fetched Buildkite summary is unavailable, it emits `noop` (`No Buildkite failure data`). If no failed script jobs are found (or the build is not a PR build / not in a failed state), the workflow exits early with a notice and does not emit `noop`.
