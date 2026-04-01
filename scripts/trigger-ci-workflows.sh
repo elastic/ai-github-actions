@@ -141,5 +141,5 @@ if [[ "$DRY_RUN" == "false" ]]; then
       monitors)  total=$((total + ${#MONITORS[@]})) ;;
     esac
   done
-  echo "Dispatched $total workflows across ${#CATEGORIES[@]} categories."
+  echo "Attempted to dispatch $total workflows across ${#CATEGORIES[@]} categories."
 fi
