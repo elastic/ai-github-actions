@@ -46,7 +46,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"a82aa8f5c41673e50893084b602fec7e7756be8d1a9b5fdaa2e5542f29cd4742","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"ec7f618a16797c0253267107123b638e3525d0b9daa598e80ef605ca0491b3fc","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "Mention in PR (no sandbox)"
 "on":
@@ -136,7 +136,7 @@ jobs:
       title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@434db859afd7d2f407ada3180f80d4541f06f0a4 # v0.62.4
+        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Compute artifact prefix
@@ -150,7 +150,7 @@ jobs:
           GH_AW_INFO_ENGINE_ID: "copilot"
           GH_AW_INFO_ENGINE_NAME: "GitHub Copilot CLI"
           GH_AW_INFO_MODEL: "${{ inputs.model }}"
-          GH_AW_INFO_VERSION: ""
+          GH_AW_INFO_VERSION: "latest"
           GH_AW_INFO_AGENT_VERSION: "latest"
           GH_AW_INFO_WORKFLOW_NAME: "Mention in PR (no sandbox)"
           GH_AW_INFO_EXPERIMENTAL: "false"
@@ -171,7 +171,7 @@ jobs:
             await main(core, context);
       - name: Add eyes reaction for immediate feedback
         id: react
-        if: github.event_name == 'issues' || github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment' || github.event_name == 'discussion' || github.event_name == 'discussion_comment' || (github.event_name == 'pull_request') && (github.event.pull_request.head.repo.id == github.repository_id)
+        if: github.event_name == 'issues' || github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment' || github.event_name == 'discussion' || github.event_name == 'discussion_comment' || github.event_name == 'pull_request' && github.event.pull_request.head.repo.id == github.repository_id
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_REACTION: "eyes"
@@ -216,7 +216,7 @@ jobs:
         id: sanitized
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
+          GH_AW_ALLOWED_BOTS: "${{ inputs.allowed-bot-users }}"
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -226,9 +226,8 @@ jobs:
       - name: Create prompt with built-in context
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GH_AW_SAFE_OUTPUTS: ${{ runner.temp }}/gh-aw/safeoutputs/outputs.jsonl
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
           GH_AW_EXPR_AE61BB68: ${{ github.event.pull_request.number || github.event.issue.number }}
           GH_AW_EXPR_DF6A62B0: ${{ github.event.pull_request.title || github.event.issue.title }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
@@ -241,23 +240,24 @@ jobs:
           GH_AW_GITHUB_WORKSPACE: ${{ github.workspace }}
           GH_AW_INPUTS_MODEL: ${{ inputs.model }}
           GH_AW_STEPS_SANITIZED_OUTPUTS_TEXT: ${{ steps.sanitized.outputs.text }}
+        # poutine:ignore untrusted_checkout_exec
         run: |
           bash ${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh
           {
-          cat << 'GH_AW_PROMPT_EOF'
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           <system>
-          GH_AW_PROMPT_EOF
+          GH_AW_PROMPT_953c7c155217b09c_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/xpia.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/temp_folder_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/markdown.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/playwright_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_prompt.md"
-          cat << 'GH_AW_PROMPT_EOF'
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           <safe-output-tools>
-          Tools: add_comment, create_pull_request_review_comment, submit_pull_request_review, reply_to_pull_request_review_comment, resolve_pull_request_review_thread, push_to_pull_request_branch, missing_tool, missing_data, noop
-          GH_AW_PROMPT_EOF
+          Tools: add_comment, create_pull_request_review_comment(max:30), submit_pull_request_review, reply_to_pull_request_review_comment(max:10), resolve_pull_request_review_thread(max:10), push_to_pull_request_branch, missing_tool, missing_data, noop
+          GH_AW_PROMPT_953c7c155217b09c_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_push_to_pr_branch.md"
-          cat << 'GH_AW_PROMPT_EOF'
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           </safe-output-tools>
           <github-context>
           The following GitHub context information is available for this workflow:
@@ -287,20 +287,14 @@ jobs:
           {{/if}}
           </github-context>
           
-          GH_AW_PROMPT_EOF
+          GH_AW_PROMPT_953c7c155217b09c_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
-          cat << 'GH_AW_PROMPT_EOF'
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           </system>
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## MCP Servers
           
           - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           Repository conventions are pre-fetched to `/tmp/agents.md`. Read this file early in your task to understand the codebase's conventions, guidelines, and patterns. If the file doesn't exist, continue without it. When spawning sub-agents, include the contents of `/tmp/agents.md` in each sub-agent's prompt (or tell the sub-agent to read the file directly).
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## Formatting Guidelines
           
           - Lead with the most important information — your first sentence should be the key takeaway
@@ -309,8 +303,6 @@ jobs:
           - Wrap branch names and @-references in backticks to avoid pinging users
           - Include code snippets with file paths and line numbers when referencing the codebase
           
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## Rigor
           
           **Silence is better than noise. A false positive wastes a human's time and erodes trust in every future report.**
@@ -322,8 +314,6 @@ jobs:
           - Before submitting any output, re-read it as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
           - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
           - Be thorough, spend the time to investigate and verify. There is no rush. Do your best work.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## MCP Pagination
           
           MCP tool responses have a **25,000 token limit**. When responses exceed this limit, the call fails and you must retry with pagination — wasting turns and tokens. Use proactive pagination to stay under the limit.
@@ -357,34 +347,22 @@ jobs:
           - **Use filters**: Combine `perPage` with state, label, or date filters to reduce result size
           - **Process as you go**: Don't accumulate all pages before acting — process each batch immediately
           
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## Workflow Editing Guardrails
           
           - If a requested change touches a workflow file under `.github/workflows/`, explain that the GitHub Actions token cannot push workflow changes and ask a maintainer to apply that change directly.
           
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## PR Context
           
           PR data is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files. Use these as your primary source for PR metadata, diffs, reviews, comments, and linked issues; fall back to API tools only when required data is unavailable. **Never mention these file paths or on-disk data sources in your responses** — they are internal implementation details invisible to users.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## Code Review Reference
           
           Review criteria, severity levels, intensity, false positives, and calibration examples are in `/tmp/pr-context/review-instructions.md` (pre-written at startup). Inline comment format and the minimum severity threshold are in `/tmp/pr-context/parent-review.md` (written when `ready_to_code_review` is called).
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## Message Footer
           
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## Playwright MCP Tools
           
           Playwright MCP tools are available for interactive browser automation. Full instructions are in `/tmp/playwright-instructions.md` — read it before using any Playwright tools.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ### Pick Three, Keep Many
           
           Parallelize your work using sub-agents. Spawn multiple sub-agents, each approaching the task from a different angle — e.g., different focus areas, different heuristics, or different parts of the codebase. Each sub-agent works independently and should return its own list of findings.
@@ -408,11 +386,7 @@ jobs:
           
           **Filter aggressively for quality.** Your job as the parent agent is to be the quality gate. Sub-agents cast a wide net; you decide what's worth keeping. For each surviving finding, verify it yourself — check that file paths exist, line numbers are accurate, the problem is real, and the finding is actionable. Discard anything vague, speculative, or already addressed. If no findings survive filtering, call `noop`.
           
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## add-comment Limitations
           
           - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
@@ -423,8 +397,6 @@ jobs:
           - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
           
           If you exceed 10 mentions or 50 links, the comment will be rejected.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## create-pull-request-review-comment
           
           - **Required fields**: `path` (file path), `line` (line number), and `body` (comment text).
@@ -434,8 +406,6 @@ jobs:
           - **Suggestion blocks**: Use ` ```suggestion ` fences for concrete code fixes. The suggestion must actually change the code — don't suggest identical code. Only include a `suggestion` block when you can provide a concrete code fix that **actually changes** the code.
           
           Only flag issues you are confident are real problems — false positives erode trust. Once you have flagged an issue, you cannot unflag it.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## submit-pull-request-review Limitations
           
           - **Event**: Must be one of `APPROVE`, `REQUEST_CHANGES`, or `COMMENT`. Defaults to `COMMENT` if omitted.
@@ -444,8 +414,6 @@ jobs:
           - **Max per run**: 1 review submission per workflow run. Leave inline comments first, then submit the review as a single final action.
           
           **Do NOT** describe what the PR does, list the files you reviewed, summarize inline comments, or restate prior review feedback. The PR author already knows what their PR does. Your inline comments already contain all the detail. The review body exists solely to communicate the approve/request-changes decision and important/critical feedback that cannot be covered in inline comments.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           Before calling `push_to_pull_request_branch`, call `ready_to_push_to_pr` and apply its checklist.
           
           ## push-to-pull-request-branch Limitations
@@ -461,26 +429,18 @@ jobs:
           2. Run a merge from base into the PR branch, resolve conflicts, and commit the merge result.
           3. Do **not** use `git rebase` (or other history-rewrite flows like `reset --hard` + cherry-pick).
           4. Call `ready_to_push_to_pr` (which catches rewritten history) and then `push_to_pull_request_branch` to push.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           ## resolve-pull-request-review-thread Limitations
           
           - **Required field**: `thread_id` — the GraphQL node ID of the review thread (e.g., `PRRT_kwDO...`). This is the `id` field from `get_review_comments`, not the numeric REST comment ID.
           - **Only resolve what you've addressed**: Do not resolve threads you skipped, disagreed with, or didn't fix. Only resolve threads where your changes directly address the feedback.
-          - **Max per run**: __GH_AW_EXPR_7F2A702A__ thread resolutions per workflow run.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
+          - **Max per run**: 10 thread resolutions per workflow run.
           ## reply-to-pull-request-review-comment Limitations
           
           - **Required field**: `comment_id` — the numeric REST comment ID (e.g., `2481734562`). From `get_review_comments` this is the `id` field. From `/tmp/pr-context/review_comments.json` (GraphQL) this is the `databaseId` field. Do not pass GraphQL node IDs (e.g., `IC_kwDONVGiRc6...`) — those will fail.
           - **Body**: Max 65,536 characters. Keep well under this limit.
           - **Purpose**: Reply directly to a specific review comment thread to explain your reasoning when you disagree with or skip feedback. Do NOT use `add_comment` for this — use this tool to keep replies in context.
           - **Max per run**: 10 replies per workflow run.
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           
-          GH_AW_PROMPT_EOF
-          cat << 'GH_AW_PROMPT_EOF'
           # PR Assistant
           
           Assist with pull requests on __GH_AW_GITHUB_REPOSITORY__ — review code, fix issues, answer questions, and push changes.
@@ -560,14 +520,13 @@ jobs:
           
           __GH_AW_EXPR_49B959F1__
           
-          GH_AW_PROMPT_EOF
+          GH_AW_PROMPT_953c7c155217b09c_EOF
           } > "$GH_AW_PROMPT"
       - name: Interpolate variables and render templates
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_INPUTS_MODEL: ${{ inputs.model }}
-          GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
           GH_AW_EXPR_AE61BB68: ${{ github.event.pull_request.number || github.event.issue.number }}
           GH_AW_EXPR_DF6A62B0: ${{ github.event.pull_request.title || github.event.issue.title }}
           GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
@@ -584,7 +543,6 @@ jobs:
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
-          GH_AW_EXPR_7F2A702A: ${{ inputs.resolve-pull-request-review-thread-max }}
           GH_AW_EXPR_AE61BB68: ${{ github.event.pull_request.number || github.event.issue.number }}
           GH_AW_EXPR_DF6A62B0: ${{ github.event.pull_request.title || github.event.issue.title }}
           GH_AW_GITHUB_ACTOR: ${{ github.actor }}
@@ -610,7 +568,6 @@ jobs:
               file: process.env.GH_AW_PROMPT,
               substitutions: {
                 GH_AW_EXPR_49B959F1: process.env.GH_AW_EXPR_49B959F1,
-                GH_AW_EXPR_7F2A702A: process.env.GH_AW_EXPR_7F2A702A,
                 GH_AW_EXPR_AE61BB68: process.env.GH_AW_EXPR_AE61BB68,
                 GH_AW_EXPR_DF6A62B0: process.env.GH_AW_EXPR_DF6A62B0,
                 GH_AW_GITHUB_ACTOR: process.env.GH_AW_GITHUB_ACTOR,
@@ -629,14 +586,16 @@ jobs:
       - name: Validate prompt placeholders
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+        # poutine:ignore untrusted_checkout_exec
         run: bash ${RUNNER_TEMP}/gh-aw/actions/validate_prompt_placeholders.sh
       - name: Print prompt
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+        # poutine:ignore untrusted_checkout_exec
         run: bash ${RUNNER_TEMP}/gh-aw/actions/print_prompt_summary.sh
       - name: Upload activation artifact
         if: success()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ${{ steps.artifact-prefix.outputs.prefix }}activation
           path: |
@@ -671,20 +630,21 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@434db859afd7d2f407ada3180f80d4541f06f0a4 # v0.62.4
+        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Set runtime paths
+        id: set-runtime-paths
         run: |
-          echo "GH_AW_SAFE_OUTPUTS=${RUNNER_TEMP}/gh-aw/safeoutputs/outputs.jsonl" >> "$GITHUB_ENV"
-          echo "GH_AW_SAFE_OUTPUTS_CONFIG_PATH=${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" >> "$GITHUB_ENV"
-          echo "GH_AW_SAFE_OUTPUTS_TOOLS_PATH=${RUNNER_TEMP}/gh-aw/safeoutputs/tools.json" >> "$GITHUB_ENV"
+          echo "GH_AW_SAFE_OUTPUTS=${RUNNER_TEMP}/gh-aw/safeoutputs/outputs.jsonl" >> "$GITHUB_OUTPUT"
+          echo "GH_AW_SAFE_OUTPUTS_CONFIG_PATH=${RUNNER_TEMP}/gh-aw/safeoutputs/config.json" >> "$GITHUB_OUTPUT"
+          echo "GH_AW_SAFE_OUTPUTS_TOOLS_PATH=${RUNNER_TEMP}/gh-aw/safeoutputs/tools.json" >> "$GITHUB_OUTPUT"
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
       - name: Setup Go
-        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
           go-version: '1.25'
           cache: false
@@ -713,7 +673,7 @@ jobs:
           node-version-file: .nvmrc
       - if: hashFiles('.ruby-version') != ''
         name: Setup Ruby
-        uses: ruby/setup-ruby@4eb9f110bac952a8b68ecf92e3b5c7a987594ba6 # v1
+        uses: ruby/setup-ruby@3ff19f5e2baf30647122352b96108b1fbe250c64 # v1
         with:
           bundler-cache: true
           ruby-version: .ruby-version
@@ -773,7 +733,7 @@ jobs:
       - name: Checkout PR branch
         id: checkout-pr
         if: |
-          (github.event.pull_request) || (github.event.issue.pull_request)
+          github.event.pull_request || github.event.issue.pull_request
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -786,8 +746,6 @@ jobs:
             await main();
       - name: Install GitHub Copilot CLI
         run: ${RUNNER_TEMP}/gh-aw/actions/install_copilot_cli.sh latest
-        env:
-          GH_HOST: github.com
       - name: Determine automatic lockdown mode for GitHub MCP Server
         id: determine-automatic-lockdown
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -805,24 +763,25 @@ jobs:
           mkdir -p ${RUNNER_TEMP}/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_EOF'
-          {"add_comment":{"max":1,"target":"triggering"},"create_pull_request_review_comment":{"max":"${{ inputs.create-pull-request-review-comment-max }}"},"missing_data":{},"missing_tool":{},"noop":{"max":1},"push_to_pull_request_branch":{"max":1,"target":"triggering"},"reply_to_pull_request_review_comment":{"max":10,"target":"triggering"},"resolve_pull_request_review_thread":{"max":"${{ inputs.resolve-pull-request-review-thread-max }}"},"submit_pull_request_review":{"max":1}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_EOF
+          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_9e3736880c6e9efd_EOF'
+          {"add_comment":{"max":1,"target":"triggering"},"create_pull_request_review_comment":{"max":30,"side":"RIGHT","target":"triggering"},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"true"},"push_to_pull_request_branch":{"if_no_changes":"warn","max_patch_size":10240,"protected_files":["package.json","bun.lockb","bunfig.toml","deno.json","deno.jsonc","deno.lock","global.json","NuGet.Config","Directory.Packages.props","mix.exs","mix.lock","go.mod","go.sum","stack.yaml","stack.yaml.lock","pom.xml","build.gradle","build.gradle.kts","settings.gradle","settings.gradle.kts","gradle.properties","package-lock.json","yarn.lock","pnpm-lock.yaml","npm-shrinkwrap.json","requirements.txt","Pipfile","Pipfile.lock","pyproject.toml","setup.py","setup.cfg","Gemfile","Gemfile.lock","uv.lock","CODEOWNERS"],"protected_files_policy":"allowed","protected_path_prefixes":[".github/",".agents/"],"target":"triggering"},"reply_to_pull_request_review_comment":{"max":10,"target":"triggering"},"resolve_pull_request_review_thread":{"max":10,"target":"triggering"},"submit_pull_request_review":{"footer":"if-body","max":1,"target":"triggering"}}
+          GH_AW_SAFE_OUTPUTS_CONFIG_9e3736880c6e9efd_EOF
       - name: Write Safe Outputs Tools
         run: |
-          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/tools_meta.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_META_EOF'
+          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/tools_meta.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_META_fdab9114922f5c23_EOF'
           {
             "description_suffixes": {
               "add_comment": " CONSTRAINTS: Maximum 1 comment(s) can be added. Target: triggering.",
-              "create_pull_request_review_comment": " CONSTRAINTS: Comments will be on the RIGHT side of the diff.",
+              "create_pull_request_review_comment": " CONSTRAINTS: Maximum 30 review comment(s) can be created. Comments will be on the RIGHT side of the diff.",
               "reply_to_pull_request_review_comment": " CONSTRAINTS: Maximum 10 reply/replies can be created.",
+              "resolve_pull_request_review_thread": " CONSTRAINTS: Maximum 10 review thread(s) can be resolved.",
               "submit_pull_request_review": " CONSTRAINTS: Maximum 1 review(s) can be submitted."
             },
             "repo_params": {},
             "dynamic_tools": []
           }
-          GH_AW_SAFE_OUTPUTS_TOOLS_META_EOF
-          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/validation.json << 'GH_AW_SAFE_OUTPUTS_VALIDATION_EOF'
+          GH_AW_SAFE_OUTPUTS_TOOLS_META_fdab9114922f5c23_EOF
+          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/validation.json << 'GH_AW_SAFE_OUTPUTS_VALIDATION_3882210cfb2291b7_EOF'
           {
             "add_comment": {
               "defaultMax": 1,
@@ -1006,7 +965,7 @@ jobs:
               }
             }
           }
-          GH_AW_SAFE_OUTPUTS_VALIDATION_EOF
+          GH_AW_SAFE_OUTPUTS_VALIDATION_3882210cfb2291b7_EOF
           node ${RUNNER_TEMP}/gh-aw/actions/generate_safe_outputs_tools.cjs
       - name: Generate Safe Outputs MCP Server Config
         id: safe-outputs-config
@@ -1049,7 +1008,7 @@ jobs:
       - name: Start MCP Gateway
         id: start-mcp-gateway
         env:
-          GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
           GH_AW_SAFE_OUTPUTS_API_KEY: ${{ steps.safe-outputs-start.outputs.api_key }}
           GH_AW_SAFE_OUTPUTS_PORT: ${{ steps.safe-outputs-start.outputs.port }}
           GITHUB_MCP_GUARD_MIN_INTEGRITY: ${{ steps.determine-automatic-lockdown.outputs.min_integrity }}
@@ -1072,10 +1031,10 @@ jobs:
           export DEBUG="*"
           
           export GH_AW_ENGINE="copilot"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.1.20'
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.10'
           
           mkdir -p /home/runner/.copilot
-          cat << GH_AW_MCP_CONFIG_EOF | bash ${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh
+          cat << GH_AW_MCP_CONFIG_f339da4817934d0f_EOF | bash ${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh
           {
             "mcpServers": {
               "github": {
@@ -1144,7 +1103,7 @@ jobs:
               "payloadDir": "${MCP_GATEWAY_PAYLOAD_DIR}"
             }
           }
-          GH_AW_MCP_CONFIG_EOF
+          GH_AW_MCP_CONFIG_f339da4817934d0f_EOF
       - name: Download activation artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -1173,7 +1132,7 @@ jobs:
           GH_AW_MCP_CONFIG: /home/runner/.copilot/mcp-config.json
           GH_AW_PHASE: agent
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
-          GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
+          GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
           GH_AW_VERSION: dev
           GITHUB_API_URL: ${{ github.api_url }}
           GITHUB_AW: true
@@ -1247,6 +1206,8 @@ jobs:
         run: bash ${RUNNER_TEMP}/gh-aw/actions/append_agent_step_summary.sh
       - name: Copy Safe Outputs
         if: always()
+        env:
+          GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
         run: |
           mkdir -p /tmp/gh-aw
           cp "$GH_AW_SAFE_OUTPUTS" /tmp/gh-aw/safeoutputs.jsonl 2>/dev/null || true
@@ -1255,8 +1216,8 @@ jobs:
         if: always()
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_ALLOWED_DOMAINS: "*.docker.com,*.docker.io,*.githubusercontent.com,*.gradle-enterprise.cloud,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,deps.files.ghostty.org,develocity.apache.org,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,docs.github.com,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,elastic.github.io,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,ge.spockframework.org,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.blog,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,maven.pkg.jetbrains.space,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,scala.jfrog.io,scans-in.gradle.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.googleapis.com,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org"
+          GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
+          GH_AW_ALLOWED_DOMAINS: "*.docker.com,*.docker.io,*.githubusercontent.com,*.gradle-enterprise.cloud,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,deps.files.ghostty.org,develocity.apache.org,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,docs.github.com,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.jetbrains.com,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,elastic.github.io,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,ge.spockframework.org,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.blog,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven-central.storage-download.googleapis.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,maven.pkg.jetbrains.space,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,repository.apache.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,scala.jfrog.io,scans-in.gradle.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.googleapis.com,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
         with:
@@ -1285,10 +1246,16 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/parse_mcp_gateway_log.cjs');
             await main();
+      - name: Write agent output placeholder if missing
+        if: always()
+        run: |
+          if [ ! -f /tmp/gh-aw/agent_output.json ]; then
+            echo '{"items":[]}' > /tmp/gh-aw/agent_output.json
+          fi
       - name: Upload agent artifacts
         if: always()
         continue-on-error: true
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ${{ needs.activation.outputs.artifact_prefix }}agent
           path: |
@@ -1309,7 +1276,7 @@ jobs:
       - activation
       - agent
       - safe_outputs
-    if: (always()) && ((needs.agent.result != 'skipped') || (needs.activation.outputs.lockdown_check_failed == 'true'))
+    if: always() && (needs.agent.result != 'skipped' || needs.activation.outputs.lockdown_check_failed == 'true')
     runs-on: ubuntu-slim
     permissions:
       contents: write
@@ -1323,7 +1290,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@434db859afd7d2f407ada3180f80d4541f06f0a4 # v0.62.4
+        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
@@ -1334,16 +1301,17 @@ jobs:
           name: ${{ needs.activation.outputs.artifact_prefix }}agent
           path: /tmp/gh-aw/
       - name: Setup agent output environment variable
+        id: setup-agent-output-env
         if: steps.download-agent-output.outcome == 'success'
         run: |
           mkdir -p /tmp/gh-aw/
           find "/tmp/gh-aw/" -type f -print
-          echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/agent_output.json" >> "$GITHUB_ENV"
+          echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/agent_output.json" >> "$GITHUB_OUTPUT"
       - name: Process No-Op Messages
         id: noop
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
+          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
           GH_AW_WORKFLOW_NAME: "Mention in PR (no sandbox)"
         with:
@@ -1357,7 +1325,8 @@ jobs:
         id: missing_tool
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
+          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+          GH_AW_MISSING_TOOL_CREATE_ISSUE: "true"
           GH_AW_WORKFLOW_NAME: "Mention in PR (no sandbox)"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1371,11 +1340,12 @@ jobs:
         if: always()
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
+          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_WORKFLOW_NAME: "Mention in PR (no sandbox)"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-mention-in-pr-no-sandbox"
+          GH_AW_ENGINE_ID: "copilot"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.activation.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_INFERENCE_ACCESS_ERROR: ${{ needs.agent.outputs.inference_access_error }}
@@ -1397,7 +1367,7 @@ jobs:
         id: handle_noop_message
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
+          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_WORKFLOW_NAME: "Mention in PR (no sandbox)"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
@@ -1418,15 +1388,15 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@434db859afd7d2f407ada3180f80d4541f06f0a4 # v0.62.4
+        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Check team membership for workflow
         id: check_membership
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_REQUIRED_ROLES: admin,maintainer,write
-          GH_AW_ALLOWED_BOTS: ${{ inputs.allowed-bot-users }}
+          GH_AW_REQUIRED_ROLES: "admin,maintainer,write"
+          GH_AW_ALLOWED_BOTS: "${{ inputs.allowed-bot-users }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -1439,7 +1409,7 @@ jobs:
     needs:
       - activation
       - agent
-    if: (!cancelled()) && (needs.agent.result != 'skipped')
+    if: (!cancelled()) && needs.agent.result != 'skipped'
     runs-on: ubuntu-slim
     permissions:
       contents: write
@@ -1465,7 +1435,7 @@ jobs:
       push_commit_url: ${{ steps.process_safe_outputs.outputs.push_commit_url }}
     steps:
       - name: Setup Scripts
-        uses: strawgate/gh-aw/actions/setup@434db859afd7d2f407ada3180f80d4541f06f0a4 # v0.62.4
+        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
@@ -1476,11 +1446,12 @@ jobs:
           name: ${{ needs.activation.outputs.artifact_prefix }}agent
           path: /tmp/gh-aw/
       - name: Setup agent output environment variable
+        id: setup-agent-output-env
         if: steps.download-agent-output.outcome == 'success'
         run: |
           mkdir -p /tmp/gh-aw/
           find "/tmp/gh-aw/" -type f -print
-          echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/agent_output.json" >> "$GITHUB_ENV"
+          echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/agent_output.json" >> "$GITHUB_OUTPUT"
       - name: Download patch artifact
         continue-on-error: true
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -1488,7 +1459,7 @@ jobs:
           name: ${{ needs.activation.outputs.artifact_prefix }}agent
           path: /tmp/gh-aw/
       - name: Checkout repository
-        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'push_to_pull_request_branch'))
+        if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'push_to_pull_request_branch')
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ github.base_ref || github.event.pull_request.base.ref || github.ref_name || github.event.repository.default_branch }}
@@ -1496,7 +1467,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
       - name: Configure Git credentials
-        if: ((!cancelled()) && (needs.agent.result != 'skipped')) && (contains(needs.agent.outputs.output_types, 'push_to_pull_request_branch'))
+        if: (!cancelled()) && needs.agent.result != 'skipped' && contains(needs.agent.outputs.output_types, 'push_to_pull_request_branch')
         env:
           REPO_NAME: ${{ github.repository }}
           SERVER_URL: ${{ github.server_url }}
@@ -1510,6 +1481,7 @@ jobs:
           git remote set-url origin "https://x-access-token:${GIT_TOKEN}@${SERVER_URL_STRIPPED}/${REPO_NAME}.git"
           echo "Git configured with standard GitHub Actions identity"
       - name: Configure GH_HOST for enterprise compatibility
+        id: ghes-host-config
         shell: bash
         run: |
           # Derive GH_HOST from GITHUB_SERVER_URL so the gh CLI targets the correct
@@ -1521,11 +1493,11 @@ jobs:
         id: process_safe_outputs
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
-          GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_ALLOWED_DOMAINS: "*.docker.com,*.docker.io,*.githubusercontent.com,*.gradle-enterprise.cloud,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,deps.files.ghostty.org,develocity.apache.org,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,docs.github.com,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,elastic.github.io,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,ge.spockframework.org,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.blog,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,maven.pkg.jetbrains.space,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,scala.jfrog.io,scans-in.gradle.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.googleapis.com,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org"
+          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+          GH_AW_ALLOWED_DOMAINS: "*.docker.com,*.docker.io,*.githubusercontent.com,*.gradle-enterprise.cloud,*.hackage.haskell.org,*.jsr.io,*.pythonhosted.org,*.rvm.io,*.vsblob.vsassets.io,adoptium.net,agents-md-generator.fastmcp.app,anaconda.org,api.adoptium.net,api.business.githubcopilot.com,api.enterprise.githubcopilot.com,api.foojay.io,api.github.com,api.githubcopilot.com,api.individual.githubcopilot.com,api.npms.io,api.nuget.org,api.rubygems.org,api.snapcraft.io,apt.llvm.org,apt.releases.hashicorp.com,archive.apache.org,archive.ubuntu.com,archlinux.org,artifacts.elastic.co,auth.docker.io,azure.archive.ubuntu.com,azuresearch-usnc.nuget.org,azuresearch-ussc.nuget.org,binstar.org,bitbucket.org,bootstrap.pypa.io,builds.dotnet.microsoft.com,builds.hex.pm,bun.sh,bundler.rubygems.org,cache.ruby-lang.org,cdn.azul.com,cdn.cocoapods.org,cdn.hex.pm,cdn.jsdelivr.net,cdn.playwright.dev,cdn.redhat.com,cdn.sheetjs.com,central.sonatype.com,ci.dot.net,clojars.org,cloud.elastic.co,cocoapods.org,code.jquery.com,codeload.github.com,conda.anaconda.org,conda.binstar.org,cpan.metacpan.org,cpan.org,crates.io,crl.geotrust.com,crl.globalsign.com,crl.identrust.com,crl.sectigo.com,crl.thawte.com,crl.usertrust.com,crl.verisign.com,crl3.digicert.com,crl4.digicert.com,crls.ssl.com,data.jsdelivr.com,dc.services.visualstudio.com,deb.debian.org,deb.nodesource.com,debian.map.fastlydns.net,deno.land,deps.files.ghostty.org,develocity.apache.org,dist.nuget.org,dl-cdn.alpinelinux.org,dl.bintray.com,dl.fedoraproject.org,dl.google.com,dl.k8s.io,dlcdn.apache.org,docs.github.com,dot.net,dotnet.microsoft.com,dotnetcli.blob.core.windows.net,download.eclipse.org,download.fedoraproject.org,download.java.net,download.jetbrains.com,download.opensuse.org,download.oracle.com,download.swift.org,downloads.gradle-dn.com,downloads.haskell.org,ela.st,elastic.co,elastic.dev,elastic.github.io,esm.sh,fastly.hex.pm,files.pythonhosted.org,fonts.googleapis.com,fonts.gstatic.com,gcr.io,ge.jetbrains.com,ge.spockframework.org,gems.rubyforge.org,gems.rubyonrails.org,get-ghcup.haskell.org,get.pnpm.io,getcomposer.org,ghcr.io,github-cloud.githubusercontent.com,github-cloud.s3.amazonaws.com,github.blog,github.com,github.githubassets.com,go.dev,golang.org,googleapis.deno.dev,googlechromelabs.github.io,goproxy.io,gradle.org,haskell.org,hex.pm,host.docker.internal,index.crates.io,index.rubygems.org,jcenter.bintray.com,jdk.java.net,jitpack.io,json-schema.org,json.schemastore.org,jsr.io,keyring.debian.org,keyserver.ubuntu.com,kotlin.bintray.com,lfs.github.com,maven-central.storage-download.googleapis.com,maven.apache.org,maven.google.com,maven.oracle.com,maven.pkg.github.com,maven.pkg.jetbrains.space,mcr.microsoft.com,metacpan.org,mirror.archlinux.org,mirror.centos.org,mirrors.fedoraproject.org,nodejs.org,npm.pkg.github.com,npmjs.com,npmjs.org,nuget.org,nuget.pkg.github.com,nugetregistryv2prod.blob.core.windows.net,objects.githubusercontent.com,ocsp.digicert.com,ocsp.geotrust.com,ocsp.globalsign.com,ocsp.identrust.com,ocsp.sectigo.com,ocsp.ssl.com,ocsp.thawte.com,ocsp.usertrust.com,ocsp.verisign.com,oneocsp.microsoft.com,packagecloud.io,packages.cloud.google.com,packages.debian.org,packages.jetbrains.team,packages.microsoft.com,packagist.org,pip.pypa.io,pkg.alpinelinux.org,pkg.go.dev,pkg.machengine.org,pkgs.dev.azure.com,pkgs.k8s.io,playwright.download.prss.microsoft.com,plugins-artifacts.gradle.org,plugins.gradle.org,ppa.launchpad.net,production.cloudflare.docker.com,productionresultssa0.blob.core.windows.net,productionresultssa1.blob.core.windows.net,productionresultssa10.blob.core.windows.net,productionresultssa11.blob.core.windows.net,productionresultssa12.blob.core.windows.net,productionresultssa13.blob.core.windows.net,productionresultssa14.blob.core.windows.net,productionresultssa15.blob.core.windows.net,productionresultssa16.blob.core.windows.net,productionresultssa17.blob.core.windows.net,productionresultssa18.blob.core.windows.net,productionresultssa19.blob.core.windows.net,productionresultssa2.blob.core.windows.net,productionresultssa3.blob.core.windows.net,productionresultssa4.blob.core.windows.net,productionresultssa5.blob.core.windows.net,productionresultssa6.blob.core.windows.net,productionresultssa7.blob.core.windows.net,productionresultssa8.blob.core.windows.net,productionresultssa9.blob.core.windows.net,proxy.golang.org,pub.dartlang.org,pub.dev,public-code-search.fastmcp.app,pypi.org,pypi.python.org,quay.io,raw.githubusercontent.com,registry.bower.io,registry.hub.docker.com,registry.npmjs.com,registry.npmjs.org,registry.terraform.io,registry.yarnpkg.com,releases.hashicorp.com,repo.anaconda.com,repo.clojars.org,repo.continuum.io,repo.gradle.org,repo.grails.org,repo.hex.pm,repo.maven.apache.org,repo.packagist.org,repo.scala-sbt.org,repo.spring.io,repo.typesafe.com,repo.yarnpkg.com,repo1.maven.org,repository.apache.org,rubygems.org,rubygems.pkg.github.com,s.symcb.com,s.symcd.com,scala-ci.typesafe.com,scala.jfrog.io,scans-in.gradle.com,security.debian.org,security.ubuntu.com,services.gradle.org,sh.rustup.rs,skimdb.npmjs.com,static.crates.io,static.rust-lang.org,storage.googleapis.com,sum.golang.org,swift.org,telemetry.enterprise.githubcopilot.com,telemetry.vercel.com,ts-crl.ws.symantec.com,ts-ocsp.ws.symantec.com,vault.centos.org,www.cpan.org,www.elastic.co,www.googleapis.com,www.java.com,www.microsoft.com,www.npmjs.com,www.npmjs.org,yarnpkg.com,yum.releases.hashicorp.com,ziglang.org"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1,\"target\":\"triggering\"},\"create_pull_request_review_comment\":{\"max\":\"${{ inputs.create-pull-request-review-comment-max }}\",\"side\":\"RIGHT\",\"target\":\"triggering\"},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"true\"},\"push_to_pull_request_branch\":{\"if_no_changes\":\"warn\",\"max_patch_size\":10240,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"AGENTS.md\"],\"protected_files_policy\":\"allowed\",\"protected_path_prefixes\":[\".github/\",\".agents/\"],\"target\":\"triggering\"},\"reply_to_pull_request_review_comment\":{\"max\":10,\"target\":\"triggering\"},\"resolve_pull_request_review_thread\":{\"max\":\"${{ inputs.resolve-pull-request-review-thread-max }}\",\"target\":\"triggering\"},\"submit_pull_request_review\":{\"footer\":\"if-body\",\"max\":1,\"target\":\"triggering\"}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"max\":1,\"target\":\"triggering\"},\"create_pull_request_review_comment\":{\"max\":30,\"side\":\"RIGHT\",\"target\":\"triggering\"},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"true\"},\"push_to_pull_request_branch\":{\"if_no_changes\":\"warn\",\"max_patch_size\":10240,\"protected_files\":[\"package.json\",\"bun.lockb\",\"bunfig.toml\",\"deno.json\",\"deno.jsonc\",\"deno.lock\",\"global.json\",\"NuGet.Config\",\"Directory.Packages.props\",\"mix.exs\",\"mix.lock\",\"go.mod\",\"go.sum\",\"stack.yaml\",\"stack.yaml.lock\",\"pom.xml\",\"build.gradle\",\"build.gradle.kts\",\"settings.gradle\",\"settings.gradle.kts\",\"gradle.properties\",\"package-lock.json\",\"yarn.lock\",\"pnpm-lock.yaml\",\"npm-shrinkwrap.json\",\"requirements.txt\",\"Pipfile\",\"Pipfile.lock\",\"pyproject.toml\",\"setup.py\",\"setup.cfg\",\"Gemfile\",\"Gemfile.lock\",\"uv.lock\",\"CODEOWNERS\",\"AGENTS.md\"],\"protected_files_policy\":\"allowed\",\"protected_path_prefixes\":[\".github/\",\".agents/\"],\"target\":\"triggering\"},\"reply_to_pull_request_review_comment\":{\"max\":10,\"target\":\"triggering\"},\"resolve_pull_request_review_thread\":{\"max\":10,\"target\":\"triggering\"},\"submit_pull_request_review\":{\"footer\":\"if-body\",\"max\":1,\"target\":\"triggering\"}}"
           GH_AW_CI_TRIGGER_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
@@ -1534,9 +1506,9 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/safe_output_handler_manager.cjs');
             await main();
-      - name: Upload safe output items
+      - name: Upload Safe Output Items
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: ${{ needs.activation.outputs.artifact_prefix }}safe-output-items
           path: /tmp/gh-aw/safe-output-items.jsonl

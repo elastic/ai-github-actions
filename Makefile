@@ -1,11 +1,11 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.62.4
-GH_AW_BUILD_VERSION := 434db859afd7d2f407ada3180f80d4541f06f0a4
+GH_AW_VERSION := v0.65.1
+GH_AW_BUILD_VERSION := bca8c30ea611a15fbbb4ac488c377c913c8f7e79
 GH_AW_COMPAT_VERSION := v0.49.4
 GH_AW_MODULE_REPO := github.com/github/gh-aw
-GH_AW_SOURCE_REPO := github.com/strawgate/gh-aw
+GH_AW_SOURCE_REPO := github.com/github/gh-aw
 GH_AW_SETUP_ACTION_REPO := $(patsubst github.com/%,%,$(GH_AW_SOURCE_REPO))
 GH_AW_SETUP_ACTION_REF := $(GH_AW_BUILD_VERSION)
 
