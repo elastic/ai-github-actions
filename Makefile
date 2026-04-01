@@ -183,7 +183,7 @@ compile: setup-gh-aw setup-gh-aw-compat sync
 
 postprocess-setup-action:
 	@echo "Rewriting setup action references to $(GH_AW_SETUP_ACTION_REPO)@$(GH_AW_SETUP_ACTION_REF)..."
-	@python3 ./scripts/rewrite_setup_action_refs.py "$(GH_AW_SETUP_ACTION_REPO)" "$(GH_AW_SETUP_ACTION_REF)"
+# @python3 ./scripts/rewrite_setup_action_refs.py "$(GH_AW_SETUP_ACTION_REPO)" "$(GH_AW_SETUP_ACTION_REF)"
 
 setup-actionlint:
 	@echo "Setting up actionlint..."
