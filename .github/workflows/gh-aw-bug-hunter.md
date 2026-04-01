@@ -121,6 +121,11 @@ Find a single reproducible, user-impacting bug in the repository that can be cov
 - Edge cases that require unusual or undocumented inputs.
 - Issues that require large refactors or design changes.
 - Behavior already tracked by an open issue.
+- **By-design behavior.** Before filing, check whether the behavior is intentional:
+  - Look for comments near the code explaining the design choice.
+  - Check if similar code in the same codebase follows the same pattern (e.g., all auth configs use the same optional-fields pattern). Consistency across the codebase suggests a deliberate convention, not a bug.
+  - Search recent PRs and commits for context on why the code was written this way.
+  - If the "bug" requires assuming the developer made an error despite following an established pattern in the codebase, it is probably by-design.
 
 ### Quality Gate — When to Noop
 
@@ -130,6 +135,7 @@ Call `noop` if any of these are true:
 - The bug is speculative — you inferred it from reading code but did not trigger it with code you wrote.
 - A similar issue is already open.
 - The impact is cosmetic or low-severity (e.g., a typo in a log message).
+- The bug is already fixed. Before filing, search for recently merged PRs that may address the issue: `gh pr list --state merged --search 'KEYWORD' --limit 10`. If a merged PR fixes the exact code path, `noop`.
 
 ### Issue Format
 
