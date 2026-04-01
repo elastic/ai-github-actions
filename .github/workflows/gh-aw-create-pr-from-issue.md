@@ -20,6 +20,7 @@ engine:
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-create-pr-from-issue-${{ inputs.target-issue-number }}"
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
