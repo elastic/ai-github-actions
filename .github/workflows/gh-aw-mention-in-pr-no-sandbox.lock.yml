@@ -136,7 +136,7 @@ jobs:
       title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
+        uses: github/gh-aw/actions/setup@v0.65.4 # v0.65.4
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Compute artifact prefix
@@ -630,7 +630,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
+        uses: github/gh-aw/actions/setup@v0.65.4 # v0.65.4
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Set runtime paths
@@ -1031,7 +1031,7 @@ jobs:
           export DEBUG="*"
           
           export GH_AW_ENGINE="copilot"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.10'
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.11'
           
           mkdir -p /home/runner/.copilot
           cat << GH_AW_MCP_CONFIG_f339da4817934d0f_EOF | bash ${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh
@@ -1290,7 +1290,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
+        uses: github/gh-aw/actions/setup@v0.65.4 # v0.65.4
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
@@ -1388,7 +1388,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
+        uses: github/gh-aw/actions/setup@v0.65.4 # v0.65.4
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Check team membership for workflow
@@ -1435,7 +1435,7 @@ jobs:
       push_commit_url: ${{ steps.process_safe_outputs.outputs.push_commit_url }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
+        uses: github/gh-aw/actions/setup@v0.65.4 # v0.65.4
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact

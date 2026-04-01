@@ -118,7 +118,7 @@ jobs:
       title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
+        uses: github/gh-aw/actions/setup@v0.65.4 # v0.65.4
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Compute artifact prefix
@@ -504,7 +504,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
+        uses: github/gh-aw/actions/setup@v0.65.4 # v0.65.4
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Set runtime paths
@@ -608,7 +608,7 @@ jobs:
           node-version: '24'
           package-manager-cache: false
       - name: Install AWF binary
-        run: bash ${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh v0.25.5
+        run: bash ${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh v0.25.6
       - name: Install Gemini CLI
         run: npm install -g @google/gemini-cli@latest
       - name: Determine automatic lockdown mode for GitHub MCP Server
@@ -622,7 +622,7 @@ jobs:
             const determineAutomaticLockdown = require('${{ runner.temp }}/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash ${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.25.5 ghcr.io/github/gh-aw-firewall/api-proxy:0.25.5 ghcr.io/github/gh-aw-firewall/squid:0.25.5 ghcr.io/github/gh-aw-mcpg:v0.2.10 ghcr.io/github/github-mcp-server:v0.32.0 mcp/fetch node:lts-alpine
+        run: bash ${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.25.6 ghcr.io/github/gh-aw-firewall/api-proxy:0.25.6 ghcr.io/github/gh-aw-firewall/squid:0.25.6 ghcr.io/github/gh-aw-mcpg:v0.2.11 ghcr.io/github/github-mcp-server:v0.32.0 mcp/fetch node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p ${RUNNER_TEMP}/gh-aw/safeoutputs
@@ -819,7 +819,7 @@ jobs:
           export DEBUG="*"
           
           export GH_AW_ENGINE="gemini"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.10'
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.11'
           
           cat << GH_AW_MCP_CONFIG_466f5752d0c01fbe_EOF | bash ${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh
           {
@@ -913,7 +913,7 @@ jobs:
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
           # shellcheck disable=SC1003
-          sudo -E awf --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" --env-all --exclude-env GEMINI_API_KEY --exclude-env GITHUB_MCP_SERVER_TOKEN --exclude-env MCP_GATEWAY_API_KEY --allow-domains '*.googleapis.com,artifacts.elastic.co,cloud.elastic.co,ela.st,elastic.co,generativelanguage.googleapis.com,github.com,host.docker.internal,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,www.elastic.co' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --audit-dir /tmp/gh-aw/sandbox/firewall/audit --enable-host-access --image-tag 0.25.5 --skip-pull --enable-api-proxy \
+          sudo -E awf --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" --env-all --exclude-env GEMINI_API_KEY --exclude-env GITHUB_MCP_SERVER_TOKEN --exclude-env MCP_GATEWAY_API_KEY --allow-domains '*.googleapis.com,artifacts.elastic.co,cloud.elastic.co,ela.st,elastic.co,generativelanguage.googleapis.com,github.com,host.docker.internal,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,www.elastic.co' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --audit-dir /tmp/gh-aw/sandbox/firewall/audit --enable-host-access --image-tag 0.25.6 --skip-pull --enable-api-proxy \
             -- /bin/bash -c 'export PATH="$(find /opt/hostedtoolcache -maxdepth 4 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true && gemini --yolo --output-format stream-json --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           DEBUG: gemini-cli:*
@@ -1088,7 +1088,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
+        uses: github/gh-aw/actions/setup@v0.65.4 # v0.65.4
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
@@ -1186,7 +1186,7 @@ jobs:
       detection_success: ${{ steps.detection_conclusion.outputs.success }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
+        uses: github/gh-aw/actions/setup@v0.65.4 # v0.65.4
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
@@ -1205,7 +1205,7 @@ jobs:
           echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/agent_output.json" >> "$GITHUB_OUTPUT"
       # --- Threat Detection ---
       - name: Download container images
-        run: bash ${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.25.5 ghcr.io/github/gh-aw-firewall/api-proxy:0.25.5 ghcr.io/github/gh-aw-firewall/squid:0.25.5
+        run: bash ${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.25.6 ghcr.io/github/gh-aw-firewall/api-proxy:0.25.6 ghcr.io/github/gh-aw-firewall/squid:0.25.6
       - name: Check if detection needed
         id: detection_guard
         if: always()
@@ -1264,7 +1264,7 @@ jobs:
           node-version: '24'
           package-manager-cache: false
       - name: Install AWF binary
-        run: bash ${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh v0.25.5
+        run: bash ${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh v0.25.6
       - name: Install Gemini CLI
         run: npm install -g @google/gemini-cli@latest
       - name: Write Gemini settings
@@ -1288,7 +1288,7 @@ jobs:
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
           # shellcheck disable=SC1003
-          sudo -E awf --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" --env-all --exclude-env GEMINI_API_KEY --allow-domains '*.googleapis.com,generativelanguage.googleapis.com,github.com,host.docker.internal,raw.githubusercontent.com,registry.npmjs.org' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --audit-dir /tmp/gh-aw/sandbox/firewall/audit --enable-host-access --image-tag 0.25.5 --skip-pull --enable-api-proxy \
+          sudo -E awf --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" --env-all --exclude-env GEMINI_API_KEY --allow-domains '*.googleapis.com,generativelanguage.googleapis.com,github.com,host.docker.internal,raw.githubusercontent.com,registry.npmjs.org' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --audit-dir /tmp/gh-aw/sandbox/firewall/audit --enable-host-access --image-tag 0.25.6 --skip-pull --enable-api-proxy \
             -- /bin/bash -c 'export PATH="$(find /opt/hostedtoolcache -maxdepth 4 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true && gemini --yolo --output-format stream-json --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/threat-detection/detection.log
         env:
           DEBUG: gemini-cli:*
@@ -1333,7 +1333,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
+        uses: github/gh-aw/actions/setup@v0.65.4 # v0.65.4
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Check team membership for workflow
@@ -1382,7 +1382,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@bca8c30ea611a15fbbb4ac488c377c913c8f7e79 # v0.65.1
+        uses: github/gh-aw/actions/setup@v0.65.4 # v0.65.4
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
