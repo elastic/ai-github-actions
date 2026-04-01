@@ -34,7 +34,7 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"539192c5e4484ebd314d67c696691ea7948d085c6ae4d30b0deecb5e893202e0","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"e9108e249619a2e37122f0ae3076b277612acfd18219006be53a6de0e1e8d1f9","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 
 name: "PR Buildkite Detective"
 "on":
