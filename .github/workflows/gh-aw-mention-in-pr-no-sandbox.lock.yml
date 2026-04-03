@@ -291,10 +291,16 @@ jobs:
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
           cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           </system>
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## MCP Servers
           
           - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           Repository conventions are pre-fetched to `/tmp/agents.md`. Read this file early in your task to understand the codebase's conventions, guidelines, and patterns. If the file doesn't exist, continue without it. When spawning sub-agents, include the contents of `/tmp/agents.md` in each sub-agent's prompt (or tell the sub-agent to read the file directly).
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## Formatting Guidelines
           
           - Lead with the most important information — your first sentence should be the key takeaway
@@ -303,6 +309,8 @@ jobs:
           - Wrap branch names and @-references in backticks to avoid pinging users
           - Include code snippets with file paths and line numbers when referencing the codebase
           
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## Rigor
           
           **Silence is better than noise. A false positive wastes a human's time and erodes trust in every future report.**
@@ -314,6 +322,8 @@ jobs:
           - Before submitting any output, re-read it as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
           - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
           - Be thorough, spend the time to investigate and verify. There is no rush. Do your best work.
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## MCP Pagination
           
           MCP tool responses have a **25,000 token limit**. When responses exceed this limit, the call fails and you must retry with pagination — wasting turns and tokens. Use proactive pagination to stay under the limit.
@@ -347,22 +357,34 @@ jobs:
           - **Use filters**: Combine `perPage` with state, label, or date filters to reduce result size
           - **Process as you go**: Don't accumulate all pages before acting — process each batch immediately
           
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## Workflow Editing Guardrails
           
           - If a requested change touches a workflow file under `.github/workflows/`, explain that the GitHub Actions token cannot push workflow changes and ask a maintainer to apply that change directly.
           
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## PR Context
           
           PR data is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files. Use these as your primary source for PR metadata, diffs, reviews, comments, and linked issues; fall back to API tools only when required data is unavailable. **Never mention these file paths or on-disk data sources in your responses** — they are internal implementation details invisible to users.
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## Code Review Reference
           
           Review criteria, severity levels, intensity, false positives, and calibration examples are in `/tmp/pr-context/review-instructions.md` (pre-written at startup). Inline comment format and the minimum severity threshold are in `/tmp/pr-context/parent-review.md` (written when `ready_to_code_review` is called).
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## Message Footer
           
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## Playwright MCP Tools
           
           Playwright MCP tools are available for interactive browser automation. Full instructions are in `/tmp/playwright-instructions.md` — read it before using any Playwright tools.
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ### Pick Three, Keep Many
           
           Parallelize your work using sub-agents. Spawn multiple sub-agents, each approaching the task from a different angle — e.g., different focus areas, different heuristics, or different parts of the codebase. Each sub-agent works independently and should return its own list of findings.
@@ -386,7 +408,11 @@ jobs:
           
           **Filter aggressively for quality.** Your job as the parent agent is to be the quality gate. Sub-agents cast a wide net; you decide what's worth keeping. For each surviving finding, verify it yourself — check that file paths exist, line numbers are accurate, the problem is real, and the finding is actionable. Discard anything vague, speculative, or already addressed. If no findings survive filtering, call `noop`.
           
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## add-comment Limitations
           
           - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
@@ -397,6 +423,8 @@ jobs:
           - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.
           
           If you exceed 10 mentions or 50 links, the comment will be rejected.
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## create-pull-request-review-comment
           
           - **Required fields**: `path` (file path), `line` (line number), and `body` (comment text).
@@ -406,6 +434,8 @@ jobs:
           - **Suggestion blocks**: Use ` ```suggestion ` fences for concrete code fixes. The suggestion must actually change the code — don't suggest identical code. Only include a `suggestion` block when you can provide a concrete code fix that **actually changes** the code.
           
           Only flag issues you are confident are real problems — false positives erode trust. Once you have flagged an issue, you cannot unflag it.
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## submit-pull-request-review Limitations
           
           - **Event**: Must be one of `APPROVE`, `REQUEST_CHANGES`, or `COMMENT`. Defaults to `COMMENT` if omitted.
@@ -414,6 +444,8 @@ jobs:
           - **Max per run**: 1 review submission per workflow run. Leave inline comments first, then submit the review as a single final action.
           
           **Do NOT** describe what the PR does, list the files you reviewed, summarize inline comments, or restate prior review feedback. The PR author already knows what their PR does. Your inline comments already contain all the detail. The review body exists solely to communicate the approve/request-changes decision and important/critical feedback that cannot be covered in inline comments.
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           Before calling `push_to_pull_request_branch`, call `ready_to_push_to_pr` and apply its checklist.
           
           ## push-to-pull-request-branch Limitations
@@ -429,18 +461,26 @@ jobs:
           2. Run a merge from base into the PR branch, resolve conflicts, and commit the merge result.
           3. Do **not** use `git rebase` (or other history-rewrite flows like `reset --hard` + cherry-pick).
           4. Call `ready_to_push_to_pr` (which catches rewritten history) and then `push_to_pull_request_branch` to push.
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## resolve-pull-request-review-thread Limitations
           
           - **Required field**: `thread_id` — the GraphQL node ID of the review thread (e.g., `PRRT_kwDO...`). This is the `id` field from `get_review_comments`, not the numeric REST comment ID.
           - **Only resolve what you've addressed**: Do not resolve threads you skipped, disagreed with, or didn't fix. Only resolve threads where your changes directly address the feedback.
           - **Max per run**: 10 thread resolutions per workflow run.
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           ## reply-to-pull-request-review-comment Limitations
           
           - **Required field**: `comment_id` — the numeric REST comment ID (e.g., `2481734562`). From `get_review_comments` this is the `id` field. From `/tmp/pr-context/review_comments.json` (GraphQL) this is the `databaseId` field. Do not pass GraphQL node IDs (e.g., `IC_kwDONVGiRc6...`) — those will fail.
           - **Body**: Max 65,536 characters. Keep well under this limit.
           - **Purpose**: Reply directly to a specific review comment thread to explain your reasoning when you disagree with or skip feedback. Do NOT use `add_comment` for this — use this tool to keep replies in context.
           - **Max per run**: 10 replies per workflow run.
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           
+          GH_AW_PROMPT_953c7c155217b09c_EOF
+          cat << 'GH_AW_PROMPT_953c7c155217b09c_EOF'
           # PR Assistant
           
           Assist with pull requests on __GH_AW_GITHUB_REPOSITORY__ — review code, fix issues, answer questions, and push changes.
@@ -623,7 +663,6 @@ jobs:
     outputs:
       artifact_prefix: ${{ needs.activation.outputs.artifact_prefix }}
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
-      effective_tokens: ${{ steps.parse-mcp-gateway.outputs.effective_tokens }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
       inference_access_error: ${{ steps.detect-inference-error.outputs.inference_access_error || 'false' }}
       model: ${{ needs.activation.outputs.model }}
@@ -645,7 +684,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Setup Go
-        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
           go-version: '1.25'
           cache: false
@@ -674,7 +713,7 @@ jobs:
           node-version-file: .nvmrc
       - if: hashFiles('.ruby-version') != ''
         name: Setup Ruby
-        uses: ruby/setup-ruby@3ff19f5e2baf30647122352b96108b1fbe250c64 # v1
+        uses: ruby/setup-ruby@319994f95fa847cf3fb3cd3dbe89f6dcde9f178f # v1
         with:
           bundler-cache: true
           ruby-version: .ruby-version
@@ -990,7 +1029,6 @@ jobs:
         id: safe-outputs-start
         env:
           DEBUG: '*'
-          GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
           GH_AW_SAFE_OUTPUTS_PORT: ${{ steps.safe-outputs-config.outputs.safe_outputs_port }}
           GH_AW_SAFE_OUTPUTS_API_KEY: ${{ steps.safe-outputs-config.outputs.safe_outputs_api_key }}
           GH_AW_SAFE_OUTPUTS_TOOLS_PATH: ${{ runner.temp }}/gh-aw/safeoutputs/tools.json
@@ -999,7 +1037,6 @@ jobs:
         run: |
           # Environment variables are set above to prevent template injection
           export DEBUG
-          export GH_AW_SAFE_OUTPUTS
           export GH_AW_SAFE_OUTPUTS_PORT
           export GH_AW_SAFE_OUTPUTS_API_KEY
           export GH_AW_SAFE_OUTPUTS_TOOLS_PATH
@@ -1034,7 +1071,7 @@ jobs:
           export DEBUG="*"
           
           export GH_AW_ENGINE="copilot"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.11'
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.9'
           
           mkdir -p /home/runner/.copilot
           cat << GH_AW_MCP_CONFIG_f339da4817934d0f_EOF | bash ${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh
@@ -1166,7 +1203,20 @@ jobs:
       - name: Copy Copilot session state files to logs
         if: always()
         continue-on-error: true
-        run: bash ${RUNNER_TEMP}/gh-aw/actions/copy_copilot_session_state.sh
+        run: |
+          # Copy Copilot session state files to logs folder for artifact collection
+          # This ensures they are in /tmp/gh-aw/ where secret redaction can scan them
+          SESSION_STATE_DIR="$HOME/.copilot/session-state"
+          LOGS_DIR="/tmp/gh-aw/sandbox/agent/logs"
+          
+          if [ -d "$SESSION_STATE_DIR" ]; then
+            echo "Copying Copilot session state files from $SESSION_STATE_DIR to $LOGS_DIR"
+            mkdir -p "$LOGS_DIR"
+            cp -v "$SESSION_STATE_DIR"/*.jsonl "$LOGS_DIR/" 2>/dev/null || true
+            echo "Session state files copied successfully"
+          else
+            echo "No session-state directory found at $SESSION_STATE_DIR"
+          fi
       - name: Stop MCP Gateway
         if: always()
         continue-on-error: true
@@ -1229,7 +1279,6 @@ jobs:
             await main();
       - name: Parse MCP Gateway logs for step summary
         if: always()
-        id: parse-mcp-gateway
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
@@ -1305,15 +1354,12 @@ jobs:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
           GH_AW_WORKFLOW_NAME: "Mention in PR (no sandbox)"
-          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_NOOP_REPORT_AS_ISSUE: "true"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_noop_message.cjs');
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/noop.cjs');
             await main();
       - name: Record Missing Tool
         id: missing_tool
@@ -1339,7 +1385,6 @@ jobs:
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-mention-in-pr-no-sandbox"
-          GH_AW_ENGINE_ID: "copilot"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.activation.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_INFERENCE_ACCESS_ERROR: ${{ needs.agent.outputs.inference_access_error }}
@@ -1356,6 +1401,23 @@ jobs:
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_agent_failure.cjs');
+            await main();
+      - name: Handle No-Op Message
+        id: handle_noop_message
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        env:
+          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
+          GH_AW_WORKFLOW_NAME: "Mention in PR (no sandbox)"
+          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
+          GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
+          GH_AW_NOOP_REPORT_AS_ISSUE: "true"
+        with:
+          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_noop_message.cjs');
             await main();
 
   pre_activation:
@@ -1394,7 +1456,6 @@ jobs:
     timeout-minutes: 15
     env:
       GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/gh-aw-mention-in-pr-no-sandbox"
-      GH_AW_EFFECTIVE_TOKENS: ${{ needs.agent.outputs.effective_tokens }}
       GH_AW_ENGINE_ID: "copilot"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {0}]({{run_url}})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.', github.workflow) }}\",\"activationComments\":\"false\"}"
