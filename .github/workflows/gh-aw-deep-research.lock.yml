@@ -123,7 +123,7 @@ jobs:
       title: ${{ steps.sanitized.outputs.title }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@296262211b372a13b451ca9400369ac152db75d6 # v0.65.6
+        uses: github/gh-aw/actions/setup@b49528894be1b9ae1ef544000d85c90e80ff7213 # v0.66.0
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Compute artifact prefix
@@ -189,10 +189,11 @@ jobs:
             .agents
           sparse-checkout-cone-mode: true
           fetch-depth: 1
-      - name: Check workflow file timestamps
+      - name: Check workflow lock file
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_WORKFLOW_FILE: "gh-aw-internal-gemini-cli-web-search.lock.yml"
+          GH_AW_CONTEXT_WORKFLOW_REF: "${{ github.workflow_ref }}"
         with:
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
@@ -272,16 +273,10 @@ jobs:
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
           cat << 'GH_AW_PROMPT_3cac5bf79b825565_EOF'
           </system>
-          GH_AW_PROMPT_3cac5bf79b825565_EOF
-          cat << 'GH_AW_PROMPT_3cac5bf79b825565_EOF'
           ## MCP Servers
           
           - **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.
-          GH_AW_PROMPT_3cac5bf79b825565_EOF
-          cat << 'GH_AW_PROMPT_3cac5bf79b825565_EOF'
           Repository conventions are pre-fetched to `/tmp/agents.md`. Read this file early in your task to understand the codebase's conventions, guidelines, and patterns. If the file doesn't exist, continue without it. When spawning sub-agents, include the contents of `/tmp/agents.md` in each sub-agent's prompt (or tell the sub-agent to read the file directly).
-          GH_AW_PROMPT_3cac5bf79b825565_EOF
-          cat << 'GH_AW_PROMPT_3cac5bf79b825565_EOF'
           ## Formatting Guidelines
           
           - Lead with the most important information — your first sentence should be the key takeaway
@@ -290,8 +285,6 @@ jobs:
           - Wrap branch names and @-references in backticks to avoid pinging users
           - Include code snippets with file paths and line numbers when referencing the codebase
           
-          GH_AW_PROMPT_3cac5bf79b825565_EOF
-          cat << 'GH_AW_PROMPT_3cac5bf79b825565_EOF'
           ## Rigor
           
           **Silence is better than noise. A false positive wastes a human's time and erodes trust in every future report.**
@@ -303,8 +296,6 @@ jobs:
           - Before submitting any output, re-read it as a skeptical reviewer. Ask: "Would a senior engineer on this team find this useful, or would they close it immediately?" If the answer is "close," call `noop` instead.
           - Only report findings you would confidently defend in a code review. If you feel the need to hedge with "might," "could," or "possibly," the finding is not ready to file.
           - Be thorough, spend the time to investigate and verify. There is no rush. Do your best work.
-          GH_AW_PROMPT_3cac5bf79b825565_EOF
-          cat << 'GH_AW_PROMPT_3cac5bf79b825565_EOF'
           ## MCP Pagination
           
           MCP tool responses have a **25,000 token limit**. When responses exceed this limit, the call fails and you must retry with pagination — wasting turns and tokens. Use proactive pagination to stay under the limit.
@@ -338,13 +329,9 @@ jobs:
           - **Use filters**: Combine `perPage` with state, label, or date filters to reduce result size
           - **Process as you go**: Don't accumulate all pages before acting — process each batch immediately
           
-          GH_AW_PROMPT_3cac5bf79b825565_EOF
-          cat << 'GH_AW_PROMPT_3cac5bf79b825565_EOF'
           ## Message Footer
           
           A footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.
-          GH_AW_PROMPT_3cac5bf79b825565_EOF
-          cat << 'GH_AW_PROMPT_3cac5bf79b825565_EOF'
           ## add-comment Limitations
           
           - **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.
@@ -355,8 +342,6 @@ jobs:
           - **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures unless it's referencing the triggering issue.
           
           If you exceed 10 mentions or 50 links, the comment will be rejected.
-          GH_AW_PROMPT_3cac5bf79b825565_EOF
-          cat << 'GH_AW_PROMPT_3cac5bf79b825565_EOF'
           ## create-issue Limitations
           
           - **Title**: Max 128 characters. Sanitized (special characters escaped).
@@ -365,8 +350,6 @@ jobs:
           - **Body**: No strict character limit beyond GitHub's API limit (~65,536 characters), but fields over 16,000 tokens are written to a file reference instead of inlined.
           - **Bot triggers**: References like `fixes #123` or `closes #456` in the body are neutralized to prevent unintended issue closures.
           - **Mentions**: `@mentions` in the body are neutralized (backticked).
-          GH_AW_PROMPT_3cac5bf79b825565_EOF
-          cat << 'GH_AW_PROMPT_3cac5bf79b825565_EOF'
           # Internal Gemini CLI Web Search
           
           Assist with web research on __GH_AW_GITHUB_REPOSITORY__ from issue comments, then provide an evidence-backed answer.
@@ -521,13 +504,14 @@ jobs:
     outputs:
       artifact_prefix: ${{ needs.activation.outputs.artifact_prefix }}
       checkout_pr_success: ${{ steps.checkout-pr.outputs.checkout_pr_success || 'true' }}
+      effective_tokens: ${{ steps.parse-mcp-gateway.outputs.effective_tokens }}
       has_patch: ${{ steps.collect_output.outputs.has_patch }}
       model: ${{ needs.activation.outputs.model }}
       output: ${{ steps.collect_output.outputs.output }}
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@296262211b372a13b451ca9400369ac152db75d6 # v0.65.6
+        uses: github/gh-aw/actions/setup@b49528894be1b9ae1ef544000d85c90e80ff7213 # v0.66.0
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Set runtime paths
@@ -569,7 +553,7 @@ jobs:
           node-version-file: .nvmrc
       - if: hashFiles('.ruby-version') != ''
         name: Setup Ruby
-        uses: ruby/setup-ruby@319994f95fa847cf3fb3cd3dbe89f6dcde9f178f # v1
+        uses: ruby/setup-ruby@3ff19f5e2baf30647122352b96108b1fbe250c64 # v1
         with:
           bundler-cache: true
           ruby-version: .ruby-version
@@ -631,7 +615,7 @@ jobs:
           node-version: '24'
           package-manager-cache: false
       - name: Install AWF binary
-        run: bash ${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh v0.25.4
+        run: bash ${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh v0.25.13
       - name: Install Gemini CLI
         run: npm install -g @google/gemini-cli@latest
       - name: Determine automatic lockdown mode for GitHub MCP Server
@@ -645,7 +629,7 @@ jobs:
             const determineAutomaticLockdown = require('${{ runner.temp }}/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash ${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.25.4 ghcr.io/github/gh-aw-firewall/api-proxy:0.25.4 ghcr.io/github/gh-aw-firewall/squid:0.25.4 ghcr.io/github/gh-aw-mcpg:v0.2.9 ghcr.io/github/github-mcp-server:v0.32.0 mcp/fetch node:lts-alpine
+        run: bash ${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.25.13 ghcr.io/github/gh-aw-firewall/api-proxy:0.25.13 ghcr.io/github/gh-aw-firewall/squid:0.25.13 ghcr.io/github/gh-aw-mcpg:v0.2.12 ghcr.io/github/github-mcp-server:v0.32.0 node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p ${RUNNER_TEMP}/gh-aw/safeoutputs
@@ -801,6 +785,7 @@ jobs:
         id: safe-outputs-start
         env:
           DEBUG: '*'
+          GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
           GH_AW_SAFE_OUTPUTS_PORT: ${{ steps.safe-outputs-config.outputs.safe_outputs_port }}
           GH_AW_SAFE_OUTPUTS_API_KEY: ${{ steps.safe-outputs-config.outputs.safe_outputs_api_key }}
           GH_AW_SAFE_OUTPUTS_TOOLS_PATH: ${{ runner.temp }}/gh-aw/safeoutputs/tools.json
@@ -809,6 +794,7 @@ jobs:
         run: |
           # Environment variables are set above to prevent template injection
           export DEBUG
+          export GH_AW_SAFE_OUTPUTS
           export GH_AW_SAFE_OUTPUTS_PORT
           export GH_AW_SAFE_OUTPUTS_API_KEY
           export GH_AW_SAFE_OUTPUTS_TOOLS_PATH
@@ -842,7 +828,7 @@ jobs:
           export DEBUG="*"
           
           export GH_AW_ENGINE="gemini"
-          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.9'
+          export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.12'
           
           cat << GH_AW_MCP_CONFIG_466f5752d0c01fbe_EOF | bash ${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh
           {
@@ -889,16 +875,6 @@ jobs:
                     ]
                   }
                 }
-              },
-              "web-fetch": {
-                "container": "mcp/fetch",
-                "guard-policies": {
-                  "write-sink": {
-                    "accept": [
-                      "*"
-                    ]
-                  }
-                }
               }
             },
             "gateway": {
@@ -929,14 +905,14 @@ jobs:
             echo "$BASE_CONFIG" > "$SETTINGS"
           fi
         env:
-          GH_AW_GEMINI_BASE_CONFIG: '{"context":{"includeDirectories":["/tmp/"]},"tools":{"core":["glob","grep_search","list_directory","read_file","read_many_files","replace","write_file"]}}'
+          GH_AW_GEMINI_BASE_CONFIG: '{"context":{"includeDirectories":["/tmp/"]},"tools":{"core":["glob","grep_search","list_directory","read_file","read_many_files","replace","web_fetch","write_file"]}}'
       - name: Execute Gemini CLI
         id: agentic_execution
         run: |
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
           # shellcheck disable=SC1003
-          sudo -E awf --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" --env-all --exclude-env GEMINI_API_KEY --exclude-env GITHUB_MCP_SERVER_TOKEN --exclude-env MCP_GATEWAY_API_KEY --allow-domains '*.googleapis.com,artifacts.elastic.co,cloud.elastic.co,ela.st,elastic.co,generativelanguage.googleapis.com,github.com,host.docker.internal,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,www.elastic.co' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --audit-dir /tmp/gh-aw/sandbox/firewall/audit --enable-host-access --image-tag 0.25.4 --skip-pull --enable-api-proxy \
+          sudo -E awf --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" --env-all --exclude-env GEMINI_API_KEY --exclude-env GITHUB_MCP_SERVER_TOKEN --exclude-env MCP_GATEWAY_API_KEY --allow-domains '*.googleapis.com,artifacts.elastic.co,cloud.elastic.co,ela.st,elastic.co,generativelanguage.googleapis.com,github.com,host.docker.internal,public-code-search.fastmcp.app,raw.githubusercontent.com,registry.npmjs.org,www.elastic.co' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --audit-dir /tmp/gh-aw/sandbox/firewall/audit --enable-host-access --image-tag 0.25.13 --skip-pull --enable-api-proxy \
             -- /bin/bash -c 'export PATH="$(find /opt/hostedtoolcache -maxdepth 4 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true && gemini --yolo --output-format stream-json --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           DEBUG: gemini-cli:*
@@ -1033,6 +1009,7 @@ jobs:
             await main();
       - name: Parse MCP Gateway logs for step summary
         if: always()
+        id: parse-mcp-gateway
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
@@ -1055,6 +1032,10 @@ jobs:
           else
             echo 'AWF binary not installed, skipping firewall log summary'
           fi
+      - name: Parse token usage for step summary
+        if: always()
+        continue-on-error: true
+        run: bash ${RUNNER_TEMP}/gh-aw/actions/parse_token_usage.sh
       - name: Write agent output placeholder if missing
         if: always()
         run: |
@@ -1072,6 +1053,7 @@ jobs:
             /tmp/gh-aw/gemini-client-error-*.json
             /tmp/gh-aw/redacted-urls.log
             /tmp/gh-aw/mcp-logs/
+            /tmp/gh-aw/agent_usage.json
             /tmp/gh-aw/agent-stdio.log
             /tmp/gh-aw/agent/
             /tmp/gh-aw/safeoutputs.jsonl
@@ -1111,7 +1093,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@296262211b372a13b451ca9400369ac152db75d6 # v0.65.6
+        uses: github/gh-aw/actions/setup@b49528894be1b9ae1ef544000d85c90e80ff7213 # v0.66.0
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
@@ -1135,12 +1117,15 @@ jobs:
           GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           GH_AW_NOOP_MAX: "1"
           GH_AW_WORKFLOW_NAME: "Internal Gemini CLI Web Search"
+          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
+          GH_AW_NOOP_REPORT_AS_ISSUE: "true"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
             setupGlobals(core, github, context, exec, io);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/noop.cjs');
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_noop_message.cjs');
             await main();
       - name: Record Missing Tool
         id: missing_tool
@@ -1166,6 +1151,7 @@ jobs:
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
           GH_AW_WORKFLOW_ID: "gh-aw-internal-gemini-cli-web-search"
+          GH_AW_ENGINE_ID: "gemini"
           GH_AW_SECRET_VERIFICATION_RESULT: ${{ needs.activation.outputs.secret_verification_result }}
           GH_AW_CHECKOUT_PR_SUCCESS: ${{ needs.agent.outputs.checkout_pr_success }}
           GH_AW_LOCKDOWN_CHECK_FAILED: ${{ needs.activation.outputs.lockdown_check_failed }}
@@ -1180,35 +1166,20 @@ jobs:
             setupGlobals(core, github, context, exec, io);
             const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_agent_failure.cjs');
             await main();
-      - name: Handle No-Op Message
-        id: handle_noop_message
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
-          GH_AW_WORKFLOW_NAME: "Internal Gemini CLI Web Search"
-          GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          GH_AW_AGENT_CONCLUSION: ${{ needs.agent.result }}
-          GH_AW_NOOP_MESSAGE: ${{ steps.noop.outputs.noop_message }}
-          GH_AW_NOOP_REPORT_AS_ISSUE: "true"
-        with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
-          script: |
-            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/handle_noop_message.cjs');
-            await main();
 
   detection:
     needs: agent
     if: >
       always() && needs.agent.result != 'skipped' && (needs.agent.outputs.output_types != '' || needs.agent.outputs.has_patch == 'true')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       detection_conclusion: ${{ steps.detection_conclusion.outputs.conclusion }}
       detection_success: ${{ steps.detection_conclusion.outputs.success }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@296262211b372a13b451ca9400369ac152db75d6 # v0.65.6
+        uses: github/gh-aw/actions/setup@b49528894be1b9ae1ef544000d85c90e80ff7213 # v0.66.0
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
@@ -1225,9 +1196,14 @@ jobs:
           mkdir -p /tmp/gh-aw/
           find "/tmp/gh-aw/" -type f -print
           echo "GH_AW_AGENT_OUTPUT=/tmp/gh-aw/agent_output.json" >> "$GITHUB_OUTPUT"
+      - name: Checkout repository for patch context
+        if: needs.agent.outputs.has_patch == 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
       # --- Threat Detection ---
       - name: Download container images
-        run: bash ${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.25.4 ghcr.io/github/gh-aw-firewall/api-proxy:0.25.4 ghcr.io/github/gh-aw-firewall/squid:0.25.4
+        run: bash ${RUNNER_TEMP}/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.25.13 ghcr.io/github/gh-aw-firewall/api-proxy:0.25.13 ghcr.io/github/gh-aw-firewall/squid:0.25.13
       - name: Check if detection needed
         id: detection_guard
         if: always()
@@ -1286,7 +1262,7 @@ jobs:
           node-version: '24'
           package-manager-cache: false
       - name: Install AWF binary
-        run: bash ${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh v0.25.4
+        run: bash ${RUNNER_TEMP}/gh-aw/actions/install_awf_binary.sh v0.25.13
       - name: Install Gemini CLI
         run: npm install -g @google/gemini-cli@latest
       - name: Write Gemini settings
@@ -1310,7 +1286,7 @@ jobs:
           set -o pipefail
           touch /tmp/gh-aw/agent-step-summary.md
           # shellcheck disable=SC1003
-          sudo -E awf --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" --env-all --exclude-env GEMINI_API_KEY --allow-domains '*.googleapis.com,generativelanguage.googleapis.com,github.com,host.docker.internal,raw.githubusercontent.com,registry.npmjs.org' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --audit-dir /tmp/gh-aw/sandbox/firewall/audit --enable-host-access --image-tag 0.25.4 --skip-pull --enable-api-proxy \
+          sudo -E awf --container-workdir "${GITHUB_WORKSPACE}" --mount "${RUNNER_TEMP}/gh-aw:${RUNNER_TEMP}/gh-aw:ro" --mount "${RUNNER_TEMP}/gh-aw:/host${RUNNER_TEMP}/gh-aw:ro" --env-all --exclude-env GEMINI_API_KEY --allow-domains '*.googleapis.com,generativelanguage.googleapis.com,github.com,host.docker.internal,raw.githubusercontent.com,registry.npmjs.org' --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --audit-dir /tmp/gh-aw/sandbox/firewall/audit --enable-host-access --image-tag 0.25.13 --skip-pull --enable-api-proxy \
             -- /bin/bash -c 'export PATH="$(find /opt/hostedtoolcache -maxdepth 4 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true && gemini --yolo --output-format stream-json --prompt "$(cat /tmp/gh-aw/aw-prompts/prompt.txt)"' 2>&1 | tee -a /tmp/gh-aw/threat-detection/detection.log
         env:
           DEBUG: gemini-cli:*
@@ -1355,7 +1331,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@296262211b372a13b451ca9400369ac152db75d6 # v0.65.6
+        uses: github/gh-aw/actions/setup@b49528894be1b9ae1ef544000d85c90e80ff7213 # v0.66.0
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Check team membership for workflow
@@ -1386,6 +1362,7 @@ jobs:
     timeout-minutes: 15
     env:
       GH_AW_CALLER_WORKFLOW_ID: "${{ github.repository }}/gh-aw-internal-gemini-cli-web-search"
+      GH_AW_EFFECTIVE_TOKENS: ${{ needs.agent.outputs.effective_tokens }}
       GH_AW_ENGINE_ID: "gemini"
       GH_AW_ENGINE_MODEL: "${{ inputs.model }}"
       GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {0}]({{run_url}})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.', github.workflow) }}\",\"activationComments\":\"false\"}"
@@ -1404,7 +1381,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@296262211b372a13b451ca9400369ac152db75d6 # v0.65.6
+        uses: github/gh-aw/actions/setup@b49528894be1b9ae1ef544000d85c90e80ff7213 # v0.66.0
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
