@@ -19,7 +19,6 @@ engine:
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-create-comment-on-issue-${{ inputs.target-issue-number }}"
 on:
-  stale-check: false
   workflow_call:
     inputs:
       model:

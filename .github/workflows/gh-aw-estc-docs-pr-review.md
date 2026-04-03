@@ -18,7 +18,6 @@ engine:
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-docs-pr-review-${{ github.event.pull_request.number }}"
 on:
-  stale-check: false
   workflow_call:
     inputs:
       model:
