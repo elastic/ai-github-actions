@@ -112,7 +112,7 @@ steps:
       m = BK_URL_RE.search(target_url)
       if not m:
           print(f'No Buildkite build URL in target_url: {target_url}')
-          sys.exit(1)
+          sys.exit(0)
 
       bk_org, bk_pipeline, bk_number = m.group(1), m.group(2), m.group(3)
       build = bk_get(f'organizations/{bk_org}/pipelines/{bk_pipeline}/builds/{bk_number}')
@@ -134,7 +134,7 @@ steps:
       def skip(reason):
           subprocess.run(['bash', '-c', f'echo "::notice::{reason}"'], check=False)
           print(reason)
-          sys.exit(1)
+          sys.exit(0)
 
       if not pr_number:
           skip('Build is not associated with a PR; skipping')
