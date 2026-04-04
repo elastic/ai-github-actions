@@ -3,7 +3,7 @@
 # Please update your workflow reference to use the new name:
 #   gh-aw-stale-issues.lock.yml → gh-aw-stale-issues-investigator.lock.yml
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"17e866ef973e8406a4be640aea3f7559ad1478da9bc8fb6a36a00d8d125c116c","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"44b5e3deeccfeb0d6390647e073558efda1175ec18edf172cedf8336220347a7","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
 #  | |_| | __ _  ___ _ __ | |_ _  ___ 
@@ -188,17 +188,6 @@ jobs:
             .agents
           sparse-checkout-cone-mode: true
           fetch-depth: 1
-      - name: Check workflow lock file
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
-        env:
-          GH_AW_WORKFLOW_FILE: "gh-aw-stale-issues-investigator.lock.yml"
-          GH_AW_CONTEXT_WORKFLOW_REF: "${{ github.workflow_ref }}"
-        with:
-          script: |
-            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
-            setupGlobals(core, github, context, exec, io);
-            const { main } = require('${{ runner.temp }}/gh-aw/actions/check_workflow_timestamp_api.cjs');
-            await main();
       - name: Create prompt with built-in context
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
@@ -217,14 +206,14 @@ jobs:
         run: |
           bash ${RUNNER_TEMP}/gh-aw/actions/create_prompt_first.sh
           {
-          cat << 'GH_AW_PROMPT_ad56be77d9efc967_EOF'
+          cat << 'GH_AW_PROMPT_a4358f41706e6ff3_EOF'
           <system>
-          GH_AW_PROMPT_ad56be77d9efc967_EOF
+          GH_AW_PROMPT_a4358f41706e6ff3_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/xpia.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/temp_folder_prompt.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/markdown.md"
           cat "${RUNNER_TEMP}/gh-aw/prompts/safe_outputs_prompt.md"
-          cat << 'GH_AW_PROMPT_ad56be77d9efc967_EOF'
+          cat << 'GH_AW_PROMPT_a4358f41706e6ff3_EOF'
           <safe-output-tools>
           Tools: create_issue, add_labels(max:10), missing_tool, missing_data, noop
           </safe-output-tools>
@@ -256,9 +245,9 @@ jobs:
           {{/if}}
           </github-context>
           
-          GH_AW_PROMPT_ad56be77d9efc967_EOF
+          GH_AW_PROMPT_a4358f41706e6ff3_EOF
           cat "${RUNNER_TEMP}/gh-aw/prompts/github_mcp_tools_with_safeoutputs_prompt.md"
-          cat << 'GH_AW_PROMPT_ad56be77d9efc967_EOF'
+          cat << 'GH_AW_PROMPT_a4358f41706e6ff3_EOF'
           </system>
           ## MCP Servers
           
@@ -512,7 +501,7 @@ jobs:
           
           __GH_AW_EXPR_49B959F1__
           
-          GH_AW_PROMPT_ad56be77d9efc967_EOF
+          GH_AW_PROMPT_a4358f41706e6ff3_EOF
           } > "$GH_AW_PROMPT"
       - name: Interpolate variables and render templates
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -740,12 +729,12 @@ jobs:
           mkdir -p ${RUNNER_TEMP}/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/safeoutputs
           mkdir -p /tmp/gh-aw/mcp-logs/safeoutputs
-          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_c733ea9e45f33df0_EOF'
+          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/config.json << 'GH_AW_SAFE_OUTPUTS_CONFIG_3347e734757cad6a_EOF'
           {"add_labels":{"allowed":["${{ inputs.stale-label }}"],"max":10,"target":"*"},"create_issue":{"close_older_issues":true,"close_older_key":"${{ inputs.title-prefix }}","expires":48,"max":1,"title_prefix":"${{ inputs.title-prefix }} "},"missing_data":{},"missing_tool":{},"noop":{"max":1,"report-as-issue":"true"}}
-          GH_AW_SAFE_OUTPUTS_CONFIG_c733ea9e45f33df0_EOF
+          GH_AW_SAFE_OUTPUTS_CONFIG_3347e734757cad6a_EOF
       - name: Write Safe Outputs Tools
         run: |
-          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/tools_meta.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_META_73be53eccfb05849_EOF'
+          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/tools_meta.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_META_52377b40f9d11e21_EOF'
           {
             "description_suffixes": {
               "add_labels": " CONSTRAINTS: Maximum 10 label(s) can be added. Only these labels are allowed: [\"${{ inputs.stale-label }}\"]. Target: *.",
@@ -754,8 +743,8 @@ jobs:
             "repo_params": {},
             "dynamic_tools": []
           }
-          GH_AW_SAFE_OUTPUTS_TOOLS_META_73be53eccfb05849_EOF
-          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/validation.json << 'GH_AW_SAFE_OUTPUTS_VALIDATION_637ce25cdfcade0f_EOF'
+          GH_AW_SAFE_OUTPUTS_TOOLS_META_52377b40f9d11e21_EOF
+          cat > ${RUNNER_TEMP}/gh-aw/safeoutputs/validation.json << 'GH_AW_SAFE_OUTPUTS_VALIDATION_3e8773fcf1c75af0_EOF'
           {
             "add_labels": {
               "defaultMax": 5,
@@ -867,7 +856,7 @@ jobs:
               }
             }
           }
-          GH_AW_SAFE_OUTPUTS_VALIDATION_637ce25cdfcade0f_EOF
+          GH_AW_SAFE_OUTPUTS_VALIDATION_3e8773fcf1c75af0_EOF
           node ${RUNNER_TEMP}/gh-aw/actions/generate_safe_outputs_tools.cjs
       - name: Generate Safe Outputs MCP Server Config
         id: safe-outputs-config
@@ -937,7 +926,7 @@ jobs:
           export MCP_GATEWAY_DOCKER_COMMAND='docker run -i --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -e MCP_GATEWAY_PORT -e MCP_GATEWAY_DOMAIN -e MCP_GATEWAY_API_KEY -e MCP_GATEWAY_PAYLOAD_DIR -e MCP_GATEWAY_PAYLOAD_SIZE_THRESHOLD -e DEBUG -e MCP_GATEWAY_LOG_DIR -e GH_AW_MCP_LOG_DIR -e GH_AW_SAFE_OUTPUTS -e GH_AW_SAFE_OUTPUTS_CONFIG_PATH -e GH_AW_SAFE_OUTPUTS_TOOLS_PATH -e GH_AW_ASSETS_BRANCH -e GH_AW_ASSETS_MAX_SIZE_KB -e GH_AW_ASSETS_ALLOWED_EXTS -e DEFAULT_BRANCH -e GITHUB_MCP_SERVER_TOKEN -e GITHUB_MCP_GUARD_MIN_INTEGRITY -e GITHUB_MCP_GUARD_REPOS -e GITHUB_REPOSITORY -e GITHUB_SERVER_URL -e GITHUB_SHA -e GITHUB_WORKSPACE -e GITHUB_TOKEN -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RUN_ATTEMPT -e GITHUB_JOB -e GITHUB_ACTION -e GITHUB_EVENT_NAME -e GITHUB_EVENT_PATH -e GITHUB_ACTOR -e GITHUB_ACTOR_ID -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_WORKFLOW_REF -e GITHUB_WORKFLOW_SHA -e GITHUB_REF -e GITHUB_REF_NAME -e GITHUB_REF_TYPE -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GH_AW_SAFE_OUTPUTS_PORT -e GH_AW_SAFE_OUTPUTS_API_KEY -v /tmp/gh-aw/mcp-payloads:/tmp/gh-aw/mcp-payloads:rw -v /opt:/opt:ro -v /tmp:/tmp:rw -v '"${GITHUB_WORKSPACE}"':'"${GITHUB_WORKSPACE}"':rw ghcr.io/github/gh-aw-mcpg:v0.2.12'
           
           mkdir -p /home/runner/.copilot
-          cat << GH_AW_MCP_CONFIG_eb6f514dd4eb44e8_EOF | bash ${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh
+          cat << GH_AW_MCP_CONFIG_7f4f93f88a808562_EOF | bash ${RUNNER_TEMP}/gh-aw/actions/start_mcp_gateway.sh
           {
             "mcpServers": {
               "github": {
@@ -992,7 +981,7 @@ jobs:
               "payloadDir": "${MCP_GATEWAY_PAYLOAD_DIR}"
             }
           }
-          GH_AW_MCP_CONFIG_eb6f514dd4eb44e8_EOF
+          GH_AW_MCP_CONFIG_7f4f93f88a808562_EOF
       - name: Download activation artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:

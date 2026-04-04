@@ -19,6 +19,7 @@ engine:
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-pr-conflict-addresser-${{ inputs.target-pr-number }}"
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:

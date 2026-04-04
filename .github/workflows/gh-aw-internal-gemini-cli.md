@@ -21,6 +21,7 @@ engine:
   concurrency:
     group: "gh-aw-gemini-${{ github.workflow }}-internal-gemini-cli-${{ github.event.issue.number }}"
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:

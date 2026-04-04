@@ -18,6 +18,7 @@ engine:
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-plan-${{ github.event.issue.number }}"
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:

@@ -17,6 +17,7 @@ engine:
   id: copilot
   model: gpt-5.3-codex
 on:
+  stale-check: false
   schedule:
     - cron: "daily around 14:00 on weekdays"
   workflow_dispatch:

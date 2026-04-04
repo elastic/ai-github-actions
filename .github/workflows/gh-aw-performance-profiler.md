@@ -19,6 +19,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
