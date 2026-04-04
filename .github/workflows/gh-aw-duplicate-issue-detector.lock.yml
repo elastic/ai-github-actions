@@ -1,3 +1,4 @@
+# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"8ef231d7299b182c8caa79fd043d1b33f26034562f7debbcdf50e33d3b06cb52","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
 #    ___                   _   _      
 #   / _ \                 | | (_)     
 #  | |_| | __ _  ___ _ __ | |_ _  ___ 
@@ -33,7 +34,18 @@
 #
 # inlined-imports: true
 #
-# gh-aw-metadata: {"schema_version":"v3","frontmatter_hash":"8ef231d7299b182c8caa79fd043d1b33f26034562f7debbcdf50e33d3b06cb52","agent_id":"copilot","agent_model":"${{ inputs.model }}"}
+# Secrets used:
+#   - COPILOT_GITHUB_TOKEN
+#   - GH_AW_GITHUB_MCP_SERVER_TOKEN
+#   - GH_AW_GITHUB_TOKEN
+#   - GITHUB_TOKEN
+#
+# Custom actions used:
+#   - actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+#   - actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+#   - actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+#   - actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+#   - github/gh-aw/actions/setup@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
 
 name: "Duplicate Issue Detector"
 "on":
@@ -99,7 +111,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
+        uses: github/gh-aw/actions/setup@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Compute artifact prefix
@@ -536,7 +548,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
+        uses: github/gh-aw/actions/setup@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Set runtime paths
@@ -1039,7 +1051,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
+        uses: github/gh-aw/actions/setup@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
@@ -1126,7 +1138,7 @@ jobs:
       detection_success: ${{ steps.detection_conclusion.outputs.success }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
+        uses: github/gh-aw/actions/setup@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
@@ -1266,7 +1278,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
+        uses: github/gh-aw/actions/setup@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Check team membership for workflow
@@ -1313,7 +1325,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
+        uses: github/gh-aw/actions/setup@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact

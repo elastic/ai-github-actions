@@ -68,7 +68,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
+        uses: github/gh-aw/actions/setup@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
 
@@ -113,7 +113,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
+        uses: github/gh-aw/actions/setup@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
 
@@ -128,9 +128,9 @@ jobs:
             await main();
 
       - name: Install gh-aw
-        uses: github/gh-aw/actions/setup-cli@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
+        uses: github/gh-aw/actions/setup-cli@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
         with:
-          version: v0.66.1
+          version: b6e4a90bc388dd5427dd28e92e2164591a89a7ac
 
       - name: Run operation
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
@@ -164,7 +164,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
+        uses: github/gh-aw/actions/setup@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
 
@@ -204,7 +204,7 @@ jobs:
           persist-credentials: false
 
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
+        uses: github/gh-aw/actions/setup@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
 
@@ -219,9 +219,9 @@ jobs:
             await main();
 
       - name: Install gh-aw
-        uses: github/gh-aw/actions/setup-cli@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
+        uses: github/gh-aw/actions/setup-cli@b6e4a90bc388dd5427dd28e92e2164591a89a7ac
         with:
-          version: v0.66.1
+          version: b6e4a90bc388dd5427dd28e92e2164591a89a7ac
 
       - name: Create missing labels
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
