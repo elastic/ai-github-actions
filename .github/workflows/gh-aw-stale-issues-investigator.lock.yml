@@ -113,7 +113,7 @@ jobs:
       secret_verification_result: ${{ steps.validate-secret.outputs.verification_result }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@b49528894be1b9ae1ef544000d85c90e80ff7213 # v0.66.0
+        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Compute artifact prefix
@@ -588,7 +588,7 @@ jobs:
       output_types: ${{ steps.collect_output.outputs.output_types }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@b49528894be1b9ae1ef544000d85c90e80ff7213 # v0.66.0
+        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Set runtime paths
@@ -1120,7 +1120,13 @@ jobs:
       - name: Parse token usage for step summary
         if: always()
         continue-on-error: true
-        run: bash ${RUNNER_TEMP}/gh-aw/actions/parse_token_usage.sh
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { setupGlobals } = require('${{ runner.temp }}/gh-aw/actions/setup_globals.cjs');
+            setupGlobals(core, github, context, exec, io);
+            const { main } = require('${{ runner.temp }}/gh-aw/actions/parse_token_usage.cjs');
+            await main();
       - name: Write agent output placeholder if missing
         if: always()
         run: |
@@ -1178,7 +1184,7 @@ jobs:
       total_count: ${{ steps.missing_tool.outputs.total_count }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@b49528894be1b9ae1ef544000d85c90e80ff7213 # v0.66.0
+        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
@@ -1265,7 +1271,7 @@ jobs:
       detection_success: ${{ steps.detection_conclusion.outputs.success }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@b49528894be1b9ae1ef544000d85c90e80ff7213 # v0.66.0
+        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
@@ -1405,7 +1411,7 @@ jobs:
       matched_command: ''
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@b49528894be1b9ae1ef544000d85c90e80ff7213 # v0.66.0
+        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Check team membership for workflow
@@ -1453,7 +1459,7 @@ jobs:
       process_safe_outputs_temporary_id_map: ${{ steps.process_safe_outputs.outputs.temporary_id_map }}
     steps:
       - name: Setup Scripts
-        uses: github/gh-aw/actions/setup@b49528894be1b9ae1ef544000d85c90e80ff7213 # v0.66.0
+        uses: github/gh-aw/actions/setup@d688a4a5fa8aa96ad18fa13f0b187c38548a275c # v0.66.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
       - name: Download agent output artifact
