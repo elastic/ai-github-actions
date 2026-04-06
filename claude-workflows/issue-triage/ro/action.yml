@@ -8,7 +8,7 @@
 #       github-token: ${{ github.token }}
 #
 name: "Claude Issue Triage (Read-Only)"
-description: "Automatically triage and label new issues using Claude (read-only investigation)"
+description: "Automatically triage new issues using Claude (read-only investigation)"
 
 branding:
   icon: "tag"
