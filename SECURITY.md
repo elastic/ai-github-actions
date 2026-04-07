@@ -16,7 +16,7 @@ The Claude Code GitHub action will not run for external users. That doesn't mean
 
 ### Author Association Checks
 
-The example workflows include `author_association` checks that restrict who can trigger the AI agent (trigger keyword varies by system — `@claude` for Claude Composite Actions, `/ai` for GitHub Agent Workflows):
+The example workflows include `author_association` checks that restrict who can trigger the AI agent (trigger command varies by system — `@claude` for Claude Composite Actions and slash commands for GitHub Agent Workflows such as `/ai`, `/plan`, `/docs-review`, `/gemini`, and `/research`):
 
 ```yaml
 jobs:

@@ -1,8 +1,8 @@
 # Create Comment On Issue
 
-Add an AI-generated comment to a specific issue by number. Use this when you need to comment on an issue from a `workflow_call` (e.g., chaining from a detector) rather than from an issue reaction trigger.
+Add an AI-generated comment to a specific issue by number. Use this when you need to comment on an issue from a `workflow_call` (e.g., chaining from a detector) rather than from an issue comment trigger.
 
-**Mention in Issue** targets the issue that triggered the workflow (e.g., via `/ai` reaction). **Create Comment On Issue** takes `target-issue-number` as an input, so you can chain it from any workflow that produces an issue number.
+**Mention in Issue** targets the issue that triggered the workflow (e.g., via an `/ai` comment). **Create Comment On Issue** takes `target-issue-number` as an input, so you can chain it from any workflow that produces an issue number.
 
 ## Quick install
 

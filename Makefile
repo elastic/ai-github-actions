@@ -49,7 +49,7 @@ endef
 
 help:
 	@echo "This repository contains GitHub Actions workflows and gh-agent-workflows templates."
-	@echo "Edit claude-workflows/*/action.yml (composite actions) or gh-agent-workflows/*.md (agentic workflows)."
+	@echo "Edit claude-workflows/*/action.yml (composite actions) or gh-agent-workflows/*/example.yml (agentic workflow templates)."
 	@echo ""
 	@echo "Available targets:"
 	@echo "  setup                - Set up development environment (install tools)"
