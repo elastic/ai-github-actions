@@ -28,6 +28,11 @@ STATIC_DOCS_DIR = REPO_ROOT / "docs" / "workflows" / "gh-agent-workflows"
 ELASTIC_SPECIFIC_PREFIX = "estc-"
 
 
+def strip_html_comments(text: str) -> str:
+    """Remove HTML comment blocks from text."""
+    return re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
+
+
 def extract_catalog_slugs(catalog_text: str) -> set[str]:
     """Extract workflow slugs from the markdown catalog page.
 
@@ -38,10 +43,12 @@ def extract_catalog_slugs(catalog_text: str) -> set[str]:
     where ``<slug>`` is a lowercase alphanumeric-and-hyphen string.
     Returns the set of matching slugs.
     """
+    active_catalog_text = strip_html_comments(catalog_text)
     return {
         m.group(1)
         for m in re.finditer(
-            r"\(gh-agent-workflows/([a-z0-9-]+)\.md(?:[?#][^)]+)?\)", catalog_text
+            r"\(gh-agent-workflows/([a-z0-9-]+)\.md(?:[?#][^)]+)?\)",
+            active_catalog_text,
         )
     }
 

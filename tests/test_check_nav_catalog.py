@@ -29,6 +29,17 @@ def test_extract_catalog_slugs_handles_anchor_query_and_invalid_cases() -> None:
     }
 
 
+def test_extract_catalog_slugs_ignores_links_inside_html_comments() -> None:
+    catalog = """
+<!--
+- [Hidden](gh-agent-workflows/hidden-workflow.md)
+-->
+- [Visible](gh-agent-workflows/visible-workflow.md)
+"""
+
+    assert check_nav_catalog.extract_catalog_slugs(catalog) == {"visible-workflow"}
+
+
 def test_extract_nav_slugs_stays_within_nav_block() -> None:
     mkdocs = """
 site_name: docs
@@ -159,3 +170,41 @@ nav:
     assert rc == 1
     assert "not reachable from mkdocs.yml nav" in out
     assert "- create-pr-from-issue" in out
+
+
+def test_main_ignores_catalog_links_inside_html_comments(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    mkdocs = tmp_path / "mkdocs.yml"
+    catalog = tmp_path / "catalog.md"
+    docs_dir = tmp_path / "docs" / "workflows" / "gh-agent-workflows"
+    docs_dir.mkdir(parents=True)
+
+    mkdocs.write_text(
+        """
+nav:
+  - Workflows:
+      - Visible Workflow: workflows/gh-agent-workflows/visible-workflow.md
+""",
+        encoding="utf-8",
+    )
+
+    catalog.write_text(
+        """
+<!--
+- [Hidden Workflow](gh-agent-workflows/hidden-workflow.md)
+-->
+- [Visible Workflow](gh-agent-workflows/visible-workflow.md)
+""",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(check_nav_catalog, "MKDOCS_YML", mkdocs)
+    monkeypatch.setattr(check_nav_catalog, "CATALOG_MD", catalog)
+    monkeypatch.setattr(check_nav_catalog, "STATIC_DOCS_DIR", docs_dir)
+
+    rc = check_nav_catalog.main()
+    out = capsys.readouterr().out
+
+    assert rc == 0
+    assert "OK: all 1 catalog workflows are reachable from nav" in out
