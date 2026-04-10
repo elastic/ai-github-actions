@@ -85,7 +85,22 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
-  serena: ["go", "python", "typescript", "java", "csharp", "rust"]
+# Serena MCP (oraios/serena) — symbolic / LSP-backed code tools; stdio via uvx (setup-uv is emitted by the compiler).
+mcp-servers:
+  serena:
+    command: uvx
+    args:
+      - "-p"
+      - "3.13"
+      - "--from"
+      - "git+https://github.com/oraios/serena"
+      - "serena"
+      - "start-mcp-server"
+      - "--context"
+      - "ide"
+      - "--project-from-cwd"
+      - "--open-web-dashboard"
+      - "false"
 strict: false
 safe-outputs:
   activation-comments: false
