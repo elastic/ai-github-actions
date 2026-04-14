@@ -1,6 +1,6 @@
 # Issue Triage (Read-Only)
 
-Automatically triage and label new issues with read-only investigation capabilities.
+Automatically triage new issues with read-only investigation capabilities.
 
 ## Usage
 
