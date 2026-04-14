@@ -40,7 +40,7 @@ define download-file
 			wget -qO- "$(1)"; \
 		fi; \
 	else \
-		echo "Error: curl or wget required"; \
+		echo "Error: curl or wget is required"; \
 		exit 1; \
 	fi
 endef
@@ -148,7 +148,7 @@ setup-gh-aw-compat:
 	@echo "Setting up gh-aw compat compiler..."
 	@mkdir -p .bin
 	@if ! command -v go >/dev/null 2>&1; then \
-		echo "Error: Go is required to install gh-aw compiler."; \
+		echo "Error: Go is required to install gh-aw compat compiler."; \
 		echo "Install Go: https://go.dev/dl/"; \
 		exit 1; \
 	elif [ -x ".bin/gh-aw-compat" ] && [ -f ".bin/.gh-aw-compat-version" ] && [ "$$(cat .bin/.gh-aw-compat-version 2>/dev/null)" = "$(GH_AW_COMPAT_VERSION)" ]; then \

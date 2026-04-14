@@ -1,6 +1,6 @@
 # Issue Triage (Read-Write-Execute)
 
-Automatically triage and label new issues with capabilities to read, write, and execute. Can run tests, write temporary files for testing, but cannot commit/push code.
+Automatically triage and label new issues with read, write, and execute capabilities. Can run tests, write temporary files for testing, but cannot commit/push code.
 
 ## Usage
 
