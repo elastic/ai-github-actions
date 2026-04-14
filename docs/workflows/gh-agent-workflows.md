@@ -154,6 +154,13 @@ mkdir -p .github/workflows && curl -fsSL \
   -o .github/workflows/agentics-maintenance.yml
 ````
 
+The same workflow also supports manual `workflow_dispatch` operations:
+
+- `safe_outputs`: replay safe outputs from a specific workflow run (`run_url` input required).
+- `create_labels`: create any missing repository labels used by these workflows.
+
+Use `create_labels` after first-time installation or if workflow labels were removed. This dispatch path only runs on non-fork repositories and enforces the same admin/maintainer membership check as other manual maintenance operations.
+
 ## Standard inputs
 
 All workflows accept these optional inputs via `workflow_call`:
