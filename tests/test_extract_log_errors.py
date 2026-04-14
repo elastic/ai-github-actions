@@ -91,6 +91,7 @@ def test_main_manifest_attaches_run_metadata(tmp_path):
     result = run_script("--manifest", str(manifest), "--output", str(output_path), "--context", "0")
 
     assert result.returncode == 0
+    assert result.stdout.strip() == str(output_path)
     summary = json.loads(output_path.read_text())
     assert summary["total_files_scanned"] == 2
     assert summary["total_matches"] == 2
@@ -130,6 +131,7 @@ def test_main_writes_empty_output_for_empty_manifest_logs(tmp_path):
     result = run_script("--manifest", str(manifest), "--output", str(output_path))
 
     assert result.returncode == 0
+    assert result.stdout.strip() == str(output_path)
     assert output_path.exists()
     assert json.loads(output_path.read_text()) == {
         "total_files_scanned": 0,
