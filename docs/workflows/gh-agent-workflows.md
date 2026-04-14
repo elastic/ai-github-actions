@@ -154,6 +154,23 @@ mkdir -p .github/workflows && curl -fsSL \
   -o .github/workflows/agentics-maintenance.yml
 ````
 
+`agentics-maintenance` also supports manual runs via `workflow_dispatch`:
+
+- `operation: safe_outputs` replays safe outputs from a prior workflow run.
+- `run_url` is required when `operation` is `safe_outputs`.
+
+`run_url` accepts either:
+
+- A full Actions run URL (for example, `https://github.com/owner/repo/actions/runs/12345`)
+- A numeric run ID (for example, `12345`)
+
+The replay path runs the `apply_safe_outputs` job, which:
+
+- Requires admin/maintainer permissions for the actor triggering the dispatch
+- Reads the source workflow run and applies its safe outputs (issue/PR/discussion actions) in the current repository
+
+For other maintenance operations (`disable`, `enable`, `update`, `upgrade`), use `operation` without `run_url`.
+
 ## Standard inputs
 
 All workflows accept these optional inputs via `workflow_call`:
