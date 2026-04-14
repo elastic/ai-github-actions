@@ -47,7 +47,7 @@ def test_generate_page_rewrites_sibling_workflow_directory_link_with_anchor(tmp_
     assert "../other-workflow/#details" not in page
 
 
-def test_generate_page_preserves_non_sibling_docs_links(tmp_path):
+def test_generate_page_rewrites_docs_workflows_links(tmp_path):
     hooks = _load_hooks_module()
     workflow_dir = _create_workflow_dir(
         tmp_path,
@@ -57,5 +57,5 @@ def test_generate_page_preserves_non_sibling_docs_links(tmp_path):
 
     page = hooks._generate_page(workflow_dir)
 
-    assert "[Detector / Fixer chaining](../../docs/workflows/detector-fixer-chaining.md)" in page
-    assert "../docs.mdworkflows/detector-fixer-chaining.md" not in page
+    assert "[Detector / Fixer chaining](../detector-fixer-chaining.md)" in page
+    assert "../../docs/workflows/detector-fixer-chaining.md" not in page

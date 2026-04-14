@@ -42,12 +42,11 @@ def _workflow_source_link(example_content: str) -> str | None:
 def _rewrite_sibling_workflow_links(readme: str) -> str:
     """Rewrite sibling workflow links to generated docs pages.
 
-    Only links to direct sibling workflow READMEs/directories are rewritten:
+    The generated workflow docs live under docs/workflows/gh-agent-workflows/.
+    Rewrite source-tree links so they resolve from that location:
     - ../other-workflow/README.md -> other-workflow.md
     - ../other-workflow/ -> other-workflow.md
-
-    Broader relative links (for example ../../docs/...) are intentionally left
-    unchanged.
+    - ../../docs/workflows/<page>.md -> ../<page>.md
     """
 
     def replace_link(match: re.Match[str]) -> str:
@@ -65,6 +64,14 @@ def _rewrite_sibling_workflow_links(readme: str) -> str:
             slug = dir_match.group(1)
             anchor = dir_match.group(2) or ""
             return f"[{link_text}]({slug}.md{anchor})"
+
+        docs_workflows_match = re.fullmatch(
+            r"\.\./\.\./docs/workflows/([a-z0-9-]+)\.md(#.*)?", target
+        )
+        if docs_workflows_match:
+            slug = docs_workflows_match.group(1)
+            anchor = docs_workflows_match.group(2) or ""
+            return f"[{link_text}](../{slug}.md{anchor})"
 
         return match.group(0)
 
