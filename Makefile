@@ -1,9 +1,9 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.67.4
-GH_AW_BUILD_VERSION := v0.67.4
-GH_AW_COMPAT_VERSION := v0.67.4
+GH_AW_VERSION := v0.68.3
+GH_AW_BUILD_VERSION := v0.68.3
+GH_AW_COMPAT_VERSION := v0.68.3
 GH_AW_MODULE_REPO := github.com/github/gh-aw
 GH_AW_SOURCE_REPO := github.com/github/gh-aw
 GH_AW_SETUP_ACTION_REPO := $(patsubst github.com/%,%,$(GH_AW_SOURCE_REPO))
@@ -49,7 +49,7 @@ endef
 
 help:
 	@echo "This repository contains GitHub Actions workflows and gh-agent-workflows templates."
-	@echo "Edit claude-workflows/*/action.yml (composite actions) or gh-agent-workflows/*/example.yml (agentic workflow templates)."
+	@echo "Edit claude-workflows/*/action.yml (composite actions) or gh-agent-workflows/*.md (agentic workflows)."
 	@echo ""
 	@echo "Available targets:"
 	@echo "  setup                - Set up development environment (install tools)"
