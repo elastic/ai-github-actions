@@ -75,13 +75,13 @@ Many scheduled workflows follow a **detector** pattern: the detector finds issue
 | [Bug Hunter](gh-agent-workflows/bug-hunter.md) | Reproducible bugs |
 | [Code Complexity Detector](gh-agent-workflows/code-complexity.md) | Overly complex code |
 | [Code Duplication Detector](gh-agent-workflows/code-duplication.md) | Duplicate / clustered code |
-| [Docs Patrol](gh-agent-workflows/docs-patrol.md) | Stale internal documentation |
+| [Docs Patrol](gh-agent-workflows/docs-patrol-overview.md) | Stale internal documentation |
 | [Newbie Contributor Patrol](gh-agent-workflows/newbie-contributor.md) | Onboarding documentation gaps |
 | [Stale Issues Investigator](gh-agent-workflows/stale-issues.md) | Stale issue lifecycle |
 | [Test Coverage Detector](gh-agent-workflows/test-coverage.md) | Test coverage gaps |
 | [Text Auditor](gh-agent-workflows/text-quality.md) | User-facing text quality |
 
-Stale Issues Investigator pairs with [Stale Issues Remediator](gh-agent-workflows/stale-issues-remediator.md) for label-based lifecycle management (not issue-driven chaining).
+Stale Issues Investigator pairs with [Stale Issues Remediator](gh-agent-workflows/stale-issues.md) for label-based lifecycle management (not issue-driven chaining).
 
 #### Standalone scheduled workflows
 
