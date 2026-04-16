@@ -38,7 +38,7 @@ FIXERS=(
 
 MONITORS=(
   "Trigger Agent Suggestions"
-  "Trigger Estc Downstream Health"
+  "Trigger Internal Downstream Health"
   "Trigger Product Manager Impersonator"
   "Trigger Project Summary"
 )
