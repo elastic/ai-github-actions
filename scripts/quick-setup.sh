@@ -217,7 +217,7 @@ if [ "$skip_secret" = false ]; then
   if [ -z "$token" ]; then
     token_url="https://github.com/settings/personal-access-tokens/new?name=COPILOT_GITHUB_TOKEN+for+${repo//\//%2F}&description=Copilot+requests+for+GitHub+Agent+Workflows&copilot_requests=write"
     if [ "$dry_run" = true ]; then
-      echo "dry-run: open $token_url"
+      echo "dry-run: open/xdg-open $token_url (or print Visit: URL)"
       echo "dry-run: prompt for token"
       echo "dry-run: printf '%s' \"(token)\" | gh secret set COPILOT_GITHUB_TOKEN --repo $repo"
     elif [ -t 0 ]; then
