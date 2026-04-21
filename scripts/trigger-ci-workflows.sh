@@ -73,7 +73,7 @@ for arg in "$@"; do
       CATEGORIES+=("$arg")
       ;;
     *)
-      echo "Unknown argument: $arg (expected: detectors, fixers, monitors, --dry-run, --list)" >&2
+      echo "Unknown argument: $arg (expected: detectors, fixers, monitors, --dry-run, --list, --help/-h)" >&2
       exit 1
       ;;
   esac
