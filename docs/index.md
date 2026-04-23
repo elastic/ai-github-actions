@@ -10,7 +10,7 @@
 
 The agents use GitHub Copilot as their AI engine. You create a personal access token (PAT) so the workflows can authenticate.
 
-**1. Create a Copilot PAT** — this link pre-fills the name, description, and scope:
+**1. Create a Copilot PAT** — this link pre-fills the name, description, and required user permission (`Copilot requests: Read`):
 
 [Create COPILOT_GITHUB_TOKEN →](https://github.com/settings/personal-access-tokens/new?name=COPILOT_GITHUB_TOKEN&description=GitHub+Agentic+Workflows+-+Copilot+engine+authentication&user_copilot_requests=read){ .md-button .md-button--primary }
 
