@@ -31,6 +31,13 @@ See [example.yml](example.yml) for the full workflow file.
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated). For Updatecli, add your repo's updatecli bot actor here (e.g. `github-actions[bot]` or a custom app bot). | No | `github-actions[bot]` |
 | `classification-labels` | Comma-separated list of labels the agent may apply (e.g. `needs-human-review,higher-risk,merge-ready`). If empty, no labels are applied. Define label semantics in `additional-instructions`. | No | `""` |
 
+## Secrets
+
+| Secret | Description | Required |
+| --- | --- | --- |
+| `COPILOT_GITHUB_TOKEN` | GitHub Copilot PAT for AI engine authentication | Yes |
+| `GH_AW_GITHUB_TOKEN` | Ephemeral token (e.g. a GitHub App token) used for PR labeling safe outputs. When provided, labels applied by this workflow will trigger downstream label-based workflows. When omitted, the built-in `GITHUB_TOKEN` is used, which does not re-trigger other workflows. | No |
+
 ## Safe Outputs
 
 - `add-comment` — post an analysis comment on the PR (max 1)
