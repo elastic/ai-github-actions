@@ -27,3 +27,8 @@ jobs:
       # allowed-bot-users: "github-actions[bot]"
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      # Optional: pass an ephemeral token (e.g. a GitHub App token) so that PR labels
+      # applied by this workflow can trigger downstream label-based workflows.
+      # When omitted, the built-in GITHUB_TOKEN is used for labeling, which does
+      # not re-trigger other workflows.
+      # GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
