@@ -6,6 +6,7 @@ safe-outputs:
     - name: Pre-sanitize labels from input allowlist
       uses: actions/github-script@v7
       env:
+        GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
         CLASSIFICATION_LABELS: ${{ inputs.classification-labels }}
       with:
         script: |

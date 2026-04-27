@@ -1592,6 +1592,7 @@ jobs:
       - name: Pre-sanitize labels from input allowlist
         uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         env:
+          GH_AW_AGENT_OUTPUT: ${{ steps.setup-agent-output-env.outputs.GH_AW_AGENT_OUTPUT }}
           CLASSIFICATION_LABELS: ${{ inputs.classification-labels }}
         with:
           script: |
