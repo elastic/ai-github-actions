@@ -42,6 +42,11 @@ on:
         type: string
         required: false
         default: "github-actions[bot]"
+      classification-labels:
+        description: "Comma-separated list of labels the agent may apply (e.g. 'bug,needs-triage,enhancement'). If empty, no labels are applied. Define label semantics in additional-instructions."
+        type: string
+        required: false
+        default: ""
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string
@@ -50,6 +55,8 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      GH_AW_GITHUB_TOKEN:
+        required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:
@@ -69,6 +76,58 @@ tools:
   web-fetch:
 safe-outputs:
   activation-comments: false
+  add-labels:
+    max: 3
+  steps:
+    - name: Pre-sanitize labels from input allowlist
+      uses: actions/github-script@v7
+      env:
+        CLASSIFICATION_LABELS: ${{ inputs.classification-labels }}
+      with:
+        script: |
+          const fs = require('fs');
+          const outputPath = process.env.GH_AW_AGENT_OUTPUT;
+          if (!outputPath || !fs.existsSync(outputPath)) {
+            core.info('No GH_AW_AGENT_OUTPUT file found; skipping.');
+            return;
+          }
+          const doc = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+          if (!Array.isArray(doc.items)) {
+            core.warning('agent output has no items array; skipping.');
+            return;
+          }
+          const allowed = new Set(
+            String(process.env.CLASSIFICATION_LABELS || '')
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
+          );
+          if (allowed.size === 0) {
+            const before = doc.items.length;
+            doc.items = doc.items.filter((item) => item?.type !== 'add_labels');
+            fs.writeFileSync(outputPath, JSON.stringify(doc));
+            core.info(`No allowed labels provided; removed ${before - doc.items.length} add_labels operations.`);
+            return;
+          }
+          let removed = 0;
+          let dropped = 0;
+          doc.items = doc.items.filter((item) => {
+            if (item?.type !== 'add_labels' || !Array.isArray(item.labels)) {
+              return true;
+            }
+            const before = item.labels.length;
+            item.labels = item.labels
+              .map((v) => String(v).trim())
+              .filter((v) => v && allowed.has(v));
+            removed += Math.max(0, before - item.labels.length);
+            if (item.labels.length === 0) {
+              dropped++;
+              return false;
+            }
+            return true;
+          });
+          fs.writeFileSync(outputPath, JSON.stringify(doc));
+          core.info(`Sanitized label ops: removed=${removed}, dropped_messages=${dropped}`);
 strict: false
 timeout-minutes: 60
 steps:
@@ -168,8 +227,20 @@ Use `<details>` and `<summary>` tags for sections that would otherwise make the 
 > | File | `src/calculator.py:42` | Method that needs updating |
 > </details>
 
-### Step 4: Post Response
+### Step 4: Determine Labels
+
+If `${{ inputs.classification-labels }}` is not empty:
+
+- Parse `${{ inputs.classification-labels }}` as a comma-separated list — these are the **only** valid labels for this step.
+- Use `${{ inputs.additional-instructions }}` to understand what each label means and when to apply it.
+- Determine which labels (if any) apply to this issue based on the triage findings.
+- Never apply a label that is not in the parsed classification label list.
+
+If `${{ inputs.classification-labels }}` is empty, skip this step entirely.
+
+### Step 5: Post Response
 
 1. Call `add_comment` with your triage response.
+2. If labels were determined in Step 4, call `add_labels` to apply them to the issue.
 
 ${{ inputs.additional-instructions }}
