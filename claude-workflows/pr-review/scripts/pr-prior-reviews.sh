@@ -18,21 +18,24 @@
 #   PR_REVIEW_REPO       - Repository (owner/repo)
 #   PR_REVIEW_PR_NUMBER  - Pull request number
 
-set -e
+set -euo pipefail
 
 # Configuration from environment
 REPO="${PR_REVIEW_REPO:?PR_REVIEW_REPO environment variable is required}"
 PR_NUMBER="${PR_REVIEW_PR_NUMBER:?PR_REVIEW_PR_NUMBER environment variable is required}"
 
 # Fetch reviews via REST API (includes review bodies, which GraphQL reviewThreads does not)
-REVIEWS=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/reviews" --paginate --jq '
+if ! REVIEWS=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/reviews" --paginate --jq '
   [.[] | select(.body != null and .body != "") | {
     user: .user.login,
     state: .state,
     submitted_at: .submitted_at,
     body: .body
   }]
-' | jq -s 'add')
+' | jq -s 'add'); then
+  echo "Failed to fetch prior PR reviews." >&2
+  exit 1
+fi
 
 if [ -z "$REVIEWS" ] || [ "$REVIEWS" = "[]" ] || [ "$REVIEWS" = "null" ]; then
   echo "No prior reviews with body text found."
