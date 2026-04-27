@@ -105,6 +105,10 @@ name: "Issue Triage"
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      GH_AW_GITHUB_TOKEN:
+        required: false
+      GH_AW_GITHUB_MCP_SERVER_TOKEN:
+        required: false
 
 permissions: {}
 

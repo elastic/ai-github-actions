@@ -30,6 +30,14 @@ See [example.yml](example.yml) for the full workflow file.
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 
+## Secrets
+
+| Secret | Description | Required |
+| --- | --- | --- |
+| `COPILOT_GITHUB_TOKEN` | GitHub Copilot PAT for AI engine authentication | Yes |
+| `GH_AW_GITHUB_TOKEN` | Ephemeral token (e.g. a GitHub App token) used for issue comment safe outputs. When provided, comments posted by this workflow will be made using this token, which can trigger downstream workflows that respond to issue events. When omitted, the built-in `GITHUB_TOKEN` is used. | No |
+| `GH_AW_GITHUB_MCP_SERVER_TOKEN` | Ephemeral token used specifically for the GitHub MCP server. Falls back to `GH_AW_GITHUB_TOKEN`, then `GITHUB_TOKEN`. | No |
+
 ## Safe Outputs
 
 - `add-comment` — post a triage analysis comment on the issue
