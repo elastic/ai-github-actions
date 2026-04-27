@@ -15,3 +15,8 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-triage.lock.yml@v0
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      # Optional: pass an ephemeral token (e.g. a GitHub App token) so that issue
+      # comments posted by this workflow can trigger downstream workflows that react
+      # to issue events. When omitted, the built-in GITHUB_TOKEN is used for safe
+      # outputs, which does not re-trigger other workflows.
+      # GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}

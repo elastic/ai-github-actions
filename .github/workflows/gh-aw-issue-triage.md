@@ -50,6 +50,8 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      GH_AW_GITHUB_TOKEN:
+        required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:
