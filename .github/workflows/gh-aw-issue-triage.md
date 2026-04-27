@@ -52,8 +52,6 @@ on:
         required: true
       GH_AW_GITHUB_TOKEN:
         required: false
-      GH_AW_GITHUB_MCP_SERVER_TOKEN:
-        required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:
