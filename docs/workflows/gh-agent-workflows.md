@@ -158,8 +158,28 @@ The same workflow also supports manual `workflow_dispatch` operations:
 
 - `safe_outputs`: replay safe outputs from a specific workflow run (`run_url` input required).
 - `create_labels`: create any missing repository labels used by these workflows.
+- `clean_cache_memories`: delete outdated `cache-memory` entries created by agent runs.
+- `validate`: run workflow validation checks and open an issue if findings are detected.
 
-Use `create_labels` after first-time installation or if workflow labels were removed. This dispatch path only runs on non-fork repositories and enforces the same admin/maintainer membership check as other manual maintenance operations.
+Usage notes:
+
+- Use `create_labels` after first-time installation or if workflow labels were removed.
+- Use `clean_cache_memories` periodically (or on-demand) to keep Actions cache-memory storage tidy.
+- Use `validate` when changing workflows or before rollout to catch configuration and compilation issues.
+
+Manual operations only run on non-fork repositories and enforce the same admin/maintainer membership check.
+
+`agentics-maintenance` is also reusable via `workflow_call`:
+
+| Input | Type | Description |
+| --- | --- | --- |
+| `operation` | string | Optional operation to run (`disable`, `enable`, `update`, `upgrade`, `safe_outputs`, `create_labels`, `clean_cache_memories`, `validate`) |
+| `run_url` | string | Workflow run URL or run ID used by `safe_outputs` |
+
+| Output | Type | Description |
+| --- | --- | --- |
+| `operation_completed` | string | Completed operation name (empty when no explicit operation ran) |
+| `applied_run_url` | string | Run URL used when applying `safe_outputs` |
 
 ## Standard inputs
 
