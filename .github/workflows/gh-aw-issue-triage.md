@@ -11,6 +11,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/playwright-mcp-explorer.md
   - gh-aw-fragments/safe-output-add-comment-issue.md
+  - gh-aw-fragments/safe-output-add-labels.md
   - gh-aw-fragments/pick-three-keep-one.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -42,6 +43,11 @@ on:
         type: string
         required: false
         default: "github-actions[bot]"
+      classification-labels:
+        description: "Comma-separated list of labels the agent may apply (e.g. 'bug,needs-triage,enhancement'). If empty, no labels are applied. Define label semantics in additional-instructions."
+        type: string
+        required: false
+        default: ""
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string
@@ -50,6 +56,8 @@ on:
     secrets:
       COPILOT_GITHUB_TOKEN:
         required: true
+      GH_AW_GITHUB_TOKEN:
+        required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:
@@ -168,8 +176,20 @@ Use `<details>` and `<summary>` tags for sections that would otherwise make the 
 > | File | `src/calculator.py:42` | Method that needs updating |
 > </details>
 
-### Step 4: Post Response
+### Step 4: Determine Labels
+
+If `${{ inputs.classification-labels }}` is not empty:
+
+- Parse `${{ inputs.classification-labels }}` as a comma-separated list — these are the **only** valid labels for this step.
+- Use `${{ inputs.additional-instructions }}` to understand what each label means and when to apply it.
+- Determine which labels (if any) apply to this issue based on the triage findings.
+- Never apply a label that is not in the parsed classification label list.
+
+If `${{ inputs.classification-labels }}` is empty, skip this step entirely.
+
+### Step 5: Post Response
 
 1. Call `add_comment` with your triage response.
+2. If labels were determined in Step 4, call `add_labels` to apply them to the issue.
 
 ${{ inputs.additional-instructions }}
