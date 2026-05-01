@@ -157,8 +157,8 @@ if [ "$TOTAL_COUNT" -eq 0 ] && [ -n "${PR_REVIEW_BOT_LOGIN:-}" ]; then
   EXPECTED_STATE="${EVENT_TO_STATE[$EVENT]}"
 
   LAST_OWN_STATE=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/reviews" --paginate | \
-    jq -r --arg login "$PR_REVIEW_BOT_LOGIN" \
-    '[.[] | select(.user.login == $login)] | last | .state // empty')
+    jq -rs --arg login "$PR_REVIEW_BOT_LOGIN" \
+    '[.[][] | select(.user.login == $login)] | last | .state // empty')
 
   if [ "$LAST_OWN_STATE" = "$EXPECTED_STATE" ]; then
     echo "Skipping review — no new comments and verdict unchanged (${EVENT}, last ${PR_REVIEW_BOT_LOGIN} review was ${LAST_OWN_STATE})"
