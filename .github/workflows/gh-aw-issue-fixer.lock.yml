@@ -118,6 +118,8 @@ name: "Issue Fixer"
         required: true
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
+      GH_AW_GITHUB_TOKEN:
+        required: false
 
 permissions: {}
 

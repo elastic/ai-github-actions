@@ -30,6 +30,14 @@ See [example.yml](example.yml) for the full workflow file.
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 
+## Secrets
+
+| Secret | Description | Required |
+| --- | --- | --- |
+| `COPILOT_GITHUB_TOKEN` | GitHub Copilot PAT for AI engine authentication | Yes |
+| `EXTRA_COMMIT_GITHUB_TOKEN` | Token used to push an extra empty commit after PR creation to trigger CI checks. When omitted, CI is not re-triggered on the opened PR. | No |
+| `GH_AW_GITHUB_TOKEN` | Ephemeral token (e.g. a GitHub App token) used for PR labeling safe outputs. When provided, labels applied by this workflow will trigger downstream label-based workflows. When omitted, the built-in `GITHUB_TOKEN` is used, which does not re-trigger other workflows. | No |
+
 ## Safe Outputs
 
 - `add-comment` — post triage analysis on the issue
