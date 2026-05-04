@@ -1,5 +1,5 @@
 name: "Get PRs With Merge Conflicts"
-description: "Wait briefly, then list open non-draft PRs with mergeStateStatus DIRTY"
+description: "Wait briefly, then list open non-draft PRs with merge conflicts (mergeStateStatus=DIRTY)"
 
 inputs:
   github-token:
