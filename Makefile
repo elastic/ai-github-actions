@@ -206,11 +206,9 @@ lint-workflows: setup-actionlint
 	@ACTIONLINT="bin/actionlint"; \
 	( \
 		find claude-workflows -name "example.yml" -o -name "example.yaml"; \
-		find .github/workflows -maxdepth 1 \( \
-			-name "trigger-*.yml" -o -name "trigger-*.yaml" -o \
-			-name "ci.yml" -o \
-			-name "release.yml" -o -name "smoke-test-install.yml" \
-		\); \
+		find .github/workflows -maxdepth 1 -type f \( -name "*.yml" -o -name "*.yaml" \) \
+			! -name "*.lock.yml" ! -name "*.lock.yaml" \
+			! -name "agentics-maintenance.yml"; \
 	) 2>/dev/null | while read -r file; do \
 		echo "Checking $$file..."; \
 		$$ACTIONLINT "$$file" || exit 1; \
