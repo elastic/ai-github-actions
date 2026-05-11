@@ -26,7 +26,7 @@ jobs:
   cleanup:
     name: Remove older detective comments
     needs: run
-    if: needs.run.result != 'skipped' && needs.run.outputs.comment_id != ''
+    if: needs.run.result == 'success' && needs.run.outputs.comment_id != ''
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -67,6 +67,7 @@ jobs:
             core.info(`Cleaning up older detective comments on PR #${prNumber} (keeping comment ${newCommentId})`);
 
             // List all comments on the PR
+            // context.repo is { owner, repo } where repo is the repository name
             const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
