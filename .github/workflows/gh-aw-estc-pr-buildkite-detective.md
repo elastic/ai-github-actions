@@ -229,7 +229,7 @@ Analyze failed Buildkite CI builds for pull requests in ${{ github.repository }}
 2. Read `/tmp/gh-aw/buildkite-failures.txt` for the failed job summary. If it does not exist, call `noop` with "No Buildkite failure data" and stop.
 3. Read the individual log files listed in the summary (under `/tmp/gh-aw/buildkite-logs/`).
 4. Call `pull_request_read` with method `get` on the PR number to get the author, diff, and recent changes.
-5. Call `pull_request_read` with method `get_comments` on the PR number to find any existing detective comment. An existing detective comment contains the marker `<!-- gh-aw-detective: estc-pr-buildkite-detective -->` in its body. If one exists, note its `id` — you will use it to update the comment in place rather than creating a new one.
+5. Call `pull_request_read` with method `get_comments` on the PR number to find any existing detective comment. An existing detective comment contains the text `gh-aw-detective: estc-pr-buildkite-detective` in its body (embedded as an HTML comment). If one exists, note its `id` — you will use it to update the comment in place rather than creating a new one.
 
 ### Step 2: Analyze
 
@@ -248,11 +248,11 @@ For each:
 3. If the error involves an external library or tool, use `web-fetch` to check docs/changelogs.
 4. Propose a concrete fix or, if inconclusive, state what additional data is needed.
 
-**Deduplication**: Check the existing detective comment found in Step 1.5 (look for `<!-- gh-aw-detective: estc-pr-buildkite-detective -->`). If the root cause and remediation are the same as already documented there, call `noop` instead of posting a duplicate.
+**Deduplication**: Check the existing detective comment found in Step 1.5 (body contains `gh-aw-detective: estc-pr-buildkite-detective`). If the root cause and remediation are the same as already documented there, call `noop` instead of posting a duplicate.
 
 ### Step 3: Respond
 
-Always include the invisible marker `<!-- gh-aw-detective: estc-pr-buildkite-detective -->` as the very first line of the comment body. This marker is used to find and update the comment on subsequent runs.
+Always begin the comment body with the marker line shown at the top of the template below (the `gh-aw-detective` HTML comment on the first line). This marker lets future runs find and update this comment in place.
 
 - If an existing detective comment was found in Step 1.5: call `add_comment` with `reply_to_id` set to that comment's `id`. This updates the comment in place so the PR has at most one detective comment at a time.
 - If no existing detective comment was found: call `add_comment` without `reply_to_id` to create a new one.
