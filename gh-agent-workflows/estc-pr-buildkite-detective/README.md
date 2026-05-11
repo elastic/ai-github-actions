@@ -38,7 +38,7 @@ See [example.yml](example.yml) for the full workflow file.
 
 ## Safe Outputs
 
-- `add-comment` — post a comment explaining the failure (max 1 per run)
+- `add-comment` — post a comment explaining the failure (max 1 per run); uses `reply_to_id` to update the existing detective comment in place when one is found
 - `noop` — emitted when diagnosis is unchanged since the last report
 
 If the agent starts but the pre-fetched Buildkite summary is unavailable, it emits `noop` (`No Buildkite failure data`). If no failed script jobs are found (or the build is not a PR build / not in a failed state), the workflow exits early with a notice and does not emit `noop`.
@@ -48,4 +48,4 @@ If the agent starts but the pre-fetched Buildkite summary is unavailable, it emi
 The workflow keeps **at most one detective comment** per PR:
 
 - **Same diagnosis**: the agent emits `noop` and the existing comment is left untouched.
-- **New diagnosis**: a new comment is posted, then any previous detective comments on the PR are deleted by the `cleanup` job, leaving only the latest analysis visible.
+- **New diagnosis**: the agent finds the existing detective comment (identified by the `<!-- gh-aw-detective: estc-pr-buildkite-detective -->` marker) and updates it in place via `reply_to_id`. If no previous comment exists, a new one is created.

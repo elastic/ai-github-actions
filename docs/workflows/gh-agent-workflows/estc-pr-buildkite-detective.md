@@ -57,12 +57,14 @@ if: >-
 
 The workflow keeps **at most one detective comment** per PR:
 
-- **Same diagnosis**: the agent emits `noop` and the existing comment is left untouched.
-- **New diagnosis**: a new comment is posted, then any previous detective comments on the PR are deleted by the `cleanup` job, leaving only the latest analysis visible.
+- Every detective comment includes an invisible HTML marker: `<!-- gh-aw-detective: estc-pr-buildkite-detective -->`.
+- On each run the agent searches PR comments for this marker to find the existing detective comment.
+- **Same diagnosis**: the agent emits `noop`; the existing comment is left untouched.
+- **New diagnosis**: the agent calls `add_comment` with `reply_to_id` set to the existing comment's ID, updating it in place. If no prior comment exists, a new one is created.
 
 ## Safe outputs
 
-- `add-comment` — post a PR comment with root cause and remediation (max 1 per run; older detective comments deleted after posting)
+- `add-comment` — post or update a PR comment with root cause and remediation (max 1 per run; uses `reply_to_id` to update existing detective comment in place)
 - `noop` — emitted when:
   - the agent starts but Buildkite failure data is unavailable, or
   - diagnosis is unchanged from the most recent detective report
@@ -92,21 +94,4 @@ jobs:
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
-
-  cleanup:
-    name: Remove older detective comments
-    needs: run
-    if: needs.run.result != 'skipped' && needs.run.outputs.comment_id != ''
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      pull-requests: write
-    steps:
-      - name: Delete older detective comments
-        uses: actions/github-script@v7
-        env:
-          NEW_COMMENT_ID: ${{ needs.run.outputs.comment_id }}
-        with:
-          script: |
-            # see example.yml for the full script
 ```
