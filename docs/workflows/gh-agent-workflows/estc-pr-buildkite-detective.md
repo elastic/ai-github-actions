@@ -53,9 +53,16 @@ if: >-
 - Proceeds only when failed script jobs are found, writes summaries/log tails under `/tmp/gh-aw/`, and analyzes those logs.
 - Performs deduplication against the latest prior detective comment; emits `noop` instead of a duplicate diagnosis.
 
+## Comment lifecycle
+
+The workflow keeps **at most one detective comment** per PR:
+
+- **Same diagnosis**: the agent emits `noop` and the existing comment is left untouched.
+- **New diagnosis**: a new comment is posted, then any previous detective comments on the PR are deleted by the `cleanup` job, leaving only the latest analysis visible.
+
 ## Safe outputs
 
-- `add-comment` — post a PR comment with root cause and remediation (max 1, older detective comments hidden)
+- `add-comment` — post a PR comment with root cause and remediation (max 1 per run; older detective comments deleted after posting)
 - `noop` — emitted when:
   - the agent starts but Buildkite failure data is unavailable, or
   - diagnosis is unchanged from the most recent detective report
@@ -85,4 +92,21 @@ jobs:
     secrets:
       COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
+
+  cleanup:
+    name: Remove older detective comments
+    needs: run
+    if: needs.run.result != 'skipped' && needs.run.outputs.comment_id != ''
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Delete older detective comments
+        uses: actions/github-script@v7
+        env:
+          NEW_COMMENT_ID: ${{ needs.run.outputs.comment_id }}
+        with:
+          script: |
+            # see example.yml for the full script
 ```
