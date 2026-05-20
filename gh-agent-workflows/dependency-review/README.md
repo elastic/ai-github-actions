@@ -36,7 +36,7 @@ See [example.yml](example.yml) for the full workflow file.
 | Secret | Description | Required |
 | --- | --- | --- |
 | `COPILOT_GITHUB_TOKEN` | GitHub Copilot PAT for AI engine authentication | Yes |
-| `GH_AW_GITHUB_TOKEN` | Ephemeral token (e.g. a GitHub App token) used for PR labeling safe outputs. When provided, labels applied by this workflow will trigger downstream label-based workflows. When omitted, the built-in `GITHUB_TOKEN` is used, which does not re-trigger other workflows. | No |
+| `GH_AW_GITHUB_TOKEN` | Optional ephemeral token (e.g. a GitHub App token) used as a general GitHub auth fallback in this workflow, including PR labeling safe outputs. When provided, labels applied by this workflow can trigger downstream label-based workflows. When omitted, the built-in `GITHUB_TOKEN` is used for labeling, which does not re-trigger other workflows. | No |
 
 ## Safe Outputs
 
