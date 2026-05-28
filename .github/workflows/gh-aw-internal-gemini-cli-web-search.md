@@ -71,8 +71,6 @@ tools:
     toolsets: [repos, issues, pull_requests, search]
   bash: false
   web-fetch:
-network:
-  firewall: false
 safe-outputs:
   activation-comments: false
   create-issue:
