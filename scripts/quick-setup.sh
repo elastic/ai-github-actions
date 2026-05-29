@@ -220,7 +220,7 @@ if [ "$skip_secret" = false ]; then
       echo "dry-run: open $token_url"
       echo "dry-run: prompt for token"
       echo "dry-run: printf '%s' \"(token)\" | gh secret set COPILOT_GITHUB_TOKEN --repo $repo"
-    elif [ -t 0 ]; then
+    elif [ -t 0 ] || [ -r /dev/tty ]; then
       echo "A fine-grained PAT with the 'Copilot requests' permission is needed."
       echo "Opening browser to create one..."
       if command -v open >/dev/null 2>&1; then
@@ -230,9 +230,15 @@ if [ "$skip_secret" = false ]; then
       else
         echo "Visit: $token_url"
       fi
-      printf "Paste the token here: "
-      read -r -s token
-      echo
+      if [ -t 0 ]; then
+        printf "Paste the token here: "
+        read -r -s token
+        echo
+      else
+        printf "Paste the token here: " >/dev/tty
+        IFS= read -r -s token </dev/tty
+        echo >/dev/tty
+      fi
       if [ -z "$token" ]; then
         echo "No token provided. Use --skip-secret to set it manually later." >&2
         exit 1
