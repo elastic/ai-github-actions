@@ -26,7 +26,7 @@ Each workflow directory contains an `example.yml` starter and a README for trigg
 The [quick setup script](https://github.com/elastic/ai-github-actions/blob/main/scripts/quick-setup.sh) bundles two opinionated sets. The [homepage](../index.md) shows how to install the core workflows with a single copy-paste command.
 
 - **Core (default):** `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
-- **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `code-complexity-detector`, `code-duplication-detector`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues-investigator`, `stale-issues-remediator`, `test-coverage-detector`, `breaking-change-detector`, `update-pr-body`
+- **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `code-complexity-detector`, `code-duplication-detector`, `docs-patrol`, `newbie-contributor-patrol`, `product-manager-impersonator`, `refactor-opportunist`, `small-problem-fixer`, `stale-issues-investigator`, `stale-issues-remediator`, `test-coverage-detector`, `breaking-change-detector`, `update-pr-body`
 
 ## Available workflows
 
