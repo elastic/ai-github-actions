@@ -26,7 +26,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || github.event.issue.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || inputs.target-pr-number || github.event.issue.number }}"
 on:
   stale-check: false
   workflow_call:
@@ -43,6 +43,13 @@ on:
         default: ""
       setup-commands:
         description: "Shell commands to run before the agent starts (dependency install, build, etc.)"
+        type: string
+        required: false
+        default: ""
+      target-pr-number:
+        description: >-
+          Pull request number when github.event.pull_request is empty (for example
+          workflow_dispatch relay from a control-plane entrypoint).
         type: string
         required: false
         default: ""
@@ -81,7 +88,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: ${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || github.event.issue.number }}
+  group: ${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || inputs.target-pr-number || github.event.issue.number }}
   cancel-in-progress: true
 permissions:
   actions: read
@@ -124,7 +131,7 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **PR**: #${{ github.event.pull_request.number || github.event.issue.number }} — ${{ github.event.pull_request.title || github.event.issue.title }}
+- **PR**: #${{ github.event.pull_request.number || inputs.target-pr-number || github.event.issue.number }} — ${{ github.event.pull_request.title || github.event.issue.title }}
 - **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
 - **Request**: "${{ steps.sanitized.outputs.text }}"
 - **Explicit prompt**: "${{ inputs.prompt }}"

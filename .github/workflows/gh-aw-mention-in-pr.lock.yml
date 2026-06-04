@@ -120,6 +120,13 @@ name: "Mention in PR"
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
         required: false
         type: string
+      target-pr-number:
+        default: ""
+        description: >-
+          Pull request number when github.event.pull_request is empty (for example
+          workflow_dispatch relay from a control-plane entrypoint).
+        required: false
+        type: string
     outputs:
       comment_id:
         description: ID of the first added comment
@@ -143,7 +150,7 @@ permissions: {}
 
 concurrency:
   cancel-in-progress: true
-  group: ${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || github.event.issue.number }}
+  group: ${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || inputs.target-pr-number || github.event.issue.number }}
 
 run-name: "Mention in PR"
 
@@ -667,7 +674,7 @@ jobs:
       issues: read
       pull-requests: read
     concurrency:
-      group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || github.event.issue.number }}"
+      group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || inputs.target-pr-number || github.event.issue.number }}"
     env:
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
       GH_AW_ASSETS_ALLOWED_EXTS: ""
