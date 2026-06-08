@@ -50,7 +50,7 @@ def _normalize_until(until: str | None) -> str | None:
 
 
 def _parse_iso8601_timestamp(value: str | None, label: str) -> datetime | None:
-    if value is None:
+    if value is None or value.strip() == "":
         return None
 
     parsed_value = value
