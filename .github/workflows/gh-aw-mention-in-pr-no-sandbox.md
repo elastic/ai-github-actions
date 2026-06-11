@@ -83,8 +83,11 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
+features:
+  dangerously-disable-sandbox-agent: true
 sandbox:
   agent: false
+  justification: "Docker access required for setup-commands that build or run containers"
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search, actions]
