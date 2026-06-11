@@ -52,7 +52,7 @@ fi
 
 # Arguments
 EVENT="$1"
-shift 2>/dev/null || true
+shift 1>/dev/null || true
 
 # Read body from remaining arguments
 # Join all remaining arguments with spaces, preserving the string as-is
