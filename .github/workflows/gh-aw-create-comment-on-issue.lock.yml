@@ -564,14 +564,6 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-      - name: Build and install gh-aw CLI from source
-        run: |
-          gh extension remove aw || true
-          make build
-          gh extension install .
-          gh aw version
-        env:
-          GH_TOKEN: ${{ github.token }}
       - name: Setup Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
         with:
