@@ -10,21 +10,29 @@ Error: Failed to add reaction: Resource not accessible by integration
 
 ## Root Cause
 
-The gh-aw v0.79.3 compiler was generating reaction steps with:
+The gh-aw v0.79.3 compiler generates reaction steps in the `activation` job with:
 ```yaml
 github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-This refers to a user-defined secret named `GITHUB_TOKEN` which may not exist or have the correct permissions. When this secret doesn't exist, the API call fails with a 403 error.
+This has **two problems**:
+
+1. **Token reference**: `secrets.GITHUB_TOKEN` refers to a user-defined secret (not the automatic GitHub Actions token) which may not exist.
+
+2. **Missing permissions**: The `activation` job only has `actions: read` and `contents: read` permissions, but adding reactions requires `issues: write` permission.
+
+Even with the correct token, reactions will fail without `issues: write` permission.
 
 ## Solution
 
-The fix replaces `secrets.GITHUB_TOKEN` with `github.token` in reaction steps:
+This fix addresses the **token reference issue** by replacing `secrets.GITHUB_TOKEN` with `github.token` in reaction steps:
 ```yaml
 github-token: ${{ github.token }}
 ```
 
-The `github.token` is the automatic token provided by GitHub Actions with the permissions specified in the workflow's `permissions` section.
+However, **the permissions issue remains** - the `activation` job still lacks `issues: write`. This appears to be a gh-aw compiler limitation: even when `issues: write` is specified in the source `.md` file, the compiler does not grant it to the `activation` job where the reaction step runs.
+
+The `safe_outputs` job (which runs later) has `issues: write`, but reactions need to run early for immediate feedback.
 
 ## Implementation
 
@@ -61,3 +69,14 @@ bash /tmp/test-reaction-token.sh
 ## Future Considerations
 
 This issue may be resolved in a future version of the gh-aw compiler. Monitor upstream releases and consider removing this post-processing step if the compiler is fixed.
+
+### Recommended Actions
+
+1. **Short-term**: The token fix in this PR reduces the likelihood of 403 errors by using the correct token reference.
+
+2. **Long-term**: Report to gh-aw upstream that:
+   - The `activation` job needs `issues: write` permission when `reaction:` is configured
+   - The compiler should respect permissions specified in source `.md` files for jobs that need them
+   - Or provide a way to configure which job the reaction step runs in
+
+3. **Alternative workaround**: Remove the `reaction: "eyes"` directive from source `.md` files until gh-aw properly grants the necessary permissions.
