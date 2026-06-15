@@ -48,11 +48,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.25"
-          cache: false
       - name: Compile workflows
         run: make compile
       - name: Ensure lock files are up to date
