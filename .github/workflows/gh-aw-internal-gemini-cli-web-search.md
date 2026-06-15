@@ -72,7 +72,8 @@ tools:
   bash: false
   web-fetch:
 network:
-  firewall: false
+  allowed:
+    - "*"
 safe-outputs:
   activation-comments: false
   create-issue:

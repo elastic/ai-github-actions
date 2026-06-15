@@ -1,9 +1,9 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.68.3
-GH_AW_BUILD_VERSION := v0.68.3
-GH_AW_COMPAT_VERSION := v0.68.3
+GH_AW_VERSION := v0.79.3
+GH_AW_BUILD_VERSION := v0.79.3
+GH_AW_COMPAT_VERSION := v0.79.3
 GH_AW_MODULE_REPO := github.com/github/gh-aw
 GH_AW_SOURCE_REPO := github.com/github/gh-aw
 GH_AW_SETUP_ACTION_REPO := $(patsubst github.com/%,%,$(GH_AW_SOURCE_REPO))
@@ -45,7 +45,7 @@ define download-file
 	fi
 endef
 
-.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile postprocess-setup-action sync lint-workflows lint-actions test docs-install docs-serve docs-build release
+.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile postprocess-setup-action sync lint-workflows lint-actions test docs-install docs-serve docs-build release build
 
 help:
 	@echo "This repository contains GitHub Actions workflows and gh-agent-workflows templates."
@@ -60,6 +60,7 @@ help:
 	@echo "  lint-actions         - Validate GitHub Actions composite action files"
 	@echo "  sync                 - Run scripts/dogfood.sh to copy shims, prompts, and fragments"
 	@echo "  compile              - Sync files + compile agentic workflows to lock files"
+	@echo "  build                - No-op (workflows use gh-aw setup action, not local build)"
 	@echo "  lint                 - Run all linters"
 	@echo "  docs-build           - Build the MkDocs site (outputs to site/)"
 	@echo "  docs-serve           - Serve the MkDocs site locally with live reload"
@@ -242,6 +243,11 @@ lint-actions: setup-action-validator
 
 lint: lint-workflows lint-actions
 	@python3 scripts/check-nav-catalog.py
+
+build:
+	@echo "This repository does not build gh-aw from source."
+	@echo "Workflows use the official gh-aw setup action to install the compiler."
+	@echo "Run 'make setup' to install gh-aw locally for development."
 
 test:
 	@uv run --extra test pytest tests/ -v
