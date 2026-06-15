@@ -29,6 +29,12 @@ engine:
     group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-no-sandbox-${{ github.event.pull_request.number || github.event.issue.number }}"
 on:
   stale-check: false
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  discussion_comment:
+    types: [created]
   workflow_call:
     inputs:
       model:
