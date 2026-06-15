@@ -29,6 +29,8 @@ engine:
     group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || github.event.issue.number }}"
 on:
   stale-check: false
+  pull_request_review_comment:
+    types: [created]
   workflow_call:
     inputs:
       model:
