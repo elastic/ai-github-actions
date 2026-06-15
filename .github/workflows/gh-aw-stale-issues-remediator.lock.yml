@@ -536,14 +536,10 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
-      - name: Build and install gh-aw CLI from source
-        run: |
-          gh extension remove aw || true
-          make build
-          gh extension install .
-          gh aw version
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Install gh-aw CLI
+        uses: github/gh-aw/actions/setup-cli@c405b1fbb4326daa5a4204a2ffb3f9f91cab331d # v0.79.3
+        with:
+          version: v0.79.3
       - name: Create gh-aw temp directory
         run: bash "${RUNNER_TEMP}/gh-aw/actions/create_gh_aw_tmp_dir.sh"
       - name: Configure gh CLI for GitHub Enterprise
