@@ -60,7 +60,7 @@ define install-gh-aw-from-release
 	$(call download-file,$$URL,$$OUTPUT) && chmod +x "$$OUTPUT"
 endef
 
-.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile postprocess-setup-action sync lint-workflows lint-actions test docs-install docs-serve docs-build release build
+.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile postprocess-setup-action postprocess-reaction-token sync lint-workflows lint-actions test docs-install docs-serve docs-build release build
 
 help:
 	@echo "This repository contains GitHub Actions workflows and gh-agent-workflows templates."
@@ -202,11 +202,16 @@ compile: setup-gh-aw setup-gh-aw-compat sync
 		echo "No compat workflows to compile"; \
 	fi
 	@$(MAKE) postprocess-setup-action
+	@$(MAKE) postprocess-reaction-token
 	@./scripts/backwards-compat.sh
 
 postprocess-setup-action:
 	@echo "Rewriting setup action references to $(GH_AW_SETUP_ACTION_REPO)@$(GH_AW_SETUP_ACTION_REF)..."
 # @python3 ./scripts/rewrite_setup_action_refs.py "$(GH_AW_SETUP_ACTION_REPO)" "$(GH_AW_SETUP_ACTION_REF)"
+
+postprocess-reaction-token:
+	@echo "Fixing reaction token references (secrets.GITHUB_TOKEN -> github.token)..."
+	@python3 ./scripts/fix-reaction-token.py
 
 setup-actionlint:
 	@echo "Setting up actionlint..."
