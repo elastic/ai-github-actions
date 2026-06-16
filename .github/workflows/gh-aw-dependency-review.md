@@ -53,7 +53,7 @@ on:
         default: ""
     secrets:
       COPILOT_GITHUB_TOKEN:
-        required: true
+        required: false
       GH_AW_GITHUB_TOKEN:
         required: false
   roles: [admin, maintainer, write]
@@ -65,6 +65,7 @@ concurrency:
   group: ${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

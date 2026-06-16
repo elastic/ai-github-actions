@@ -52,7 +52,7 @@ on:
         default: "[flaky-test-investigator]"
     secrets:
       COPILOT_GITHUB_TOKEN:
-        required: true
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -60,6 +60,7 @@ concurrency:
   group: ${{ github.workflow }}-flaky-test-investigator
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

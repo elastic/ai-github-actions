@@ -49,7 +49,7 @@ on:
         default: ""
     secrets:
       COPILOT_GITHUB_TOKEN:
-        required: true
+        required: false
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   roles: [admin, maintainer, write]
@@ -59,6 +59,7 @@ concurrency:
   group: ${{ github.workflow }}-pr-actions-fixer-${{ inputs.workflow-run-id }}
   cancel-in-progress: false
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

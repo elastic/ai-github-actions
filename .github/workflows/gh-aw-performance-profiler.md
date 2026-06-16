@@ -54,7 +54,7 @@ on:
         default: "[performance-profiler]"
     secrets:
       COPILOT_GITHUB_TOKEN:
-        required: true
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -62,6 +62,7 @@ concurrency:
   group: ${{ github.workflow }}-performance-profiler
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read

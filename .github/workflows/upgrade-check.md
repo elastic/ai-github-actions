@@ -33,6 +33,7 @@ concurrency:
   group: ${{ github.workflow }}-upgrade-check
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read

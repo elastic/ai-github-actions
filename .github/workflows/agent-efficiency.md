@@ -25,6 +25,7 @@ concurrency:
   group: ${{ github.workflow }}-agent-efficiency
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

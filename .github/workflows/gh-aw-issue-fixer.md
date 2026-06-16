@@ -60,7 +60,7 @@ on:
         default: true
     secrets:
       COPILOT_GITHUB_TOKEN:
-        required: true
+        required: false
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   reaction: "eyes"
@@ -71,6 +71,7 @@ concurrency:
   group: ${{ github.workflow }}-issue-fixer-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
