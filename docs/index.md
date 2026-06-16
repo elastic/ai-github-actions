@@ -8,19 +8,11 @@
 
 ## Get Started in 60 Seconds
 
-The agents use GitHub Copilot as their AI engine. You create a personal access token (PAT) so the workflows can authenticate.
+The agents use GitHub Copilot as their AI engine. No personal access token is required — workflows authenticate automatically via the built-in `GITHUB_TOKEN` when the repository or organisation has GitHub Copilot available.
 
-**1. Create a Copilot PAT** — this link pre-fills the name, description, and scope:
-
-[Create COPILOT_GITHUB_TOKEN →](https://github.com/settings/personal-access-tokens/new?name=COPILOT_GITHUB_TOKEN&description=GitHub+Agentic+Workflows+-+Copilot+engine+authentication&user_copilot_requests=read){ .md-button .md-button--primary }
-
-Set the expiry to longer than the 30-day default (e.g., 90 days or 1 year).
-
-**2. Store the secret and install the core workflows** — `cd` into the repo you want to configure and run:
+**Install the core workflows** — `cd` into the repo you want to configure and run:
 
 ```bash
-printf '%s' 'YOUR_PAT_HERE' | gh secret set COPILOT_GITHUB_TOKEN
-
 mkdir -p .github/workflows && \
 curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/issue-triage/example.yml \
   -o .github/workflows/trigger-issue-triage.yml && \
@@ -34,7 +26,7 @@ curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-age
   -o .github/workflows/trigger-pr-actions-detective.yml
 ```
 
-**3. Commit and push.** That's it — you now have five agents working for you:
+**Commit and push.** That's it — you now have five agents working for you:
 
 - **New issues** are automatically triaged, labeled, and given an implementation plan.
 - **Pull requests** get AI code reviews with severity-ranked inline comments.

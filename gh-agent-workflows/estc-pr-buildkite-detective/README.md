@@ -33,7 +33,7 @@ See [example.yml](example.yml) for the full workflow file.
 
 ## Required Secrets
 
-- `COPILOT_GITHUB_TOKEN`
+- `COPILOT_GITHUB_TOKEN` (optional — see [auth docs](../../docs/workflows/gh-agent-workflows.md#secrets))
 - `BUILDKITE_API_TOKEN`
 
 ## Safe Outputs

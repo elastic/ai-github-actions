@@ -7,9 +7,11 @@ This guide shows how to convert your Claude Composite Action workflows to GitHub
 GitHub Agent Workflows use a different secret name:
 
 - **Old:** `CLAUDE_CODE_OAUTH_TOKEN`
-- **New:** `COPILOT_GITHUB_TOKEN`
+- **New:** `COPILOT_GITHUB_TOKEN` (optional — workflows now authenticate via the built-in `GITHUB_TOKEN`)
 
-Set `COPILOT_GITHUB_TOKEN` in your repository settings with the same value as your existing `CLAUDE_CODE_OAUTH_TOKEN`.
+If you previously used `CLAUDE_CODE_OAUTH_TOKEN` for authentication, you can either:
+- Remove the secret entirely (workflows authenticate automatically via `GITHUB_TOKEN` when GitHub Copilot is available)
+- Or rename it to `COPILOT_GITHUB_TOKEN` for explicit PAT authentication
 
 ## Convert Workflow Syntax
 
@@ -44,7 +46,6 @@ Set `COPILOT_GITHUB_TOKEN` in your repository settings with the same value as yo
 
 ## Checklist
 
-- [ ] Add `COPILOT_GITHUB_TOKEN` secret
 - [ ] Update workflow files (see examples above)
 - [ ] Remove `actions/checkout` steps
 - [ ] Test workflows

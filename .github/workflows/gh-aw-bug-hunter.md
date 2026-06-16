@@ -54,7 +54,7 @@ on:
         default: "[bug-hunter]"
     secrets:
       COPILOT_GITHUB_TOKEN:
-        required: true
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -62,6 +62,7 @@ concurrency:
   group: ${{ github.workflow }}-bug-hunter
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
