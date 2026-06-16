@@ -80,7 +80,7 @@ tools:
   web-fetch:
 network:
   allowed:
-    - "*"
+    - defaults
 safe-outputs:
   activation-comments: false
   create-issue:
