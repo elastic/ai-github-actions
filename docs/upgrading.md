@@ -66,14 +66,13 @@ on:
 permissions:
   actions: read
   contents: write
+  copilot-requests: write
   issues: write
   pull-requests: write
 
 jobs:
   detect:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   fix:
     needs: detect
@@ -81,8 +80,6 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
     with:
       target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 See [Detector / Fixer Chaining](workflows/detector-fixer-chaining.md) for the full pattern and more examples.

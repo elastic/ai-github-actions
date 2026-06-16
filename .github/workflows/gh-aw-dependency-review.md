@@ -51,9 +51,6 @@ on:
         type: string
         required: false
         default: ""
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: false
       GH_AW_GITHUB_TOKEN:
         required: false
   roles: [admin, maintainer, write]

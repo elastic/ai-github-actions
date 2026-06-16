@@ -51,9 +51,6 @@ on:
         type: string
         required: false
         default: "[autonomy-atomicity]"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"

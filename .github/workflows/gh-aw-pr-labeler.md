@@ -36,11 +36,7 @@ on:
       classification-labels:
         description: "Comma-separated list of classification labels the agent may apply"
         type: string
-        required: true
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: false
-concurrency:
+        required: trueconcurrency:
   group: ${{ github.workflow }}-pr-labeler-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:

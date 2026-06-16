@@ -41,9 +41,6 @@ on:
         type: string
         required: false
         default: ""
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: false
       BUILDKITE_API_TOKEN:
         required: true
   roles: [admin, maintainer, write]

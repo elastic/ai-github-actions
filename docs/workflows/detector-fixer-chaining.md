@@ -43,15 +43,12 @@ Instead of chaining to a fixer workflow, you can assign the created issue to Git
 ```yaml
 jobs:
   detect:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-
-  assign-to-copilot:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0  assign-to-copilot:
     needs: detect
     if: needs.detect.outputs.created_issue_number != ''
     runs-on: ubuntu-latest
     permissions:
+  copilot-requests: write
       issues: write
     steps:
       - name: Assign issue to Copilot
@@ -79,24 +76,18 @@ on:
 permissions:
   actions: read
   contents: write
+  copilot-requests: write
   issues: write
   pull-requests: write
 
 jobs:
   detect:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-
-  fix:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0  fix:
     needs: detect
     if: needs.detect.outputs.created_issue_number != ''
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
     with:
-      target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-```
+      target-issue-number: ${{ needs.detect.outputs.created_issue_number }}```
 
 ### Code Duplication Detector → Create PR from Issue
 
@@ -110,6 +101,7 @@ on:
 permissions:
   actions: read
   contents: write
+  copilot-requests: write
   issues: write
   pull-requests: write
 
@@ -117,19 +109,12 @@ jobs:
   detect:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-duplication-detector.lock.yml@v0
     with:
-      languages: "go,python,typescript"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-
-  fix:
+      languages: "go,python,typescript"  fix:
     needs: detect
     if: needs.detect.outputs.created_issue_number != ''
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
     with:
-      target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-```
+      target-issue-number: ${{ needs.detect.outputs.created_issue_number }}```
 
 ### Text Auditor → Create PR from Issue
 
@@ -143,24 +128,18 @@ on:
 permissions:
   actions: read
   contents: write
+  copilot-requests: write
   issues: write
   pull-requests: write
 
 jobs:
   detect:
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-text-auditor.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-
-  fix:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-text-auditor.lock.yml@v0  fix:
     needs: detect
     if: needs.detect.outputs.created_issue_number != ''
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
     with:
-      target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-```
+      target-issue-number: ${{ needs.detect.outputs.created_issue_number }}```
 
 Most detector directories include an `example-chained.yml` you can copy directly. For detectors without one, follow the pattern above.
 

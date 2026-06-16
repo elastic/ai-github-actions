@@ -59,11 +59,7 @@ on:
         description: "Whether to create pull requests as drafts"
         type: boolean
         required: false
-        default: true
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: false
-      EXTRA_COMMIT_GITHUB_TOKEN:
+        default: true      EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
