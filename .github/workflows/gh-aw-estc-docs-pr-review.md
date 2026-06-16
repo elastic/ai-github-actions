@@ -63,7 +63,7 @@ on:
         default: "30"
     secrets:
       COPILOT_GITHUB_TOKEN:
-        required: true
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -71,6 +71,7 @@ concurrency:
   group: ${{ github.workflow }}-estc-docs-pr-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   pull-requests: read
   issues: read

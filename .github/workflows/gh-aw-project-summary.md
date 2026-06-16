@@ -53,7 +53,7 @@ on:
         default: "[project-summary]"
     secrets:
       COPILOT_GITHUB_TOKEN:
-        required: true
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -61,6 +61,7 @@ concurrency:
   group: ${{ github.workflow }}-project-summary
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read

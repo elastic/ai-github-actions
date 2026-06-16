@@ -34,6 +34,7 @@ concurrency:
   group: ${{ github.workflow }}-agent-deep-dive
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

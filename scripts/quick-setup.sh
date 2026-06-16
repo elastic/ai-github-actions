@@ -4,14 +4,14 @@
 # Usage:
 #   ./scripts/quick-setup.sh [--repo OWNER/REPO] [--branch NAME]
 #                            [--workflows "pr-review,issue-triage,..."]
-#                            [--skip-secret] [--dry-run]
+#                            [--set-secret] [--dry-run]
 
 set -euo pipefail
 
 branch="ai-gh-aw-setup"
 repo=""
 workflows_csv=""
-skip_secret=false
+set_secret=false
 continuous_improvement=false
 dry_run=false
 
@@ -23,7 +23,9 @@ Options:
   --repo OWNER/REPO     Repository to configure (defaults to current repo)
   --branch NAME         Branch name to create (default: ai-gh-aw-setup)
   --workflows CSV       Comma-separated workflow list (default: recommended set)
-  --skip-secret         Skip setting COPILOT_GITHUB_TOKEN
+  --set-secret          Optionally set COPILOT_GITHUB_TOKEN (no longer required;
+                        workflows authenticate via the built-in GITHUB_TOKEN)
+  --skip-secret         No-op flag kept for backwards compatibility
   --continuous-improvement
                         Add recommended continuous improvement workflows
   --dry-run             Print actions without making changes
@@ -45,8 +47,12 @@ while [ $# -gt 0 ]; do
       workflows_csv="${2:-}"
       shift 2
       ;;
+    --set-secret)
+      set_secret=true
+      shift
+      ;;
     --skip-secret)
-      skip_secret=true
+      # Kept for backwards compatibility; COPILOT_GITHUB_TOKEN is no longer required.
       shift
       ;;
     --continuous-improvement)
@@ -212,7 +218,7 @@ else
   created_files+=("$maintenance_dest")
 fi
 
-if [ "$skip_secret" = false ]; then
+if [ "$set_secret" = true ]; then
   token="${COPILOT_GITHUB_TOKEN:-}"
   if [ -z "$token" ]; then
     token_url="https://github.com/settings/personal-access-tokens/new?name=COPILOT_GITHUB_TOKEN+for+${repo//\//%2F}&description=Copilot+requests+for+GitHub+Agent+Workflows&copilot_requests=write"
@@ -234,12 +240,12 @@ if [ "$skip_secret" = false ]; then
       read -r -s token
       echo
       if [ -z "$token" ]; then
-        echo "No token provided. Use --skip-secret to set it manually later." >&2
+        echo "No token provided. Use --set-secret to set it manually later." >&2
         exit 1
       fi
     else
       echo "COPILOT_GITHUB_TOKEN is not set, and stdin is not a terminal." >&2
-      echo "Set COPILOT_GITHUB_TOKEN in your environment, or use --skip-secret." >&2
+      echo "Set COPILOT_GITHUB_TOKEN in your environment, or use --set-secret." >&2
       exit 1
     fi
   fi

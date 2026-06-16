@@ -59,7 +59,7 @@ on:
         default: "5"
     secrets:
       COPILOT_GITHUB_TOKEN:
-        required: true
+        required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:
@@ -68,6 +68,7 @@ concurrency:
   group: ${{ github.workflow }}-plan-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

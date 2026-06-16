@@ -39,11 +39,12 @@ on:
         required: true
     secrets:
       COPILOT_GITHUB_TOKEN:
-        required: true
+        required: false
 concurrency:
   group: ${{ github.workflow }}-pr-labeler-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

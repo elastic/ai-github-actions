@@ -69,6 +69,7 @@ concurrency:
   group: ${{ github.workflow }}-internal-gemini-cli-web-search-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read

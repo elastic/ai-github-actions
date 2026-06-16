@@ -53,13 +53,14 @@ on:
         default: ""
     secrets:
       COPILOT_GITHUB_TOKEN:
-        required: true
+        required: false
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
 concurrency:
   group: ${{ github.workflow }}-pr-conflict-addresser-${{ inputs.target-pr-number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
