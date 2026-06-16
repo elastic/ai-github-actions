@@ -7,6 +7,7 @@ on:
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   issues: read
   pull-requests: write
 
@@ -30,5 +31,3 @@ jobs:
         2. Apply the fix described in the issue
         3. Run tests
         4. Commit locally
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

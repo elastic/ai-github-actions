@@ -8,6 +8,7 @@ on:
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   issues: write  # needed for no-op run tracking issue
   pull-requests: write
 
@@ -21,5 +22,3 @@ jobs:
       allowed-bot-users: "github-actions[bot],copilot"
       intensity: aggressive
       minimum_severity: nitpick
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

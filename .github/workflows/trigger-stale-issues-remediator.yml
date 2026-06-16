@@ -8,10 +8,9 @@ on:
 
 permissions:
   contents: read
+  copilot-requests: write
   issues: write
 
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-stale-issues-remediator.lock.yml
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

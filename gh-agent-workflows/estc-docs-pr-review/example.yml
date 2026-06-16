@@ -4,11 +4,12 @@ on:
     types: [created]
 
 permissions:
+  actions: read
+  checks: read
   contents: read
+  copilot-requests: write
   issues: read
   pull-requests: write
-  checks: read
-  actions: read
 
 jobs:
   run:
@@ -16,5 +17,3 @@ jobs:
       github.event.issue.pull_request != null &&
       startsWith(github.event.comment.body, '/docs-review')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-docs-pr-review.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
