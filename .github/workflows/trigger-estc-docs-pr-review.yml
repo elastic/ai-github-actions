@@ -6,12 +6,11 @@ on:
     types: [created]
 
 permissions:
-  actions: read
-  checks: read
   contents: read
-  copilot-requests: write
   issues: read
   pull-requests: write
+  checks: read
+  actions: read
 
 jobs:
   run:
@@ -23,3 +22,5 @@ jobs:
       allowed-bot-users: "github-actions[bot],copilot"
       intensity: aggressive
       minimum_severity: nitpick
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

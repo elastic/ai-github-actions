@@ -6,7 +6,6 @@ on:
 permissions:
   actions: read
   contents: read
-  copilot-requests: write
   issues: write
   pull-requests: write
 
@@ -30,3 +29,5 @@ jobs:
         Apply an uncertainty tax: if evidence is ambiguous, move one level more conservative.
         Do not use `big_boom` solely because a PR is large or adds many new files.
         If a PR is mostly additive (new files/features) and does not significantly alter existing behavior, prefer `small_boom` or `medium_boom` based on real impact.
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

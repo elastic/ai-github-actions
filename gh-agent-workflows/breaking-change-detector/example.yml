@@ -6,10 +6,11 @@ on:
 
 permissions:
   contents: read
-  copilot-requests: write
   issues: write
   pull-requests: read
 
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-breaking-change-detector.lock.yml@v0
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

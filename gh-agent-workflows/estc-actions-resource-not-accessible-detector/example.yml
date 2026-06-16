@@ -11,9 +11,8 @@ on:
 
 permissions:
   actions: read
-  contents: read
-  copilot-requests: write
   issues: write
+  contents: read
 
 jobs:
   run:
@@ -21,3 +20,5 @@ jobs:
     with:
       long-term-branches: ""
       look-back-days: ${{ inputs.look-back-days || 1 }}
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

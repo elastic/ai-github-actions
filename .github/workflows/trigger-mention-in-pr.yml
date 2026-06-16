@@ -10,7 +10,6 @@ on:
 permissions:
   actions: read
   contents: write
-  copilot-requests: write
   discussions: write
   issues: write
   pull-requests: write
@@ -22,4 +21,7 @@ jobs:
       (github.event.issue.pull_request != null || github.event_name == 'pull_request_review_comment')
     uses: ./.github/workflows/gh-aw-mention-in-pr.lock.yml
     with:
-      allowed-bot-users: "github-actions[bot],copilot"      EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
+      allowed-bot-users: "github-actions[bot],copilot"
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}

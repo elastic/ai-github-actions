@@ -7,7 +7,6 @@ on:
 permissions:
   actions: read
   contents: read
-  copilot-requests: write
   issues: write
   pull-requests: read
 
@@ -28,3 +27,5 @@ jobs:
 
         ### What to Skip
         - What to ignore
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
