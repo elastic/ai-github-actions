@@ -50,6 +50,9 @@ on:
         type: string
         required: false
         default: "[flaky-test-investigator]"
+    secrets:
+      COPILOT_GITHUB_TOKEN:
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"

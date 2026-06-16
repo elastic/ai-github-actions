@@ -58,6 +58,9 @@ on:
         type: string
         required: false
         default: "[resource-not-accessible-by-integration]"
+    secrets:
+      COPILOT_GITHUB_TOKEN:
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"

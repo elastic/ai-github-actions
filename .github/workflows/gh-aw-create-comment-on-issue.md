@@ -50,7 +50,11 @@ on:
         description: "Footer appended to all agent comments and reviews"
         type: string
         required: false
-        default: ""concurrency:
+        default: ""
+    secrets:
+      COPILOT_GITHUB_TOKEN:
+        required: false
+concurrency:
   group: ${{ github.workflow }}-create-comment-on-issue-${{ inputs.target-issue-number }}
   cancel-in-progress: true
 permissions:
