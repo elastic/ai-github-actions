@@ -236,7 +236,7 @@ lint-workflows: setup-actionlint
 		\); \
 	) 2>/dev/null | while read -r file; do \
 		echo "Checking $$file..."; \
-		$$ACTIONLINT "$$file" || exit 1; \
+		$$ACTIONLINT -ignore 'unknown permission scope "copilot-requests"' "$$file" || exit 1; \
 	done
 
 setup-action-validator:
