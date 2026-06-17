@@ -8,7 +8,8 @@ on:
 permissions:
   actions: read
   contents: read
-  issues: write  # needed for no-op run tracking issue
+  copilot-requests: write
+  issues: read  # needed for no-op run tracking issue
   pull-requests: write
 
 jobs:

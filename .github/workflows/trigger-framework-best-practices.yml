@@ -7,11 +7,12 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: write
+  copilot-requests: write
   issues: write
   pull-requests: write
 
-  actions: read
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-framework-best-practices.lock.yml

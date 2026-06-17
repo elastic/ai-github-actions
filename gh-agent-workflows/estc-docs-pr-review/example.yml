@@ -4,11 +4,12 @@ on:
     types: [created]
 
 permissions:
+  actions: read
+  checks: read
   contents: read
+  copilot-requests: write
   issues: read
   pull-requests: write
-  checks: read
-  actions: read
 
 jobs:
   run:

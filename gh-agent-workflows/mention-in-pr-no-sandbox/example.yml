@@ -8,6 +8,7 @@ on:
 permissions:
   actions: read
   contents: write
+  copilot-requests: write
   discussions: write
   issues: write
   pull-requests: write
