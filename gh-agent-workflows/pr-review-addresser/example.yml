@@ -6,9 +6,9 @@ on:
 permissions:
   actions: read
   contents: write
-  issues: write
+  copilot-requests: write
+  issues: read
   pull-requests: write
-
 concurrency:
   group: pr-review-addresser-${{ github.event.pull_request.number }}
   cancel-in-progress: true
