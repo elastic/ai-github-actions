@@ -10,7 +10,8 @@ on:
 permissions:
   actions: read
   contents: write
-  issues: write
+  copilot-requests: write
+  issues: read
   pull-requests: write
 
 jobs:

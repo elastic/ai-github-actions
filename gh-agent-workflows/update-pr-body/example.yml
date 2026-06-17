@@ -4,7 +4,9 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
+  actions: read
   contents: read
+  copilot-requests: write
   issues: read
   pull-requests: write
 

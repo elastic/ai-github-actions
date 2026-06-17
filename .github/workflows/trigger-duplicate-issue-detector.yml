@@ -6,8 +6,9 @@ on:
     types: [opened]
 
 permissions:
+  actions: read
   contents: read
-  discussions: write
+  copilot-requests: write
   issues: write
   pull-requests: read
 
