@@ -28,5 +28,3 @@ jobs:
 
         ### What to Skip
         - What to ignore
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

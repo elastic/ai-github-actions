@@ -19,5 +19,3 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-actions-fixer.lock.yml@v0
     with:
       workflow-run-id: ${{ inputs.workflow-run-id }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

@@ -17,5 +17,3 @@ jobs:
       github.event.workflow_run.head_branch == github.event.repository.default_branch &&
       toJSON(github.event.workflow_run.pull_requests) == '[]'
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-branch-actions-detective.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
