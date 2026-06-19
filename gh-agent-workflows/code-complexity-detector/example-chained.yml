@@ -15,7 +15,6 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-complexity-detector.lock.yml@v0
     with:
       languages: "go,python,typescript"
-    secrets:
 
   fix:
     needs: detect
@@ -23,4 +22,3 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
     with:
       target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
-    secrets:

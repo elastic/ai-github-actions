@@ -26,8 +26,8 @@ jobs:
       #   - `merge-ready`: Apply when all dependency updates are safe to merge without human review.
       # For updatecli: uncomment and set your repo's updatecli bot actor (it varies per repo).
       # allowed-bot-users: "github-actions[bot]"
-      # Optional: pass an ephemeral token (e.g. a GitHub App token) so that PR labels
-      # applied by this workflow can trigger downstream label-based workflows.
+      # Optional: pass an ephemeral token (e.g. a GitHub App token) via GH_AW_GITHUB_TOKEN
+      # so that PR labels applied by this workflow can trigger downstream label-based workflows.
       # When omitted, the built-in GITHUB_TOKEN is used for labeling, which does
       # not re-trigger other workflows.
       # GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}

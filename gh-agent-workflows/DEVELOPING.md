@@ -179,7 +179,6 @@ on:
         type: string
         required: false
         default: ""
-    secrets:        required: true
 ```
 
 And a setup step that runs the caller's commands:
