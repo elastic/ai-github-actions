@@ -58,7 +58,6 @@ on:
         type: string
         required: false
         default: "[resource-not-accessible-by-integration]"
-    secrets:
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"

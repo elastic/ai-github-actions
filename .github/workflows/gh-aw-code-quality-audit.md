@@ -56,7 +56,6 @@ on:
         type: string
         required: false
         default: "medium"
-    secrets:
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"

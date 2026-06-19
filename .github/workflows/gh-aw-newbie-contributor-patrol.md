@@ -50,7 +50,6 @@ on:
         type: string
         required: false
         default: "[newbie-contributor]"
-    secrets:
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"

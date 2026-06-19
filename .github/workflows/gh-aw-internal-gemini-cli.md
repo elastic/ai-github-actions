@@ -60,7 +60,6 @@ on:
         type: string
         required: false
         default: "[gemini-cli]"
-    secrets:
       GEMINI_API_KEY:
         required: true
   reaction: "eyes"

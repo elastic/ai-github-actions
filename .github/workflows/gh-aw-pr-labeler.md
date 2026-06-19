@@ -37,7 +37,6 @@ on:
         description: "Comma-separated list of classification labels the agent may apply"
         type: string
         required: true
-    secrets:
 concurrency:
   group: ${{ github.workflow }}-pr-labeler-${{ github.event.pull_request.number }}
   cancel-in-progress: true

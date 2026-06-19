@@ -57,7 +57,6 @@ on:
         type: string
         required: false
         default: "5"
-    secrets:
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:

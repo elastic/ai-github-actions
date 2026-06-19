@@ -52,7 +52,6 @@ on:
         type: string
         required: false
         default: "[bug-hunter]"
-    secrets:
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
