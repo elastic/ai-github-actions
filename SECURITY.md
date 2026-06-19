@@ -12,7 +12,7 @@ AI agents like Claude can execute code, make API calls, and consume costly resou
 - **Prompt injection**: Malicious content in issues/comments could manipulate the AI
 - **Resource exhaustion**: Workflows could be triggered repeatedly to exhaust CI minutes
 
-The Claude Code GitHub action will not run for external users. That doesn't mean that steps in the workflow prior to the Claude Code step will not run for external users. It's important to practice good security hygiene and not allow external users to trigger workflows that have access to sensitive information or resources.
+The Claude Code GitHub Action does not run for external users. However, steps before the Claude Code step can still run for external users. It's important to practice good security hygiene and not allow external users to trigger workflows that have access to sensitive information or resources.
 
 ### Author Association Checks
 
