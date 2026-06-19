@@ -22,9 +22,3 @@ jobs:
       edit-completeness: high
       edit-format: high
       edit-style: high
-    with:
-      allowed-bot-users: "github-actions[bot],copilot"
-      edit-accuracy: high
-      edit-completeness: high
-      edit-format: high
-      edit-style: high
