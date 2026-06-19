@@ -163,7 +163,7 @@ make compile          # sync + compile
 
 ### workflow_call Convention
 
-All shims include a `workflow_call` trigger with two standard inputs and one secret:
+All shims include a `workflow_call` trigger with two standard inputs:
 
 ```yaml
 on:
