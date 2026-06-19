@@ -15,8 +15,6 @@ on:
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ````
 
 Each workflow directory contains an `example.yml` starter and a README for trigger details, inputs, and safe outputs.

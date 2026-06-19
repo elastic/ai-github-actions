@@ -44,8 +44,6 @@ jobs:
         Write the summary as a project chronicler.
         Keep all factual details accurate and link-backed, but present sections in a story-like narrative voice.
         End with "Chronicle Next Steps" as a checklist of concrete actions.
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ````
 
 ## Safe Outputs

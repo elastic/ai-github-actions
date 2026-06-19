@@ -57,6 +57,4 @@ jobs:
       github.event.workflow_run.conclusion == 'failure' &&
       toJSON(github.event.workflow_run.pull_requests) != '[]'
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-actions-detective.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

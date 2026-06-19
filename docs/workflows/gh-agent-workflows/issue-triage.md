@@ -66,8 +66,6 @@ jobs:
       #   - `bug`: Apply when the issue describes a clear defect or unexpected behavior.
       #   - `needs-triage`: Apply when more information is needed before the issue can be acted on.
       #   - `enhancement`: Apply when the issue describes a new feature or improvement request.
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       # Optional: pass an ephemeral token (e.g. a GitHub App token) so that issue labels
       # applied by this workflow can trigger downstream label-based workflows.
       # When omitted, the built-in GITHUB_TOKEN is used for labeling, which does
