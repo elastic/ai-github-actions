@@ -18,6 +18,7 @@ Each run's logs are saved as individual .txt files under output-dir/<run_id>/.
 """
 
 import argparse
+from datetime import datetime, timezone
 import io
 import json
 import os
@@ -48,6 +49,26 @@ def _normalize_until(until: str | None) -> str | None:
     return until + "T23:59:59Z"
 
 
+def _parse_iso8601_timestamp(value: str | None, label: str) -> datetime | None:
+    if value is None or value.strip() == "":
+        return None
+
+    parsed_value = value
+    if parsed_value.endswith("Z"):
+        parsed_value = parsed_value[:-1] + "+00:00"
+    elif "T" not in parsed_value:
+        parsed_value = parsed_value + "T00:00:00+00:00"
+
+    try:
+        parsed = datetime.fromisoformat(parsed_value)
+    except ValueError as e:
+        raise ValueError(f"Invalid {label} timestamp: {value}") from e
+
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
 def _iter_workflow_run_pages(repo: str, workflow: str, token: str):
     """Yield workflow runs page-by-page in API order (newest-first)."""
     page = 1
@@ -68,31 +89,39 @@ def _run_matches_conclusion(run: dict, conclusion: str | None) -> bool:
     return run.get("conclusion") == conclusion
 
 
-def _is_before_since_boundary(run: dict, since: str | None) -> bool:
+def _is_before_since_boundary(run: dict, since: datetime | None) -> bool:
     if since is None:
         return False
-    return run.get("created_at", "") < since
+    run_created_at = _parse_iso8601_timestamp(run.get("created_at"), "run.created_at")
+    if run_created_at is None:
+        return False
+    return run_created_at < since
 
 
-def _is_after_until_boundary(run: dict, until: str | None) -> bool:
+def _is_after_until_boundary(run: dict, until: datetime | None) -> bool:
     if until is None:
         return False
-    return run.get("created_at", "") > until
+    run_created_at = _parse_iso8601_timestamp(run.get("created_at"), "run.created_at")
+    if run_created_at is None:
+        return False
+    return run_created_at > until
 
 
 def list_workflow_runs(repo: str, workflow: str, token: str, since: str | None, until: str | None,
                        conclusion: str | None, last: int) -> list[dict]:
     """Return up to `last` workflow runs matching the filters."""
     until_normalized = _normalize_until(until)
+    since_timestamp = _parse_iso8601_timestamp(since, "since")
+    until_timestamp = _parse_iso8601_timestamp(until_normalized, "until")
     runs = []
     for batch in _iter_workflow_run_pages(repo=repo, workflow=workflow, token=token):
         for run in batch:
             if not _run_matches_conclusion(run, conclusion):
                 continue
-            if _is_before_since_boundary(run, since):
+            if _is_before_since_boundary(run, since_timestamp):
                 # Runs are sorted newest-first; once we go past since, stop paging
                 return runs
-            if _is_after_until_boundary(run, until_normalized):
+            if _is_after_until_boundary(run, until_timestamp):
                 continue
             runs.append(run)
             if len(runs) >= last:
