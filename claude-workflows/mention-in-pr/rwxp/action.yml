@@ -194,7 +194,7 @@ runs:
 
           **Existing thread rules** (check BEFORE leaving any comment):
           - Resolved with reviewer reply → reviewer's decision is final. Do NOT re-flag.
-            Examples: "It should remain as X", "This is intentional", "No need to do this change"
+            Examples: "It should remain as X", "This is intentional", "No need to make this change"
           - Resolved without reply → author likely fixed it. Do NOT re-raise unless the fix introduced a new problem.
           - Unresolved → already flagged. Do NOT re-comment. Mention in review body if you have more to add.
           - Outdated → code changed. Only re-flag if the issue still applies to the current diff.
