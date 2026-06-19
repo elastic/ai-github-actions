@@ -14,7 +14,6 @@ jobs:
   detect:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-newbie-contributor-patrol.lock.yml@v0
     secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   fix:
     needs: detect
@@ -23,4 +22,3 @@ jobs:
     with:
       target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
     secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

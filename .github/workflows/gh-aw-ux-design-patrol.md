@@ -58,8 +58,6 @@ on:
         required: false
         default: "[ux-design-patrol]"
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"

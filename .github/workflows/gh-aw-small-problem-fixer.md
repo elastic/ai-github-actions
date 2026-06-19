@@ -49,8 +49,6 @@ on:
         required: false
         default: true
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: false
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   roles: [admin, maintainer, write]

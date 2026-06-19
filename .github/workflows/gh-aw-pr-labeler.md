@@ -38,8 +38,6 @@ on:
         type: string
         required: true
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: false
 concurrency:
   group: ${{ github.workflow }}-pr-labeler-${{ github.event.pull_request.number }}
   cancel-in-progress: true
