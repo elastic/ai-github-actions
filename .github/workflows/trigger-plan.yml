@@ -21,5 +21,3 @@ jobs:
     uses: ./.github/workflows/gh-aw-plan.lock.yml
     with:
       allowed-bot-users: "github-actions[bot],copilot"
-    with:
-      allowed-bot-users: "github-actions[bot],copilot"

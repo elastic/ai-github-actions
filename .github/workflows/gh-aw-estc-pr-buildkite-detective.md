@@ -42,7 +42,6 @@ on:
         required: false
         default: ""
     secrets:
-    secrets:
       BUILDKITE_API_TOKEN:
         required: true
   roles: [admin, maintainer, write]

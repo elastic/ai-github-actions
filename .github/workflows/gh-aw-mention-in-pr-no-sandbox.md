@@ -73,7 +73,6 @@ on:
         required: false
         default: "10"
     secrets:
-    secrets:
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   reaction: "eyes"

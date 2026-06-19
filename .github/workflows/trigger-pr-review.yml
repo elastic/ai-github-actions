@@ -22,7 +22,3 @@ jobs:
       allowed-bot-users: "github-actions[bot],copilot"
       intensity: aggressive
       minimum_severity: nitpick
-    with:
-      allowed-bot-users: "github-actions[bot],copilot"
-      intensity: aggressive
-      minimum_severity: nitpick
