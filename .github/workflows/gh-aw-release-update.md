@@ -47,6 +47,7 @@ on:
         type: boolean
         required: false
         default: true
+    secrets:
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   roles: [admin, maintainer, write]

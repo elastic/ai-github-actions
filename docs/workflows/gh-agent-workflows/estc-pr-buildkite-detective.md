@@ -81,5 +81,6 @@ jobs:
       (github.event_name == 'status' && github.event.state == 'failure') ||
       (github.event_name == 'check_run' && github.event.check_run.conclusion == 'failure')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-pr-buildkite-detective.lock.yml@v0
+    secrets:
       BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
 ```

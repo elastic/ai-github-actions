@@ -58,6 +58,7 @@ on:
         type: string
         required: false
         default: "[research]"
+    secrets:
       GEMINI_API_KEY:
         required: true
   reaction: "eyes"

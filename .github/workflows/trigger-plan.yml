@@ -19,3 +19,5 @@ jobs:
       github.event.issue.pull_request == null &&
       startsWith(github.event.comment.body, '/plan')
     uses: ./.github/workflows/gh-aw-plan.lock.yml
+    with:
+      allowed-bot-users: "github-actions[bot],copilot"

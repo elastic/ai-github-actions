@@ -22,6 +22,12 @@ jobs:
       # edit-clarity: low
       # edit-terminology: low
       # edit-misleading-text: low
+    with:
+      edit-typos: high
+      edit-grammar: high
+      edit-clarity: high
+      edit-terminology: high
+      edit-misleading-text: high
 
   create_pr_from_issue:
     needs: run
