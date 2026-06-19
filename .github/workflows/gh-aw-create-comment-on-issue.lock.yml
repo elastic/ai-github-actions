@@ -113,8 +113,6 @@ on:
         description: URL of the first added comment
         value: ${{ jobs.safe_outputs.outputs.comment_url }}
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: false
       GH_AW_GITHUB_MCP_SERVER_TOKEN:
         required: false
       GH_AW_GITHUB_TOKEN:

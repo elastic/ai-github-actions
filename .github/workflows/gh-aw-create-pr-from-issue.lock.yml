@@ -126,8 +126,6 @@ on:
         description: URL of the first created pull request
         value: ${{ jobs.safe_outputs.outputs.created_pr_url }}
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: false
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
       GH_AW_GITHUB_MCP_SERVER_TOKEN:

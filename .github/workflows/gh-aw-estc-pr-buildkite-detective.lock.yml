@@ -108,8 +108,6 @@ on:
     secrets:
       BUILDKITE_API_TOKEN:
         required: true
-      COPILOT_GITHUB_TOKEN:
-        required: false
       GH_AW_GITHUB_MCP_SERVER_TOKEN:
         required: false
       GH_AW_GITHUB_TOKEN:
