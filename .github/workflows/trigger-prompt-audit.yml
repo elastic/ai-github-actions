@@ -95,5 +95,3 @@ jobs:
         - High: N findings
         - Medium: N findings
         ```
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

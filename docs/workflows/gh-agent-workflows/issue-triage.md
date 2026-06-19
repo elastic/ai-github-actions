@@ -33,7 +33,6 @@ mkdir -p .github/workflows && curl -fsSL \
 
 | Secret | Description | Required |
 | --- | --- | --- |
-| `COPILOT_GITHUB_TOKEN` | GitHub Copilot PAT for AI engine authentication | No |
 | `GH_AW_GITHUB_TOKEN` | Ephemeral token (e.g. a GitHub App token) used for issue labeling safe outputs. When provided, labels applied by this workflow will trigger downstream label-based workflows. When omitted, the built-in `GITHUB_TOKEN` is used, which does not re-trigger other workflows. | No |
 
 ## Safe outputs

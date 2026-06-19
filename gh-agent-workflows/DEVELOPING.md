@@ -179,9 +179,7 @@ on:
         type: string
         required: false
         default: ""
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+    secrets:        required: true
 ```
 
 And a setup step that runs the caller's commands:

@@ -39,7 +39,6 @@ if: >-
 
 ## Required secrets
 
-- `COPILOT_GITHUB_TOKEN`
 - `BUILDKITE_API_TOKEN`
 
 ## Behavior notes

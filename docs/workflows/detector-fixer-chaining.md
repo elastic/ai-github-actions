@@ -57,8 +57,7 @@ jobs:
             --add-assignee @copilot
 ```
 
-Copilot picks up the assignment, reads the issue, and opens a PR — using its own session and context window. No `COPILOT_GITHUB_TOKEN` is needed for the handoff job itself since assignment only requires `issues: write`.
-
+Copilot picks up the assignment, reads the issue, and opens a PR — using its own session and context window. 
 ## Complete examples
 
 ### Bug Hunter → Create PR from Issue
@@ -157,7 +156,6 @@ Most detector directories include an `example-chained.yml` you can copy directly
 ## Notes
 
 - The fix job's `if` condition prevents it from running when the detector finds nothing (noop).
-- Both jobs share the same `COPILOT_GITHUB_TOKEN` secret.
 - The caller workflow needs the union of both workflows' permissions (e.g., `contents: write` + `pull-requests: write` for the fixer).
 - Chaining does not replace the standalone examples — you can still run each workflow independently.
 - Any detector that uses the `create-issue` safe output can chain to `create-pr-from-issue`.
