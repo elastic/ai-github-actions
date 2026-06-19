@@ -74,8 +74,6 @@ on:
         required: false
         default: "10"
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: false
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   reaction: "eyes"

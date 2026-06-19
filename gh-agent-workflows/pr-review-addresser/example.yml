@@ -20,5 +20,3 @@ jobs:
       !github.event.pull_request.draft &&
       !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review-addresser')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review-addresser.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

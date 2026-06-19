@@ -55,6 +55,4 @@ jobs:
       github.event.issue.pull_request == null &&
       startsWith(github.event.comment.body, '/ai')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-mention-in-issue.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

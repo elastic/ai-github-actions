@@ -18,8 +18,6 @@ jobs:
     uses: ./.github/workflows/gh-aw-code-duplication-detector.lock.yml
     with:
       languages: "go,python,typescript"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   create_pr_from_issue:
     needs: run
@@ -29,5 +27,4 @@ jobs:
       target-issue-number: ${{ needs.run.outputs.created_issue_number }}
       additional-instructions: "Create a focused pull request that resolves this issue."
     secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}

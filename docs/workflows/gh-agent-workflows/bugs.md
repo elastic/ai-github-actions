@@ -67,6 +67,4 @@ permissions:
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

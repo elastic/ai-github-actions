@@ -16,5 +16,3 @@ permissions:
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-ux-design-patrol.lock.yml
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

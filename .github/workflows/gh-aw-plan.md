@@ -57,9 +57,6 @@ on:
         type: string
         required: false
         default: "5"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:

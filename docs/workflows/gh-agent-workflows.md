@@ -15,8 +15,6 @@ on:
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ````
 
 Each workflow directory contains an `example.yml` starter and a README for trigger details, inputs, and safe outputs.
@@ -129,24 +127,7 @@ These workflows are tailored for Elastic's internal tooling and documentation pl
 
 ## Secrets
 
-As of June 2026, `COPILOT_GITHUB_TOKEN` is **optional**. Agentic workflows now authenticate via the built-in `GITHUB_TOKEN` when the repository or organization has GitHub Copilot available, without requiring a personal access token.
-
-The workflows are configured with `copilot-requests: write` permission in the lock files, which enables organisation-level billing for Copilot usage.
-
-### Optional: COPILOT_GITHUB_TOKEN (for explicit PAT auth)
-
-If you prefer to authenticate with a dedicated PAT (e.g. for billing to a personal account, or for repositories where `GITHUB_TOKEN` does not have Copilot access):
-
-1. [Create a Copilot PAT](https://github.com/settings/personal-access-tokens/new?name=COPILOT_GITHUB_TOKEN&description=GitHub+Agentic+Workflows+-+Copilot+engine+authentication&user_copilot_requests=read) with the `copilot-requests` scope (the scope is only available for public repositories). The link pre-fills the name, description, and scope. **Set the expiry to longer than the 30-day default** (e.g., 90 days or 1 year) to avoid frequent rotation.
-2. Store it as a repository secret:
-
-````bash
-printf '%s' "(pat)" | gh secret set COPILOT_GITHUB_TOKEN --repo OWNER/REPO
-````
-
-UI path: Settings → Secrets and variables → Actions → New repository secret.
-
-See the upstream [gh-aw auth docs](https://github.com/github/gh-aw/blob/main/docs/src/content/docs/reference/auth.mdx) for canonical steps.
+The workflows are configured with `copilot-requests: write` permission in the lock files, which enables organisation-level billing for Copilot usage through the built-in `GITHUB_TOKEN`.
 
 Some workflows require additional provider-specific secrets (for example, `PR Buildkite Detective` requires `BUILDKITE_API_TOKEN`).
 
@@ -202,7 +183,7 @@ setup-commands: |
 
 Each workflow has two layers:
 
-1. **Workflow** (`gh-aw-*.md` -> `gh-aw-*.lock.yml`): The agent logic, compiled by `gh-aw`. Triggers only on `workflow_call` with standard inputs (`additional-instructions`, `setup-commands`) and a `COPILOT_GITHUB_TOKEN` secret.
+1. **Workflow** (`gh-aw-*.md` -> `gh-aw-*.lock.yml`): The agent logic, compiled by `gh-aw`. Triggers only on `workflow_call` with standard inputs (`additional-instructions`, `setup-commands`).
 2. **Trigger** (`<name>/example.yml`): A plain YAML file that defines the actual event triggers (schedule, PR events, slash commands, etc.) and calls the compiled `.lock.yml` via `uses:`. These serve as both examples for consumers and dogfood for this repo (copied to `.github/workflows/trigger-*.yml` by `scripts/dogfood.sh` for workflows not listed in `EXCLUDED_WORKFLOWS`).
 
 Consumer repos copy a workflow's `example.yml`, change the `uses:` path if needed, and customize the `with:` inputs. Updates propagate automatically when this repo updates the `v0` tag on release.

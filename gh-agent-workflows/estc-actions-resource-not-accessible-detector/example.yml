@@ -22,5 +22,3 @@ jobs:
     with:
       long-term-branches: ""
       look-back-days: ${{ inputs.look-back-days || 1 }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

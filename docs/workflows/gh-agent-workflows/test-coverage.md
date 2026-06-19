@@ -68,6 +68,4 @@ permissions:
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-test-coverage-detector.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

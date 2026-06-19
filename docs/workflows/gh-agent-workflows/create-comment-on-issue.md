@@ -12,8 +12,6 @@ Chain from a detector that creates issues:
 jobs:
   detect:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   comment:
     needs: detect
@@ -22,8 +20,6 @@ jobs:
     with:
       target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
       prompt: "Summarize the bug and suggest next steps for the reporter."
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 Or call it directly with any issue number (e.g., from `workflow_dispatch`):
@@ -35,8 +31,6 @@ jobs:
     with:
       target-issue-number: "123"
       prompt: "Analyze this issue and provide implementation guidance."
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 ## Trigger

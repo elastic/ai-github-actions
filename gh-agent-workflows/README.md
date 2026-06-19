@@ -51,7 +51,7 @@ curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/script
 ````
 
 This installs a recommended set of triggers, adds `agentics-maintenance.yml`, sets up
-`COPILOT_GITHUB_TOKEN`, creates a setup branch, and opens a PR.
+creates a setup branch, and opens a PR.
 
 Default workflows:
 - `pr-review`
