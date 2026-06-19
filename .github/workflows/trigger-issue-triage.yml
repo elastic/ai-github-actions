@@ -26,6 +26,9 @@ jobs:
     with:
       allowed-bot-users: "github-actions[bot],copilot"
     #secrets:
+    with:
+      allowed-bot-users: "github-actions[bot],copilot"
+    #secrets:
       # Optional: pass an ephemeral token (e.g. a GitHub App token) via GH_AW_GITHUB_TOKEN
       # so that issue labels applied by this workflow can trigger downstream label-based workflows.
       # When omitted, the built-in GITHUB_TOKEN is used for labeling, which does
