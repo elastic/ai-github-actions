@@ -7,7 +7,7 @@ imports:
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-add-comment-pr.md
+  - gh-aw-fragments/safe-output-add-comment-pr-hide-older.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -228,7 +228,6 @@ Analyze failed Buildkite CI builds for pull requests in ${{ github.repository }}
 2. Read `/tmp/gh-aw/buildkite-failures.txt` for the failed job summary. If it does not exist, call `noop` with "No Buildkite failure data" and stop.
 3. Read the individual log files listed in the summary (under `/tmp/gh-aw/buildkite-logs/`).
 4. Call `pull_request_read` with method `get` on the PR number to get the author, diff, and recent changes.
-5. Call `pull_request_read` with method `get_comments` on the PR number to find any existing detective comment. An existing detective comment contains the text `gh-aw-detective: estc-pr-buildkite-detective` in its body (embedded as an HTML comment). If one exists, note its `id` — you will use it to update the comment in place rather than creating a new one.
 
 ### Step 2: Analyze
 
@@ -247,19 +246,13 @@ For each:
 3. If the error involves an external library or tool, use `web-fetch` to check docs/changelogs.
 4. Propose a concrete fix or, if inconclusive, state what additional data is needed.
 
-**Deduplication**: Check the existing detective comment found in Step 1.5 (body contains `gh-aw-detective: estc-pr-buildkite-detective`). If the root cause and remediation are the same as already documented there, call `noop` instead of posting a duplicate.
+**Deduplication**: Check the most recent prior detective comment on the PR. If the root cause and remediation are the same, call `noop` instead of posting a duplicate.
 
 ### Step 3: Respond
 
-Always begin the comment body with the marker line shown at the top of the template below (the `gh-aw-detective` HTML comment on the first line). This marker lets future runs find and update this comment in place.
-
-- If an existing detective comment was found in Step 1.5: call `add_comment` with `reply_to_id` set to that comment's `id`. This updates the comment in place so the PR has at most one detective comment at a time.
-- If no existing detective comment was found: call `add_comment` without `reply_to_id` to create a new one.
-
-Use this structure for the body:
+Call `add_comment` on the PR using this structure:
 
 ```markdown
-<!-- gh-aw-detective: estc-pr-buildkite-detective -->
 ### TL;DR
 [1-2 sentences: what failed and the immediate action needed]
 
