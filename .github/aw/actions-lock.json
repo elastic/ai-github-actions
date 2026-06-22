@@ -15,6 +15,11 @@
       "version": "v9",
       "sha": "373c709c69115d41ff229c7e5df9f8788daa9553"
     },
+    "actions/github-script@v9.0.0": {
+      "repo": "actions/github-script",
+      "version": "v9.0.0",
+      "sha": "3a2844b7e9c422d3c10d287c895573f7108da1b3"
+    },
     "actions/setup-go@v5": {
       "repo": "actions/setup-go",
       "version": "v5",
@@ -34,6 +39,11 @@
       "repo": "astral-sh/setup-uv",
       "version": "v5",
       "sha": "e58605a9b6da7c637471fab8847a5e5a6b8df081"
+    },
+    "github/gh-aw-actions/setup@v0.79.8": {
+      "repo": "github/gh-aw-actions/setup",
+      "version": "v0.79.8",
+      "sha": "c0338fef4749d08c21f8f975fb0e37efa17dda47"
     },
     "github/gh-aw/actions/setup-cli@v0.65.1": {
       "repo": "github/gh-aw/actions/setup-cli",
@@ -74,6 +84,21 @@
       "repo": "github/gh-aw/actions/setup-cli",
       "version": "v0.68.3",
       "sha": "ce1794953e0ec42adc41b6fca05e02ab49ee21c3"
+    },
+    "github/gh-aw/actions/setup-cli@v0.79.3": {
+      "repo": "github/gh-aw/actions/setup-cli",
+      "version": "v0.79.3",
+      "sha": "c405b1fbb4326daa5a4204a2ffb3f9f91cab331d"
+    },
+    "github/gh-aw/actions/setup-cli@v0.79.6": {
+      "repo": "github/gh-aw/actions/setup-cli",
+      "version": "v0.79.6",
+      "sha": "9c481b8bc46dce8b92fce8ffc51781e5c330d37c"
+    },
+    "github/gh-aw/actions/setup-cli@v0.79.8": {
+      "repo": "github/gh-aw/actions/setup-cli",
+      "version": "v0.79.8",
+      "sha": "8b02ab336d100a5746e9f53b8bc2b22878278a6f"
     },
     "github/gh-aw/actions/setup@v0.43.23": {
       "repo": "github/gh-aw/actions/setup",
@@ -244,6 +269,16 @@
       "repo": "github/gh-aw/actions/setup",
       "version": "v0.68.3",
       "sha": "ce1794953e0ec42adc41b6fca05e02ab49ee21c3"
+    },
+    "github/gh-aw/actions/setup@v0.79.3": {
+      "repo": "github/gh-aw/actions/setup",
+      "version": "v0.79.3",
+      "sha": "c405b1fbb4326daa5a4204a2ffb3f9f91cab331d"
+    },
+    "github/gh-aw/actions/setup@v0.79.6": {
+      "repo": "github/gh-aw/actions/setup",
+      "version": "v0.79.6",
+      "sha": "9c481b8bc46dce8b92fce8ffc51781e5c330d37c"
     }
   }
 }

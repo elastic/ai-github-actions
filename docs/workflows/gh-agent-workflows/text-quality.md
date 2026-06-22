@@ -66,6 +66,4 @@ jobs:
       # edit-clarity: low
       # edit-terminology: low
       # edit-misleading-text: low
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

@@ -22,6 +22,12 @@ engine:
     group: "gh-aw-copilot-${{ github.workflow }}-mention-issue-no-sandbox-${{ github.event.issue.number }}"
 on:
   stale-check: false
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  discussion_comment:
+    types: [created]
   workflow_call:
     inputs:
       model:
@@ -55,8 +61,6 @@ on:
         required: false
         default: true
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   reaction: "eyes"
@@ -67,10 +71,13 @@ concurrency:
   group: ${{ github.workflow }}-mention-issue-no-sandbox-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
   pull-requests: read
+features:
+  dangerously-disable-sandbox-agent: "Docker access required for setup-commands that build or run containers"
 sandbox:
   agent: false
 tools:

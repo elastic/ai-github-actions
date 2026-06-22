@@ -98,8 +98,15 @@ for f in gh-agent-workflows/*/example.yml; do
   # This token enables commits made by workflows to trigger downstream CI runs.
   lockfile=".github/workflows/gh-aw-${dir}.lock.yml"
   if [[ -f "$lockfile" ]] && grep -q "EXTRA_COMMIT_GITHUB_TOKEN" "$lockfile"; then
-    sed '/COPILOT_GITHUB_TOKEN:/a\
+    # Insert secrets section if it doesn't exist, or add to existing section
+    if grep -q "^    secrets:" "$target"; then
+      sed '/^    secrets:/a\
       EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
+    else
+      sed '/^    uses: /a\
+    secrets:\
+      EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
+    fi
     echo "    + injected EXTRA_COMMIT_GITHUB_TOKEN secret"
   fi
 
@@ -142,7 +149,6 @@ for f in gh-agent-workflows/*/example.yml; do
       target-issue-number: ${{ needs.run.outputs.created_issue_number }}
       additional-instructions: "Create a focused pull request that resolves this issue."
     secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 EOF
     echo "    + appended remediation chain jobs"

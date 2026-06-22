@@ -39,7 +39,6 @@ if: >-
 
 ## Required secrets
 
-- `COPILOT_GITHUB_TOKEN`
 - `BUILDKITE_API_TOKEN`
 
 ## Behavior notes
@@ -92,6 +91,6 @@ jobs:
       (github.event_name == 'check_run' && github.event.check_run.conclusion == 'failure')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-pr-buildkite-detective.lock.yml@v0
     secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+    secrets:
       BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
 ```

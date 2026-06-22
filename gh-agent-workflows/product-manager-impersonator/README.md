@@ -58,8 +58,6 @@ jobs:
     with:
       idea-size: "small"
       title-prefix: "[idea]"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   sre-idea:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-product-manager-impersonator.lock.yml@v0
@@ -67,8 +65,6 @@ jobs:
       persona: "a seasoned SRE and platform engineer who lives in logs, metrics, and distributed traces"
       idea-size: "small"
       title-prefix: "[observability idea]"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   security-idea:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-product-manager-impersonator.lock.yml@v0
@@ -76,8 +72,6 @@ jobs:
       persona: "a seasoned threat-hunter and SOC engineer who lives in dashboards, detection rules, and XDR alert queues"
       idea-size: "medium"
       title-prefix: "[security idea]"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 ## Safe Outputs

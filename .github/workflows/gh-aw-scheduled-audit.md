@@ -58,9 +58,6 @@ on:
         type: string
         required: false
         default: ""
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -68,6 +65,7 @@ concurrency:
   group: ${{ github.workflow }}-scheduled-audit-${{ inputs.title-prefix }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

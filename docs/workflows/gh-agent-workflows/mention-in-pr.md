@@ -60,6 +60,4 @@ jobs:
       startsWith(github.event.comment.body, '/ai') &&
       (github.event.issue.pull_request != null || github.event_name == 'pull_request_review_comment')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-mention-in-pr.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

@@ -55,6 +55,4 @@ jobs:
       github.event.pull_request.draft == false &&
       !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

@@ -33,7 +33,6 @@ mkdir -p .github/workflows && curl -fsSL \
 
 | Secret | Description | Required |
 | --- | --- | --- |
-| `COPILOT_GITHUB_TOKEN` | GitHub Copilot PAT for AI engine authentication | Yes |
 | `GH_AW_GITHUB_TOKEN` | Ephemeral token (e.g. a GitHub App token) used for issue labeling safe outputs. When provided, labels applied by this workflow will trigger downstream label-based workflows. When omitted, the built-in `GITHUB_TOKEN` is used, which does not re-trigger other workflows. | No |
 
 ## Safe outputs
@@ -66,8 +65,6 @@ jobs:
       #   - `bug`: Apply when the issue describes a clear defect or unexpected behavior.
       #   - `needs-triage`: Apply when more information is needed before the issue can be acted on.
       #   - `enhancement`: Apply when the issue describes a new feature or improvement request.
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       # Optional: pass an ephemeral token (e.g. a GitHub App token) so that issue labels
       # applied by this workflow can trigger downstream label-based workflows.
       # When omitted, the built-in GITHUB_TOKEN is used for labeling, which does

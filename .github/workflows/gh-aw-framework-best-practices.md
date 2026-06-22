@@ -57,9 +57,6 @@ on:
         type: string
         required: false
         default: "[framework-best-practices]"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -67,6 +64,7 @@ concurrency:
   group: ${{ github.workflow }}-framework-best-practices
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read

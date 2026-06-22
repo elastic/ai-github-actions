@@ -22,6 +22,12 @@ engine:
     group: "gh-aw-gemini-${{ github.workflow }}-internal-gemini-cli-${{ github.event.issue.number }}"
 on:
   stale-check: false
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  discussion_comment:
+    types: [created]
   workflow_call:
     inputs:
       model:
@@ -65,6 +71,7 @@ concurrency:
   group: ${{ github.workflow }}-internal-gemini-cli-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read

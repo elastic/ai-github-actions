@@ -29,6 +29,8 @@ engine:
     group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || github.event.issue.number }}"
 on:
   stale-check: false
+  pull_request_review_comment:
+    types: [created]
   workflow_call:
     inputs:
       model:
@@ -72,8 +74,6 @@ on:
         required: false
         default: "10"
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   reaction: "eyes"
@@ -84,6 +84,7 @@ concurrency:
   group: ${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

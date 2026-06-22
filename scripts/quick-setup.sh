@@ -4,14 +4,13 @@
 # Usage:
 #   ./scripts/quick-setup.sh [--repo OWNER/REPO] [--branch NAME]
 #                            [--workflows "pr-review,issue-triage,..."]
-#                            [--skip-secret] [--dry-run]
+#                            [--set-secret] [--dry-run]
 
 set -euo pipefail
 
 branch="ai-gh-aw-setup"
 repo=""
 workflows_csv=""
-skip_secret=false
 continuous_improvement=false
 dry_run=false
 
@@ -23,7 +22,6 @@ Options:
   --repo OWNER/REPO     Repository to configure (defaults to current repo)
   --branch NAME         Branch name to create (default: ai-gh-aw-setup)
   --workflows CSV       Comma-separated workflow list (default: recommended set)
-  --skip-secret         Skip setting COPILOT_GITHUB_TOKEN
   --continuous-improvement
                         Add recommended continuous improvement workflows
   --dry-run             Print actions without making changes
@@ -44,10 +42,6 @@ while [ $# -gt 0 ]; do
     --workflows)
       workflows_csv="${2:-}"
       shift 2
-      ;;
-    --skip-secret)
-      skip_secret=true
-      shift
       ;;
     --continuous-improvement)
       continuous_improvement=true
@@ -210,44 +204,6 @@ if [ "$dry_run" = true ]; then
 else
   curl -fsSL "$maintenance_src" -o "$maintenance_dest"
   created_files+=("$maintenance_dest")
-fi
-
-if [ "$skip_secret" = false ]; then
-  token="${COPILOT_GITHUB_TOKEN:-}"
-  if [ -z "$token" ]; then
-    token_url="https://github.com/settings/personal-access-tokens/new?name=COPILOT_GITHUB_TOKEN+for+${repo//\//%2F}&description=Copilot+requests+for+GitHub+Agent+Workflows&copilot_requests=write"
-    if [ "$dry_run" = true ]; then
-      echo "dry-run: open $token_url"
-      echo "dry-run: prompt for token"
-      echo "dry-run: printf '%s' \"(token)\" | gh secret set COPILOT_GITHUB_TOKEN --repo $repo"
-    elif [ -t 0 ]; then
-      echo "A fine-grained PAT with the 'Copilot requests' permission is needed."
-      echo "Opening browser to create one..."
-      if command -v open >/dev/null 2>&1; then
-        open "$token_url"
-      elif command -v xdg-open >/dev/null 2>&1; then
-        xdg-open "$token_url"
-      else
-        echo "Visit: $token_url"
-      fi
-      printf "Paste the token here: "
-      read -r -s token
-      echo
-      if [ -z "$token" ]; then
-        echo "No token provided. Use --skip-secret to set it manually later." >&2
-        exit 1
-      fi
-    else
-      echo "COPILOT_GITHUB_TOKEN is not set, and stdin is not a terminal." >&2
-      echo "Set COPILOT_GITHUB_TOKEN in your environment, or use --skip-secret." >&2
-      exit 1
-    fi
-  fi
-
-  if [ "$dry_run" != true ]; then
-    printf '%s' "$token" | gh secret set COPILOT_GITHUB_TOKEN --repo "$repo"
-  fi
-  unset token
 fi
 
 if [ "$dry_run" = true ]; then

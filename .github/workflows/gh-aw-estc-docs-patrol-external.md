@@ -56,9 +56,6 @@ on:
         type: string
         required: false
         default: "[docs-patrol-external]"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -66,6 +63,7 @@ concurrency:
   group: ${{ github.workflow }}-estc-docs-patrol-external
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read

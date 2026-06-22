@@ -51,13 +51,11 @@ on:
         type: string
         required: false
         default: ""
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
 concurrency:
   group: ${{ github.workflow }}-create-comment-on-issue-${{ inputs.target-issue-number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

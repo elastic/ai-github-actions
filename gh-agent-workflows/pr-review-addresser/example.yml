@@ -6,9 +6,9 @@ on:
 permissions:
   actions: read
   contents: write
-  issues: write
+  copilot-requests: write
+  issues: read
   pull-requests: write
-
 concurrency:
   group: pr-review-addresser-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -20,5 +20,3 @@ jobs:
       !github.event.pull_request.draft &&
       !contains(github.event.pull_request.labels.*.name, 'skip-auto-pr-review-addresser')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review-addresser.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
