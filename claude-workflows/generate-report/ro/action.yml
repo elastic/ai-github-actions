@@ -107,7 +107,7 @@ runs:
         track_progress: false
         prompt: |
           <context>
-          Repository: ${{ inputs.repository-owner != '' && format('{0}/{1}', inputs.repository-owner, inputs.repository-name) || github.repository }}
+          Repository: ${{ format('{0}/{1}', inputs.repository-owner != '' && inputs.repository-owner || github.repository_owner, inputs.repository-name != '' && inputs.repository-name || github.event.repository.name) }}
           </context>
 
           <task>
@@ -174,7 +174,7 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github-token }}
       run: |
         REPORT_FILE="${{ runner.temp }}/report.md"
-        REPO="${{ inputs.repository-owner != '' && format('{0}/{1}', inputs.repository-owner, inputs.repository-name) || github.repository }}"
+        REPO="${{ format('{0}/{1}', inputs.repository-owner != '' && inputs.repository-owner || github.repository_owner, inputs.repository-name != '' && inputs.repository-name || github.event.repository.name) }}"
 
         if [ ! -f "$REPORT_FILE" ]; then
           echo "Warning: Report file not found at $REPORT_FILE"
