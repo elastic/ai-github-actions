@@ -33,8 +33,6 @@ on:
     types: [created]
   pull_request_review_comment:
     types: [created]
-  discussion_comment:
-    types: [created]
   workflow_call:
     inputs:
       model:

@@ -16,6 +16,12 @@ permissions:
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-text-auditor.lock.yml
+    with:
+      edit-typos: high
+      edit-grammar: high
+      edit-clarity: high
+      edit-terminology: high
+      edit-misleading-text: high
     # with:
       # edit-typos: low
       # edit-grammar: low

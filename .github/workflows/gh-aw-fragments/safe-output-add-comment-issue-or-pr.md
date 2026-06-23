@@ -4,7 +4,7 @@ safe-outputs:
     max: 1
     pull-requests: true
     issues: true
-    discussions: false
+    discussions: true
 ---
 
 ## add-comment Limitations

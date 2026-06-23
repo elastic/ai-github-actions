@@ -16,6 +16,8 @@ permissions:
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-issue-triage.lock.yml
+    with:
+      allowed-bot-users: "github-actions[bot],copilot"
     # with:
       # Configure which labels the agent may apply and define their semantics in additional-instructions.
       # classification-labels: "bug,needs-triage,enhancement"
