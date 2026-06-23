@@ -72,30 +72,9 @@ for f in gh-agent-workflows/*/example.yml; do
     sed 's|uses: elastic/ai-github-actions/\(.*\)@v0|uses: ./\1|; s|^name: |name: Trigger |' "$f"
   } > "$target"
 
-  # Inject dogfood-with.yml overrides into the generated trigger.
-  overrides="gh-agent-workflows/$dir/dogfood-with.yml"
-  if [[ -f "$overrides" ]]; then
-    awk -v of="$overrides" '
-      /^  [^ ]+:/ { current_job=$0; sub(/^  /, "", current_job); sub(/:$/, "", current_job) }
-      current_job=="run" && /^    with:/ { in_with=1; next }
-      in_with && /^    [a-z]/ { in_with=0 }
-      in_with { next }
-      current_job=="run" && /^    secrets:/ {
-        print "    with:"
-        while ((getline line < of) > 0) {
-          print "      " line
-        }
-        close(of)
-      }
-      { print }
-    ' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
-    echo "  ✓ gh-agent-workflows/$dir/example.yml → $target (with dogfood overrides)"
-  else
-    echo "  ✓ gh-agent-workflows/$dir/example.yml → $target"
-  fi
-
   # Inject EXTRA_COMMIT_GITHUB_TOKEN secret for lock workflows that accept it.
   # This token enables commits made by workflows to trigger downstream CI runs.
+  # Run this BEFORE the dogfood-with.yml awk so the `with:` block lands before `secrets:`.
   lockfile=".github/workflows/gh-aw-${dir}.lock.yml"
   if [[ -f "$lockfile" ]] && grep -q "EXTRA_COMMIT_GITHUB_TOKEN" "$lockfile"; then
     # Insert secrets section if it doesn't exist, or add to existing section
@@ -108,6 +87,34 @@ for f in gh-agent-workflows/*/example.yml; do
       EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
     fi
     echo "    + injected EXTRA_COMMIT_GITHUB_TOKEN secret"
+  fi
+
+  # Inject dogfood-with.yml overrides into the generated trigger.
+  # Overrides are written as a `with:` block right after the `uses:` line in the
+  # `run` job.  Any existing `with:` block in the template is removed so the
+  # dogfood overrides are the single source of truth.  Running after the
+  # EXTRA_COMMIT_GITHUB_TOKEN step above ensures `with:` lands before `secrets:`.
+  overrides="gh-agent-workflows/$dir/dogfood-with.yml"
+  if [[ -f "$overrides" ]]; then
+    awk -v of="$overrides" '
+      /^  [^ ]+:/ { current_job=$0; sub(/^  /, "", current_job); sub(/:$/, "", current_job) }
+      current_job=="run" && /^    with:/ { in_with=1; next }
+      in_with && /^    [a-z]/ { in_with=0 }
+      in_with { next }
+      current_job=="run" && /^    uses:/ {
+        print
+        print "    with:"
+        while ((getline line < of) > 0) {
+          print "      " line
+        }
+        close(of)
+        next
+      }
+      { print }
+    ' "$target" > "$target.tmp" && mv "$target.tmp" "$target"
+    echo "  ✓ gh-agent-workflows/$dir/example.yml → $target (with dogfood overrides)"
+  else
+    echo "  ✓ gh-agent-workflows/$dir/example.yml → $target"
   fi
 
   # Append automatic issue -> PR remediation chain for selected workflows.

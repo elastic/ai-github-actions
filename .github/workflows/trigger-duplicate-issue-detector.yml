@@ -15,3 +15,5 @@ permissions:
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-duplicate-issue-detector.lock.yml
+    with:
+      allowed-bot-users: "github-actions[bot],copilot"
