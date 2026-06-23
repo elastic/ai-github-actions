@@ -40,14 +40,12 @@ steps:
   - name: Expose uv in workspace
     if: hashFiles('pyproject.toml', 'uv.lock') != ''
     shell: bash
-    env:
-      UV_PATH: ${{ steps.setup-uv.outputs.uv-path }}
     run: |
       set -euo pipefail
       # AWF-friendly location: gh-aw scans /opt/hostedtoolcache/**/bin paths.
       toolcache_bin="/opt/hostedtoolcache/gh-aw-tools/current/x64/bin"
       sudo mkdir -p "$toolcache_bin"
-      sudo ln -sf "$UV_PATH" "$toolcache_bin/uv"
+      sudo ln -sf "$(which uv)" "$toolcache_bin/uv"
   
   - name: Configure Copilot CLI settings
     shell: bash
