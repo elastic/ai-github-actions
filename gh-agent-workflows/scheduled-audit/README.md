@@ -39,6 +39,7 @@ See [example.yml](example.yml) for the full workflow file. You **must** customiz
 | `issue-label` | Label to apply to created issues | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
 
 ## Safe Outputs
 

@@ -110,6 +110,11 @@ on:
         description: Title prefix for created issues (e.g. '[information-architecture]')
         required: false
         type: string
+      report-failure-as-issue:
+        default: true
+        description: When true, agent failures are reported as GitHub issues
+        required: false
+        type: boolean
     outputs:
       created_issue_number:
         description: Number of the first created issue
@@ -1591,7 +1596,7 @@ jobs:
           GH_AW_DAILY_AI_CREDITS_THRESHOLD: ${{ needs.activation.outputs.daily_ai_credits_threshold }}
           GH_AW_SAFE_OUTPUT_MESSAGES: "{\"footer\":\"${{ inputs.messages-footer || format('---\\n[What is this?](https://ela.st/github-ai-tools) | [From workflow: {0}]({{run_url}})\\n\\nGive us feedback! React with 🚀 if perfect, 👍 if helpful, 👎 if not.', github.workflow) }}\",\"activationComments\":\"false\"}"
           GH_AW_GROUP_REPORTS: "false"
-          GH_AW_FAILURE_REPORT_AS_ISSUE: "true"
+          GH_AW_FAILURE_REPORT_AS_ISSUE: ${{ inputs.report-failure-as-issue && 'true' || 'false' }}
           GH_AW_MISSING_TOOL_REPORT_AS_FAILURE: "true"
           GH_AW_MISSING_DATA_REPORT_AS_FAILURE: "true"
           GH_AW_TIMEOUT_MINUTES: "90"
