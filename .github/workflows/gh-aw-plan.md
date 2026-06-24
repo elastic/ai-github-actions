@@ -57,6 +57,11 @@ on:
         type: string
         required: false
         default: "5"
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:

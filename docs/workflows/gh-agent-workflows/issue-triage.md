@@ -28,6 +28,7 @@ mkdir -p .github/workflows && curl -fsSL \
 | `setup-commands` | Shell commands run before the agent starts | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | `github-actions[bot]` |
 | `classification-labels` | Comma-separated list of labels the agent may apply (e.g. `bug,needs-triage,enhancement`). If empty, no labels are applied. Define label semantics in `additional-instructions`. | `""` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ## Secrets
 

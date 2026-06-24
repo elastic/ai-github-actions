@@ -41,6 +41,11 @@ on:
         type: string
         required: false
         default: ""
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
     secrets:
       BUILDKITE_API_TOKEN:
         required: true

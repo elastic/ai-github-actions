@@ -29,6 +29,7 @@ mkdir -p .github/workflows && curl -fsSL \
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | `github-actions[bot]` |
 | `intensity` | Review intensity (`conservative`, `balanced`, `aggressive`) | `balanced` |
 | `minimum_severity` | Minimum severity for inline comments (`critical`, `high`, `medium`, `low`, `nitpick`) | `low` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ## Safe outputs
 

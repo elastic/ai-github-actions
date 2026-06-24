@@ -70,6 +70,18 @@ jobs:
         Only use labels from `human_required,no_human_required`.
 ```
 
+## Inputs
+
+| Input | Description | Required | Default |
+| --- | --- | --- | --- |
+| `model` | AI model to use | No | `gpt-5.3-codex` |
+| `classification-labels` | Comma-separated list of labels the agent may apply | Yes | — |
+| `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
+| `setup-commands` | Shell commands run before the agent starts | No | `""` |
+| `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `messages-footer` | Footer appended to all agent comments and reviews | No | `""` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
+
 ## Safe Outputs
 
 - `add-labels` — apply one or more classification labels to the PR
