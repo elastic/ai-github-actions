@@ -37,6 +37,11 @@ on:
         description: "Comma-separated list of classification labels the agent may apply"
         type: string
         required: true
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
 concurrency:
   group: ${{ github.workflow }}-pr-labeler-${{ github.event.pull_request.number }}
   cancel-in-progress: true

@@ -47,6 +47,7 @@ Scans source files (by language or custom glob) for overly complex code — deep
 | `file-globs` | Comma-separated file globs to analyze (overrides `languages`) | `""` |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ### Safe outputs
 

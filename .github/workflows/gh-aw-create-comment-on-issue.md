@@ -51,6 +51,11 @@ on:
         type: string
         required: false
         default: ""
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
 concurrency:
   group: ${{ github.workflow }}-create-comment-on-issue-${{ inputs.target-issue-number }}
   cancel-in-progress: true

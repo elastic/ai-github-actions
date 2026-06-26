@@ -44,6 +44,7 @@ Scans recent commits (7-day lookback by default) for public API or behavioral ch
 | `lookback-window` | Git lookback window for detecting recent commits | `"7 days ago"` |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ### Safe outputs
 
@@ -88,6 +89,7 @@ Like Docs Patrol, but focuses on changes that require updates to published Elast
 | `lookback-window` | Git lookback window for detecting recent commits | `"7 days ago"` |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ### Safe outputs
 

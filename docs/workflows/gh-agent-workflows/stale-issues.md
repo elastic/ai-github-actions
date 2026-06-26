@@ -48,6 +48,7 @@ Investigates open issues for evidence of resolution (linked PRs, code evidence, 
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
 | `stale-label` | Label used to mark stale issues | `stale` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ### Safe outputs
 
@@ -93,6 +94,7 @@ Processes issues already labeled as stale. Removes the label when valid objectio
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
 | `stale-label` | Label used to mark stale issues | `stale` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ### Safe outputs
 

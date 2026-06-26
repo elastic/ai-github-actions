@@ -51,6 +51,7 @@ Reads all contributor-facing documentation (README, CONTRIBUTING, DEVELOPING, et
 | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ### Safe outputs
 
@@ -94,6 +95,7 @@ Like Newbie Contributor Patrol, but also cross-references the repo's documentati
 | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ### Safe outputs
 

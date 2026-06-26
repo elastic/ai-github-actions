@@ -35,6 +35,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `title-prefix` | Title prefix for created issues | No | `"[product-manager-impersonator]"` |
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
 
 ## Example: Running Multiple Personas
 

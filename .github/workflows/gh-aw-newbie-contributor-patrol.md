@@ -50,6 +50,11 @@ on:
         type: string
         required: false
         default: "[newbie-contributor]"
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"

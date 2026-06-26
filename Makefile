@@ -203,6 +203,7 @@ compile: setup-gh-aw setup-gh-aw-compat sync
 	fi
 	@$(MAKE) postprocess-setup-action
 	@./scripts/backwards-compat.sh
+	@./scripts/wire-report-failure-input.sh
 
 postprocess-setup-action:
 	@echo "Rewriting setup action references to $(GH_AW_SETUP_ACTION_REPO)@$(GH_AW_SETUP_ACTION_REF)..."

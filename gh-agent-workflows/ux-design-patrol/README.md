@@ -31,6 +31,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `lookback-window` | Git lookback window for detecting recent commits (e.g. `7 days ago`, `14 days ago`) | No | `"7 days ago"` |
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
 
 ## Safe Outputs
 

@@ -45,6 +45,7 @@ Reviews 28 days of git history for user-facing changes that could introduce bugs
 | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ### Safe outputs
 

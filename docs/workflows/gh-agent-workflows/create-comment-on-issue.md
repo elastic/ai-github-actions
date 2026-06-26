@@ -49,6 +49,7 @@ jobs:
 | `setup-commands` | Shell commands run before the agent starts | `""` |
 | `model` | AI model to use | `gpt-5.3-codex` |
 | `messages-footer` | Footer appended to the comment | `""` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ## Safe outputs
 
