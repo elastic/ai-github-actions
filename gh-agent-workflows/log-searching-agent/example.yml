@@ -1,0 +1,38 @@
+name: Log Searching Agent
+on:
+  workflow_dispatch:
+    inputs:
+      workflow:
+        description: "Workflow file name to search (e.g. ci.yml)"
+        required: true
+        type: string
+      search-terms:
+        description: "Comma-separated exact match search terms"
+        required: true
+        type: string
+      days:
+        description: "Number of days to look back"
+        required: false
+        type: number
+        default: 7
+      conclusion:
+        description: "Filter by run conclusion (failure, success, cancelled, any)"
+        required: false
+        type: string
+        default: "failure"
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+
+jobs:
+  run:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-log-searching-agent.lock.yml@v0
+    with:
+      workflow: ${{ inputs.workflow }}
+      search-terms: ${{ inputs.search-terms }}
+      days: ${{ inputs.days }}
+      conclusion: ${{ inputs.conclusion }}
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
