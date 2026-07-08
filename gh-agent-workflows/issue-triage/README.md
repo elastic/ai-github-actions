@@ -4,7 +4,7 @@ Investigate new issues and provide actionable triage analysis.
 
 ## How it works
 
-When a new issue is opened, reads the issue and related code, reproduces or validates the report where possible, and posts a comment with a root cause analysis and actionable next steps.
+When a new issue is opened by a collaborator (write/maintainer/admin) or an allowed bot, reads the issue and related code, reproduces or validates the report where possible, and posts a comment with a root cause analysis and actionable next steps.
 
 ## Quick Install
 
@@ -21,6 +21,9 @@ See [example.yml](example.yml) for the full workflow file.
 | Event | Types |
 | --- | --- |
 | `issues` | `opened` |
+
+> [!NOTE]
+> Activation is gated to collaborator roles (`write`, `maintainer`, `admin`) plus `allowed-bot-users`.
 
 ## Inputs
 
