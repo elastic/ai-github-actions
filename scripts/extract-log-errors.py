@@ -10,12 +10,12 @@ Usage:
 
 Options:
   --context N           Lines of context before/after each match (default: 5)
-  --patterns FILE       File with additional grep patterns (one per line)
+  --patterns FILE       File with additional regex patterns (one per line)
   --manifest FILE       Path to manifest.json from fetch-workflow-logs.py
   --output FILE         Write JSON summary to file (default: stdout)
 
 The script searches for common failure patterns:
-  - "##[error]", "Error:", "fatal:", "error:", "FAILED", "failure"
+  - "##[error]", "##[warning]", "error:", "fatal:", "FAILED"
   - Exit code lines: "exited with exit code [^0]"
   - GitHub Actions step failure markers
 """
