@@ -12,6 +12,9 @@ on:
       - "tests/**"
       - "pyproject.toml"
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: pytest
