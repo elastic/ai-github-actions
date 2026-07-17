@@ -30,6 +30,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 | `title-prefix` | Title prefix for created issues (e.g. `[gemini-cli]`) | No | `[gemini-cli]` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
 
 ## Required secret
 

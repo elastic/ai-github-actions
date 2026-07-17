@@ -39,6 +39,31 @@ def test_list_workflow_runs_stops_at_since_boundary(monkeypatch):
     assert len(calls) == 2
 
 
+def test_list_workflow_runs_stops_at_since_boundary_before_conclusion_filter(monkeypatch):
+    module = _load_module()
+    calls = []
+
+    def fake_github_api(path, token, accept="application/vnd.github+json"):
+        calls.append(path)
+        if path.endswith("page=1"):
+            return b'{"workflow_runs":[{"id":101,"created_at":"2024-12-31T00:00:00Z","conclusion":"success"}]}'
+        return b'{"workflow_runs":[{"id":100,"created_at":"2024-12-30T00:00:00Z","conclusion":"failure"}]}'
+
+    monkeypatch.setattr(module, "github_api", fake_github_api)
+    runs = module.list_workflow_runs(
+        repo="elastic/ai-github-actions",
+        workflow="ci.yml",
+        token="x",
+        since="2025-01-01T00:00:00Z",
+        until=None,
+        conclusion="failure",
+        last=20,
+    )
+
+    assert runs == []
+    assert len(calls) == 1
+
+
 def test_list_workflow_runs_inclusive_date_only_until(monkeypatch):
     module = _load_module()
 

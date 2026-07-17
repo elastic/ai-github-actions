@@ -10,8 +10,8 @@ on:
 permissions:
   actions: read
   contents: write
-  discussions: write
-  issues: write
+  copilot-requests: write
+  issues: read
   pull-requests: write
 
 jobs:
@@ -23,5 +23,4 @@ jobs:
     with:
       allowed-bot-users: "github-actions[bot],copilot"
     secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}

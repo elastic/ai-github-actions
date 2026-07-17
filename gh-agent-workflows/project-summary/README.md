@@ -30,6 +30,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
 
 ## Storyteller / chronicler example
 
@@ -44,8 +45,6 @@ jobs:
         Write the summary as a project chronicler.
         Keep all factual details accurate and link-backed, but present sections in a story-like narrative voice.
         End with "Chronicle Next Steps" as a checklist of concrete actions.
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ````
 
 ## Safe Outputs

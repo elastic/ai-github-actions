@@ -38,6 +38,7 @@ Scans user-facing text sources for typos, grammatical errors, unclear error mess
 | `edit-misleading-text` | How aggressively to flag text that conflicts with behavior (`high`/`low`/`none`) | `low` |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ### Safe outputs
 
@@ -66,6 +67,4 @@ jobs:
       # edit-clarity: low
       # edit-terminology: low
       # edit-misleading-text: low
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

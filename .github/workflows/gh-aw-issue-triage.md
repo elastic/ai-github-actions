@@ -21,12 +21,6 @@ engine:
     group: "gh-aw-copilot-${{ github.workflow }}-issue-triage-${{ github.event.issue.number }}"
 on:
   stale-check: false
-  issue_comment:
-    types: [created]
-  pull_request_review_comment:
-    types: [created]
-  discussion_comment:
-    types: [created]
   workflow_call:
     inputs:
       model:
@@ -59,9 +53,12 @@ on:
         type: string
         required: false
         default: ""
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
       GH_AW_GITHUB_TOKEN:
         required: false
   reaction: "eyes"
@@ -72,6 +69,7 @@ concurrency:
   group: ${{ github.workflow }}-issue-triage-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

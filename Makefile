@@ -1,9 +1,9 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.10
 ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.79.6
-GH_AW_BUILD_VERSION := v0.79.6
-GH_AW_COMPAT_VERSION := v0.79.6
+GH_AW_VERSION := v0.80.9
+GH_AW_BUILD_VERSION := v0.80.9
+GH_AW_COMPAT_VERSION := v0.80.9
 GH_AW_MODULE_REPO := github.com/github/gh-aw
 GH_AW_SOURCE_REPO := github.com/github/gh-aw
 GH_AW_SETUP_ACTION_REPO := $(patsubst github.com/%,%,$(GH_AW_SOURCE_REPO))
@@ -192,17 +192,18 @@ sync:
 
 compile: setup-gh-aw setup-gh-aw-compat sync
 	@echo "Compiling agentic workflows..."
-	-@.bin/gh-aw compile --action-mode release --action-tag $(GH_AW_VERSION)
+	-@.bin/gh-aw compile --action-tag $(GH_AW_VERSION)
 	@echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."
 	if [ -n "$(GH_AW_COMPAT_WORKFLOWS)" ]; then \
 		echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."; \
-		@.bin/gh-aw-compat compile --action-mode release --action-tag $(GH_AW_COMPAT_VERSION) $(GH_AW_COMPAT_WORKFLOWS); \
+		@.bin/gh-aw-compat compile --action-tag $(GH_AW_COMPAT_VERSION) $(GH_AW_COMPAT_WORKFLOWS); \
 		echo "✓ Compat workflows compiled"; \
 	else \
 		echo "No compat workflows to compile"; \
 	fi
 	@$(MAKE) postprocess-setup-action
 	@./scripts/backwards-compat.sh
+	@./scripts/wire-report-failure-input.sh
 
 postprocess-setup-action:
 	@echo "Rewriting setup action references to $(GH_AW_SETUP_ACTION_REPO)@$(GH_AW_SETUP_ACTION_REF)..."
@@ -236,7 +237,7 @@ lint-workflows: setup-actionlint
 		\); \
 	) 2>/dev/null | while read -r file; do \
 		echo "Checking $$file..."; \
-		$$ACTIONLINT "$$file" || exit 1; \
+		$$ACTIONLINT -ignore 'unknown permission scope "copilot-requests"' "$$file" || exit 1; \
 	done
 
 setup-action-validator:

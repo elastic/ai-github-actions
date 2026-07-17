@@ -6,7 +6,9 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
+  actions: read
   contents: read
+  copilot-requests: write
   issues: read
   pull-requests: write
 
@@ -20,5 +22,3 @@ jobs:
       edit-completeness: high
       edit-format: high
       edit-style: high
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

@@ -9,8 +9,9 @@ on:
 permissions:
   actions: read
   contents: read
-  issues: write
-  pull-requests: read
+  copilot-requests: write
+  issues: read
+  pull-requests: write
 
 jobs:
   run:
@@ -18,5 +19,3 @@ jobs:
       github.event.workflow_run.conclusion == 'failure' &&
       toJSON(github.event.workflow_run.pull_requests) != '[]'
     uses: ./.github/workflows/gh-aw-pr-actions-detective.lock.yml
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

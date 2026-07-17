@@ -54,11 +54,13 @@ on:
         type: string
         required: false
         default: "10"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -66,6 +68,7 @@ concurrency:
   group: ${{ github.workflow }}-pr-review-addresser-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
