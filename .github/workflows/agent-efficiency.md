@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Internal: Agent Efficiency"
 description: "Analyze agent workflow logs for inefficiencies, errors, and prompt improvement opportunities"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

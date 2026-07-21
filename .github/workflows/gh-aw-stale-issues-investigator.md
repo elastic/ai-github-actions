@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Stale Issues Investigator"
 description: "Find open issues that appear to already be resolved, label them as stale, and file a report"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

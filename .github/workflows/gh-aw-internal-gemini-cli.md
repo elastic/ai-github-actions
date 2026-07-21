@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Internal Gemini CLI"
 description: "Gemini-powered code investigation assistant — investigates issues using bash and posts findings as comments or new issues"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

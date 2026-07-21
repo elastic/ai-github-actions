@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Agent Suggestions"
 description: "Suggest new agent workflows based on repo needs and downstream activity"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

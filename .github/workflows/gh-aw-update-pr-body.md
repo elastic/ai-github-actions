@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Update PR Body"
 description: "Keep pull request bodies in sync with the code changes on every commit"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

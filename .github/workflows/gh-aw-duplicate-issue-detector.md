@@ -2,6 +2,7 @@
 inlined-imports: true
 description: "Detect duplicate issues and notify reporters when a matching open or closed issue exists"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md

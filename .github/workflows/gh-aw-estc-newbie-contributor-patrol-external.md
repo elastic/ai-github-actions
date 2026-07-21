@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Estc Newbie Contributor Patrol External"
 description: "Review docs from a new contributor perspective, cross-referencing published Elastic documentation"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

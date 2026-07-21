@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Estc Docs PR Review"
 description: "Docs PR review from an Elastic technical writer perspective"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

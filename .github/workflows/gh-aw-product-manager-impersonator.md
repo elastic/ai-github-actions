@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Product Manager Impersonator"
 description: "Propose well-researched new feature ideas as GitHub issues"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Autonomy Atomicity Analyzer"
 description: "Find patterns that block concurrent development by multiple agents or developers"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
