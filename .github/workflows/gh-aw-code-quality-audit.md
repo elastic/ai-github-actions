@@ -18,7 +18,7 @@ imports:
   - gh-aw-fragments/code-quality-audit.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -124,7 +124,7 @@ steps:
    - Wait for all sub-agents to complete, then merge and deduplicate.
 
 3. Check for duplicates:
-   - Read `/tmp/previous-findings.json` for issues already filed by this agent.
+   - Read `/tmp/gh-aw/agent/previous-findings.json` for issues already filed by this agent.
    - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "${{ inputs.title-prefix }}"`.
    - Drop any finding that closely matches an existing open issue.
 

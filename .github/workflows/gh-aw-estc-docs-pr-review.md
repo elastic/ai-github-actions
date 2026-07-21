@@ -14,9 +14,9 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-docs-pr-review-${{ github.event.pull_request.number }}"
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -107,7 +107,7 @@ steps:
   - name: Download style guide reference pages
     run: |
       set -euo pipefail
-      mkdir -p /tmp/style-guide
+      mkdir -p /tmp/gh-aw/agent/style-guide
       urls=(
         "https://www.elastic.co/docs/contribute-docs/style-guide"
         "https://www.elastic.co/docs/contribute-docs/style-guide/voice-tone"
@@ -122,9 +122,9 @@ steps:
       )
       for url in "${urls[@]}"; do
         slug=$(echo "$url" | sed 's|https\?://||; s|/|_|g; s|[^a-zA-Z0-9_-]||g')
-        curl -sSfL --retry 2 --max-time 30 "$url" -o "/tmp/style-guide/${slug}.html" || echo "::warning::Failed to download ${url}"
+        curl -sSfL --retry 2 --max-time 30 "$url" -o "/tmp/gh-aw/agent/style-guide/${slug}.html" || echo "::warning::Failed to download ${url}"
       done
-      echo "Downloaded $(ls /tmp/style-guide/ | wc -l) style guide pages to /tmp/style-guide/"
+      echo "Downloaded $(ls /tmp/gh-aw/agent/style-guide/ | wc -l) style guide pages to /tmp/gh-aw/agent/style-guide/"
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
@@ -160,9 +160,9 @@ Follow these steps in order.
 
 ### Step 2: Load Review Guidelines
 
-The style guide and `applies_to` reference pages have been pre-downloaded to `/tmp/style-guide/`. Read them from disk before reviewing any files — they are your primary review criteria.
+The style guide and `applies_to` reference pages have been pre-downloaded to `/tmp/gh-aw/agent/style-guide/`. Read them from disk before reviewing any files — they are your primary review criteria.
 
-1. Run `ls /tmp/style-guide/` to list available files.
+1. Run `ls /tmp/gh-aw/agent/style-guide/` to list available files.
 2. Read each file to load the guidelines into your working context. The files correspond to:
    - Style guide overview, voice and tone, grammar and spelling, formatting, word choice, accessibility, UI writing
    - `applies_to` and cumulative docs guidelines, reference, and syntax

@@ -10,9 +10,9 @@ imports:
   - gh-aw-fragments/safe-output-add-comment-issue.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-duplicate-issue-detector-${{ github.event.issue.number }}"
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:

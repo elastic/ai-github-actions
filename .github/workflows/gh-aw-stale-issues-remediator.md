@@ -12,7 +12,7 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -88,6 +88,7 @@ steps:
       STALE_LABEL: ${{ inputs.stale-label }}
     run: |
       set -euo pipefail
+      mkdir -p /tmp/gh-aw/agent
 
       # Fetch all open issues carrying the stale label
       gh issue list \
@@ -96,27 +97,27 @@ steps:
         --state open \
         --limit 200 \
         --json number,title,updatedAt,labels,createdAt \
-        > /tmp/stale-labeled-issues.json || { echo "::warning::Failed to fetch stale-labeled issues"; echo "[]" > /tmp/stale-labeled-issues.json; }
+        > /tmp/gh-aw/agent/stale-labeled-issues.json || { echo "::warning::Failed to fetch stale-labeled issues"; echo "[]" > /tmp/gh-aw/agent/stale-labeled-issues.json; }
 
-      echo "Stale-labeled issues: $(jq length /tmp/stale-labeled-issues.json)"
+      echo "Stale-labeled issues: $(jq length /tmp/gh-aw/agent/stale-labeled-issues.json)"
 
       # For each stale-labeled issue, grab recent comments and label timeline events.
-      jq -c '.[]' /tmp/stale-labeled-issues.json | while IFS= read -r issue; do
+      jq -c '.[]' /tmp/gh-aw/agent/stale-labeled-issues.json | while IFS= read -r issue; do
         num=$(echo "$issue" | jq -r '.number')
         gh issue view "$num" \
           --repo "$GITHUB_REPOSITORY" \
           --json comments \
           --jq '.comments[-5:] | .[] | {author: .author.login, createdAt: .createdAt, body: .body[0:500]}' \
           2>/dev/null || true
-      done | jq -s '.' > /tmp/stale-recent-comments.json || echo "[]" > /tmp/stale-recent-comments.json
+      done | jq -s '.' > /tmp/gh-aw/agent/stale-recent-comments.json || echo "[]" > /tmp/gh-aw/agent/stale-recent-comments.json
 
       # Fetch label add/remove events for each stale-labeled issue (for 30-day expiry)
-      jq -r '.[].number' /tmp/stale-labeled-issues.json | while IFS= read -r num; do
+      jq -r '.[].number' /tmp/gh-aw/agent/stale-labeled-issues.json | while IFS= read -r num; do
         gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$num/events" 2>/dev/null \
           | jq --arg lbl "$STALE_LABEL" --argjson num "$num" \
             '[.[] | select((.event=="labeled" or .event=="unlabeled") and .label.name==$lbl) | {number: $num, event: .event, created_at: .created_at}]' \
           || echo "[]"
-      done | jq -s 'add // []' > /tmp/stale-label-events.json || echo "[]" > /tmp/stale-label-events.json
+      done | jq -s 'add // []' > /tmp/gh-aw/agent/stale-label-events.json || echo "[]" > /tmp/gh-aw/agent/stale-label-events.json
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
@@ -131,11 +132,11 @@ Process open issues that carry the `${{ inputs.stale-label }}` label. Handle obj
 ### Data Files
 
 A prep step has already fetched:
-- `/tmp/stale-labeled-issues.json` — all open issues labeled `${{ inputs.stale-label }}` (fields: number, title, updatedAt, labels, createdAt)
-- `/tmp/stale-recent-comments.json` — the last 5 comments on each stale-labeled issue (fields: author, createdAt, body)
-- `/tmp/stale-label-events.json` — label add/remove timeline events (fields: number, event, created_at)
+- `/tmp/gh-aw/agent/stale-labeled-issues.json` — all open issues labeled `${{ inputs.stale-label }}` (fields: number, title, updatedAt, labels, createdAt)
+- `/tmp/gh-aw/agent/stale-recent-comments.json` — the last 5 comments on each stale-labeled issue (fields: author, createdAt, body)
+- `/tmp/gh-aw/agent/stale-label-events.json` — label add/remove timeline events (fields: number, event, created_at)
 
-Start by reading these files to get an overview. If `/tmp/stale-labeled-issues.json` is empty or contains zero issues, call `noop` with message "No stale-labeled issues to process" and stop.
+Start by reading these files to get an overview. If `/tmp/gh-aw/agent/stale-labeled-issues.json` is empty or contains zero issues, call `noop` with message "No stale-labeled issues to process" and stop.
 
 ### Processing Rules
 
@@ -144,7 +145,7 @@ For each open issue labeled `${{ inputs.stale-label }}`, fetch the full comment 
 1. **"Not stale" objections** — If any comment posted **after** the `${{ inputs.stale-label }}` label was most recently added contains phrases like "not stale", "still relevant", "still needed", "still an issue", or "still a problem" (case-insensitive), call `remove_labels` to remove the `${{ inputs.stale-label }}` label from the issue.
    Skip this issue from closure — the objection overrides the stale determination.
 
-2. **30-day expiry** — For issues with no such objection, compute the last labeled timestamp from `/tmp/stale-label-events.json` (find the most recent `"labeled"` event after any later `"unlabeled"` event for that issue number). If the label was added **30 or more days ago**, close the issue using `close_issue` with a comment explaining:
+2. **30-day expiry** — For issues with no such objection, compute the last labeled timestamp from `/tmp/gh-aw/agent/stale-label-events.json` (find the most recent `"labeled"` event after any later `"unlabeled"` event for that issue number). If the label was added **30 or more days ago**, close the issue using `close_issue` with a comment explaining:
 
    > This issue was labeled `${{ inputs.stale-label }}` on [date] and has had no further activity for 30 days. Closing automatically. If this issue is still relevant, please reopen it.
 

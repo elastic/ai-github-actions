@@ -16,7 +16,7 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -152,7 +152,7 @@ Level semantics:
    - In each sub-agent prompt, include identified text sources, edit-level configuration, and the full "What to Look For by Dimension" and "What to Skip" criteria.
    - Wait for all three results, then merge and deduplicate before proceeding.
 3. Read the identified files and search for text issues.
-4. Before deciding to file, check `/tmp/previous-findings.json` and current open `${{ inputs.title-prefix }}` issues to avoid creating a new issue for already-tracked typo families.
+4. Before deciding to file, check `/tmp/gh-aw/agent/previous-findings.json` and current open `${{ inputs.title-prefix }}` issues to avoid creating a new issue for already-tracked typo families.
 
 ### What to Look For by Dimension
 
@@ -226,7 +226,7 @@ Use this sequence to decide `create_issue` vs `noop`:
 
 Score the run on these four criteria:
 
-1. **Novelty** — findings are not already tracked in open `${{ inputs.title-prefix }}` issues or `/tmp/previous-findings.json`
+1. **Novelty** — findings are not already tracked in open `${{ inputs.title-prefix }}` issues or `/tmp/gh-aw/agent/previous-findings.json`
 2. **Materiality** — at least one finding clearly improves user-facing runtime/help/CLI/docs text quality
 3. **Batch quality** — findings are meaningfully consolidated (not fragmented into many tiny one-off reports)
 4. **Actionability** — each finding includes exact file path, concrete current text, and a defensible suggested fix

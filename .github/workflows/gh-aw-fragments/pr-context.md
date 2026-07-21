@@ -6,54 +6,54 @@ steps:
       PR_NUMBER: "${{ github.event.pull_request.number || inputs.target-pr-number || github.event.issue.number }}"
     run: |
       set -euo pipefail
-      mkdir -p /tmp/pr-context
+      mkdir -p /tmp/gh-aw/agent/pr-context
 
       # PR metadata
       gh pr view "$PR_NUMBER" --json title,body,author,baseRefName,headRefName,headRefOid,url \
-        > /tmp/pr-context/pr.json
+        > /tmp/gh-aw/agent/pr-context/pr.json
 
       # Full diff
-      if ! gh pr diff "$PR_NUMBER" > /tmp/pr-context/pr.diff; then
+      if ! gh pr diff "$PR_NUMBER" > /tmp/gh-aw/agent/pr-context/pr.diff; then
         echo "::warning::Failed to fetch full PR diff; per-file diffs from files.json are still available."
-        : > /tmp/pr-context/pr.diff
+        : > /tmp/gh-aw/agent/pr-context/pr.diff
       fi
 
       # Changed files list (--paginate may output concatenated arrays; jq -s 'add' merges them)
       gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --paginate \
-        | jq -s 'add // []' > /tmp/pr-context/files.json
+        | jq -s 'add // []' > /tmp/gh-aw/agent/pr-context/files.json
 
       # Per-file diffs with line numbers
       # Lines with a number prefix are commentable (RIGHT side: added or context).
       # Deleted lines get no number (LEFT side only).
-      jq -c '.[]' /tmp/pr-context/files.json | while IFS= read -r entry; do
+      jq -c '.[]' /tmp/gh-aw/agent/pr-context/files.json | while IFS= read -r entry; do
         filename=$(echo "$entry" | jq -r '.filename')
-        mkdir -p "/tmp/pr-context/diffs/$(dirname "$filename")"
+        mkdir -p "/tmp/gh-aw/agent/pr-context/diffs/$(dirname "$filename")"
         echo "$entry" | jq -r '.patch // empty' | awk '
           /^@@/ { s=$3; gsub(/\+/,"",s); split(s,a,","); line=a[1]+0; print; next }
           /^\+/ { printf "%d\t%s\n", line++, $0; next }
           /^-/  { printf "  \t%s\n", $0; next }
           /^ /  { printf "%d\t%s\n", line++, $0; next }
           { print }
-        ' > "/tmp/pr-context/diffs/${filename}.diff"
+        ' > "/tmp/gh-aw/agent/pr-context/diffs/${filename}.diff"
       done
 
       # File orderings for sub-agent review (3 strategies)
-      jq -r '[.[] | .filename] | sort | .[]' /tmp/pr-context/files.json \
-        > /tmp/pr-context/file_order_az.txt
-      jq -r '[.[] | .filename] | sort | reverse | .[]' /tmp/pr-context/files.json \
-        > /tmp/pr-context/file_order_za.txt
-      jq -r '[.[] | {filename, size: ((.additions // 0) + (.deletions // 0))}] | sort_by(-.size) | .[].filename' /tmp/pr-context/files.json \
-        > /tmp/pr-context/file_order_largest.txt
+      jq -r '[.[] | .filename] | sort | .[]' /tmp/gh-aw/agent/pr-context/files.json \
+        > /tmp/gh-aw/agent/pr-context/file_order_az.txt
+      jq -r '[.[] | .filename] | sort | reverse | .[]' /tmp/gh-aw/agent/pr-context/files.json \
+        > /tmp/gh-aw/agent/pr-context/file_order_za.txt
+      jq -r '[.[] | {filename, size: ((.additions // 0) + (.deletions // 0))}] | sort_by(-.size) | .[].filename' /tmp/gh-aw/agent/pr-context/files.json \
+        > /tmp/gh-aw/agent/pr-context/file_order_largest.txt
 
       # Compute PR size metrics for review fan-out decisions
-      FILE_COUNT=$(jq 'length' /tmp/pr-context/files.json)
-      DIFF_LINES=$(wc -l < /tmp/pr-context/pr.diff | tr -d ' ')
-      echo "${FILE_COUNT} files, ${DIFF_LINES} diff lines" > /tmp/pr-context/pr-size.txt
+      FILE_COUNT=$(jq 'length' /tmp/gh-aw/agent/pr-context/files.json)
+      DIFF_LINES=$(wc -l < /tmp/gh-aw/agent/pr-context/pr.diff | tr -d ' ')
+      echo "${FILE_COUNT} files, ${DIFF_LINES} diff lines" > /tmp/gh-aw/agent/pr-context/pr-size.txt
       echo "PR size: ${FILE_COUNT} files, ${DIFF_LINES} diff lines"
 
       # Existing reviews
       gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" --paginate \
-        | jq -s 'add // []' > /tmp/pr-context/reviews.json
+        | jq -s 'add // []' > /tmp/gh-aw/agent/pr-context/reviews.json
 
       # Review threads with resolution status (GraphQL — REST lacks isResolved/isOutdated)
       gh api graphql --paginate -f query='
@@ -86,48 +86,48 @@ steps:
         }
       ' -F owner="${GITHUB_REPOSITORY%/*}" -F repo="${GITHUB_REPOSITORY#*/}" -F "number=$PR_NUMBER" \
         --jq '.data.repository.pullRequest.reviewThreads.nodes' \
-        | jq -s 'add // []' > /tmp/pr-context/review_comments.json
+        | jq -s 'add // []' > /tmp/gh-aw/agent/pr-context/review_comments.json
 
       # Filtered review thread views (pre-computed so agents don't need to parse review_comments.json)
-      jq '[.[] | select(.isResolved == false)]' /tmp/pr-context/review_comments.json \
-        > /tmp/pr-context/unresolved_threads.json
-      jq '[.[] | select(.isResolved == true)]' /tmp/pr-context/review_comments.json \
-        > /tmp/pr-context/resolved_threads.json
-      jq '[.[] | select(.isOutdated == true)]' /tmp/pr-context/review_comments.json \
-        > /tmp/pr-context/outdated_threads.json
+      jq '[.[] | select(.isResolved == false)]' /tmp/gh-aw/agent/pr-context/review_comments.json \
+        > /tmp/gh-aw/agent/pr-context/unresolved_threads.json
+      jq '[.[] | select(.isResolved == true)]' /tmp/gh-aw/agent/pr-context/review_comments.json \
+        > /tmp/gh-aw/agent/pr-context/resolved_threads.json
+      jq '[.[] | select(.isOutdated == true)]' /tmp/gh-aw/agent/pr-context/review_comments.json \
+        > /tmp/gh-aw/agent/pr-context/outdated_threads.json
 
       # Per-file review threads (mirrors diffs/ structure)
-      jq -c '.[]' /tmp/pr-context/review_comments.json | while IFS= read -r thread; do
+      jq -c '.[]' /tmp/gh-aw/agent/pr-context/review_comments.json | while IFS= read -r thread; do
         filepath=$(echo "$thread" | jq -r '.path // empty')
         [ -z "$filepath" ] && continue
-        mkdir -p "/tmp/pr-context/threads/$(dirname "$filepath")"
-        echo "$thread" >> "/tmp/pr-context/threads/${filepath}.jsonl"
+        mkdir -p "/tmp/gh-aw/agent/pr-context/threads/$(dirname "$filepath")"
+        echo "$thread" >> "/tmp/gh-aw/agent/pr-context/threads/${filepath}.jsonl"
       done
       # Convert per-file JSONL to proper JSON arrays
-      mkdir -p /tmp/pr-context/threads
-      find /tmp/pr-context/threads -name '*.jsonl' 2>/dev/null | while IFS= read -r jsonl; do
+      mkdir -p /tmp/gh-aw/agent/pr-context/threads
+      find /tmp/gh-aw/agent/pr-context/threads -name '*.jsonl' 2>/dev/null | while IFS= read -r jsonl; do
         jq -s '.' "$jsonl" > "${jsonl%.jsonl}.json"
         rm "$jsonl"
       done
 
       # PR discussion comments
       gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
-        | jq -s 'add // []' > /tmp/pr-context/comments.json
+        | jq -s 'add // []' > /tmp/gh-aw/agent/pr-context/comments.json
 
       # Linked issues
-      jq -r '.body // ""' /tmp/pr-context/pr.json 2>/dev/null \
+      jq -r '.body // ""' /tmp/gh-aw/agent/pr-context/pr.json 2>/dev/null \
         | grep -oiE '(fixes|closes|resolves)\s+#[0-9]+' \
         | grep -oE '[0-9]+$' \
         | sort -u \
         | while read -r issue; do
-            gh api "repos/$GITHUB_REPOSITORY/issues/$issue" > "/tmp/pr-context/issue-${issue}.json" || true
+            gh api "repos/$GITHUB_REPOSITORY/issues/$issue" > "/tmp/gh-aw/agent/pr-context/issue-${issue}.json" || true
           done || true
 
       # Write manifest
-      cat > /tmp/pr-context/README.md << 'MANIFEST'
+      cat > /tmp/gh-aw/agent/pr-context/README.md << 'MANIFEST'
       # PR Context
 
-      Pre-fetched PR data. All files are in `/tmp/pr-context/`.
+      Pre-fetched PR data. All files are in `/tmp/gh-aw/agent/pr-context/`.
 
       | File | Description |
       | --- | --- |
@@ -154,10 +154,10 @@ steps:
       | `subagent-*.md` | Sub-agent instructions (only written for medium/large PRs when `ready_to_code_review` is called — check `agent-review.md` for which exist) |
       MANIFEST
 
-      echo "PR context written to /tmp/pr-context/"
-      ls -la /tmp/pr-context/
+      echo "PR context written to /tmp/gh-aw/agent/pr-context/"
+      ls -la /tmp/gh-aw/agent/pr-context/
 ---
 
 ## PR Context
 
-PR data is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files. Use these as your primary source for PR metadata, diffs, reviews, comments, and linked issues; fall back to API tools only when required data is unavailable. **Never mention these file paths or on-disk data sources in your responses** — they are internal implementation details invisible to users.
+PR data is pre-fetched to `/tmp/gh-aw/agent/pr-context/`. Read `/tmp/gh-aw/agent/pr-context/README.md` for a manifest of all available files. Use these as your primary source for PR metadata, diffs, reviews, comments, and linked issues; fall back to API tools only when required data is unavailable. **Never mention these file paths or on-disk data sources in your responses** — they are internal implementation details invisible to users.

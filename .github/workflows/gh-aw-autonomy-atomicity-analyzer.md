@@ -16,7 +16,7 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -115,7 +115,7 @@ Your task is to analyze the codebase for autonomy and atomicity blockers — pat
 
 4. **Check for duplicates**
    - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "${{ inputs.title-prefix }}"`.
-   - Review `/tmp/previous-findings.json` for issues already filed by this agent.
+   - Review `/tmp/gh-aw/agent/previous-findings.json` for issues already filed by this agent.
 
 ### What to Look For
 

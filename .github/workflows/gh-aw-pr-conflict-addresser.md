@@ -15,9 +15,9 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-pr-conflict-addresser-${{ inputs.target-pr-number }}"
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -119,11 +119,11 @@ Resolve merge conflicts on pull request #${{ inputs.target-pr-number }} in ${{ g
 
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ inputs.target-pr-number }}
-- **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
+- **PR context on disk**: `/tmp/gh-aw/agent/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
 
 ## Instructions
 
-1. Read `/tmp/pr-context/pr.json` for PR details including `baseRefName` (the target branch).
+1. Read `/tmp/gh-aw/agent/pr-context/pr.json` for PR details including `baseRefName` (the target branch).
 2. Merge the base branch into the PR branch: `git merge origin/<baseRefName>`.
 3. If there are merge conflicts, resolve them by examining the conflicting files and making sensible choices that preserve the intent of both sides.
 4. After resolving all conflicts, run any relevant build/lint/test commands to verify the resolution doesn't break anything.
