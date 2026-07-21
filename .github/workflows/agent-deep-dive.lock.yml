@@ -77,7 +77,7 @@ on:
   # - maintainer # Roles processed as role check in pre-activation job
   # - write # Roles processed as role check in pre-activation job
   schedule:
-    - cron: "49 14 * * 1-5"  # Friendly format: daily around 14:00 on weekdays (scattered)
+    - cron: "27 14 * * 1-5"  # Friendly format: daily around 14:00 on weekdays (scattered)
   # stale-check: false # Stale-check processed as frontmatter hash check step in activation job
   workflow_dispatch:
     inputs:
