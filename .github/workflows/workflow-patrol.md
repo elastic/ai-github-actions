@@ -15,7 +15,7 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: gpt-5.3-codex
+model: gpt-5.3-codex
 on:
   stale-check: false
   schedule:

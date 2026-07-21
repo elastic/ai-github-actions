@@ -16,9 +16,9 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-create-pr-from-issue-${{ inputs.target-issue-number }}"
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:

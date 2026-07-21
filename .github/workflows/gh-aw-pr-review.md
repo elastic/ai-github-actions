@@ -18,9 +18,9 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-pr-review-${{ github.event.pull_request.number }}"
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -109,7 +109,7 @@ Review pull requests in ${{ github.repository }} and provide actionable feedback
 
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
-- **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Read from these files instead of calling the API.
+- **PR context on disk**: `/tmp/gh-aw/agent/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Read from these files instead of calling the API.
 
 ## Constraints
 
@@ -121,15 +121,14 @@ Follow these steps in order.
 
 ### Step 1: Gather Context
 
-1. Read `/tmp/agents.md` for repository conventions (skip if missing).
-2. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches).
-3. Read `/tmp/pr-context/issue-*.json` files if any exist to understand linked issue motivation and acceptance criteria.
-4. Read `/tmp/pr-context/reviews.json` to check prior review submissions from this bot. Note any prior verdicts to avoid redundant reviews.
-5. Read `/tmp/pr-context/review_comments.json` to check existing review threads. Note which files already have threads and whether they are resolved, unresolved, or outdated.
+1. Read `/tmp/gh-aw/agent/pr-context/pr.json` for PR details (author, description, branches).
+2. Read `/tmp/gh-aw/agent/pr-context/issue-*.json` files if any exist to understand linked issue motivation and acceptance criteria.
+3. Read `/tmp/gh-aw/agent/pr-context/reviews.json` to check prior review submissions from this bot. Note any prior verdicts to avoid redundant reviews.
+4. Read `/tmp/gh-aw/agent/pr-context/review_comments.json` to check existing review threads. Note which files already have threads and whether they are resolved, unresolved, or outdated.
 
 ### Step 2: Review
 
-1. Call `ready_to_code_review` — this writes `/tmp/pr-context/agent-review.md` (review approach) and `/tmp/pr-context/parent-review.md` (comment format and inline severity threshold).
+1. Call `ready_to_code_review` — this writes `/tmp/gh-aw/agent/pr-context/agent-review.md` (review approach) and `/tmp/gh-aw/agent/pr-context/parent-review.md` (comment format and inline severity threshold).
 2. Read both files, then follow the approach in `agent-review.md`.
 
 ### Step 3: Verify and Comment
@@ -143,7 +142,7 @@ If sub-agents were used, merge and deduplicate findings per the Pick Three, Keep
 
 Only leave a comment if the finding survives all four checks. Findings flagged independently by multiple sub-agents are stronger candidates. Findings from only one sub-agent deserve extra scrutiny.
 
-Before posting each comment, **verify the target line is in the numbered diff**: check `/tmp/pr-context/diffs/<filename>.diff` — only lines with a number prefix are commentable. If the line has no number in the diff, do NOT attempt an inline comment — include the finding in the review body instead.
+Before posting each comment, **verify the target line is in the numbered diff**: check `/tmp/gh-aw/agent/pr-context/diffs/<filename>.diff` — only lines with a number prefix are commentable. If the line has no number in the diff, do NOT attempt an inline comment — include the finding in the review body instead.
 
 Leave inline comments (`create_pull_request_review_comment`) per the **Code Review Reference** above for each finding that survives verification. Comment on each file's findings before moving to the next file. If no findings survive verification, proceed directly to Step 4.
 

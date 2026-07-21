@@ -12,9 +12,9 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-update-pr-body-${{ github.event.pull_request.number }}"
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:

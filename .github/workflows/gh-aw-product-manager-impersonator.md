@@ -16,7 +16,7 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -128,7 +128,7 @@ Your task is to propose **one** well-researched new feature idea for this reposi
 4. **Check for duplicates**
    - Search open issues for existing feature requests: `repo:{owner}/{repo} is:issue is:open (feature OR enhancement OR idea)`.
    - Search past reports: `repo:{owner}/{repo} is:issue in:title "${{ inputs.title-prefix }}"`.
-   - Review `/tmp/previous-findings.json` for issues already filed by this agent.
+   - Review `/tmp/gh-aw/agent/previous-findings.json` for issues already filed by this agent.
    - If your idea duplicates an existing request, pick a different angle.
 
 ### What to Propose

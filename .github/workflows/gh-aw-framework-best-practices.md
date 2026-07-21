@@ -17,7 +17,7 @@ imports:
   - gh-aw-fragments/code-quality-audit.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -125,7 +125,7 @@ Your task is to analyze the codebase, identify the frameworks and libraries in u
 
 4. **Check for duplicates**
    - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "${{ inputs.title-prefix }}"`.
-   - Review `/tmp/previous-findings.json` for issues already filed by this agent.
+   - Review `/tmp/gh-aw/agent/previous-findings.json` for issues already filed by this agent.
 
 ### What to Look For
 

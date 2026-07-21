@@ -24,9 +24,9 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-${{ github.event.pull_request.number || github.event.issue.number }}"
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -129,7 +129,7 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ github.event.pull_request.number || github.event.issue.number }} — ${{ github.event.pull_request.title || github.event.issue.title }}
-- **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
+- **PR context on disk**: `/tmp/gh-aw/agent/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
 - **Request**: "${{ steps.sanitized.outputs.text }}"
 - **Explicit prompt**: "${{ inputs.prompt }}"
 
@@ -144,12 +144,12 @@ Understand the request, investigate the code, and respond appropriately.
 
 ### Step 1: Gather Context
 
-PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files.
+PR context is pre-fetched to `/tmp/gh-aw/agent/pr-context/`. Read `/tmp/gh-aw/agent/pr-context/README.md` for a manifest of all available files.
 
-1. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches).
-2. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
-3. Read `/tmp/pr-context/comments.json` and `/tmp/pr-context/review_comments.json` to understand the conversation context and what's being asked.
-4. Read `/tmp/pr-context/reviews.json` to check prior review submissions — note any prior verdicts to avoid redundant reviews.
+1. Read `/tmp/gh-aw/agent/pr-context/pr.json` for PR details (author, description, branches).
+2. Read `/tmp/gh-aw/agent/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
+3. Read `/tmp/gh-aw/agent/pr-context/comments.json` and `/tmp/gh-aw/agent/pr-context/review_comments.json` to understand the conversation context and what's being asked.
+4. Read `/tmp/gh-aw/agent/pr-context/reviews.json` to check prior review submissions — note any prior verdicts to avoid redundant reviews.
 5. Do not modify, review, comment on, or resolve threads for any PR other than #${{ github.event.pull_request.number || github.event.issue.number }}.
 
 ### Step 2: Handle the Request
@@ -162,8 +162,8 @@ Based on what's asked, do the appropriate thing.
 
 **If asked to review the PR:**
 
-- Call `ready_to_code_review` — this writes `/tmp/pr-context/agent-review.md` (review approach) and `/tmp/pr-context/parent-review.md` (comment format and inline severity threshold). Read both files.
-- Review the PR following `agent-review.md`. For small PRs, review directly. For medium/large PRs, spawn the specified number of `code-review` sub-agents in parallel (each reads its `/tmp/pr-context/subagent-*.md` instruction file).
+- Call `ready_to_code_review` — this writes `/tmp/gh-aw/agent/pr-context/agent-review.md` (review approach) and `/tmp/gh-aw/agent/pr-context/parent-review.md` (comment format and inline severity threshold). Read both files.
+- Review the PR following `agent-review.md`. For small PRs, review directly. For medium/large PRs, spawn the specified number of `code-review` sub-agents in parallel (each reads its `/tmp/gh-aw/agent/pr-context/subagent-*.md` instruction file).
 - When sub-agents return findings, merge and deduplicate per the Pick Three, Keep Many process. Then verify each surviving finding before leaving a comment:
   1. **Read the file and surrounding context** — open the full file, not just the diff.
   2. **Construct a concrete failure scenario** — what specific input or state causes the bug? If you cannot describe one, drop the finding.
@@ -175,7 +175,7 @@ Based on what's asked, do the appropriate thing.
 
 **If asked to fix code or address review feedback:**
 
-- Read `/tmp/pr-context/unresolved_threads.json` to see open review threads and understand what needs to be addressed.
+- Read `/tmp/gh-aw/agent/pr-context/unresolved_threads.json` to see open review threads and understand what needs to be addressed.
 - For each unresolved thread you address:
   - Make the code changes in the workspace.
   - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
@@ -184,7 +184,7 @@ Based on what's asked, do the appropriate thing.
 - Call `ready_to_push_to_pr` to confirm the branch is safe to push.
 - If `ready_to_push_to_pr` results in any additional edits (including merge-conflict resolutions), rerun the same required repo commands against the final state before pushing. If required commands cannot be run, explain why and do not push.
 - Use `push_to_pull_request_branch` to push your changes.
-- After pushing, resolve every review thread that your changes fully address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
+- After pushing, resolve every review thread that your changes fully address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/gh-aw/agent/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/gh-aw/agent/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
 - **Important completion step**: when feedback is completed and no further reviewer action is needed, resolving the corresponding thread is required. Do not leave fully addressed threads open.
 - If `resolve_pull_request_review_thread` fails for any thread you fully addressed, call `add_comment` summarizing the specific thread IDs that could not be resolved and why.
 - **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.
@@ -192,7 +192,7 @@ Based on what's asked, do the appropriate thing.
 **If asked to fix merge conflicts:**
 
 - Check via `pull_request_read` (method `get`) whether this is a fork PR. If so, reply that you cannot push to fork branches and suggest the author resolve locally.
-- Read `/tmp/pr-context/pr.json` for the head and base branch names.
+- Read `/tmp/gh-aw/agent/pr-context/pr.json` for the head and base branch names.
 - Follow the merge-conflict/update-branch guidance in `ready_to_push_to_pr` and resolve conflicts with a merge-based flow. Do **not** use `git rebase` or other history-rewrite flows.
 - If conflicts are too complex to resolve confidently (large structural changes, binary files, ambiguous intent), reply explaining what you found and suggest the author resolve locally.
 - If the request includes additional work (code fixes, review feedback), complete all of it before pushing — `push_to_pull_request_branch` can only be called once. Resolve merge conflicts first, then make other requested changes on top, then push everything together.

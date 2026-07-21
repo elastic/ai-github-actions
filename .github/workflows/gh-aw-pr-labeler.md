@@ -11,9 +11,9 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-pr-labeler-${{ github.event.pull_request.number }}"
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -69,7 +69,7 @@ safe-outputs:
     target: "${{ github.event.pull_request.number }}"
   steps:
     - name: Pre-sanitize label operations from input allowlist
-      uses: actions/github-script@v7
+      uses: actions/github-script@v9
       env:
         ALLOWED_LABELS: ${{ inputs.classification-labels }}
       with:

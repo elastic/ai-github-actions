@@ -2,26 +2,26 @@
 steps:
   - name: Setup Go
     if: hashFiles('go.mod') != ''
-    uses: actions/setup-go@v5
+    uses: actions/setup-go@v7
     with:
       go-version-file: go.mod
       cache: true
 
   - name: Setup Python
     if: hashFiles('.python-version') != ''
-    uses: actions/setup-python@v5
+    uses: actions/setup-python@v6
     with:
       python-version-file: '.python-version'
 
   - name: Setup Node.js (.node-version)
     if: hashFiles('.node-version') != ''
-    uses: actions/setup-node@v6
+    uses: actions/setup-node@v7
     with:
       node-version-file: '.node-version'
 
   - name: Setup Node.js (.nvmrc)
     if: hashFiles('.node-version') == '' && hashFiles('.nvmrc') != ''
-    uses: actions/setup-node@v6
+    uses: actions/setup-node@v7
     with:
       node-version-file: '.nvmrc'
 
@@ -34,7 +34,7 @@ steps:
 
   - name: Setup uv
     if: hashFiles('pyproject.toml', 'uv.lock') != ''
-    uses: astral-sh/setup-uv@v5
+    uses: astral-sh/setup-uv@v8
     id: setup-uv
 
   - name: Expose uv in workspace

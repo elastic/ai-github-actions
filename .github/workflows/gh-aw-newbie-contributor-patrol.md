@@ -15,7 +15,7 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:

@@ -17,7 +17,7 @@ imports:
   - gh-aw-fragments/code-quality-audit.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:

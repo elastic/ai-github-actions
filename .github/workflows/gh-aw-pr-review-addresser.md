@@ -17,9 +17,9 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-pr-review-addresser-${{ github.event.pull_request.number }}"
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -123,12 +123,12 @@ Address the review feedback surgically — make only the minimum changes needed.
 
 ### Step 1: Gather Context
 
-PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md` for a manifest of all available files.
+PR context is pre-fetched to `/tmp/gh-aw/agent/pr-context/`. Read `/tmp/gh-aw/agent/pr-context/README.md` for a manifest of all available files.
 
-1. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches). Check whether this is a fork PR — if the head repo differs from the base repo, you cannot push changes.
-2. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
-3. Read `/tmp/pr-context/unresolved_threads.json` to get unresolved review threads that need attention. For full context including resolved threads, see `review_comments.json`.
-4. Read `/tmp/pr-context/diffs/` to understand the current state of changes.
+1. Read `/tmp/gh-aw/agent/pr-context/pr.json` for PR details (author, description, branches). Check whether this is a fork PR — if the head repo differs from the base repo, you cannot push changes.
+2. Read `/tmp/gh-aw/agent/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
+3. Read `/tmp/gh-aw/agent/pr-context/unresolved_threads.json` to get unresolved review threads that need attention. For full context including resolved threads, see `review_comments.json`.
+4. Read `/tmp/gh-aw/agent/pr-context/diffs/` to understand the current state of changes.
 
 ### Step 2: Address Each Review Thread
 
@@ -151,7 +151,7 @@ For each unresolved review thread:
 
 Skip this step for fork PRs where you could not push.
 
-After pushing, resolve every review thread that your changes fully address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads from any reviewer — external reviewers, bots, and your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer. Fall back to `pull_request_read` with method `get_review_comments` if the pre-fetched data is unavailable.
+After pushing, resolve every review thread that your changes fully address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads from any reviewer — external reviewers, bots, and your own prior reviews. Check `/tmp/gh-aw/agent/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/gh-aw/agent/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer. Fall back to `pull_request_read` with method `get_review_comments` if the pre-fetched data is unavailable.
 
 **Important completion requirement**: when feedback is completed and no further reviewer action is needed, resolving the corresponding thread is required. Do not leave fully addressed threads open.
 

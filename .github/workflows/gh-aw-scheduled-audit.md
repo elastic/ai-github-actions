@@ -15,7 +15,7 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
-  model: ${{ inputs.model }}
+model: ${{ inputs.model }}
 on:
   stale-check: false
   workflow_call:
@@ -93,13 +93,14 @@ steps:
       TITLE_PREFIX: ${{ inputs.title-prefix }}
     run: |
       set -euo pipefail
+      mkdir -p /tmp/gh-aw/agent
       gh issue list \
         --repo "$GITHUB_REPOSITORY" \
         --search "in:title \"$TITLE_PREFIX\"" \
         --state all \
         --limit 100 \
         --json number,title,state \
-        > /tmp/previous-findings.json || { echo "::warning::Failed to fetch previous findings — dedup will be skipped"; echo "[]" > /tmp/previous-findings.json; }
+        > /tmp/gh-aw/agent/previous-findings.json || { echo "::warning::Failed to fetch previous findings — dedup will be skipped"; echo "[]" > /tmp/gh-aw/agent/previous-findings.json; }
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
@@ -111,9 +112,9 @@ steps:
 
 ## Previous Findings
 
-When `close-older-issues` is `false` (current: `${{ inputs.close-older-issues }}`), check `/tmp/previous-findings.json` for issues this agent has already filed before filing a new one.
+When `close-older-issues` is `false` (current: `${{ inputs.close-older-issues }}`), check `/tmp/gh-aw/agent/previous-findings.json` for issues this agent has already filed before filing a new one.
 
-- Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
+- Run `cat /tmp/gh-aw/agent/previous-findings.json` to read the list of previously filed issue numbers and titles.
 - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
 - Only file a new issue when the finding is genuinely distinct from all previous findings.
 
