@@ -3,7 +3,6 @@ inlined-imports: true
 name: "UX Design Patrol"
 description: "Detect UI/UX design drift in recent commits and file a consolidation report"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/ensure-full-history.md

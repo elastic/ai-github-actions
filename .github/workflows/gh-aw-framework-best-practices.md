@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Framework Best Practices"
 description: "Find places where library-native features could replace hand-rolled solutions"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Internal: Workflow Patrol"
 description: "Detect workflow drift — where one or more workflows have fallen behind a pattern adopted by most others"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

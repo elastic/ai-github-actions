@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Refactor Opportunist"
 description: "Investigate the codebase as a senior architect, partially implement a refactor to prove viability, and pitch it via an issue"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/ensure-full-history.md

@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Bug Hunter"
 description: "Find a reproducible, user-impacting bug and file a report issue"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/ensure-full-history.md

@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Scheduled Fix"
 description: "Generic scheduled fixer — pick up an open issue and create a focused PR that addresses it"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

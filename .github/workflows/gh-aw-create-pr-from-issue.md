@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Create PR From Issue"
 description: "Implement an issue and open a pull request"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

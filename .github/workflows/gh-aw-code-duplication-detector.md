@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Code Duplication Detector"
 description: "Analyze source code for duplication patterns and refactoring opportunities"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Create Comment On Issue"
 description: "Add an AI-generated comment to a specific issue by number"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

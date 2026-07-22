@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Information Architecture"
 description: "Audit the application's UI information architecture for navigation, placement, and consistency issues"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

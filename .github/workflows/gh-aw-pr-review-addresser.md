@@ -3,7 +3,6 @@ inlined-imports: true
 name: "PR Review Addresser"
 description: "Auto-address PR review feedback — fix code, resolve threads, and push changes"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
