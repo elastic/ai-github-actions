@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Internal: Downstream Health"
 description: "Monitor downstream repositories using AI workflows and report quality issues"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

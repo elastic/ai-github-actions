@@ -85,7 +85,6 @@ Fragments live in `.github/workflows/gh-aw-fragments/`. Workflows import them us
 
 | Fragment | Purpose |
 | --- | --- |
-| [gh-aw-fragments/observability.md](../.github/workflows/gh-aw-fragments/observability.md) | OTLP observability — exports workflow spans to an external backend when `GH_AW_OTEL_ENDPOINT` and `GH_AW_OTEL_AUTHORIZATION` secrets are set |
 | [gh-aw-fragments/elastic-tools.md](../.github/workflows/gh-aw-fragments/elastic-tools.md) | Elastic MCP servers (`agents-md-generator`, `public-code-search`) and their network entries |
 | [gh-aw-fragments/formatting.md](../.github/workflows/gh-aw-fragments/formatting.md) | Response formatting rules |
 | [gh-aw-fragments/rigor.md](../.github/workflows/gh-aw-fragments/rigor.md) | Accuracy & evidence standards |

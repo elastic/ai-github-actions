@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Stale Issues Remediator"
 description: "Process stale-labeled issues: handle objections and close after 30-day grace period"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

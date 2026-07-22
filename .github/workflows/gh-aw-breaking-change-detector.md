@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Breaking Change Detector"
 description: "Detect undocumented breaking changes in public interfaces"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/ensure-full-history.md

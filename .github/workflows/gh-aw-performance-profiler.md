@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Performance Profiler"
 description: "Identify hot paths, profile code, and propose meaningful performance improvements"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/ensure-full-history.md

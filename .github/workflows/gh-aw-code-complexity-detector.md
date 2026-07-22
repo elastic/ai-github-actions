@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Code Complexity Detector"
 description: "Find overly complex code and file a simplification report"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

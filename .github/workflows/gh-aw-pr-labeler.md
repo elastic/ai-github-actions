@@ -3,7 +3,6 @@ inlined-imports: true
 name: "PR Labeler"
 description: "Evaluate a pull request and apply classification labels"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

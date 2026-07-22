@@ -3,7 +3,6 @@ inlined-imports: true
 name: "Code Quality Audit"
 description: "Analyze code for quality issues — anti-patterns, accessibility violations, performance problems, best-practices deviations — and file a structured report"
 imports:
-  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/ensure-full-history.md
