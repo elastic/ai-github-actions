@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Newbie Contributor Patrol"
 description: "Review docs from a new contributor perspective and file high-impact issues"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

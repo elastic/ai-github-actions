@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Docs Patrol"
 description: "Detect code changes that require documentation updates and file issues"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/ensure-full-history.md

@@ -2,6 +2,7 @@
 inlined-imports: true
 description: "Daily detector for 'Resource not accessible by integration' across long-term branches"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Mention in PR"
 description: "AI assistant for PRs — review, fix code, and push changes on demand"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

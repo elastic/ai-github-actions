@@ -3,6 +3,7 @@ inlined-imports: true
 name: "PR Conflict Addresser"
 description: "Resolve merge conflicts on open PRs when the base branch changes"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

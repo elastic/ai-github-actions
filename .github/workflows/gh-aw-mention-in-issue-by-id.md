@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Mention in Issue by ID"
 description: "DEPRECATED: Use gh-aw-create-comment-on-issue instead. AI assistant for a specific issue ID — answer questions, debug, and create PRs on demand"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

@@ -2,6 +2,7 @@
 inlined-imports: true
 description: "Find small, related issues and open a focused PR"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

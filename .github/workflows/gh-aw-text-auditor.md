@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Text Auditor"
 description: "Find typos, unclear error messages, and awkward user-facing text, then file an improvement issue"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md

@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Estc Docs Patrol External"
 description: "Detect code changes that require updates to published Elastic documentation"
 imports:
+  - gh-aw-fragments/observability.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/ensure-full-history.md
