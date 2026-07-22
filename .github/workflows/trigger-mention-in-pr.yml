@@ -11,7 +11,8 @@ permissions:
   actions: read
   contents: write
   copilot-requests: write
-  issues: read
+  discussions: write
+  issues: write
   pull-requests: write
 
 jobs:
