@@ -1,6 +1,6 @@
 # Tool versions
-ACTIONLINT_VERSION := 1.7.10
-ACTION_VALIDATOR_VERSION := 0.8.0
+ACTIONLINT_VERSION := 1.7.12
+ACTION_VALIDATOR_VERSION := 0.9.0
 GH_AW_VERSION := v0.82.10
 GH_AW_BUILD_VERSION := v0.82.10
 GH_AW_COMPAT_VERSION := v0.82.10
@@ -204,6 +204,7 @@ compile: setup-gh-aw setup-gh-aw-compat sync
 	@$(MAKE) postprocess-setup-action
 	@./scripts/backwards-compat.sh
 	@./scripts/wire-report-failure-input.sh
+	@./scripts/validate-uses-references.sh
 
 postprocess-setup-action:
 	@echo "Rewriting setup action references to $(GH_AW_SETUP_ACTION_REPO)@$(GH_AW_SETUP_ACTION_REF)..."
