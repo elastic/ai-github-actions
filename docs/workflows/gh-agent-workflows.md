@@ -183,7 +183,7 @@ setup-commands: |
 
 Each workflow has two layers:
 
-1. **Workflow** (`gh-aw-*.md` -> `gh-aw-*.lock.yml`): The agent logic, compiled by `gh-aw`. Triggers only on `workflow_call` with standard inputs (`additional-instructions`, `setup-commands`).
-2. **Trigger** (`<name>/example.yml`): A plain YAML file that defines the actual event triggers (schedule, PR events, slash commands, etc.) and calls the compiled `.lock.yml` via `uses:`. These serve as both examples for consumers and dogfood for this repo (copied to `.github/workflows/trigger-*.yml` by `scripts/dogfood.sh` for workflows not listed in `EXCLUDED_WORKFLOWS`).
+1. **Workflow** (`gh-aw-*.md` -> `gh-aw-*.lock.yml`): The agent logic, compiled by `gh-aw`. Workflows expose `workflow_call` with standard inputs (`additional-instructions`, `setup-commands`) and a `COPILOT_GITHUB_TOKEN` secret. Some source templates also declare direct comment/review/discussion triggers (`issue_comment`, `pull_request_review_comment`, `discussion_comment`) so the compiled workflow can be activated by reactions with the required permissions.
+2. **Trigger** (`<name>/example.yml`): A plain YAML file that defines the installable event wiring for each workflow (schedule, PR events, slash commands, etc.) and calls the compiled `.lock.yml` via `uses:`. These serve as both examples for consumers and dogfood for this repo (copied to `.github/workflows/trigger-*.yml` by `scripts/dogfood.sh` for workflows not listed in `EXCLUDED_WORKFLOWS`).
 
 Consumer repos copy a workflow's `example.yml`, change the `uses:` path if needed, and customize the `with:` inputs. Updates propagate automatically when this repo updates the `v0` tag on release.
