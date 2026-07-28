@@ -52,6 +52,11 @@ on:
         type: boolean
         required: false
         default: true
+      create-pr-allowed-files:
+        description: "Glob pattern restricting which files the agent may modify in the PR (e.g. `src/**`); leave empty to allow all files"
+        type: string
+        required: false
+        default: ""
       report-failure-as-issue:
         description: "When true, agent failures are reported as GitHub issues"
         type: boolean

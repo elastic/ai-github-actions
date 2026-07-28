@@ -29,6 +29,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `create-pr-allowed-files` | Glob pattern restricting which files the agent may modify in the PR (e.g. `src/**`); leave empty to allow all files | No | `""` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
 
 ## Safe Outputs
