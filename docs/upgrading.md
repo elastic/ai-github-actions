@@ -2,6 +2,12 @@
 
 > **Migrating from Claude Workflows?** See the [Migration Guide](migration-guide.md) for step-by-step instructions on migrating from legacy Claude Composite Actions to GitHub Agent Workflows.
 
+## gh-aw compiler v0.83.4
+
+This upgrade adds security hardening, workflow reliability fixes, and support for Google Vertex AI Workload Identity Federation and additional Copilot BYOK frontmatter options.
+
+No breaking changes affect this repository. Source workflows do not use the deprecated `needs.activation.outputs.*` authoring pattern, so no workflow migration is required.
+
 ## gh-aw compiler v0.51.0
 
 Compiler upgrade with new features and bug fixes. No breaking changes — recompile your workflows to pick up improvements.
