@@ -215,9 +215,19 @@ setup-actionlint:
 	@mkdir -p bin
 	@ACTIONLINT_VERSION="$(ACTIONLINT_VERSION)"; \
 	ACTIONLINT_BIN="bin/actionlint"; \
-	if [ -f "$$ACTIONLINT_BIN" ]; then \
-		echo "✓ actionlint already installed: $$($$ACTIONLINT_BIN --version 2>&1 | head -1)"; \
-	else \
+	INSTALL_ACTIONLINT=1; \
+	if [ -x "$$ACTIONLINT_BIN" ]; then \
+		INSTALLED_VERSION="$$($$ACTIONLINT_BIN --version 2>&1 | head -1 | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')"; \
+		if [ "$$INSTALLED_VERSION" = "$$ACTIONLINT_VERSION" ]; then \
+			echo "✓ actionlint already installed: $$($$ACTIONLINT_BIN --version 2>&1 | head -1)"; \
+			INSTALL_ACTIONLINT=0; \
+		else \
+			echo "actionlint version mismatch (have: $$($$ACTIONLINT_BIN --version 2>&1 | head -1), want: v$$ACTIONLINT_VERSION). Reinstalling..."; \
+		fi; \
+	elif [ -f "$$ACTIONLINT_BIN" ]; then \
+		echo "actionlint binary exists but is not executable. Reinstalling..."; \
+	fi; \
+	if [ "$$INSTALL_ACTIONLINT" -eq 1 ]; then \
 		echo "Downloading actionlint v$$ACTIONLINT_VERSION..."; \
 		$(DETECT_OS_ARCH); \
 		URL="https://github.com/rhysd/actionlint/releases/download/v$$ACTIONLINT_VERSION/actionlint_$${ACTIONLINT_VERSION}_$${OS}_$${ARCH}.tar.gz"; \
