@@ -126,7 +126,7 @@ safe-outputs:
     patch-format: bundle
     draft: ${{ inputs.draft-prs }}
     allowed-files:
-      - ${{ inputs.create-pr-allowed-files || '**' }}
+      - ${{ inputs.create-pr-allowed-files }}
     github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 ---
 
@@ -141,4 +141,4 @@ Before calling `create_pull_request`, call `ready_to_make_pr` and apply its chec
 - **Committed changes required**: You must have locally committed changes before creating a PR.
 - **Base branch**: The PR targets the repository's default branch.
 - **Max per run**: Typically 1 PR creation per workflow run.
-- **Allowed files**: When `create-pr-allowed-files` is set, only files matching the specified glob pattern can be modified. Leave empty to allow all files.
+- **Allowed files**: When `create-pr-allowed-files` is set, only files matching the specified glob pattern can be modified. When unset, the default gh-aw behavior applies: only the `protected-files` policy restricts changes, and all other files are permitted.

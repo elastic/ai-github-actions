@@ -49,7 +49,7 @@ on:
         required: false
         default: true
       create-pr-allowed-files:
-        description: "Glob pattern restricting which files the agent may modify in the PR (e.g. `src/**`); leave empty to allow all files"
+        description: "Glob pattern restricting which files the agent may modify in the PR (e.g. `src/**`); leave empty to rely on the default protected-files policy only"
         type: string
         required: false
         default: ""
