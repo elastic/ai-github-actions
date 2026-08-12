@@ -33,6 +33,7 @@ def github_api(path: str, token: str, accept: str = "application/vnd.github+json
         "Accept": accept,
         "X-GitHub-Api-Version": "2022-11-28",
     })
+    req.headers["Authorization"] = f"token {token}"
     with urllib.request.urlopen(req) as resp:
         return resp.read()
 

@@ -119,3 +119,27 @@ def test_conclusion_any_in_fetch_runs(monkeypatch, capsys):
     assert runs == []
     assert "Listing runs for ci.yml in elastic/ai-github-actions..." in stderr
     assert captured["conclusion"] is None
+
+
+def test_github_api_uses_provided_token(monkeypatch):
+    module = _load_module()
+    captured = {}
+
+    class _Resp:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def read(self):
+            return b"{}"
+
+    def fake_urlopen(req):
+        captured["authorization"] = req.headers.get("Authorization")
+        return _Resp()
+
+    monkeypatch.setattr(module.urllib.request, "urlopen", fake_urlopen)
+    module.github_api("/rate_limit", "MY_TEST_TOKEN")
+
+    assert captured["authorization"] == "token MY_TEST_TOKEN"
