@@ -19,7 +19,7 @@ engine:
 on:
   stale-check: false
   schedule:
-    - cron: "daily around 14:00 on weekdays"
+    - cron: "5 13 * * 1-5"
   workflow_dispatch:
     inputs:
       title-prefix:
