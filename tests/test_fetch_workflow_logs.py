@@ -1,5 +1,6 @@
 import argparse
 import importlib.util
+import urllib.error
 from pathlib import Path
 
 
@@ -119,3 +120,42 @@ def test_conclusion_any_in_fetch_runs(monkeypatch, capsys):
     assert runs == []
     assert "Listing runs for ci.yml in elastic/ai-github-actions..." in stderr
     assert captured["conclusion"] is None
+
+
+def test_github_api_retries_rate_limit_and_honors_retry_after(monkeypatch):
+    module = _load_module()
+    response = type("Response", (), {
+        "__enter__": lambda self: self,
+        "__exit__": lambda self, *args: None,
+        "read": lambda self: b"ok",
+    })()
+    calls = [0]
+
+    def fake_urlopen(request, timeout):
+        calls[0] += 1
+        if calls[0] == 1:
+            raise urllib.error.HTTPError("url", 429, "rate limited", {"Retry-After": "0"}, None)
+        return response
+
+    sleeps = []
+    monkeypatch.setattr(module.urllib.request, "urlopen", fake_urlopen)
+    monkeypatch.setattr(module.time, "sleep", sleeps.append)
+
+    result = module.github_api("/test", "token", retries=1, backoff_seconds=10, timeout=7)
+
+    assert result == b"ok"
+    assert result.attempts == 2
+    assert sleeps == [0]
+
+
+def test_download_run_logs_manifest_metadata_on_failure(monkeypatch, tmp_path):
+    module = _load_module()
+    error = urllib.error.HTTPError("url", 500, "server error", {}, None)
+    monkeypatch.setattr(module, "github_api", lambda *args, **kwargs: (_ for _ in ()).throw(error))
+    metadata = {}
+
+    files = module.download_run_logs("owner/repo", 123, "token", str(tmp_path),
+                                     retries=0, metadata=metadata)
+
+    assert files == []
+    assert metadata == {"attempts": 1, "final_error": str(error)}
