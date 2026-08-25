@@ -169,8 +169,11 @@ def test_pr_existing_comments_paginates_threads_and_comments(tmp_path):
 
     assert "## src/example.py (1 threads)" in result.stdout
     assert "## src/another.py (1 threads)" in result.stdout
-    assert "Comment 51" in result.stdout
-    assert "Comment 1000" in result.stdout
+    example_output, another_output = result.stdout.split("## src/another.py", 1)
+    assert example_output.count("@reviewer:") == 51
+    assert another_output.count("@reviewer:") == 1
+    assert "Comment 51" in example_output
+    assert "Comment 1000" in another_output
 
 
 def test_pr_existing_comments_summary_format(tmp_path):
