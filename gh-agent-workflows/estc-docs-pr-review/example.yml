@@ -8,7 +8,7 @@ permissions:
   checks: read
   contents: read
   copilot-requests: write
-  issues: read
+  issues: write
   pull-requests: write
 
 jobs:
