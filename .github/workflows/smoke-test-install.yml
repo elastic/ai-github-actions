@@ -84,19 +84,19 @@ jobs:
         working-directory: /tmp/test-repo
         run: |
           set -euo pipefail
-          SHIMS=$(find .github/workflows -maxdepth 1 -name "*.md" | wc -l | tr -d ' ')
-          LOCKS=$(find .github/workflows -maxdepth 1 -name "*.lock.yml" | wc -l | tr -d ' ')
+          SHIM=".github/workflows/gh-aw-${{ matrix.workflow }}.md"
+          LOCK=".github/workflows/gh-aw-${{ matrix.workflow }}.lock.yml"
 
-          echo "Shims: ${SHIMS}"
-          echo "Lock files: ${LOCKS}"
+          echo "Shim: ${SHIM}"
+          echo "Lock file: ${LOCK}"
 
-          if [ "$LOCKS" -eq 0 ]; then
-            echo "::error::No lock files generated"
+          if [ ! -f "$SHIM" ]; then
+            echo "::error::Expected shim was not generated: ${SHIM}"
             exit 1
           fi
 
-          if [ "$LOCKS" -ne "$SHIMS" ]; then
-            echo "::error::Shim count (${SHIMS}) does not match lock file count (${LOCKS})"
+          if [ ! -f "$LOCK" ]; then
+            echo "::error::Expected lock file was not generated: ${LOCK}"
             exit 1
           fi
 
