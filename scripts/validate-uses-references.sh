@@ -17,7 +17,7 @@ while IFS= read -r -d '' workflow_file; do
   while IFS= read -r match; do
     invalid_count=$((invalid_count + 1))
     echo "Invalid uses reference: ${workflow_file#$REPO_ROOT/}:$match"
-  done < <(grep -nE '^[[:space:]]*uses:[[:space:]]+[^[:space:]#]+@[[:space:]]*(#.*)?$' "$workflow_file" || true)
+  done < <(grep -nE '^[[:space:]]*(-[[:space:]]*)?uses:[[:space:]]+[^[:space:]#]+@[[:space:]]*(#.*)?$' "$workflow_file" || true)
 done < <(find "$WORKFLOWS_DIR" -maxdepth 1 \( -name '*.yml' -o -name '*.yaml' \) -print0)
 
 if [ "$invalid_count" -gt 0 ]; then
