@@ -10,6 +10,7 @@ on:
 permissions:
   actions: read
   contents: write
+  copilot-requests: write
   discussions: write
   issues: write
   pull-requests: write
@@ -20,5 +21,4 @@ jobs:
     with:
       target-pr-number: ${{ inputs.pull-request-number }}
     secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}

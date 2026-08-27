@@ -21,8 +21,6 @@ Your caller workflow chains a detector to `create-pr-from-issue` with `needs` an
 jobs:
   detect:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   fix:
     needs: detect
@@ -30,8 +28,6 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
     with:
       target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 The fix job only runs when the detector actually created an issue. The generic `create-pr-from-issue` workflow reads the issue body and implements a fix, so any detector can chain to it without a dedicated fixer workflow.
@@ -44,8 +40,6 @@ Instead of chaining to a fixer workflow, you can assign the created issue to Git
 jobs:
   detect:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   assign-to-copilot:
     needs: detect
@@ -63,8 +57,7 @@ jobs:
             --add-assignee @copilot
 ```
 
-Copilot picks up the assignment, reads the issue, and opens a PR — using its own session and context window. No `COPILOT_GITHUB_TOKEN` is needed for the handoff job itself since assignment only requires `issues: write`.
-
+Copilot picks up the assignment, reads the issue, and opens a PR — using its own session and context window. 
 ## Complete examples
 
 ### Bug Hunter → Create PR from Issue
@@ -85,8 +78,6 @@ permissions:
 jobs:
   detect:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   fix:
     needs: detect
@@ -94,8 +85,6 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
     with:
       target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 ### Code Duplication Detector → Create PR from Issue
@@ -118,8 +107,6 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-duplication-detector.lock.yml@v0
     with:
       languages: "go,python,typescript"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   fix:
     needs: detect
@@ -127,8 +114,6 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
     with:
       target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 ### Text Auditor → Create PR from Issue
@@ -149,8 +134,6 @@ permissions:
 jobs:
   detect:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-text-auditor.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   fix:
     needs: detect
@@ -158,8 +141,6 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
     with:
       target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 Most detector directories include an `example-chained.yml` you can copy directly. For detectors without one, follow the pattern above.
@@ -175,7 +156,6 @@ Most detector directories include an `example-chained.yml` you can copy directly
 ## Notes
 
 - The fix job's `if` condition prevents it from running when the detector finds nothing (noop).
-- Both jobs share the same `COPILOT_GITHUB_TOKEN` secret.
 - The caller workflow needs the union of both workflows' permissions (e.g., `contents: write` + `pull-requests: write` for the fixer).
 - Chaining does not replace the standalone examples — you can still run each workflow independently.
 - Any detector that uses the `create-issue` safe output can chain to `create-pr-from-issue`.

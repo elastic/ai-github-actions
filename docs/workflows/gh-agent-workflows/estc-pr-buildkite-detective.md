@@ -36,10 +36,10 @@ if: >-
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | `github-actions[bot]` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ## Required secrets
 
-- `COPILOT_GITHUB_TOKEN`
 - `BUILDKITE_API_TOKEN`
 
 ## Behavior notes
@@ -83,6 +83,6 @@ jobs:
       (github.event_name == 'check_run' && github.event.check_run.conclusion == 'failure')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-estc-pr-buildkite-detective.lock.yml@v0
     secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+    secrets:
       BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
 ```

@@ -54,6 +54,11 @@ on:
         type: string
         required: false
         default: "[gemini-cli]"
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
     secrets:
       GEMINI_API_KEY:
         required: true
@@ -65,6 +70,7 @@ concurrency:
   group: ${{ github.workflow }}-internal-gemini-cli-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read

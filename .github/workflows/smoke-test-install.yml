@@ -5,6 +5,9 @@ on:
     - cron: "0 6 * * *" # Daily at 06:00 UTC
   workflow_dispatch:
 
+permissions:
+  contents: none
+
 jobs:
   smoke-test:
     name: Install and compile all workflows

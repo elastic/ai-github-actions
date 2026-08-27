@@ -68,13 +68,12 @@ We've organized the agents into squads based on what they do. Each squad has its
 
 ## Quick Start
 
-Getting agents running on your repo takes three steps:
+Getting agents running on your repo takes two steps:
 
-1. **Store a Copilot PAT** as `COPILOT_GITHUB_TOKEN` in your repo secrets
-2. **Copy a workflow's `example.yml`** from the [gh-agent-workflows](https://github.com/elastic/ai-github-actions/tree/main/gh-agent-workflows) directory
-3. **Customize** with `additional-instructions` and `setup-commands` for your project
+1. **Copy a workflow's `example.yml`** from the [gh-agent-workflows](https://github.com/elastic/ai-github-actions/tree/main/gh-agent-workflows) directory
+2. **Customize** with `additional-instructions` and `setup-commands` for your project
 
-That's it. Updates propagate automatically through the `v0` tag. See the [full setup docs](../../workflows/gh-agent-workflows.md) for details.
+No personal access token required — workflows authenticate automatically via the built-in `GITHUB_TOKEN` when GitHub Copilot is available in the repository or organisation. That's it. Updates propagate automatically through the `v0` tag. See the [full setup docs](../../workflows/gh-agent-workflows.md) for details.
 
 ## What We're Learning
 

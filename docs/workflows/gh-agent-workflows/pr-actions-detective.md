@@ -30,6 +30,7 @@ mkdir -p .github/workflows && curl -fsSL \
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | `github-actions[bot]` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ## Safe outputs
 
@@ -57,6 +58,4 @@ jobs:
       github.event.workflow_run.conclusion == 'failure' &&
       toJSON(github.event.workflow_run.pull_requests) != '[]'
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-actions-detective.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```

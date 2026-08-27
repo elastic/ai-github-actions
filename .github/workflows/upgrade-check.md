@@ -19,7 +19,7 @@ engine:
 on:
   stale-check: false
   schedule:
-    - cron: "daily around 14:00 on weekdays"
+    - cron: "20 13 * * 1-5"
   workflow_dispatch:
     inputs:
       title-prefix:
@@ -33,6 +33,7 @@ concurrency:
   group: ${{ github.workflow }}-upgrade-check
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read

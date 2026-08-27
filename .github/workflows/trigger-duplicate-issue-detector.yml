@@ -6,8 +6,9 @@ on:
     types: [opened]
 
 permissions:
+  actions: read
   contents: read
-  discussions: write
+  copilot-requests: write
   issues: write
   pull-requests: read
 
@@ -16,5 +17,3 @@ jobs:
     uses: ./.github/workflows/gh-aw-duplicate-issue-detector.lock.yml
     with:
       allowed-bot-users: "github-actions[bot],copilot"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

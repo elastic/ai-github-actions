@@ -51,9 +51,12 @@ on:
         type: string
         required: false
         default: ""
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
       GH_AW_GITHUB_TOKEN:
         required: false
   roles: [admin, maintainer, write]
@@ -65,6 +68,7 @@ concurrency:
   group: ${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

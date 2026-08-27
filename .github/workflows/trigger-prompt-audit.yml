@@ -7,6 +7,7 @@ on:
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   issues: write
   pull-requests: read
 
@@ -94,5 +95,3 @@ jobs:
         - High: N findings
         - Medium: N findings
         ```
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

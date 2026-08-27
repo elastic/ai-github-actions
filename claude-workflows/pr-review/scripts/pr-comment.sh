@@ -87,7 +87,7 @@ while [ $# -gt 0 ]; do
       shift
       ;;
     *)
-      echo "Error: Unknown argument: $1"
+      echo "Error: Unknown argument: $1. Use: --severity <critical|high|medium|low|nitpick> --title <description> --why <reason> [--no-suggestion]"
       exit 1
       ;;
   esac

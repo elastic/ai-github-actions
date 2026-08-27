@@ -8,6 +8,7 @@ on:
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   discussions: write
   issues: write
   pull-requests: write
@@ -15,6 +16,8 @@ permissions:
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-issue-triage.lock.yml
+    with:
+      allowed-bot-users: "github-actions[bot],copilot"
     # with:
       # Configure which labels the agent may apply and define their semantics in additional-instructions.
       # classification-labels: "bug,needs-triage,enhancement"
@@ -22,12 +25,9 @@ jobs:
       #   - `bug`: Apply when the issue describes a clear defect or unexpected behavior.
       #   - `needs-triage`: Apply when more information is needed before the issue can be acted on.
       #   - `enhancement`: Apply when the issue describes a new feature or improvement request.
-    with:
-      allowed-bot-users: "github-actions[bot],copilot"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
-      # Optional: pass an ephemeral token (e.g. a GitHub App token) so that issue labels
-      # applied by this workflow can trigger downstream label-based workflows.
+    #secrets:
+      # Optional: pass an ephemeral token (e.g. a GitHub App token) via GH_AW_GITHUB_TOKEN
+      # so that issue labels applied by this workflow can trigger downstream label-based workflows.
       # When omitted, the built-in GITHUB_TOKEN is used for labeling, which does
       # not re-trigger other workflows.
       # GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
