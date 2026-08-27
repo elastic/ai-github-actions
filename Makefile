@@ -192,7 +192,7 @@ sync:
 
 compile: setup-gh-aw setup-gh-aw-compat sync
 	@echo "Compiling agentic workflows..."
-	-@.bin/gh-aw compile --action-tag $(GH_AW_VERSION)
+	@.bin/gh-aw compile --action-tag $(GH_AW_VERSION)
 	@echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."
 	if [ -n "$(GH_AW_COMPAT_WORKFLOWS)" ]; then \
 		echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."; \
