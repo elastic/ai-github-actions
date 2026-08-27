@@ -69,7 +69,6 @@ jobs:
             scheduled-audit
             scheduled-fix
             small-problem-fixer
-            stale-issues
             test-coverage-detector
             text-auditor
             update-pr-body
