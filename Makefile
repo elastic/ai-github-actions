@@ -196,7 +196,7 @@ compile: setup-gh-aw setup-gh-aw-compat sync
 	@echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."
 	if [ -n "$(GH_AW_COMPAT_WORKFLOWS)" ]; then \
 		echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."; \
-		@.bin/gh-aw-compat compile --action-tag $(GH_AW_COMPAT_VERSION) $(GH_AW_COMPAT_WORKFLOWS); \
+		.bin/gh-aw-compat compile --action-tag $(GH_AW_COMPAT_VERSION) $(GH_AW_COMPAT_WORKFLOWS); \
 		echo "✓ Compat workflows compiled"; \
 	else \
 		echo "No compat workflows to compile"; \
