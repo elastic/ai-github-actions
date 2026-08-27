@@ -23,7 +23,7 @@ Full documentation lives at https://elastic.github.io/ai-github-actions/.
 ## Top recommended workflows
 
 - Starter repo operations set: `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
-- Continuous improvement set: `bug-hunter`, `code-complexity-detector`, `code-duplication-detector`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues-investigator`, `stale-issues-remediator`, `test-coverage-detector`, `breaking-change-detector`, `update-pr-body`
+- Continuous improvement set: `bug-hunter`, `code-complexity-detector`, `code-duplication-detector`, `docs-patrol`, `newbie-contributor-patrol`, `product-manager-impersonator`, `refactor-opportunist`, `small-problem-fixer`, `stale-issues-investigator`, `stale-issues-remediator`, `test-coverage-detector`, `breaking-change-detector`, `update-pr-body`
 
 ## Quick setup script
 
@@ -35,9 +35,8 @@ curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/script
 ````
 
 By default, this installs recommended GitHub Agent Workflow triggers, adds `agentics-maintenance.yml`,
-sets `COPILOT_GITHUB_TOKEN`, creates branch `ai-gh-aw-setup`, pushes it, and opens a PR. Use
-`--continuous-improvement` to also install selected continuous improvement workflows.
-
-## License
+creates branch `ai-gh-aw-setup`, pushes it, and opens a PR. No personal access token is required —
+workflows authenticate via the built-in `GITHUB_TOKEN`. Use `--continuous-improvement` to also install
+selected continuous improvement workflows. Use `--set-secret` (deprecated and no longer needed).## License
 
 MIT

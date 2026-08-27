@@ -16,7 +16,7 @@ engine:
 on:
   stale-check: false
   schedule:
-    - cron: "daily around 14:00 on weekdays"
+    - cron: "49 14 * * 1-5"
   workflow_dispatch:
     inputs:
       target-workflow:
@@ -34,6 +34,7 @@ concurrency:
   group: ${{ github.workflow }}-agent-deep-dive
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
@@ -70,6 +71,7 @@ steps:
     run: |
       set -euo pipefail
       mkdir -p /tmp/gh-aw/deep-dive
+      RUN_COUNT="${RUN_COUNT:-20}"
 
       # If no target workflow is specified, pick one automatically by rotating
       # through agentic workflows based on the current day-of-week

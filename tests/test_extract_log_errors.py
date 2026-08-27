@@ -111,6 +111,18 @@ def test_default_patterns_match_lowercase_error(tmp_path):
     assert "error: lower-case failure marker" in matches[0]["snippet"]
 
 
+def test_default_patterns_match_uppercase_fatal(tmp_path):
+    script = load_script_module()
+    log_file = tmp_path / "fatal.log"
+    log_file.write_text("line1\nFATAL: unrecoverable failure\nline3\n")
+
+    patterns = [script.re.compile(p) for p in script.DEFAULT_PATTERNS]
+    matches = script.extract_matches(str(log_file), patterns, context=0)
+
+    assert len(matches) == 1
+    assert "FATAL: unrecoverable failure" in matches[0]["snippet"]
+
+
 def test_main_writes_empty_output_for_empty_manifest_logs(tmp_path):
     manifest = tmp_path / "manifest.json"
     manifest.write_text(

@@ -35,6 +35,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
 | `title-prefix` | Title prefix for created issues | No | `"[product-manager-impersonator]"` |
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
 
 ## Example: Running Multiple Personas
 
@@ -58,8 +59,6 @@ jobs:
     with:
       idea-size: "small"
       title-prefix: "[idea]"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   sre-idea:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-product-manager-impersonator.lock.yml@v0
@@ -67,8 +66,6 @@ jobs:
       persona: "a seasoned SRE and platform engineer who lives in logs, metrics, and distributed traces"
       idea-size: "small"
       title-prefix: "[observability idea]"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   security-idea:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-product-manager-impersonator.lock.yml@v0
@@ -76,8 +73,6 @@ jobs:
       persona: "a seasoned threat-hunter and SOC engineer who lives in dashboards, detection rules, and XDR alert queues"
       idea-size: "medium"
       title-prefix: "[security idea]"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 ## Safe Outputs

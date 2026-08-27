@@ -7,16 +7,15 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: read
   contents: write
+  copilot-requests: write
   issues: write
   pull-requests: write
 
-  actions: read
 jobs:
   run:
     uses: ./.github/workflows/gh-aw-newbie-contributor-patrol.lock.yml
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   create_pr_from_issue:
     needs: run
@@ -26,5 +25,4 @@ jobs:
       target-issue-number: ${{ needs.run.outputs.created_issue_number }}
       additional-instructions: "Create a focused pull request that resolves this issue."
     secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}

@@ -87,11 +87,11 @@ def list_workflow_runs(repo: str, workflow: str, token: str, since: str | None, 
     runs = []
     for batch in _iter_workflow_run_pages(repo=repo, workflow=workflow, token=token):
         for run in batch:
-            if not _run_matches_conclusion(run, conclusion):
-                continue
             if _is_before_since_boundary(run, since):
                 # Runs are sorted newest-first; once we go past since, stop paging
                 return runs
+            if not _run_matches_conclusion(run, conclusion):
+                continue
             if _is_after_until_boundary(run, until_normalized):
                 continue
             runs.append(run)

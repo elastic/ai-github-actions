@@ -16,7 +16,7 @@ for arg in "$@"; do
       echo "  --push  git add, commit, and push after moving files"
       exit 0
       ;;
-    *) echo "Unknown flag: $arg"; exit 1 ;;
+    *) echo "Error: Unknown flag: $arg. Use --help for usage." >&2; exit 1 ;;
   esac
 done
 

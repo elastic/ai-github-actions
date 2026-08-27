@@ -50,9 +50,6 @@ on:
         type: string
         required: false
         default: "[downstream-health]"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -60,6 +57,7 @@ concurrency:
   group: ${{ github.workflow }}-internal-downstream-health
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

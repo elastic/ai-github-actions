@@ -31,6 +31,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `edit-completeness` | How aggressively to add missing information about significant changes (`high`/`low`/`none`) | No | `low` |
 | `edit-format` | How aggressively to improve markdown formatting and structure (`high`/`low`/`none`) | No | `none` |
 | `edit-style` | How aggressively to improve writing style and clarity (`high`/`low`/`none`) | No | `none` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
 
 ### Edit Levels
 

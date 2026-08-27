@@ -2,6 +2,12 @@
 
 > **Migrating from Claude Workflows?** See the [Migration Guide](migration-guide.md) for step-by-step instructions on migrating from legacy Claude Composite Actions to GitHub Agent Workflows.
 
+## gh-aw compiler v0.83.4
+
+This upgrade adds security hardening, workflow reliability fixes, and support for Google Vertex AI Workload Identity Federation and additional Copilot BYOK frontmatter options.
+
+No breaking changes affect this repository. Source workflows do not use the deprecated `needs.activation.outputs.*` authoring pattern, so no workflow migration is required.
+
 ## gh-aw compiler v0.51.0
 
 Compiler upgrade with new features and bug fixes. No breaking changes — recompile your workflows to pick up improvements.
@@ -23,9 +29,9 @@ Compiler upgrade with new features and bug fixes. No breaking changes — recomp
 - Activation job `contents: read` permission added
 - Report template headers normalized to `h3+` levels
 
-## gh-aw compiler v0.56.2 (approx)
+## gh-aw compiler v0.56.x
 
-Compiler updates in this range fix safe-output workflow-call output propagation so detector/audit workflows reliably expose created issue outputs (for example, `created_issue_number`).
+Compiler updates in this range fix safe-output `workflow_call` output propagation so detector/audit workflows reliably expose created issue outputs (for example, `created_issue_number`).
 
 That enables same-run chaining patterns like:
 - detector/audit job creates an issue
@@ -72,8 +78,6 @@ permissions:
 jobs:
   detect:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   fix:
     needs: detect
@@ -81,8 +85,6 @@ jobs:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
     with:
       target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
 
 See [Detector / Fixer Chaining](workflows/detector-fixer-chaining.md) for the full pattern and more examples.

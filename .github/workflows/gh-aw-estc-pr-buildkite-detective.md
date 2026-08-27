@@ -41,9 +41,12 @@ on:
         type: string
         required: false
         default: ""
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
       BUILDKITE_API_TOKEN:
         required: true
   roles: [admin, maintainer, write]
@@ -54,6 +57,7 @@ concurrency:
   group: ${{ github.workflow }}-estc-pr-buildkite-detective-${{ github.event.check_run.id || github.run_id }}
   cancel-in-progress: false
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read

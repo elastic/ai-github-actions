@@ -2,7 +2,7 @@
 # pr-existing-comments.sh - Fetch existing review threads on a PR
 #
 # Usage:
-#   pr-existing-comments.sh              - Show all review threads with full details
+#   pr-existing-comments.sh              - Show all review threads (truncated text by default)
 #   pr-existing-comments.sh --summary    - Show per-file summary only (for large PRs)
 #   pr-existing-comments.sh --unresolved - Show only unresolved threads
 #   pr-existing-comments.sh --file <path> - Show threads for a specific file

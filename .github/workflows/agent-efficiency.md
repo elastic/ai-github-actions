@@ -16,7 +16,7 @@ engine:
 on:
   stale-check: false
   schedule:
-    - cron: "daily around 16:00 on weekdays"
+    - cron: "19 15 * * 1-5"
   workflow_dispatch:
   roles: [admin, maintainer, write]
   bots:
@@ -25,6 +25,7 @@ concurrency:
   group: ${{ github.workflow }}-agent-efficiency
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
