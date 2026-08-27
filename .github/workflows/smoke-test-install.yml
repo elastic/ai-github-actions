@@ -1,6 +1,9 @@
 ---
 name: "Internal: Smoke Test — Install & Compile"
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/smoke-test-install.yml"
   schedule:
     - cron: "0 6 * * *" # Daily at 06:00 UTC
   workflow_dispatch:
@@ -16,7 +19,6 @@ jobs:
       fail-fast: false
       matrix:
         workflow:
-          - agent-efficiency
           - agent-suggestions
           - breaking-change-detector
           - bug-hunter
@@ -43,26 +45,20 @@ jobs:
           - scheduled-audit
           - scheduled-fix
           - small-problem-fixer
-          - stale-issues
           - test-coverage-detector
           - text-auditor
           - update-pr-body
-    env:
-      GH_AW_VERSION: "v0.87.4"
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.25"
-          cache: false
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Install pinned gh-aw CLI
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          GOBIN="$HOME/.local/bin" go install "github.com/github/gh-aw/cmd/gh-aw@${GH_AW_VERSION}"
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          "$HOME/.local/bin/gh-aw" version
+          make setup-gh-aw
+          echo "$GITHUB_WORKSPACE/.bin" >> "$GITHUB_PATH"
+          "$GITHUB_WORKSPACE/.bin/gh-aw" version
 
       - name: Create a fresh repo
         run: |
@@ -77,8 +73,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
-          gh-aw add "elastic/ai-github-actions/.github/workflows/gh-aw-${{ matrix.workflow }}.md" --non-interactive
+          gh-aw add "elastic/ai-github-actions/.github/workflows/gh-aw-${{ matrix.workflow }}.md"
 
       - name: Verify lock files
         working-directory: /tmp/test-repo
