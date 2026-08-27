@@ -10,8 +10,43 @@ permissions:
 
 jobs:
   smoke-test:
-    name: Install and compile all workflows
+    name: Install and compile ${{ matrix.workflow }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        workflow:
+          - agent-efficiency
+          - agent-suggestions
+          - breaking-change-detector
+          - bug-hunter
+          - code-complexity-detector
+          - code-duplication-detector
+          - docs-patrol
+          - duplicate-issue-detector
+          - estc-docs-patrol-external
+          - estc-docs-pr-review
+          - estc-newbie-contributor-patrol-external
+          - estc-pr-buildkite-detective
+          - flaky-test-investigator
+          - issue-fixer
+          - issue-triage
+          - mention-in-issue
+          - mention-in-pr
+          - newbie-contributor-patrol
+          - performance-profiler
+          - pr-actions-detective
+          - pr-actions-fixer
+          - pr-review
+          - project-summary
+          - release-update
+          - scheduled-audit
+          - scheduled-fix
+          - small-problem-fixer
+          - stale-issues
+          - test-coverage-detector
+          - text-auditor
+          - update-pr-body
     env:
       GH_AW_VERSION: "v0.87.4"
     steps:
@@ -37,71 +72,13 @@ jobs:
           git config user.email "smoke-test@localhost"
           git commit --allow-empty -m "init"
 
-      - name: Install every workflow
+      - name: Install workflow
         working-directory: /tmp/test-repo
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-
-          WORKFLOWS=(
-            agent-efficiency
-            agent-suggestions
-            breaking-change-detector
-            bug-hunter
-            code-complexity-detector
-            code-duplication-detector
-            docs-patrol
-            duplicate-issue-detector
-            estc-docs-patrol-external
-            estc-docs-pr-review
-            estc-newbie-contributor-patrol-external
-            estc-pr-buildkite-detective
-            flaky-test-investigator
-            issue-fixer
-            issue-triage
-            mention-in-issue
-            mention-in-pr
-            newbie-contributor-patrol
-            performance-profiler
-            pr-actions-detective
-            pr-actions-fixer
-            pr-review
-            project-summary
-            release-update
-            scheduled-audit
-            scheduled-fix
-            small-problem-fixer
-            stale-issues
-            test-coverage-detector
-            text-auditor
-            update-pr-body
-          )
-
-          FAILED=0
-
-          for wf in "${WORKFLOWS[@]}"; do
-            echo "::group::Installing ${wf}"
-            if gh-aw add "elastic/ai-github-actions/.github/workflows/gh-aw-${wf}.md" --non-interactive; then
-              echo "::endgroup::"
-            else
-              echo "::endgroup::"
-              echo "::error::Failed to install ${wf}"
-              FAILED=$((FAILED + 1))
-            fi
-          done
-
-          echo ""
-          echo "=== Installed shims ==="
-          ls -la .github/workflows/*.md
-          echo ""
-          echo "=== Compiled lock files ==="
-          ls -lh .github/workflows/*.lock.yml
-
-          if [ "$FAILED" -gt 0 ]; then
-            echo "::error::${FAILED} workflow(s) failed to install"
-            exit 1
-          fi
+          gh-aw add "elastic/ai-github-actions/.github/workflows/gh-aw-${{ matrix.workflow }}.md" --non-interactive
 
       - name: Verify lock files
         working-directory: /tmp/test-repo
@@ -120,13 +97,7 @@ jobs:
 
           if [ "$LOCKS" -ne "$SHIMS" ]; then
             echo "::error::Shim count (${SHIMS}) does not match lock file count (${LOCKS})"
-            echo ""
-            echo "Shims:"
-            find .github/workflows -maxdepth 1 -name "*.md" | sort
-            echo ""
-            echo "Lock files:"
-            find .github/workflows -maxdepth 1 -name "*.lock.yml" | sort
             exit 1
           fi
 
-          echo "All ${SHIMS} workflows installed and compiled successfully."
+          echo "${{ matrix.workflow }} installed and compiled successfully."
