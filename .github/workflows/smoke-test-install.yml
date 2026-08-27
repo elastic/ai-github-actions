@@ -16,6 +16,9 @@ jobs:
     name: Install and compile all workflows
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
       - name: Install pinned gh-aw CLI
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
