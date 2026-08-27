@@ -1,9 +1,9 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.12
 ACTION_VALIDATOR_VERSION := 0.9.0
-GH_AW_VERSION := v0.83.4
-GH_AW_BUILD_VERSION := v0.83.4
-GH_AW_COMPAT_VERSION := v0.83.4
+GH_AW_VERSION := v0.87.4
+GH_AW_BUILD_VERSION := v0.87.4
+GH_AW_COMPAT_VERSION := v0.87.4
 GH_AW_MODULE_REPO := github.com/github/gh-aw
 GH_AW_SOURCE_REPO := github.com/github/gh-aw
 GH_AW_SETUP_ACTION_REPO := $(patsubst github.com/%,%,$(GH_AW_SOURCE_REPO))
@@ -192,11 +192,11 @@ sync:
 
 compile: setup-gh-aw setup-gh-aw-compat sync
 	@echo "Compiling agentic workflows..."
-	-@.bin/gh-aw compile --action-tag $(GH_AW_VERSION)
+	@.bin/gh-aw compile --action-tag $(GH_AW_VERSION)
 	@echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."
 	if [ -n "$(GH_AW_COMPAT_WORKFLOWS)" ]; then \
 		echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."; \
-		@.bin/gh-aw-compat compile --action-tag $(GH_AW_COMPAT_VERSION) $(GH_AW_COMPAT_WORKFLOWS); \
+		.bin/gh-aw-compat compile --action-tag $(GH_AW_COMPAT_VERSION) $(GH_AW_COMPAT_WORKFLOWS); \
 		echo "✓ Compat workflows compiled"; \
 	else \
 		echo "No compat workflows to compile"; \
@@ -231,11 +231,9 @@ lint-workflows: setup-actionlint
 	@ACTIONLINT="bin/actionlint"; \
 	( \
 		find claude-workflows -name "example.yml" -o -name "example.yaml"; \
-		find .github/workflows -maxdepth 1 \( \
-			-name "trigger-*.yml" -o -name "trigger-*.yaml" -o \
-			-name "ci.yml" -o \
-			-name "release.yml" -o -name "smoke-test-install.yml" \
-		\); \
+		find .github/workflows -maxdepth 1 -type f \( -name "*.yml" -o -name "*.yaml" \) \
+			! -name "*.lock.yml" ! -name "*.lock.yaml" \
+			! -name "agentics-maintenance.yml"; \
 	) 2>/dev/null | while read -r file; do \
 		echo "Checking $$file..."; \
 		$$ACTIONLINT -ignore 'unknown permission scope "copilot-requests"' "$$file" || exit 1; \

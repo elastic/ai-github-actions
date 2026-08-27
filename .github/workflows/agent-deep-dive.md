@@ -16,7 +16,7 @@ engine:
 on:
   stale-check: false
   schedule:
-    - cron: "daily around 14:00 on weekdays"
+    - cron: "49 14 * * 1-5"
   workflow_dispatch:
     inputs:
       target-workflow:
