@@ -32,7 +32,7 @@ DEFAULT_PATTERNS = [
     r"##\[error\]",
     r"##\[warning\]",
     r"(?i)\berror:",
-    r"\bfatal:",
+    r"(?i)\bfatal:",
     r"\bFAILED\b",
     r"exited with exit code [^0]",
     r"Process completed with exit code [^0]",
