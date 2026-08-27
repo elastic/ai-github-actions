@@ -80,7 +80,7 @@ jobs:
 
           for wf in "${WORKFLOWS[@]}"; do
             echo "::group::Installing ${wf}"
-            if gh-aw add "elastic/ai-github-actions/.github/workflows/gh-aw-${wf}.md" --non-interactive; then
+            if gh-aw add "elastic/ai-github-actions/.github/workflows/gh-aw-${wf}.md"; then
               echo "::endgroup::"
             else
               echo "::endgroup::"
