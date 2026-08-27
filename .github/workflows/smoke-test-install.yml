@@ -14,7 +14,7 @@ permissions:
 jobs:
   smoke-test:
     name: Install and compile ${{ matrix.workflow }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     strategy:
       fail-fast: false
       matrix:
