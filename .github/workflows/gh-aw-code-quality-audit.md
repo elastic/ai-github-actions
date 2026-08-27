@@ -51,6 +51,11 @@ on:
         description: "Title prefix for created issues (e.g. '[react-accessibility]')"
         type: string
         required: true
+      target-repo:
+        description: "Repository where audit issues are created, in owner/repo format. Defaults to the workflow repository; use GH_AW_GITHUB_TOKEN for cross-repository access."
+        type: string
+        required: false
+        default: "${{ github.repository }}"
       severity-threshold:
         description: "Minimum severity to include in the report. 'high' = only report issues with clear user impact or correctness problems. 'medium' (default) = also include issues that degrade quality or maintainability. 'low' = also include minor deviations from best practices."
         type: string
@@ -61,6 +66,9 @@ on:
         type: boolean
         required: false
         default: true
+    secrets:
+      GH_AW_GITHUB_TOKEN:
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -81,9 +89,11 @@ tools:
 strict: false
 safe-outputs:
   activation-comments: false
+  github-token: "${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}"
   noop:
   create-issue:
     max: 1
+    target-repo: "${{ inputs.target-repo }}"
     title-prefix: "${{ inputs.title-prefix }} "
     close-older-key: "${{ inputs.title-prefix }}"
     close-older-issues: false
@@ -125,12 +135,12 @@ steps:
 
 3. Check for duplicates:
    - Read `/tmp/previous-findings.json` for issues already filed by this agent.
-   - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "${{ inputs.title-prefix }}"`.
+   - Search open issues: `repo:${{ inputs.target-repo }} is:issue is:open in:title "${{ inputs.title-prefix }}"`.
    - Drop any finding that closely matches an existing open issue.
 
 ### Labeling
 
-- If a label matching the title prefix (without brackets) exists (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `${{ inputs.title-prefix }}` title prefix only.
+- If a label matching the title prefix (without brackets) exists in `${{ inputs.target-repo }}` (check with `github-get_label`), include it in the `create_issue` call; otherwise, rely on the `${{ inputs.title-prefix }}` title prefix only.
 
 ## Audit Criteria
 
