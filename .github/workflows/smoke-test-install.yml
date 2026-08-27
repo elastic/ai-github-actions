@@ -43,7 +43,6 @@ jobs:
           set -euo pipefail
 
           WORKFLOWS=(
-            agent-efficiency
             agent-suggestions
             breaking-change-detector
             bug-hunter
