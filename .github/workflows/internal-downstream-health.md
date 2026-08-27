@@ -103,11 +103,16 @@ Monitor the health of downstream repositories using AI workflows from elastic/ai
    - elastic/integrations
    - elastic/infra-party
 
-2. **For each downstream repository, check recent bot activity**
+2. **Check recent bot activity across the downstream repositories**
    
-   Look for recent comments and PR reviews by `github-actions[bot]` in the last 24 hours:
-   - Use `github-search_issues` with query: `repo:{owner}/{repo} commenter:github-actions[bot] updated:>={date}`
-   - Use `github-search_pull_requests` with query: `repo:{owner}/{repo} reviewed-by:github-actions[bot] updated:>={date}`
+   Search once across the Elastic organization for comments and PR reviews by
+   `github-actions[bot]` in the last 24 hours, then keep only results from the
+   downstream repositories discovered above:
+   - Use `github-search_issues` with query: `org:elastic commenter:github-actions[bot] updated:>={date}`
+   - Use `github-search_pull_requests` with query: `org:elastic reviewed-by:github-actions[bot] updated:>={date}`
+   
+   Do not issue a separate search for each repository; the organization-wide
+   searches avoid GitHub secondary-rate-limit failures.
    
 3. **Analyze bot responses for issues**
    
