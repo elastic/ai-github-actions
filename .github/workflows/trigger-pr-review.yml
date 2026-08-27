@@ -9,7 +9,7 @@ permissions:
   actions: read
   contents: read
   copilot-requests: write
-  issues: read  # needed for no-op run tracking issue
+  issues: write  # needed for failure tracking and no-op run tracking
   pull-requests: write
 
 jobs:
