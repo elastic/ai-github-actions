@@ -204,6 +204,7 @@ compile: setup-gh-aw setup-gh-aw-compat sync
 	@$(MAKE) postprocess-setup-action
 	@./scripts/backwards-compat.sh
 	@./scripts/wire-report-failure-input.sh
+	@./scripts/wire-report-failed-jobs-input.sh
 	@./scripts/validate-uses-references.sh
 
 postprocess-setup-action:
