@@ -5,19 +5,9 @@
       "version": "v7",
       "sha": "f28e40c7f34bde8b3046d885e986cb6290c5673b"
     },
-    "actions/github-script@v8": {
-      "repo": "actions/github-script",
-      "version": "v8",
-      "sha": "ed597411d8f924073f98dfc5c65a23a2325f34cd"
-    },
     "actions/github-script@v9": {
       "repo": "actions/github-script",
       "version": "v9",
-      "sha": "373c709c69115d41ff229c7e5df9f8788daa9553"
-    },
-    "actions/github-script@v9.0.0": {
-      "repo": "actions/github-script",
-      "version": "v9.0.0",
       "sha": "3a2844b7e9c422d3c10d287c895573f7108da1b3"
     },
     "actions/setup-go@v5": {
@@ -28,7 +18,7 @@
     "actions/setup-node@v6": {
       "repo": "actions/setup-node",
       "version": "v6",
-      "sha": "6044e13b5dc448c55e2357c09f80417699197238"
+      "sha": "249970729cb0ef3589644e2896645e5dc5ba9c38"
     },
     "actions/setup-python@v5": {
       "repo": "actions/setup-python",
@@ -38,7 +28,7 @@
     "astral-sh/setup-uv@v5": {
       "repo": "astral-sh/setup-uv",
       "version": "v5",
-      "sha": "e58605a9b6da7c637471fab8847a5e5a6b8df081"
+      "sha": "d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86"
     },
     "github/gh-aw-actions/setup-cli@v0.87.5": {
       "repo": "github/gh-aw-actions/setup-cli",
