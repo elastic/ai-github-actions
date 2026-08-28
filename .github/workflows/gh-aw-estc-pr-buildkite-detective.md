@@ -139,7 +139,7 @@ steps:
       def skip(reason):
           subprocess.run(['bash', '-c', f'echo "::notice::{reason}"'], check=False)
           print(reason)
-          sys.exit(1)
+          sys.exit(0)
 
       if not pr_number:
           skip('Build is not associated with a PR; skipping')
