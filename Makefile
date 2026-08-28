@@ -1,9 +1,9 @@
 # Tool versions
 ACTIONLINT_VERSION := 1.7.12
 ACTION_VALIDATOR_VERSION := 0.9.0
-GH_AW_VERSION := v0.87.4
-GH_AW_BUILD_VERSION := v0.87.4
-GH_AW_COMPAT_VERSION := v0.87.4
+GH_AW_VERSION := v0.87.5
+GH_AW_BUILD_VERSION := v0.87.5
+GH_AW_COMPAT_VERSION := v0.87.5
 GH_AW_MODULE_REPO := github.com/github/gh-aw
 GH_AW_SOURCE_REPO := github.com/github/gh-aw
 GH_AW_SETUP_ACTION_REPO := $(patsubst github.com/%,%,$(GH_AW_SOURCE_REPO))
