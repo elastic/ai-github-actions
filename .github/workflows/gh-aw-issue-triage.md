@@ -191,9 +191,16 @@ If `${{ inputs.classification-labels }}` is not empty:
 
 If `${{ inputs.classification-labels }}` is empty, skip this step entirely.
 
-### Step 5: Post Response
+### Step 5: Post Response (REQUIRED)
 
-1. Call `add_comment` with your triage response.
-2. If labels were determined in Step 4, call `add_labels` to apply them to the issue.
+**You MUST complete this step** — at least one safe output tool call is required.
+
+1. If you have a triage response from Step 3:
+   - Call `add_comment` with your triage response.
+   - If labels were determined in Step 4, call `add_labels` to apply them to the issue.
+
+2. If you cannot provide a triage response (e.g., the issue is invalid, malformed, or you lack necessary context):
+   - Call `noop` with a brief explanation of why triage was not performed.
+   - Example: `noop("Unable to triage: issue description is empty and provides no context for investigation.")`
 
 ${{ inputs.additional-instructions }}
