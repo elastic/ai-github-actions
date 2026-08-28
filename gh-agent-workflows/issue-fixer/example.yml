@@ -10,7 +10,13 @@ permissions:
   discussions: write
   issues: write
   pull-requests: write
+  id-token: write
 
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-fixer.lock.yml@v0
+    # with:
+      # Elastic OIDC: mint an ephemeral token inside the lock workflow so PRs re-trigger CI.
+      # Requires id-token: write on this job (and a catalog TokenPolicy).
+      # mint-ephemeral-token: true
+      # token-policy: ""

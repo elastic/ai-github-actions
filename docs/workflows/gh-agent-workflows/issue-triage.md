@@ -29,12 +29,14 @@ mkdir -p .github/workflows && curl -fsSL \
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | `github-actions[bot]` |
 | `classification-labels` | Comma-separated list of labels the agent may apply (e.g. `bug,needs-triage,enhancement`). If empty, no labels are applied. Define label semantics in `additional-instructions`. | `""` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
+| `mint-ephemeral-token` | When `true`, mint an OIDC ephemeral GitHub token in each token-consuming job. Labels then re-trigger downstream workflows. The caller job must grant `id-token: write`. | `false` |
+| `token-policy` | Backstage TokenPolicy id for `create-token`. Empty uses Vault auto policy. Used only when `mint-ephemeral-token` is `true`. | `""` |
 
 ## Secrets
 
 | Secret | Description | Required |
 | --- | --- | --- |
-| `GH_AW_GITHUB_TOKEN` | Ephemeral token (e.g. a GitHub App token) used for issue labeling safe outputs. When provided, labels applied by this workflow will trigger downstream label-based workflows. When omitted, the built-in `GITHUB_TOKEN` is used, which does not re-trigger other workflows. | No |
+| `GH_AW_GITHUB_TOKEN` | Optional override token for GitHub API writes. Prefer `mint-ephemeral-token` with OIDC when available. When neither is set, `GITHUB_TOKEN` is used and label writes do not re-trigger other workflows. | No |
 
 ## Safe outputs
 
@@ -55,6 +57,7 @@ permissions:
   discussions: write
   issues: write
   pull-requests: write
+  id-token: write
 
 jobs:
   run:
@@ -66,9 +69,6 @@ jobs:
       #   - `bug`: Apply when the issue describes a clear defect or unexpected behavior.
       #   - `needs-triage`: Apply when more information is needed before the issue can be acted on.
       #   - `enhancement`: Apply when the issue describes a new feature or improvement request.
-      # Optional: pass an ephemeral token (e.g. a GitHub App token) so that issue labels
-      # applied by this workflow can trigger downstream label-based workflows.
-      # When omitted, the built-in GITHUB_TOKEN is used for labeling, which does
-      # not re-trigger other workflows.
-      # GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+      # Elastic OIDC: mint-ephemeral-token: true
+      # token-policy: ""
 ```

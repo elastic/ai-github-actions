@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"bce3f1d31ab2f5900302776c03e601728b542f8eb32419370f17b6eb844d4f2c","body_hash":"38e80fc61b9184149ce7ec81dfc74ff08337f9010b951791dfd0a301c0698df4","compiler_version":"v0.87.5","agent_id":"copilot","agent_model":"${{ inputs.model }}","engine_versions":{"copilot":"1.0.80"}}
-# gh-aw-manifest: {"version":1,"secrets":["GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9"},{"repo":"actions/setup-go","sha":"40f1582b2485089dde7abd97c1529aa768e1baff","version":"v5"},{"repo":"actions/setup-node","sha":"249970729cb0ef3589644e2896645e5dc5ba9c38","version":"v6"},{"repo":"actions/setup-python","sha":"a26af69be951a213d495a4c3e4e4022e16d87065","version":"v5"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"astral-sh/setup-uv","sha":"d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86","version":"v5"},{"repo":"github/gh-aw-actions/setup-cli","sha":"2a78d04403fdc6907d0f05327cffac9dbad5312d","version":"v0.87.5"},{"repo":"github/gh-aw/actions/setup","sha":"654cf351a5953df1f2751f49de8a9ca384c07994","version":"v0.87.5"},{"repo":"ruby/setup-ruby","sha":"95ef2b042f9d7a56d8268cba8559e2842e2ad01b","version":"v1.321.0 (source v1)"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.7","digest":"sha256:40a1e30b1b8d70642d4292485146cd5af612730d7a6a2e12706ddd13df375059","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.7@sha256:40a1e30b1b8d70642d4292485146cd5af612730d7a6a2e12706ddd13df375059"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.7","digest":"sha256:4f209dd4cbc74d47a6c7379956143de293429d1b1b2fb2647776cdcbf65836a1","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.7@sha256:4f209dd4cbc74d47a6c7379956143de293429d1b1b2fb2647776cdcbf65836a1"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.7","digest":"sha256:fb362a08d4d2f0da6c036e3f5d3b2fd87931e857fec3ca4a241cd2f2b61131f9","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.7@sha256:fb362a08d4d2f0da6c036e3f5d3b2fd87931e857fec3ca4a241cd2f2b61131f9"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.10","digest":"sha256:08bb5fa417aed94b40a14e2b7b3ae457531a5f22b143a32fe58317139d9b8f42","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.10@sha256:08bb5fa417aed94b40a14e2b7b3ae457531a5f22b143a32fe58317139d9b8f42"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:bac2192f6374d6262116399b34fc5e143d576f82719e90a18261cae7480f4d4e","pinned_image":"ghcr.io/github/gh-aw-node@sha256:bac2192f6374d6262116399b34fc5e143d576f82719e90a18261cae7480f4d4e"},{"image":"ghcr.io/github/github-mcp-server:v1.10.0","digest":"sha256:097512ddf58af80a620c177ae9cad93448f9a2a55c70ee8fde5cec6714522a8c","pinned_image":"ghcr.io/github/github-mcp-server:v1.10.0@sha256:097512ddf58af80a620c177ae9cad93448f9a2a55c70ee8fde5cec6714522a8c"}],"mcp_servers":[{"name":"github","tools":["actions_get","actions_list","get_commit","get_file_contents","get_job_logs","get_latest_release","get_pull_request","get_pull_request_comments","get_pull_request_diff","get_pull_request_files","get_pull_request_review_comments","get_pull_request_reviews","get_pull_request_status","get_release_by_tag","get_tag","issue_read","list_branches","list_commits","list_issue_types","list_issues","list_pull_requests","list_releases","list_starred_repositories","list_tags","pull_request_read","search_code","search_issues","search_pull_requests","search_repositories"]},{"name":"public-code-search","tools":["search_code"]},{"name":"safeoutputs","tools":["add_comment","add_labels","missing_data","missing_tool","noop"]}]}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"9f9bede5b45d81613cedac8ed1fedf976b4e03ee7acc511a9692ebae372bfea1","body_hash":"7c16b6899e4c8ff6fa3ba08b76522397868478c38b90cf2229f3ff78b2ba0f5f","compiler_version":"v0.87.5","agent_id":"copilot","agent_model":"${{ inputs.model }}","engine_versions":{"copilot":"1.0.80"}}
+# gh-aw-manifest: {"version":1,"secrets":["GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"3d3c42e5aac5ba805825da76410c181273ba90b1","version":"v7.0.1"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9"},{"repo":"actions/setup-go","sha":"40f1582b2485089dde7abd97c1529aa768e1baff","version":"v5"},{"repo":"actions/setup-node","sha":"249970729cb0ef3589644e2896645e5dc5ba9c38","version":"v6"},{"repo":"actions/setup-python","sha":"a26af69be951a213d495a4c3e4e4022e16d87065","version":"v5"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"astral-sh/setup-uv","sha":"d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86","version":"v5"},{"repo":"elastic/oblt-actions/github/create-token","sha":"fc9e175c194697e4f2198077efefa02609214952","version":"v1"},{"repo":"github/gh-aw-actions/setup-cli","sha":"2a78d04403fdc6907d0f05327cffac9dbad5312d","version":"v0.87.5"},{"repo":"github/gh-aw/actions/setup","sha":"654cf351a5953df1f2751f49de8a9ca384c07994","version":"v0.87.5"},{"repo":"ruby/setup-ruby","sha":"95ef2b042f9d7a56d8268cba8559e2842e2ad01b","version":"v1.321.0 (source v1)"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.28.7","digest":"sha256:40a1e30b1b8d70642d4292485146cd5af612730d7a6a2e12706ddd13df375059","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.28.7@sha256:40a1e30b1b8d70642d4292485146cd5af612730d7a6a2e12706ddd13df375059"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.7","digest":"sha256:4f209dd4cbc74d47a6c7379956143de293429d1b1b2fb2647776cdcbf65836a1","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.28.7@sha256:4f209dd4cbc74d47a6c7379956143de293429d1b1b2fb2647776cdcbf65836a1"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.28.7","digest":"sha256:fb362a08d4d2f0da6c036e3f5d3b2fd87931e857fec3ca4a241cd2f2b61131f9","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.28.7@sha256:fb362a08d4d2f0da6c036e3f5d3b2fd87931e857fec3ca4a241cd2f2b61131f9"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.10","digest":"sha256:08bb5fa417aed94b40a14e2b7b3ae457531a5f22b143a32fe58317139d9b8f42","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.10@sha256:08bb5fa417aed94b40a14e2b7b3ae457531a5f22b143a32fe58317139d9b8f42"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:bac2192f6374d6262116399b34fc5e143d576f82719e90a18261cae7480f4d4e","pinned_image":"ghcr.io/github/gh-aw-node@sha256:bac2192f6374d6262116399b34fc5e143d576f82719e90a18261cae7480f4d4e"},{"image":"ghcr.io/github/github-mcp-server:v1.10.0","digest":"sha256:097512ddf58af80a620c177ae9cad93448f9a2a55c70ee8fde5cec6714522a8c","pinned_image":"ghcr.io/github/github-mcp-server:v1.10.0@sha256:097512ddf58af80a620c177ae9cad93448f9a2a55c70ee8fde5cec6714522a8c"}],"mcp_servers":[{"name":"github","tools":["actions_get","actions_list","get_commit","get_file_contents","get_job_logs","get_latest_release","get_pull_request","get_pull_request_comments","get_pull_request_diff","get_pull_request_files","get_pull_request_review_comments","get_pull_request_reviews","get_pull_request_status","get_release_by_tag","get_tag","issue_read","list_branches","list_commits","list_issue_types","list_issues","list_pull_requests","list_releases","list_starred_repositories","list_tags","pull_request_read","search_code","search_issues","search_pull_requests","search_repositories"]},{"name":"public-code-search","tools":["search_code"]},{"name":"safeoutputs","tools":["add_comment","add_labels","missing_data","missing_tool","noop"]}]}
 # This file was automatically generated by gh-aw (v0.87.5). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _
@@ -28,6 +28,7 @@
 # Resolved workflow manifest:
 #   Imports:
 #     - gh-aw-fragments/elastic-tools.md
+#     - gh-aw-fragments/ephemeral-github-token.md
 #     - gh-aw-fragments/formatting.md
 #     - gh-aw-fragments/mcp-pagination.md
 #     - gh-aw-fragments/messages-footer.md
@@ -57,6 +58,7 @@
 #   - actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
 #   - actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
 #   - astral-sh/setup-uv@d4b2f3b6ecc6e67c4457f6d3e41ec42d3d0fcb86 # v5
+#   - elastic/oblt-actions/github/create-token@fc9e175c194697e4f2198077efefa02609214952 # v1
 #   - github/gh-aw-actions/setup-cli@2a78d04403fdc6907d0f05327cffac9dbad5312d # v0.87.5
 #   - github/gh-aw/actions/setup@654cf351a5953df1f2751f49de8a9ca384c07994 # v0.87.5
 #   - ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0 (source v1)
@@ -98,6 +100,11 @@ on:
         description: Footer appended to all agent comments and reviews
         required: false
         type: string
+      mint-ephemeral-token:
+        default: false
+        description: "Mint an OIDC ephemeral GitHub token in each token-consuming job via elastic/oblt-actions/github/create-token. When true, labels and comments re-trigger downstream workflows. Callers must grant id-token: write on the job that calls this workflow."
+        required: false
+        type: boolean
       model:
         default: gpt-5.3-codex
         description: AI model to use
@@ -111,6 +118,11 @@ on:
       setup-commands:
         default: ""
         description: Shell commands to run before the agent starts (dependency install, build, etc.)
+        required: false
+        type: string
+      token-policy:
+        default: ""
+        description: Backstage TokenPolicy id for create-token. Empty uses Vault auto policy from the triggering workflow_ref. Used only when mint-ephemeral-token is true.
         required: false
         type: string
     outputs:
@@ -140,6 +152,7 @@ jobs:
     if: needs.pre_activation.outputs.activated == 'true'
     runs-on: ubuntu-slim
     permissions:
+      id-token: write
       actions: read
       contents: read
     env:
@@ -177,6 +190,16 @@ jobs:
           GH_AW_INFO_AWF_VERSION: "v0.28.7"
           GH_AW_INFO_ENGINE_ID: "copilot"
           GH_AW_SETUP_AW_CONTEXT: ${{ inputs.aw_context }}
+      - name: Create ephemeral GitHub token (configured policy)
+        id: create-token-explicit
+        if: ${{ inputs.mint-ephemeral-token && inputs.token-policy != '' }}
+        uses: elastic/oblt-actions/github/create-token@fc9e175c194697e4f2198077efefa02609214952 # v1
+        with:
+          token-policy: ${{ inputs.token-policy }}
+      - name: Create ephemeral GitHub token (Vault auto policy)
+        id: create-token-auto
+        if: ${{ inputs.mint-ephemeral-token && inputs.token-policy == '' }}
+        uses: elastic/oblt-actions/github/create-token@fc9e175c194697e4f2198077efefa02609214952 # v1
       - name: Compute artifact prefix
         id: artifact-prefix
         env:
@@ -310,7 +333,7 @@ jobs:
           GH_AW_ACTIONS_DIR: ${{ runner.temp }}/gh-aw/actions
           GH_AW_PROMPT: ${{ runner.temp }}/gh-aw/aw-prompts/prompt.txt
           GH_AW_SAFE_OUTPUTS: ${{ runner.temp }}/gh-aw/safeoutputs/outputs.jsonl
-          GH_AW_PROMPT_CONFIG: "{\"items\":[{\"content_env\":\"GH_AW_PROMPT_CONTENT_0000\"},{\"file\":\"xpia.md\"},{\"file\":\"temp_folder_prompt.md\"},{\"file\":\"markdown.md\"},{\"file\":\"safe_outputs_prompt.md\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0001\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0002\"},{\"file\":\"mcp_cli_tools_with_safeoutputs_prompt.md\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0003\"},{\"file\":\"github_mcp_tools_with_safeoutputs_prompt.md\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0004\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0005\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0006\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0007\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0008\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0009\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0010\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0011\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0012\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0013\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0014\"}]}"
+          GH_AW_PROMPT_CONFIG: "{\"items\":[{\"content_env\":\"GH_AW_PROMPT_CONTENT_0000\"},{\"file\":\"xpia.md\"},{\"file\":\"temp_folder_prompt.md\"},{\"file\":\"markdown.md\"},{\"file\":\"safe_outputs_prompt.md\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0001\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0002\"},{\"file\":\"mcp_cli_tools_with_safeoutputs_prompt.md\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0003\"},{\"file\":\"github_mcp_tools_with_safeoutputs_prompt.md\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0004\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0005\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0006\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0007\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0008\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0009\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0010\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0011\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0012\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0013\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0014\"},{\"content_env\":\"GH_AW_PROMPT_CONTENT_0015\"}]}"
           GH_AW_EXPR_1A3A194A: ${{ github.event.discussion.number || (fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_type == 'discussion' && fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_number) }}
           GH_AW_EXPR_463A214A: ${{ github.event.pull_request.number || (fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_type == 'pull_request' && fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_number) }}
           GH_AW_EXPR_49B959F1: ${{ inputs.additional-instructions }}
@@ -328,16 +351,17 @@ jobs:
           GH_AW_PROMPT_CONTENT_0002: "</safe-output-tools>\n"
           GH_AW_PROMPT_CONTENT_0003: "<github-context>\nThe following GitHub context information is available for this workflow:\n{{#if github.actor}}\n- **actor**: __GH_AW_GITHUB_ACTOR__\n{{/if}}\n{{#if github.repository}}\n- **repository**: __GH_AW_GITHUB_REPOSITORY__\n{{/if}}\n{{#if github.workspace}}\n- **workspace**: __GH_AW_GITHUB_WORKSPACE__\n{{/if}}\n{{#if github.event.issue.number || (github.aw.context.item_type == 'issue' && github.aw.context.item_number)}}\n- **issue-number**: #__GH_AW_EXPR_802A9F6A__\n{{/if}}\n{{#if github.event.discussion.number || (github.aw.context.item_type == 'discussion' && github.aw.context.item_number)}}\n- **discussion-number**: #__GH_AW_EXPR_1A3A194A__\n{{/if}}\n{{#if github.event.pull_request.number || (github.aw.context.item_type == 'pull_request' && github.aw.context.item_number)}}\n- **pull-request-number**: #__GH_AW_EXPR_463A214A__\n{{/if}}\n{{#if github.event.comment.id || github.aw.context.comment_id}}\n- **comment-id**: __GH_AW_EXPR_FF1D34CE__\n{{/if}}\n{{#if github.run_id}}\n- **workflow-run-id**: __GH_AW_GITHUB_RUN_ID__\n{{/if}}\n</github-context>\n\n"
           GH_AW_PROMPT_CONTENT_0004: "</system>\n"
-          GH_AW_PROMPT_CONTENT_0005: "## MCP Servers\n\n- **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.\n"
-          GH_AW_PROMPT_CONTENT_0006: "Repository conventions are pre-fetched to `/tmp/agents.md`. Read this file early in your task to understand the codebase's conventions, guidelines, and patterns. If the file doesn't exist, continue without it. When spawning sub-agents, include the contents of `/tmp/agents.md` in each sub-agent's prompt (or tell the sub-agent to read the file directly).\n"
-          GH_AW_PROMPT_CONTENT_0007: "## Formatting Guidelines\n\n- Lead with the most important information — your first sentence should be the key takeaway\n- Be concise and actionable — no filler or praise\n- Use `<details>` and `<summary>` tags for long sections to keep responses scannable\n- Wrap branch names and @-references in backticks to avoid pinging users\n- Include code snippets with file paths and line numbers when referencing the codebase\n\n"
-          GH_AW_PROMPT_CONTENT_0008: "## Rigor\n\n**Silence is better than noise. A false positive wastes a human's time and erodes trust in every future report.**\n\n- If you claim something is missing or broken, show the exact evidence in the code — file path, line number, and what you observed.\n- If a conclusion depends on assumptions you haven't confirmed, do not assert it. Verify first; if you cannot verify, do not report.\n- \"I don't know\" is better than a wrong answer. `noop` is better than a speculative finding.\n- It's worth the time to verify now versus guessing and forcing someone else to verify later.\n- Before submitting any output, re-read it as a skeptical reviewer. Ask: \"Would a senior engineer on this team find this useful, or would they close it immediately?\" If the answer is \"close,\" call `noop` instead.\n- Only report findings you would confidently defend in a code review. If you feel the need to hedge with \"might,\" \"could,\" or \"possibly,\" the finding is not ready to file.\n- Be thorough, spend the time to investigate and verify. There is no rush. Do your best work.\n"
-          GH_AW_PROMPT_CONTENT_0009: "## MCP Pagination\n\nMCP tool responses have a **25,000 token limit**. When responses exceed this limit, the call fails and you must retry with pagination — wasting turns and tokens. Use proactive pagination to stay under the limit.\n\n### Recommended `perPage` Values\n\n- **5-10**: For detailed items (PR diffs, files with patches, issues with comments)\n- **20-30**: For medium-detail lists (commits, review comments, issue lists)\n- **50-100**: For simple list operations (branches, labels, tags)\n\n### Pagination Pattern\n\nWhen you need all results from a paginated API:\n\n1. Fetch the first page with a conservative `perPage` value\n2. Process the results before fetching the next page\n3. Continue fetching pages until you receive fewer results than `perPage` (indicating the last page)\n\n### Error Recovery\n\nIf you see an error like:\n- `MCP tool response exceeds maximum allowed tokens (25000)`\n- `Response too large for tool [tool_name]`\n\nRetry the same call with a smaller `perPage` value (halve it).\n\n### Tips\n\n- **Start small**: It's better to make multiple small requests than one that fails\n- **Fetch incrementally**: Get an overview first, then details for specific items\n- **Use filters**: Combine `perPage` with state, label, or date filters to reduce result size\n- **Process as you go**: Don't accumulate all pages before acting — process each batch immediately\n\n"
-          GH_AW_PROMPT_CONTENT_0010: "## Message Footer\n\nA footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.\n"
-          GH_AW_PROMPT_CONTENT_0011: "## add-comment Limitations\n\n- **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.\n- **Mentions**: Max 10 `@` mentions per comment.\n- **Links**: Max 50 URLs per comment.\n- **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.\n- **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.\n- **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.\n\nIf you exceed 10 mentions or 50 links, the comment will be rejected.\n"
-          GH_AW_PROMPT_CONTENT_0012: "## add-labels Limitations\n\n- **Labels**: Max 3 labels per run. Each label max 64 characters. Labels starting with `-` are rejected.\n- **Allowlist**: Only labels in `classification-labels` are accepted; all others are stripped before processing.\n- **Sanitization**: Labels are trimmed, deduplicated, and Unicode-normalized. `@` mentions are neutralized (backticked).\n"
-          GH_AW_PROMPT_CONTENT_0013: "\n"
-          GH_AW_PROMPT_CONTENT_0014: "# Dependency Review Agent\n\nAnalyze dependency update pull requests (Dependabot, Renovate, Updatecli) in __GH_AW_GITHUB_REPOSITORY__. Provide a detailed analysis comment covering changelog highlights, compatibility, risk, and ecosystem-specific checks.\n\n## Context\n\n- **Repository**: __GH_AW_GITHUB_REPOSITORY__\n- **PR**: #__GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__ — __GH_AW_GITHUB_EVENT_PULL_REQUEST_TITLE__\n- **PR Author**: __GH_AW_GITHUB_ACTOR__\n\n## Constraints\n\nThis workflow is read-only. You can read files, search code, run commands, and comment on PRs — but your only outputs are an analysis comment and optional labels.\n\n## Instructions\n\n### Step 1: Gather Context\n\n1. Call `pull_request_read` with method `get` on PR #__GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__ to get the full PR details (author, description, branches).\n2. Call `pull_request_read` with method `get_diff` to see exactly what changed.\n3. Call `pull_request_read` with method `get_files` to get the list of changed files.\n\n### Step 2: Identify and Classify Updated Dependencies\n\nParse the diff to identify each dependency being updated. For each dependency, extract:\n- **Ecosystem**: GitHub Actions, Buildkite plugin, Go module, npm package, Python (pip/Poetry/uv), Maven/Gradle (Java), or other\n- **Package name**: e.g. `actions/checkout`, `golang.org/x/net`, `express`, `requests`\n- **Old version**: tag, SHA, or version before the update\n- **New version**: tag, SHA, or version after the update\n\nClassify each dependency by looking at the files changed:\n- `.github/workflows/*.yml` or `.github/workflows/*.yaml` → **GitHub Actions**\n- `pipeline.yml`, `.buildkite/` files → **Buildkite plugin**\n- `go.mod`, `go.sum` → **Go module**\n- `package.json`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml` → **npm/Node**\n- `pyproject.toml`, `requirements*.txt`, `Pipfile*`, `poetry.lock`, `uv.lock` → **Python**\n- `pom.xml`, `build.gradle`, `build.gradle.kts`, `gradle.lockfile` → **Java/Kotlin (Maven/Gradle)**\n- Other manifest files → classify by ecosystem\n\n### Step 3: Analyze Each Dependency\n\nFor each updated dependency, perform the following checks:\n\n#### 3a: Commit Verification (GitHub Actions only)\n\nIf the action reference uses a commit SHA (e.g. `uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd`):\n\n1. Verify the commit is a verified commit by checking the GitHub API:\n   ```bash\n   gh api repos/{owner}/{repo}/commits/{sha} --jq '.commit.verification.verified'\n   ```\n1. If the commit is **not verified**, flag this prominently. Unverified commits in pinned actions are a supply-chain risk.\n2. Check whether the commit SHA corresponds to a known release tag:\n   ```bash\n   gh api repos/{owner}/{repo}/git/matching-refs/tags --jq '.[].ref' | head -20\n   ```\n   Then verify the tag points to the expected SHA.\n\n#### 3b: Changelog and Release Notes\n\nFor dependencies hosted on GitHub, fetch the release notes:\n1. Fetch the release notes for the new version from the dependency's repository:\n   ```bash\n   gh api repos/{owner}/{repo}/releases/tags/{new_tag} --jq '.body' 2>/dev/null\n   ```\n1. If no release exists for the exact tag, check the latest releases:\n   ```bash\n   gh api repos/{owner}/{repo}/releases --jq '.[].tag_name' | head -10\n   ```\n3. For non-GitHub dependencies, check the package registry or changelog files in the source repo when available.\n4. Summarize key changes between the old and new versions, focusing on:\n   - Breaking changes or removed features\n   - New required configuration or changed defaults\n   - Security fixes\n   - Deprecations\n   - Notable new features relevant to how this repo uses the dependency\n\n#### 3c: Usage Analysis\n\n1. Search the repository for all places the dependency is used. The search method depends on the ecosystem:\n   - **GitHub Actions**: `grep -rn '{owner}/{repo}' .github/workflows/ --include='*.yml' --include='*.yaml'`\n   - **Go**: `grep -rn '{module}' --include='*.go'` (look for import statements)\n   - **npm/Node**: `grep -rn \"require('{package}')\\|from '{package}'\" --include='*.js' --include='*.ts' --include='*.mjs' --include='*.cjs'`\n   - **Python**: `grep -rn \"import {package}\\|from {package}\" --include='*.py'`\n   - **Java**: `grep -rn '{groupId}' --include='*.java' --include='*.kt' --include='*.gradle' --include='*.xml'`\n1. For each usage, note:\n   - Which files and modules use it\n   - What APIs, functions, or features are consumed\n   - For GitHub Actions: what inputs are passed and outputs consumed\n   - For GitHub Actions: what events trigger the workflow\n\n3. Cross-reference the usage against the changelog:\n   - Are any APIs, inputs, or features used by this repo deprecated or removed in the new version?\n   - Are there breaking changes to consumed interfaces?\n   - Are there new required configuration options that are not provided?\n\n#### 3d: Testability Assessment\n\n1. Check the trigger events for each workflow that uses the updated dependency.\n2. If a workflow is **only** triggered by `push` (to main/default branch), `release`, `schedule`, or `workflow_dispatch`, it **cannot be validated by the PR itself**. Flag this as higher risk.\n3. If a workflow is triggered by `pull_request` or `pull_request_target`, it can be exercised in the PR context.\n\n#### 3e: Pin Format Check (Buildkite plugins)\n\nFor Buildkite plugin updates:\n1. Check if the update moves from a SHA-pinned version to a mutable tag (higher risk).\n2. Check if the update moves from one mutable tag to another mutable tag (moderate risk).\n3. SHA-to-SHA or tag-to-SHA-pinned updates are preferred.\n\n#### 3f: Ecosystem-Specific Guidance\n\nApply the following additional checks based on the dependency ecosystem:\n\n**Go modules:**\n- Check if this is a major version bump (e.g. v1 → v2) — Go major versions change the import path, which is a breaking change requiring code updates across the repo.\n- For indirect dependency updates, note that these are transitive and generally lower risk.\n- Check for `// Deprecated:` annotations in the module if accessible.\n\n**npm / Node packages:**\n- Check if this is a major semver bump — major versions typically signal breaking changes.\n- Look for peer dependency conflicts that may arise from the update.\n- For `devDependencies`, note that these only affect development and CI, not production.\n\n**Python packages (pip, Poetry, uv):**\n- Check if this is a major version bump — may indicate breaking API changes.\n- Check for minimum Python version requirements that may have changed.\n- For packages with native extensions (e.g. `numpy`, `cryptography`), note potential build or platform compatibility changes.\n\n**Java / Kotlin (Maven, Gradle):**\n- Check if this is a major version bump — may indicate breaking API changes.\n- Note if the groupId or artifactId changed (dependency relocation).\n- For Spring or framework dependencies, check for minimum JDK version changes.\n\n### Step 4: Determine Labels\n\nBased on the analysis, determine if any labels from the configured `classification-labels` set should be applied:\n\n- **Allowed classification labels**: `__GH_AW_EXPR_9AD6B038__`\n- Parse `__GH_AW_EXPR_9AD6B038__` as a comma-separated list and treat that list as the only valid labels for this step.\n- If `__GH_AW_EXPR_9AD6B038__` is empty, skip this step entirely.\n- Use `__GH_AW_EXPR_49B959F1__` to understand what each label means and when to apply it.\n- Never apply a label that is not in the parsed classification label list.\n\n### Step 5: Post Analysis Comment\n\nCall `add_comment` on the PR with a structured analysis. Use the following format:\n\n> ## Dependency Update Analysis\n>\n> **Summary**: [One-line summary of the update and overall risk assessment]\n>\n> ### [Dependency 1: package vOLD → vNEW]\n>\n> **Ecosystem**: [GitHub Actions / Go / npm / Python / Java / Buildkite / other]\n>\n> | Check | Result |\n> | --- | --- |\n> | Breaking changes | ✅ None found / ⚠️ Found (details below) |\n> | Testable in PR | ✅ Yes / ⚠️ No — workflow only runs on [events] |\n> | Commit verified | ✅ Yes / ⚠️ No *(GitHub Actions only)* |\n> | Pin format | ✅ SHA-pinned / ⚠️ Mutable tag *(GitHub Actions / Buildkite only)* |\n>\n> Only include rows relevant to the dependency ecosystem. For example, \"Commit verified\" and \"Pin format\" only apply to GitHub Actions and Buildkite.\n>\n> <details>\n> <summary>Changelog highlights (vOLD → vNEW)</summary>\n>\n> [Key changes from release notes]\n> </details>\n>\n> <details>\n> <summary>Usage in this repository</summary>\n>\n> [List of files/modules using this dependency and relevant APIs/inputs/outputs]\n> </details>\n>\n> <details>\n> <summary>Compatibility assessment</summary>\n>\n> [Analysis of whether current usage is compatible with the new version, including ecosystem-specific notes]\n> </details>\n>\n> ### Labels Applied\n> [List of labels applied and why, or \"No labels applied\"]\n\nIf the analysis found no issues, keep the comment concise — do not pad with unnecessary detail.\n\n### Step 6: Apply Labels\n\nIf any labels were determined in Step 4, call `add_labels` to apply them to the PR.\n\n__GH_AW_EXPR_49B959F1__\n\n"
+          GH_AW_PROMPT_CONTENT_0005: "\n"
+          GH_AW_PROMPT_CONTENT_0006: "## MCP Servers\n\n- **`search_code`** — grep-style search across public GitHub repositories. Use for finding usage patterns in upstream libraries, reference implementations, or examples in open-source projects. This searches *public GitHub repos*, not the local codebase — if available you can use `grep` and file reading for local code.\n"
+          GH_AW_PROMPT_CONTENT_0007: "Repository conventions are pre-fetched to `/tmp/agents.md`. Read this file early in your task to understand the codebase's conventions, guidelines, and patterns. If the file doesn't exist, continue without it. When spawning sub-agents, include the contents of `/tmp/agents.md` in each sub-agent's prompt (or tell the sub-agent to read the file directly).\n"
+          GH_AW_PROMPT_CONTENT_0008: "## Formatting Guidelines\n\n- Lead with the most important information — your first sentence should be the key takeaway\n- Be concise and actionable — no filler or praise\n- Use `<details>` and `<summary>` tags for long sections to keep responses scannable\n- Wrap branch names and @-references in backticks to avoid pinging users\n- Include code snippets with file paths and line numbers when referencing the codebase\n\n"
+          GH_AW_PROMPT_CONTENT_0009: "## Rigor\n\n**Silence is better than noise. A false positive wastes a human's time and erodes trust in every future report.**\n\n- If you claim something is missing or broken, show the exact evidence in the code — file path, line number, and what you observed.\n- If a conclusion depends on assumptions you haven't confirmed, do not assert it. Verify first; if you cannot verify, do not report.\n- \"I don't know\" is better than a wrong answer. `noop` is better than a speculative finding.\n- It's worth the time to verify now versus guessing and forcing someone else to verify later.\n- Before submitting any output, re-read it as a skeptical reviewer. Ask: \"Would a senior engineer on this team find this useful, or would they close it immediately?\" If the answer is \"close,\" call `noop` instead.\n- Only report findings you would confidently defend in a code review. If you feel the need to hedge with \"might,\" \"could,\" or \"possibly,\" the finding is not ready to file.\n- Be thorough, spend the time to investigate and verify. There is no rush. Do your best work.\n"
+          GH_AW_PROMPT_CONTENT_0010: "## MCP Pagination\n\nMCP tool responses have a **25,000 token limit**. When responses exceed this limit, the call fails and you must retry with pagination — wasting turns and tokens. Use proactive pagination to stay under the limit.\n\n### Recommended `perPage` Values\n\n- **5-10**: For detailed items (PR diffs, files with patches, issues with comments)\n- **20-30**: For medium-detail lists (commits, review comments, issue lists)\n- **50-100**: For simple list operations (branches, labels, tags)\n\n### Pagination Pattern\n\nWhen you need all results from a paginated API:\n\n1. Fetch the first page with a conservative `perPage` value\n2. Process the results before fetching the next page\n3. Continue fetching pages until you receive fewer results than `perPage` (indicating the last page)\n\n### Error Recovery\n\nIf you see an error like:\n- `MCP tool response exceeds maximum allowed tokens (25000)`\n- `Response too large for tool [tool_name]`\n\nRetry the same call with a smaller `perPage` value (halve it).\n\n### Tips\n\n- **Start small**: It's better to make multiple small requests than one that fails\n- **Fetch incrementally**: Get an overview first, then details for specific items\n- **Use filters**: Combine `perPage` with state, label, or date filters to reduce result size\n- **Process as you go**: Don't accumulate all pages before acting — process each batch immediately\n\n"
+          GH_AW_PROMPT_CONTENT_0011: "## Message Footer\n\nA footer is automatically appended to all comments and reviews. Do not add your own footer or sign-off — the runtime handles this.\n"
+          GH_AW_PROMPT_CONTENT_0012: "## add-comment Limitations\n\n- **Body**: Max 65,536 characters (including any footer added by gh-aw). Keep well under this limit.\n- **Mentions**: Max 10 `@` mentions per comment.\n- **Links**: Max 50 URLs per comment.\n- **HTML**: Only safe tags allowed (`details`, `summary`, `code`, `pre`, `blockquote`, `table`, `b`, `em`, `strong`, `h1`–`h6`, `hr`, `br`, `li`, `ol`, `ul`, `p`, `sub`, `sup`). Other tags are converted to parentheses.\n- **URLs**: Only HTTPS URLs to allowed domains. Non-HTTPS and non-allowed domains are redacted.\n- **Bot triggers**: References like `fixes #123` or `closes #456` are neutralized to prevent unintended issue closures.\n\nIf you exceed 10 mentions or 50 links, the comment will be rejected.\n"
+          GH_AW_PROMPT_CONTENT_0013: "## add-labels Limitations\n\n- **Labels**: Max 3 labels per run. Each label max 64 characters. Labels starting with `-` are rejected.\n- **Allowlist**: Only labels in `classification-labels` are accepted; all others are stripped before processing.\n- **Sanitization**: Labels are trimmed, deduplicated, and Unicode-normalized. `@` mentions are neutralized (backticked).\n"
+          GH_AW_PROMPT_CONTENT_0014: "\n"
+          GH_AW_PROMPT_CONTENT_0015: "# Dependency Review Agent\n\nAnalyze dependency update pull requests (Dependabot, Renovate, Updatecli) in __GH_AW_GITHUB_REPOSITORY__. Provide a detailed analysis comment covering changelog highlights, compatibility, risk, and ecosystem-specific checks.\n\n## Context\n\n- **Repository**: __GH_AW_GITHUB_REPOSITORY__\n- **PR**: #__GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__ — __GH_AW_GITHUB_EVENT_PULL_REQUEST_TITLE__\n- **PR Author**: __GH_AW_GITHUB_ACTOR__\n\n## Constraints\n\nThis workflow is read-only. You can read files, search code, run commands, and comment on PRs — but your only outputs are an analysis comment and optional labels.\n\n## Instructions\n\n### Step 1: Gather Context\n\n1. Call `pull_request_read` with method `get` on PR #__GH_AW_GITHUB_EVENT_PULL_REQUEST_NUMBER__ to get the full PR details (author, description, branches).\n2. Call `pull_request_read` with method `get_diff` to see exactly what changed.\n3. Call `pull_request_read` with method `get_files` to get the list of changed files.\n\n### Step 2: Identify and Classify Updated Dependencies\n\nParse the diff to identify each dependency being updated. For each dependency, extract:\n- **Ecosystem**: GitHub Actions, Buildkite plugin, Go module, npm package, Python (pip/Poetry/uv), Maven/Gradle (Java), or other\n- **Package name**: e.g. `actions/checkout`, `golang.org/x/net`, `express`, `requests`\n- **Old version**: tag, SHA, or version before the update\n- **New version**: tag, SHA, or version after the update\n\nClassify each dependency by looking at the files changed:\n- `.github/workflows/*.yml` or `.github/workflows/*.yaml` → **GitHub Actions**\n- `pipeline.yml`, `.buildkite/` files → **Buildkite plugin**\n- `go.mod`, `go.sum` → **Go module**\n- `package.json`, `package-lock.json`, `yarn.lock`, `pnpm-lock.yaml` → **npm/Node**\n- `pyproject.toml`, `requirements*.txt`, `Pipfile*`, `poetry.lock`, `uv.lock` → **Python**\n- `pom.xml`, `build.gradle`, `build.gradle.kts`, `gradle.lockfile` → **Java/Kotlin (Maven/Gradle)**\n- Other manifest files → classify by ecosystem\n\n### Step 3: Analyze Each Dependency\n\nFor each updated dependency, perform the following checks:\n\n#### 3a: Commit Verification (GitHub Actions only)\n\nIf the action reference uses a commit SHA (e.g. `uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd`):\n\n1. Verify the commit is a verified commit by checking the GitHub API:\n   ```bash\n   gh api repos/{owner}/{repo}/commits/{sha} --jq '.commit.verification.verified'\n   ```\n1. If the commit is **not verified**, flag this prominently. Unverified commits in pinned actions are a supply-chain risk.\n2. Check whether the commit SHA corresponds to a known release tag:\n   ```bash\n   gh api repos/{owner}/{repo}/git/matching-refs/tags --jq '.[].ref' | head -20\n   ```\n   Then verify the tag points to the expected SHA.\n\n#### 3b: Changelog and Release Notes\n\nFor dependencies hosted on GitHub, fetch the release notes:\n1. Fetch the release notes for the new version from the dependency's repository:\n   ```bash\n   gh api repos/{owner}/{repo}/releases/tags/{new_tag} --jq '.body' 2>/dev/null\n   ```\n1. If no release exists for the exact tag, check the latest releases:\n   ```bash\n   gh api repos/{owner}/{repo}/releases --jq '.[].tag_name' | head -10\n   ```\n3. For non-GitHub dependencies, check the package registry or changelog files in the source repo when available.\n4. Summarize key changes between the old and new versions, focusing on:\n   - Breaking changes or removed features\n   - New required configuration or changed defaults\n   - Security fixes\n   - Deprecations\n   - Notable new features relevant to how this repo uses the dependency\n\n#### 3c: Usage Analysis\n\n1. Search the repository for all places the dependency is used. The search method depends on the ecosystem:\n   - **GitHub Actions**: `grep -rn '{owner}/{repo}' .github/workflows/ --include='*.yml' --include='*.yaml'`\n   - **Go**: `grep -rn '{module}' --include='*.go'` (look for import statements)\n   - **npm/Node**: `grep -rn \"require('{package}')\\|from '{package}'\" --include='*.js' --include='*.ts' --include='*.mjs' --include='*.cjs'`\n   - **Python**: `grep -rn \"import {package}\\|from {package}\" --include='*.py'`\n   - **Java**: `grep -rn '{groupId}' --include='*.java' --include='*.kt' --include='*.gradle' --include='*.xml'`\n1. For each usage, note:\n   - Which files and modules use it\n   - What APIs, functions, or features are consumed\n   - For GitHub Actions: what inputs are passed and outputs consumed\n   - For GitHub Actions: what events trigger the workflow\n\n3. Cross-reference the usage against the changelog:\n   - Are any APIs, inputs, or features used by this repo deprecated or removed in the new version?\n   - Are there breaking changes to consumed interfaces?\n   - Are there new required configuration options that are not provided?\n\n#### 3d: Testability Assessment\n\n1. Check the trigger events for each workflow that uses the updated dependency.\n2. If a workflow is **only** triggered by `push` (to main/default branch), `release`, `schedule`, or `workflow_dispatch`, it **cannot be validated by the PR itself**. Flag this as higher risk.\n3. If a workflow is triggered by `pull_request` or `pull_request_target`, it can be exercised in the PR context.\n\n#### 3e: Pin Format Check (Buildkite plugins)\n\nFor Buildkite plugin updates:\n1. Check if the update moves from a SHA-pinned version to a mutable tag (higher risk).\n2. Check if the update moves from one mutable tag to another mutable tag (moderate risk).\n3. SHA-to-SHA or tag-to-SHA-pinned updates are preferred.\n\n#### 3f: Ecosystem-Specific Guidance\n\nApply the following additional checks based on the dependency ecosystem:\n\n**Go modules:**\n- Check if this is a major version bump (e.g. v1 → v2) — Go major versions change the import path, which is a breaking change requiring code updates across the repo.\n- For indirect dependency updates, note that these are transitive and generally lower risk.\n- Check for `// Deprecated:` annotations in the module if accessible.\n\n**npm / Node packages:**\n- Check if this is a major semver bump — major versions typically signal breaking changes.\n- Look for peer dependency conflicts that may arise from the update.\n- For `devDependencies`, note that these only affect development and CI, not production.\n\n**Python packages (pip, Poetry, uv):**\n- Check if this is a major version bump — may indicate breaking API changes.\n- Check for minimum Python version requirements that may have changed.\n- For packages with native extensions (e.g. `numpy`, `cryptography`), note potential build or platform compatibility changes.\n\n**Java / Kotlin (Maven, Gradle):**\n- Check if this is a major version bump — may indicate breaking API changes.\n- Note if the groupId or artifactId changed (dependency relocation).\n- For Spring or framework dependencies, check for minimum JDK version changes.\n\n### Step 4: Determine Labels\n\nBased on the analysis, determine if any labels from the configured `classification-labels` set should be applied:\n\n- **Allowed classification labels**: `__GH_AW_EXPR_9AD6B038__`\n- Parse `__GH_AW_EXPR_9AD6B038__` as a comma-separated list and treat that list as the only valid labels for this step.\n- If `__GH_AW_EXPR_9AD6B038__` is empty, skip this step entirely.\n- Use `__GH_AW_EXPR_49B959F1__` to understand what each label means and when to apply it.\n- Never apply a label that is not in the parsed classification label list.\n\n### Step 5: Post Analysis Comment\n\nCall `add_comment` on the PR with a structured analysis. Use the following format:\n\n> ## Dependency Update Analysis\n>\n> **Summary**: [One-line summary of the update and overall risk assessment]\n>\n> ### [Dependency 1: package vOLD → vNEW]\n>\n> **Ecosystem**: [GitHub Actions / Go / npm / Python / Java / Buildkite / other]\n>\n> | Check | Result |\n> | --- | --- |\n> | Breaking changes | ✅ None found / ⚠️ Found (details below) |\n> | Testable in PR | ✅ Yes / ⚠️ No — workflow only runs on [events] |\n> | Commit verified | ✅ Yes / ⚠️ No *(GitHub Actions only)* |\n> | Pin format | ✅ SHA-pinned / ⚠️ Mutable tag *(GitHub Actions / Buildkite only)* |\n>\n> Only include rows relevant to the dependency ecosystem. For example, \"Commit verified\" and \"Pin format\" only apply to GitHub Actions and Buildkite.\n>\n> <details>\n> <summary>Changelog highlights (vOLD → vNEW)</summary>\n>\n> [Key changes from release notes]\n> </details>\n>\n> <details>\n> <summary>Usage in this repository</summary>\n>\n> [List of files/modules using this dependency and relevant APIs/inputs/outputs]\n> </details>\n>\n> <details>\n> <summary>Compatibility assessment</summary>\n>\n> [Analysis of whether current usage is compatible with the new version, including ecosystem-specific notes]\n> </details>\n>\n> ### Labels Applied\n> [List of labels applied and why, or \"No labels applied\"]\n\nIf the analysis found no issues, keep the comment concise — do not pad with unnecessary detail.\n\n### Step 6: Apply Labels\n\nIf any labels were determined in Step 4, call `add_labels` to apply them to the PR.\n\n__GH_AW_EXPR_49B959F1__\n\n"
         with:
           script: |
             const { setupGlobals } = require(process.env.GH_AW_ACTIONS_DIR + '/setup_globals.cjs');
@@ -451,6 +475,7 @@ jobs:
       actions: read
       contents: read
       copilot-requests: write
+      id-token: write
       issues: read
       pull-requests: read
     concurrency:
@@ -505,6 +530,16 @@ jobs:
           GH_AW_INFO_AWF_VERSION: "v0.28.7"
           GH_AW_INFO_ENGINE_ID: "copilot"
           GH_AW_SETUP_AW_CONTEXT: ${{ inputs.aw_context }}
+      - name: Create ephemeral GitHub token (configured policy)
+        id: create-token-explicit
+        if: ${{ inputs.mint-ephemeral-token && inputs.token-policy != '' }}
+        uses: elastic/oblt-actions/github/create-token@fc9e175c194697e4f2198077efefa02609214952 # v1
+        with:
+          token-policy: ${{ inputs.token-policy }}
+      - name: Create ephemeral GitHub token (Vault auto policy)
+        id: create-token-auto
+        if: ${{ inputs.mint-ephemeral-token && inputs.token-policy == '' }}
+        uses: elastic/oblt-actions/github/create-token@fc9e175c194697e4f2198077efefa02609214952 # v1
       - name: Set runtime paths
         id: set-runtime-paths
         run: |
@@ -605,9 +640,9 @@ jobs:
           github.event.pull_request || github.event.issue.pull_request || github.event_name == 'workflow_dispatch' && fromJSON(github.event.inputs.aw_context || '{}').item_type == 'pull_request'
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
-          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.create-token-explicit.outputs.token || steps.create-token-auto.outputs.token || secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.create-token-explicit.outputs.token || steps.create-token-auto.outputs.token || secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -833,7 +868,7 @@ jobs:
           GH_AW_SINK_VISIBILITY: ${{ steps.determine-automatic-lockdown.outputs.visibility }}
           GITHUB_MCP_GUARD_MIN_INTEGRITY: ${{ steps.determine-automatic-lockdown.outputs.min_integrity }}
           GITHUB_MCP_GUARD_REPOS: ${{ steps.determine-automatic-lockdown.outputs.repos }}
-          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_MCP_SERVER_TOKEN: ${{ steps.create-token-explicit.outputs.token || steps.create-token-auto.outputs.token || secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -eo pipefail
@@ -1037,7 +1072,7 @@ jobs:
           GITHUB_AW: true
           GITHUB_COPILOT_INTEGRATION_ID: agentic-workflows
           GITHUB_HEAD_REF: ${{ github.head_ref }}
-          GITHUB_MCP_SERVER_TOKEN: ${{ secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_MCP_SERVER_TOKEN: ${{ steps.create-token-explicit.outputs.token || steps.create-token-auto.outputs.token || secrets.GH_AW_GITHUB_MCP_SERVER_TOKEN || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           GITHUB_REF_NAME: ${{ github.ref_name }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_STEP_SUMMARY: /tmp/gh-aw/agent-step-summary.md
@@ -1239,6 +1274,7 @@ jobs:
       needs.activation.outputs.daily_ai_credits_exceeded == 'true')
     runs-on: ubuntu-slim
     permissions:
+      id-token: write
       actions: read
       issues: write
       pull-requests: write
@@ -1269,6 +1305,16 @@ jobs:
           GH_AW_INFO_AWF_VERSION: "v0.28.7"
           GH_AW_INFO_ENGINE_ID: "copilot"
           GH_AW_SETUP_AW_CONTEXT: ${{ inputs.aw_context }}
+      - name: Create ephemeral GitHub token (configured policy)
+        id: create-token-explicit
+        if: ${{ inputs.mint-ephemeral-token && inputs.token-policy != '' }}
+        uses: elastic/oblt-actions/github/create-token@fc9e175c194697e4f2198077efefa02609214952 # v1
+        with:
+          token-policy: ${{ inputs.token-policy }}
+      - name: Create ephemeral GitHub token (Vault auto policy)
+        id: create-token-auto
+        if: ${{ inputs.mint-ephemeral-token && inputs.token-policy == '' }}
+        uses: elastic/oblt-actions/github/create-token@fc9e175c194697e4f2198077efefa02609214952 # v1
       - name: Download agent output artifact
         id: download-agent-output
         continue-on-error: true
@@ -1381,7 +1427,7 @@ jobs:
           GH_AW_AMBIENT_CONTEXT: ${{ needs.agent.outputs.ambient_context }}
           GH_AW_WORKFLOW_ID: "gh-aw-dependency-review"
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.create-token-explicit.outputs.token || steps.create-token-auto.outputs.token || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -1400,7 +1446,7 @@ jobs:
           GH_AW_DETECTION_CONCLUSION: ${{ needs.detection.outputs.detection_conclusion }}
           GH_AW_DETECTION_REASON: ${{ needs.detection.outputs.detection_reason }}
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.create-token-explicit.outputs.token || steps.create-token-auto.outputs.token || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -1417,7 +1463,7 @@ jobs:
           GH_AW_WORKFLOW_NAME: "Dependency Review"
           GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/gh-aw-dependency-review.md"
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.create-token-explicit.outputs.token || steps.create-token-auto.outputs.token || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -1434,7 +1480,7 @@ jobs:
           GH_AW_WORKFLOW_NAME: "Dependency Review"
           GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/gh-aw-dependency-review.md"
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.create-token-explicit.outputs.token || steps.create-token-auto.outputs.token || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -1485,7 +1531,7 @@ jobs:
           GH_AW_MISSING_DATA_REPORT_AS_FAILURE: "true"
           GH_AW_TIMEOUT_MINUTES: "60"
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.create-token-explicit.outputs.token || steps.create-token-auto.outputs.token || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -1504,7 +1550,7 @@ jobs:
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           GH_AW_REPORT_FAILED_JOBS: ${{ inputs.report-failure-as-issue && 'true' || 'false' }}
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.create-token-explicit.outputs.token || steps.create-token-auto.outputs.token || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');
@@ -1819,6 +1865,7 @@ jobs:
     if: (!cancelled()) && needs.agent.result != 'skipped' && needs.detection.result == 'success'
     runs-on: ubuntu-slim
     permissions:
+      id-token: write
       issues: write
       pull-requests: write
     timeout-minutes: 45
@@ -1871,6 +1918,16 @@ jobs:
           GH_AW_INFO_AWF_VERSION: "v0.28.7"
           GH_AW_INFO_ENGINE_ID: "copilot"
           GH_AW_SETUP_AW_CONTEXT: ${{ inputs.aw_context }}
+      - name: Create ephemeral GitHub token (configured policy)
+        id: create-token-explicit
+        if: ${{ inputs.mint-ephemeral-token && inputs.token-policy != '' }}
+        uses: elastic/oblt-actions/github/create-token@fc9e175c194697e4f2198077efefa02609214952 # v1
+        with:
+          token-policy: ${{ inputs.token-policy }}
+      - name: Create ephemeral GitHub token (Vault auto policy)
+        id: create-token-auto
+        if: ${{ inputs.mint-ephemeral-token && inputs.token-policy == '' }}
+        uses: elastic/oblt-actions/github/create-token@fc9e175c194697e4f2198077efefa02609214952 # v1
       - name: Download agent output artifact
         id: download-agent-output
         continue-on-error: true
@@ -1958,7 +2015,7 @@ jobs:
           GITHUB_API_URL: ${{ github.api_url }}
           GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"add_comment\":{\"discussions\":false,\"max\":1,\"target\":\"triggering\"},\"add_labels\":{\"max\":3},\"create_report_incomplete_issue\":{},\"missing_data\":{},\"missing_tool\":{},\"noop\":{\"max\":1,\"report-as-issue\":\"false\"},\"report_incomplete\":{}}"
         with:
-          github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.create-token-explicit.outputs.token || steps.create-token-auto.outputs.token || secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             const path = require('path');
             const actionsDir = path.join(process.env.RUNNER_TEMP, 'gh-aw', 'actions');

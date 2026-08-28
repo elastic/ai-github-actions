@@ -31,12 +31,14 @@ See [example.yml](example.yml) for the full workflow file.
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 | `classification-labels` | Comma-separated list of labels the agent may apply (e.g. `bug,needs-triage,enhancement`). If empty, no labels are applied. Define label semantics in `additional-instructions`. | No | `""` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
+| `mint-ephemeral-token` | When `true`, mint an OIDC ephemeral GitHub token in each token-consuming job (`elastic/oblt-actions/github/create-token`). Labels then re-trigger downstream workflows. The caller job must grant `id-token: write`. | No | `false` |
+| `token-policy` | Backstage TokenPolicy id for `create-token`. Empty uses Vault auto policy from the triggering `workflow_ref`. Used only when `mint-ephemeral-token` is `true`. | No | `""` |
 
 ## Secrets
 
 | Secret | Description | Required |
 | --- | --- | --- |
-| `GH_AW_GITHUB_TOKEN` | Ephemeral token (e.g. a GitHub App token) used for issue labeling safe outputs. When provided, labels applied by this workflow will trigger downstream label-based workflows. When omitted, the built-in `GITHUB_TOKEN` is used, which does not re-trigger other workflows. | No |
+| `GH_AW_GITHUB_TOKEN` | Optional override token for GitHub API writes. Prefer `mint-ephemeral-token` with OIDC when available. When neither is set, `GITHUB_TOKEN` is used and label writes do not re-trigger other workflows. | No |
 
 ## Safe Outputs
 

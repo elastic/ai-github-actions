@@ -86,6 +86,7 @@ Fragments live in `.github/workflows/gh-aw-fragments/`. Workflows import them us
 | Fragment | Purpose |
 | --- | --- |
 | [gh-aw-fragments/elastic-tools.md](../.github/workflows/gh-aw-fragments/elastic-tools.md) | Elastic MCP servers (`agents-md-generator`, `public-code-search`) and their network entries |
+| [gh-aw-fragments/ephemeral-github-token.md](../.github/workflows/gh-aw-fragments/ephemeral-github-token.md) | Mint OIDC ephemeral GitHub tokens (`create-token@v1`) in activation, agent, safe_outputs, and conclusion jobs |
 | [gh-aw-fragments/formatting.md](../.github/workflows/gh-aw-fragments/formatting.md) | Response formatting rules |
 | [gh-aw-fragments/rigor.md](../.github/workflows/gh-aw-fragments/rigor.md) | Accuracy & evidence standards |
 | [gh-aw-fragments/mcp-pagination.md](../.github/workflows/gh-aw-fragments/mcp-pagination.md) | MCP token limit guidance and pagination patterns |
