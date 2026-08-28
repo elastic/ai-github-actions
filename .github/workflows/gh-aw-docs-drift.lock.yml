@@ -1504,7 +1504,7 @@ jobs:
           GH_AW_WORKFLOW_NAME: "Docs Patrol"
           GH_AW_WORKFLOW_SOURCE_URL: "${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/.github/workflows/gh-aw-docs-patrol.md"
           GH_AW_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          GH_AW_REPORT_FAILED_JOBS: "true"
+          GH_AW_REPORT_FAILED_JOBS: ${{ inputs.report-failure-as-issue && 'true' || 'false' }}
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |

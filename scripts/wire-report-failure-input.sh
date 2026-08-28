@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Wire the report-failure-as-issue workflow_call input to the GH_AW_FAILURE_REPORT_AS_ISSUE
-# env var in compiled lock files.
+# and GH_AW_REPORT_FAILED_JOBS env vars in compiled lock files.
 #
-# The gh-aw compiler hard-codes GH_AW_FAILURE_REPORT_AS_ISSUE: "true" in every compiled
-# lock file. This script replaces that hardcoded value with an expression that reads from
-# the report-failure-as-issue workflow_call input so callers can opt out of failure
-# issue reporting.
+# The gh-aw compiler hard-codes GH_AW_FAILURE_REPORT_AS_ISSUE: "true" and
+# GH_AW_REPORT_FAILED_JOBS: "true" in every compiled lock file. This script replaces those
+# hardcoded values with an expression that reads from the report-failure-as-issue
+# workflow_call input so callers can opt out of failure issue reporting.
 #
 # Only lock files that already define the report-failure-as-issue input (i.e. those that
 # were compiled from a workflow with that input in their on.workflow_call.inputs block)
@@ -20,8 +20,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 WORKFLOWS_DIR="$REPO_ROOT/.github/workflows"
 
-OLD='          GH_AW_FAILURE_REPORT_AS_ISSUE: "true"'
-NEW="          GH_AW_FAILURE_REPORT_AS_ISSUE: \${{ inputs.report-failure-as-issue && 'true' || 'false' }}"
+OLD_FAILURE='          GH_AW_FAILURE_REPORT_AS_ISSUE: "true"'
+NEW_FAILURE="          GH_AW_FAILURE_REPORT_AS_ISSUE: \${{ inputs.report-failure-as-issue && 'true' || 'false' }}"
+
+OLD_FAILED_JOBS='          GH_AW_REPORT_FAILED_JOBS: "true"'
+NEW_FAILED_JOBS="          GH_AW_REPORT_FAILED_JOBS: \${{ inputs.report-failure-as-issue && 'true' || 'false' }}"
 
 count=0
 for lock_file in "$WORKFLOWS_DIR"/gh-aw-*.lock.yml; do
@@ -29,15 +32,27 @@ for lock_file in "$WORKFLOWS_DIR"/gh-aw-*.lock.yml; do
   if ! grep -q "report-failure-as-issue:" "$lock_file" 2>/dev/null; then
     continue
   fi
-  # Skip if already wired
-  if ! grep -qF "$OLD" "$lock_file" 2>/dev/null; then
+  
+  # Check if either variable needs wiring
+  needs_wiring=false
+  if grep -qF "$OLD_FAILURE" "$lock_file" 2>/dev/null; then
+    needs_wiring=true
+  fi
+  if grep -qF "$OLD_FAILED_JOBS" "$lock_file" 2>/dev/null; then
+    needs_wiring=true
+  fi
+  
+  if [ "$needs_wiring" = false ]; then
     continue
   fi
+  
   # Use a temp file for portability (BSD + GNU sed)
   tmp=$(mktemp)
   while IFS= read -r line; do
-    if [ "$line" = "$OLD" ]; then
-      printf '%s\n' "$NEW"
+    if [ "$line" = "$OLD_FAILURE" ]; then
+      printf '%s\n' "$NEW_FAILURE"
+    elif [ "$line" = "$OLD_FAILED_JOBS" ]; then
+      printf '%s\n' "$NEW_FAILED_JOBS"
     else
       printf '%s\n' "$line"
     fi

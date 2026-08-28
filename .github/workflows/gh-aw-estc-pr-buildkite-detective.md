@@ -42,15 +42,10 @@ on:
         required: false
         default: ""
       report-failure-as-issue:
-        description: "When true, agent failures are reported as GitHub issues"
+        description: "When true, agent failures and failed jobs are reported as GitHub issues"
         type: boolean
         required: false
         default: true
-      report-failed-jobs:
-        description: "When true, failed jobs in the workflow are reported as GitHub issues"
-        type: boolean
-        required: false
-        default: false
     secrets:
       BUILDKITE_API_TOKEN:
         required: true
