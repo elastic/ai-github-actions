@@ -65,7 +65,7 @@ on:
         required: false
         default: false
       token-policy:
-        description: "Backstage TokenPolicy id for create-token. Empty uses Vault auto policy from the triggering workflow_ref. Used only when mint-ephemeral-token is true."
+        description: "Backstage TokenPolicy id for create-token. Required when mint-ephemeral-token is true (shared catalog TokenPolicy)."
         type: string
         required: false
         default: ""

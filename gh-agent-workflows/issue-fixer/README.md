@@ -31,7 +31,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
 | `mint-ephemeral-token` | When `true`, mint an OIDC ephemeral GitHub token in each token-consuming job (`elastic/oblt-actions/github/create-token`). Pull requests and comments then re-trigger downstream workflows. The caller job must grant `id-token: write`. | No | `false` |
-| `token-policy` | Backstage TokenPolicy id for `create-token`. Empty uses Vault auto policy from the triggering `workflow_ref`. Used only when `mint-ephemeral-token` is `true`. | No | `""` |
+| `token-policy` | Backstage TokenPolicy id for `create-token`. Required when `mint-ephemeral-token` is `true` (shared catalog TokenPolicy). | No | `""` |
 
 ## Secrets
 

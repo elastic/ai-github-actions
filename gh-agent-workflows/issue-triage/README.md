@@ -32,7 +32,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `classification-labels` | Comma-separated list of labels the agent may apply (e.g. `bug,needs-triage,enhancement`). If empty, no labels are applied. Define label semantics in `additional-instructions`. | No | `""` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
 | `mint-ephemeral-token` | When `true`, mint an OIDC ephemeral GitHub token in each token-consuming job (`elastic/oblt-actions/github/create-token`). Labels then re-trigger downstream workflows. The caller job must grant `id-token: write`. | No | `false` |
-| `token-policy` | Backstage TokenPolicy id for `create-token`. Empty uses Vault auto policy from the triggering `workflow_ref`. Used only when `mint-ephemeral-token` is `true`. | No | `""` |
+| `token-policy` | Backstage TokenPolicy id for `create-token`. Required when `mint-ephemeral-token` is `true` (shared catalog TokenPolicy). | No | `""` |
 
 ## Secrets
 

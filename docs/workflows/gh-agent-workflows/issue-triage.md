@@ -30,7 +30,7 @@ mkdir -p .github/workflows && curl -fsSL \
 | `classification-labels` | Comma-separated list of labels the agent may apply (e.g. `bug,needs-triage,enhancement`). If empty, no labels are applied. Define label semantics in `additional-instructions`. | `""` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 | `mint-ephemeral-token` | When `true`, mint an OIDC ephemeral GitHub token in each token-consuming job. Labels then re-trigger downstream workflows. The caller job must grant `id-token: write`. | `false` |
-| `token-policy` | Backstage TokenPolicy id for `create-token`. Empty uses Vault auto policy. Used only when `mint-ephemeral-token` is `true`. | `""` |
+| `token-policy` | Backstage TokenPolicy id for `create-token`. Required when `mint-ephemeral-token` is `true` (shared catalog TokenPolicy). | `""` |
 
 ## Secrets
 
@@ -70,5 +70,5 @@ jobs:
       #   - `needs-triage`: Apply when more information is needed before the issue can be acted on.
       #   - `enhancement`: Apply when the issue describes a new feature or improvement request.
       # Elastic OIDC: mint-ephemeral-token: true
-      # token-policy: ""
+      # token-policy: "<shared-token-policy-id>"
 ```

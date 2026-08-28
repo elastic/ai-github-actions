@@ -27,9 +27,10 @@ jobs:
       #   - `needs-triage`: Apply when more information is needed before the issue can be acted on.
       #   - `enhancement`: Apply when the issue describes a new feature or improvement request.
       # Elastic OIDC: mint an ephemeral token inside the lock workflow so labels re-trigger
-      # downstream workflows. Requires id-token: write on this job (and a catalog TokenPolicy).
+      # downstream workflows. Requires id-token: write on this job and token-policy set to
+      # the shared catalog TokenPolicy id.
       # mint-ephemeral-token: true
-      # token-policy: ""
+      # token-policy: "<shared-token-policy-id>"
     #secrets:
       # Optional override when not using mint-ephemeral-token.
       # GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}

@@ -14,10 +14,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-MINTED_PREFIX = (
-    "steps.create-token-explicit.outputs.token || "
-    "steps.create-token-auto.outputs.token || "
-)
+MINTED_PREFIX = "steps.create-token.outputs.token || "
 
 # Longer fallback chains first so the short GH_AW_GITHUB_TOKEN suffix is not
 # rewritten inside MCP-token expressions.
@@ -41,7 +38,7 @@ def wire_token_expressions(text: str) -> str:
     """Prefer minted step outputs in known GH-AW token fallback expressions."""
     rewritten: list[str] = []
     for line in text.splitlines(keepends=True):
-        if "create-token-explicit.outputs.token" in line:
+        if "create-token.outputs.token" in line:
             rewritten.append(line)
             continue
         for old, new in REPLACEMENTS:
@@ -85,7 +82,7 @@ def ensure_id_token_write(text: str) -> str:
     inserts: list[tuple[int, str]] = []
     for start, end in spans:
         block = "".join(lines[start:end])
-        if "id: create-token-explicit" not in block:
+        if "id: create-token" not in block:
             continue
         if "id-token: write" in block:
             continue

@@ -22,7 +22,7 @@ jobs:
     permissions:
       issues: write
     steps:
-      - id: create-token-explicit
+      - id: create-token
         uses: elastic/oblt-actions/github/create-token@v1
       - name: Process Safe Outputs
         with:
@@ -41,7 +41,8 @@ def test_wire_token_expressions_is_idempotent() -> None:
     once = wire.wire_token_expressions(SAMPLE_LOCK)
     twice = wire.wire_token_expressions(once)
     assert once == twice
-    assert "steps.create-token-explicit.outputs.token" in once
+    assert "steps.create-token.outputs.token" in once
+    assert "create-token-auto" not in once
 
 
 def test_ensure_id_token_write_only_on_minting_jobs() -> None:
@@ -59,8 +60,14 @@ def test_wire_mcp_chain_is_not_double_prefixed() -> None:
     once = wire.wire_token_expressions(source)
     twice = wire.wire_token_expressions(once)
     assert once == twice
-    assert once.count("create-token-explicit.outputs.token") == 1
+    assert once.count("create-token.outputs.token") == 1
+    assert "create-token-auto" not in once
     assert "GH_AW_GITHUB_MCP_SERVER_TOKEN" in once
+
+
+def test_minted_prefix_uses_shared_policy_only() -> None:
+    assert wire.MINTED_PREFIX == "steps.create-token.outputs.token || "
+    assert "create-token-auto" not in wire.MINTED_PREFIX
 
 
 def test_process_lock_file_skips_without_input(tmp_path: Path) -> None:
