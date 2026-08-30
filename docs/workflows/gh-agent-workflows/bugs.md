@@ -1,6 +1,6 @@
 # Bug Hunting
 
-Find reproducible bugs and automatically fix them.
+Find reproducible bugs, with optional automated fixes via detector-fixer chaining.
 
 **Bug Hunter** finds user-impacting bugs by reviewing recent git history, writing minimal reproduction scripts, and filing a report issue only when the bug is concretely confirmed. Chain it to [Create PR from Issue](../detector-fixer-chaining.md) for a fully autonomous detect-and-fix loop. Most runs end with `noop`.
 

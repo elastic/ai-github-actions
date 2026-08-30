@@ -1,6 +1,6 @@
 # Newbie Contributor
 
-Review documentation from a new contributor's perspective and automatically fix gaps.
+Review documentation from a new contributor's perspective, with optional fixes via detector-fixer chaining.
 
 **Newbie Contributor Patrol** reads all contributor-facing documentation as if it were a new contributor's first encounter with the project — following getting-started paths, checking for missing prerequisites, and flagging blocking gaps. An **Elastic-specific** variant also cross-references published Elastic documentation. Chain it to [Create PR from Issue](../detector-fixer-chaining.md) for a fully autonomous detect-and-fix loop. Most runs end with `noop`.
 
