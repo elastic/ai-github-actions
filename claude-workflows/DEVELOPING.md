@@ -52,6 +52,16 @@ All workflow actions include default MCP servers. The base action does not.
 
 Prompts instruct Claude to call `mcp__agents-md-generator__generate_agents_md` at startup for repository context, with a fallback to manual exploration if it fails.
 
+## Updating the pinned Claude action SHA
+
+Legacy Claude composite actions pin `elastic/ai-github-claude-code-action` to a full commit SHA.
+
+When bumping:
+
+1. Resolve the target commit SHA from the `working-forks` branch in `elastic/ai-github-claude-code-action`.
+2. Update every `uses: elastic/ai-github-claude-code-action@...` entry in `claude-workflows/**/action.yml` to the same SHA.
+3. Run `make lint` to validate all workflow and composite action files.
+
 ## Prefer Documentation Over New Workflows
 
 Don't create a new workflow unless you need different permissions, triggers, or tooling. Instead:
