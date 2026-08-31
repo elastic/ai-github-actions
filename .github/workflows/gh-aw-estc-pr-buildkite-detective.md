@@ -45,7 +45,7 @@ on:
         description: "When true, agent failures and failed jobs are reported as GitHub issues"
         type: boolean
         required: false
-        default: true
+        default: false
     secrets:
       BUILDKITE_API_TOKEN:
         required: true
