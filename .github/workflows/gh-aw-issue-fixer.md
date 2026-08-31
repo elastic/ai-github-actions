@@ -58,13 +58,8 @@ on:
         type: boolean
         required: false
         default: true
-      mint-ephemeral-token:
-        description: "Mint an OIDC ephemeral GitHub token in each token-consuming job via elastic/oblt-actions/github/create-token. When true, pull requests and comments re-trigger downstream workflows. Callers must grant id-token: write on the job that calls this workflow."
-        type: boolean
-        required: false
-        default: false
-      token-policy:
-        description: "Backstage TokenPolicy id for create-token. Required when mint-ephemeral-token is true (shared catalog TokenPolicy)."
+      github-token-policy:
+        description: "Backstage TokenPolicy id for elastic/oblt-actions/github/create-token. When set, mint an OIDC ephemeral GitHub token in each token-consuming job so pull requests and comments re-trigger downstream workflows. Callers must grant id-token: write on the job that calls this workflow. Leave empty to use GITHUB_TOKEN or GH_AW_GITHUB_TOKEN."
         type: string
         required: false
         default: ""

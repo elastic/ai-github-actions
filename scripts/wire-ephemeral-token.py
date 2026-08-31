@@ -5,7 +5,7 @@ The gh-aw compiler rejects mixed steps.* || secrets.* github-token expressions.
 This post-process prefers create-token step outputs, then caller secrets, then
 GITHUB_TOKEN. It also adds id-token: write to jobs that mint tokens.
 
-Only lock files that declare the mint-ephemeral-token workflow_call input are
+Only lock files that declare the github-token-policy workflow_call input are
 modified. The script is idempotent.
 """
 
@@ -103,7 +103,7 @@ def ensure_id_token_write(text: str) -> str:
 def process_lock_file(path: Path) -> bool:
     """Rewrite one lock file. Return True when the file changed."""
     original = path.read_text(encoding="utf-8")
-    if "mint-ephemeral-token:" not in original:
+    if "github-token-policy:" not in original:
         return False
     updated = wire_token_expressions(original)
     updated = ensure_id_token_write(updated)

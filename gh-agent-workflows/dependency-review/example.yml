@@ -28,10 +28,8 @@ jobs:
       # For updatecli: uncomment and set your repo's updatecli bot actor (it varies per repo).
       # allowed-bot-users: "github-actions[bot]"
       # Elastic OIDC: mint an ephemeral token inside the lock workflow so labels re-trigger
-      # downstream workflows. Requires id-token: write on this job and token-policy set to
-      # the shared catalog TokenPolicy id.
-      # mint-ephemeral-token: true
-      # token-policy: "<shared-token-policy-id>"
+      # downstream workflows. Requires id-token: write on this job.
+      # github-token-policy: "<shared-token-policy-id>"
     #secrets:
-      # Optional override when not using mint-ephemeral-token.
+      # Optional override when not using github-token-policy.
       # GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}

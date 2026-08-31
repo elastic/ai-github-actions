@@ -15,8 +15,8 @@ SPEC.loader.exec_module(wire)
 SAMPLE_LOCK = """on:
   workflow_call:
     inputs:
-      mint-ephemeral-token:
-        type: boolean
+      github-token-policy:
+        type: string
 jobs:
   safe_outputs:
     permissions:

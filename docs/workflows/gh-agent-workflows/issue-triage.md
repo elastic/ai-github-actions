@@ -29,14 +29,13 @@ mkdir -p .github/workflows && curl -fsSL \
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | `github-actions[bot]` |
 | `classification-labels` | Comma-separated list of labels the agent may apply (e.g. `bug,needs-triage,enhancement`). If empty, no labels are applied. Define label semantics in `additional-instructions`. | `""` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
-| `mint-ephemeral-token` | When `true`, mint an OIDC ephemeral GitHub token in each token-consuming job. Labels then re-trigger downstream workflows. The caller job must grant `id-token: write`. | `false` |
-| `token-policy` | Backstage TokenPolicy id for `create-token`. Required when `mint-ephemeral-token` is `true` (shared catalog TokenPolicy). | `""` |
+| `github-token-policy` | Backstage TokenPolicy id for `create-token`. When set, mint an OIDC ephemeral GitHub token in each token-consuming job so labels re-trigger downstream workflows. The caller job must grant `id-token: write`. | `""` |
 
 ## Secrets
 
 | Secret | Description | Required |
 | --- | --- | --- |
-| `GH_AW_GITHUB_TOKEN` | Optional override token for GitHub API writes. Prefer `mint-ephemeral-token` with OIDC when available. When neither is set, `GITHUB_TOKEN` is used and label writes do not re-trigger other workflows. | No |
+| `GH_AW_GITHUB_TOKEN` | Optional override token for GitHub API writes. Prefer `github-token-policy` with OIDC when available. When neither is set, `GITHUB_TOKEN` is used and label writes do not re-trigger other workflows. | No |
 
 ## Safe outputs
 
@@ -69,6 +68,5 @@ jobs:
       #   - `bug`: Apply when the issue describes a clear defect or unexpected behavior.
       #   - `needs-triage`: Apply when more information is needed before the issue can be acted on.
       #   - `enhancement`: Apply when the issue describes a new feature or improvement request.
-      # Elastic OIDC: mint-ephemeral-token: true
-      # token-policy: "<shared-token-policy-id>"
+      # Elastic OIDC: github-token-policy: "<shared-token-policy-id>"
 ```
