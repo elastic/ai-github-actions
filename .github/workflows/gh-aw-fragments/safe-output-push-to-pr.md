@@ -1,5 +1,5 @@
 ---
-safe-inputs:
+mcp-scripts:
   ready-to-push-to-pr:
     description: "Run the PR readiness checklist before pushing to a PR"
     py: |
