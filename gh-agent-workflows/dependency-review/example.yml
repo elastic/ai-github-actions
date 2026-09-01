@@ -9,6 +9,7 @@ permissions:
   copilot-requests: write
   issues: write
   pull-requests: write
+  id-token: write
 
 jobs:
   run:
@@ -26,9 +27,10 @@ jobs:
       #   - `merge-ready`: Apply when all dependency updates are safe to merge without human review.
       # For updatecli: uncomment and set your repo's updatecli bot actor (it varies per repo).
       # allowed-bot-users: "github-actions[bot]"
+      # Elastic-specific (OIDC): mint an ephemeral token inside the lock workflow so
+      # labels re-trigger downstream workflows. Requires Elastic TokenPolicy /
+      # ephemeral-token infrastructure and id-token: write on this job. Leave unset outside Elastic.
+      # github-token-policy: "<shared-token-policy-id>"
     #secrets:
-      # Optional: pass an ephemeral token (e.g. a GitHub App token) via GH_AW_GITHUB_TOKEN
-      # so that PR labels applied by this workflow can trigger downstream label-based workflows.
-      # When omitted, the built-in GITHUB_TOKEN is used for labeling, which does
-      # not re-trigger other workflows.
+      # Optional override when not using github-token-policy.
       # GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}

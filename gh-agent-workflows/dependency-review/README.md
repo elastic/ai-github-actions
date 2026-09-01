@@ -31,12 +31,13 @@ See [example.yml](example.yml) for the full workflow file.
 | `allowed-bot-users` | Allowed bot actor usernames (comma-separated). For Updatecli, add your repo's updatecli bot actor here (e.g. `github-actions[bot]` or a custom app bot). | No | `github-actions[bot]` |
 | `classification-labels` | Comma-separated list of labels the agent may apply (e.g. `needs-human-review,higher-risk,merge-ready`). If empty, no labels are applied. Define label semantics in `additional-instructions`. | No | `""` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
+| `github-token-policy` | **Elastic-specific.** Backstage TokenPolicy id for `elastic/oblt-actions/github/create-token`. When set, mint an OIDC ephemeral GitHub token in each token-consuming job so labels re-trigger downstream workflows. Requires Elastic TokenPolicy / ephemeral-token infrastructure; leave empty outside Elastic. The caller job must grant `id-token: write`. | No | `""` |
 
 ## Secrets
 
 | Secret | Description | Required |
 | --- | --- | --- |
-| `GH_AW_GITHUB_TOKEN` | Ephemeral token (e.g. a GitHub App token) used for PR labeling safe outputs. When provided, labels applied by this workflow will trigger downstream label-based workflows. When omitted, the built-in `GITHUB_TOKEN` is used, which does not re-trigger other workflows. | No |
+| `GH_AW_GITHUB_TOKEN` | Optional override token for GitHub API writes. Prefer `github-token-policy` with OIDC when available. When neither is set, `GITHUB_TOKEN` is used and label writes do not re-trigger other workflows. | No |
 
 ## Safe Outputs
 

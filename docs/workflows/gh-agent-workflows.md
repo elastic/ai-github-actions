@@ -102,6 +102,8 @@ Stale Issues Investigator pairs with [Stale Issues Remediator](gh-agent-workflow
 
 These workflows are tailored for Elastic's internal tooling and documentation platform. They reference Elastic's published documentation on `elastic.co/docs`, Elastic's style guide and `applies_to` tag conventions, or Elastic-owned infrastructure (Buildkite, downstream repositories). Use these if you are working in an Elastic repository.
 
+> **Warning — optional Elastic dependency on common workflows:** [Issue Triage](gh-agent-workflows/issue-triage.md), [Dependency Review](gh-agent-workflows/dependency-review.md), and [Issue Fixer](gh-agent-workflows/issue-fixer.md) remain common workflows. Their optional `github-token-policy` input mints OIDC ephemeral GitHub tokens via `elastic/oblt-actions/github/create-token` and requires Elastic's TokenPolicy / ephemeral-token infrastructure. Leave `github-token-policy` empty (the default) outside Elastic; setting it will not work without that platform.
+
 #### Human-coordinated
 
 | Workflow | Trigger | Description |

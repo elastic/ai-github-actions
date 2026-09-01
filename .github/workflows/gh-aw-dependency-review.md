@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Dependency Review"
 description: "Analyze Dependabot, Renovate, and Updatecli dependency update PRs"
 imports:
+  - gh-aw-fragments/ephemeral-github-token.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
@@ -56,6 +57,11 @@ on:
         type: boolean
         required: false
         default: true
+      github-token-policy:
+        description: "Elastic-specific. Backstage TokenPolicy id for elastic/oblt-actions/github/create-token. When set, mint an OIDC ephemeral GitHub token in each token-consuming job so labels and comments re-trigger downstream workflows. Requires Elastic TokenPolicy / ephemeral-token infrastructure; leave empty outside Elastic. Callers must grant id-token: write on the job that calls this workflow. Leave empty to use GITHUB_TOKEN or GH_AW_GITHUB_TOKEN."
+        type: string
+        required: false
+        default: ""
     secrets:
       GH_AW_GITHUB_TOKEN:
         required: false
@@ -73,6 +79,7 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
+  id-token: write
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search, actions]
