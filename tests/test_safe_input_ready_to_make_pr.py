@@ -32,7 +32,7 @@ def extract_py_block(fragment_path: Path) -> str:
     parts = text.split("---", 2)
     assert len(parts) >= 3, f"Expected YAML frontmatter in {fragment_path}"
     frontmatter = yaml.safe_load(parts[1])
-    safe_inputs = frontmatter["safe-inputs"]
+    safe_inputs = frontmatter["mcp-scripts"]
     # The safe-input key varies: ready-to-push-to-pr (push) vs ready-to-make-pr (create)
     first_key = next(iter(safe_inputs))
     py_code = safe_inputs[first_key]["py"]

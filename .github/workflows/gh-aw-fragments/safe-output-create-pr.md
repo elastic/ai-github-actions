@@ -1,5 +1,5 @@
 ---
-safe-inputs:
+mcp-scripts:
   ready-to-make-pr:
     description: "Run the PR readiness checklist before creating or updating a PR"
     py: |

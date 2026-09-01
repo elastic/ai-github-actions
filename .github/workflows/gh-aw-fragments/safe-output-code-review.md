@@ -1,5 +1,5 @@
 ---
-safe-inputs:
+mcp-scripts:
   ready-to-code-review:
     description: "Prepare code review instructions based on PR size — writes agent-review.md, parent-review.md, and subagent-*.md to /tmp/pr-context/"
     py: |
