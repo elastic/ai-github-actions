@@ -22,8 +22,9 @@ jobs:
       #   - `bug`: Apply when the issue describes a clear defect or unexpected behavior.
       #   - `needs-triage`: Apply when more information is needed before the issue can be acted on.
       #   - `enhancement`: Apply when the issue describes a new feature or improvement request.
-      # Elastic OIDC: mint an ephemeral token inside the lock workflow so labels re-trigger
-      # downstream workflows. Requires id-token: write on this job.
+      # Elastic-specific (OIDC): mint an ephemeral token inside the lock workflow so
+      # labels re-trigger downstream workflows. Requires Elastic TokenPolicy /
+      # ephemeral-token infrastructure and id-token: write on this job. Leave unset outside Elastic.
       # github-token-policy: "<shared-token-policy-id>"
     #secrets:
       # Optional override when not using github-token-policy.

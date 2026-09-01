@@ -83,6 +83,8 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 
 These workflows are tailored for Elastic's internal tooling, documentation platform, and infrastructure. They reference Elastic's published documentation on `elastic.co/docs`, Elastic's style guide and `applies_to` tag conventions, or Elastic-owned infrastructure (Buildkite CI, downstream repositories). Use these if you are working in an Elastic repository.
 
+> **Warning — optional Elastic dependency on common workflows:** [Issue Triage](issue-triage/), [Dependency Review](dependency-review/), and [Issue Fixer](issue-fixer/) remain common workflows. Their optional `github-token-policy` input mints OIDC ephemeral GitHub tokens via `elastic/oblt-actions/github/create-token` and requires Elastic's TokenPolicy / ephemeral-token infrastructure. Leave `github-token-policy` empty (the default) outside Elastic; setting it will not work without that platform.
+
 - [Docs PR Review (Elastic-specific)](estc-docs-pr-review/) — review docs for Elastic style guide, `applies_to` tags, and consistency with `elastic.co/docs`
 - [PR Buildkite Detective (Elastic-specific)](estc-pr-buildkite-detective/) — diagnose Buildkite CI failures and recommend fixes
 - [Docs Patrol External (Elastic-specific)](estc-docs-patrol-external/) — detect stale published Elastic documentation

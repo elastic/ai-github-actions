@@ -29,8 +29,9 @@ jobs:
       #   - `merge-ready`: Apply when all dependency updates are safe to merge without human review.
       # For updatecli: uncomment and set your repo's updatecli bot actor (it varies per repo).
       # allowed-bot-users: "github-actions[bot]"
-      # Elastic OIDC: mint an ephemeral token inside the lock workflow so labels re-trigger
-      # downstream workflows. Requires id-token: write on this job.
+      # Elastic-specific (OIDC): mint an ephemeral token inside the lock workflow so
+      # labels re-trigger downstream workflows. Requires Elastic TokenPolicy /
+      # ephemeral-token infrastructure and id-token: write on this job. Leave unset outside Elastic.
       # github-token-policy: "<shared-token-policy-id>"
     #secrets:
       # Optional override when not using github-token-policy.

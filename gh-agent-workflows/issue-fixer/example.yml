@@ -16,6 +16,7 @@ jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-fixer.lock.yml@v0
     # with:
-      # Elastic OIDC: mint an ephemeral token inside the lock workflow so PRs re-trigger CI.
-      # Requires id-token: write on this job.
+      # Elastic-specific (OIDC): mint an ephemeral token inside the lock workflow so
+      # PRs re-trigger CI. Requires Elastic TokenPolicy / ephemeral-token infrastructure
+      # and id-token: write on this job. Leave unset outside Elastic.
       # github-token-policy: "<shared-token-policy-id>"
