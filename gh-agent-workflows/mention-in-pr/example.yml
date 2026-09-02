@@ -12,6 +12,7 @@ permissions:
   discussions: write
   issues: write
   pull-requests: write
+  id-token: write
 
 jobs:
   run:
@@ -19,3 +20,9 @@ jobs:
       startsWith(github.event.comment.body, '/ai') &&
       (github.event.issue.pull_request != null || github.event_name == 'pull_request_review_comment')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-mention-in-pr.lock.yml@v0
+    # with:
+      # Elastic-specific (OIDC): mint an ephemeral token inside the lock workflow so
+      # comments and reviews re-trigger downstream workflows. Requires Elastic
+      # TokenPolicy / ephemeral-token infrastructure and id-token: write on this job.
+      # Leave unset outside Elastic.
+      # github-token-policy: "<shared-token-policy-id>"
