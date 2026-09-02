@@ -29,6 +29,13 @@ mkdir -p .github/workflows && curl -fsSL \
 | `setup-commands` | Shell commands run before the agent starts | `""` |
 | `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | `github-actions[bot]` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
+| `github-token-policy` | **Elastic-specific.** Backstage TokenPolicy id for `elastic/oblt-actions/github/create-token`. When set, mint an OIDC ephemeral GitHub token in each token-consuming job so comments, reviews, and pushes re-trigger downstream workflows (and can satisfy CODEOWNERS when the Vault app is listed). Requires Elastic TokenPolicy / ephemeral-token infrastructure; leave empty outside Elastic. The caller job must grant `id-token: write`. | `""` |
+
+## Secrets
+
+| Secret | Description | Required |
+| --- | --- | --- |
+| `GH_AW_GITHUB_TOKEN` | Optional override token for GitHub API writes. Prefer `github-token-policy` with OIDC when available. When neither is set, `GITHUB_TOKEN` is used. | No |
 
 ## Safe outputs
 
@@ -54,6 +61,7 @@ permissions:
   discussions: write
   issues: write
   pull-requests: write
+  id-token: write
 
 jobs:
   run:
@@ -61,4 +69,7 @@ jobs:
       startsWith(github.event.comment.body, '/ai') &&
       (github.event.issue.pull_request != null || github.event_name == 'pull_request_review_comment')
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-mention-in-pr.lock.yml@v0
+    # with:
+      # Elastic-specific (OIDC): github-token-policy: "<shared-token-policy-id>"
+      # Requires Elastic TokenPolicy / ephemeral-token infrastructure; leave unset outside Elastic.
 ```

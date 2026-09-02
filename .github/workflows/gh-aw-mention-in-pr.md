@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Mention in PR"
 description: "AI assistant for PRs — review, fix code, and push changes on demand"
 imports:
+  - gh-aw-fragments/ephemeral-github-token.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
@@ -76,8 +77,15 @@ on:
         type: boolean
         required: false
         default: true
+      github-token-policy:
+        description: "Elastic-specific. Backstage TokenPolicy id for elastic/oblt-actions/github/create-token. When set, mint an OIDC ephemeral GitHub token in each token-consuming job so pull requests, comments, and reviews re-trigger downstream workflows and can satisfy CODEOWNERS when the Vault app is listed. Requires Elastic TokenPolicy / ephemeral-token infrastructure; leave empty outside Elastic. Callers must grant id-token: write on the job that calls this workflow. Leave empty to use GITHUB_TOKEN or GH_AW_GITHUB_TOKEN."
+        type: string
+        required: false
+        default: ""
     secrets:
       EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
+      GH_AW_GITHUB_TOKEN:
         required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
@@ -92,6 +100,7 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
+  id-token: write
 tools:
   github:
     toolsets: [repos, issues, pull_requests, search, actions]
