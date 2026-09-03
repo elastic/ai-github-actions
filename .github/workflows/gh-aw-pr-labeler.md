@@ -105,8 +105,16 @@ safe-outputs:
               return true;
             }
             const before = item.labels.length;
+            // Agents may emit plain strings or objects { name, confidence, rationale }.
+            // String(object) becomes "[object Object]" and falsely fails the allowlist.
             item.labels = item.labels
-              .map((v) => String(v).trim())
+              .map((v) => {
+                if (typeof v === 'string') return v.trim();
+                if (v && typeof v === 'object' && typeof v.name === 'string') {
+                  return v.name.trim();
+                }
+                return '';
+              })
               .filter((v) => v && allowed.has(v));
             removed += Math.max(0, before - item.labels.length);
             if (item.labels.length === 0) {
