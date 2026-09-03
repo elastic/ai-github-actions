@@ -19,6 +19,16 @@ engine:
   model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-create-pr-from-issue-${{ inputs.target-issue-number }}"
+  # Wider than defaults so short Copilot CAPI 502 / proxy outages can clear
+  # without abandoning the PR stage after an audit issue was already filed.
+  # Note: with compiler v0.87.10 this also applies to threat-detection (nested
+  # threat-detection.engine.harness is not supported yet). Detection only runs
+  # after the agent produces output and is continue-on-error.
+  harness:
+    max-retries: 6
+    initial-delay-ms: 30000
+    backoff-multiplier: 2
+    max-delay-ms: 180000
 on:
   stale-check: false
   workflow_call:
@@ -89,7 +99,7 @@ safe-outputs:
     issues: true
     discussions: false
     target: "${{ inputs.target-issue-number }}"
-timeout-minutes: 60
+timeout-minutes: 90
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
