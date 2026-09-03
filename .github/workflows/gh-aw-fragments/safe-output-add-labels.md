@@ -41,8 +41,16 @@ safe-outputs:
               return true;
             }
             const before = item.labels.length;
+            // Agents may emit plain strings or objects { name, confidence, rationale }.
+            // String(object) becomes "[object Object]" and falsely fails the allowlist.
             item.labels = item.labels
-              .map((v) => String(v).trim())
+              .map((v) => {
+                if (typeof v === 'string') return v.trim();
+                if (v && typeof v === 'object' && typeof v.name === 'string') {
+                  return v.name.trim();
+                }
+                return '';
+              })
               .filter((v) => v && allowed.has(v));
             removed += Math.max(0, before - item.labels.length);
             if (item.labels.length === 0) {
@@ -59,4 +67,4 @@ safe-outputs:
 
 - **Labels**: Max 3 labels per run. Each label max 64 characters. Labels starting with `-` are rejected.
 - **Allowlist**: Only labels in `classification-labels` are accepted; all others are stripped before processing.
-- **Sanitization**: Labels are trimmed, deduplicated, and Unicode-normalized. `@` mentions are neutralized (backticked).
+- **Sanitization**: Label entries may be plain strings or objects with a `name` field (plus optional `confidence` / `rationale`). Names are trimmed, allowlist-filtered, deduplicated, and Unicode-normalized. `@` mentions are neutralized (backticked).
