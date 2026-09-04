@@ -15,6 +15,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -33,7 +34,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -47,9 +48,11 @@ on:
         type: string
         required: false
         default: "[branch-actions-detective]"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -57,11 +60,14 @@ concurrency:
   group: ${{ github.workflow }}-branch-actions-detective-${{ github.event.workflow_run.id }}
   cancel-in-progress: false
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, search, actions]
   bash: true
   web-fetch:
@@ -72,6 +78,7 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "${{ inputs.title-prefix }} "
+    close-older-key: "${{ inputs.title-prefix }}"
     close-older-issues: true
     expires: 7d
 timeout-minutes: 60
@@ -80,6 +87,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -90,7 +99,7 @@ Analyze failed GitHub Actions CI runs on protected branches (e.g. `main`) in ${{
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Workflow Run ID**: ${{ github.event.workflow_run.id }}
+- **Workflow Run URL**: ${{ github.event.workflow_run.html_url }}
 - **Conclusion**: ${{ github.event.workflow_run.conclusion }}
 - **Default Branch**: ${{ github.event.repository.default_branch }}
 
@@ -109,6 +118,7 @@ Analyze failed GitHub Actions CI runs on protected branches (e.g. `main`) in ${{
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/jobs \
        --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
      ````
+   - If none of the jobs have a `failure` conclusion, call `noop` with message "No failed jobs in workflow run; nothing to report" and stop.
    - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
      ````bash
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/logs \

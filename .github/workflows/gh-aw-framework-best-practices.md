@@ -14,10 +14,12 @@ imports:
   - gh-aw-fragments/pick-three-keep-many.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
+  - gh-aw-fragments/code-quality-audit.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -36,7 +38,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -45,14 +47,21 @@ on:
         type: string
         required: false
         default: ""
+      severity-threshold:
+        description: "Minimum severity to include in the report. 'high' = only clear simplifications that reduce complexity or fix bugs. 'medium' (default) = also include missed library features that improve maintainability. 'low' = also include minor underuse patterns."
+        type: string
+        required: false
+        default: "medium"
       title-prefix:
         description: "Title prefix for created issues (e.g. '[framework-best-practices]')"
         type: string
         required: false
         default: "[framework-best-practices]"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -60,11 +69,14 @@ concurrency:
   group: ${{ github.workflow }}-framework-best-practices
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, labels]
   bash: true
   web-fetch:
@@ -75,12 +87,15 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "${{ inputs.title-prefix }} "
+    close-older-key: "${{ inputs.title-prefix }}"
 timeout-minutes: 90
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -105,7 +120,10 @@ Your task is to analyze the codebase, identify the frameworks and libraries in u
    - Check configuration files for unnecessary complexity.
    - Look for TODOs or workaround comments that reference library limitations that may have been resolved in the current version.
 
-3. Use the **Pick Three, Keep Many** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each searching for library underuse from a different angle (e.g., one examining reimplemented library features and deprecated API patterns, one analyzing state management and UI framework underuse, one checking build tool configuration and testing patterns). Include the tech stack inventory, dependency versions, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return all findings that meet the quality criteria.
+3. Use the **Pick Three, Keep Many** pattern for the analysis phase:
+   - Spawn 3 `general-purpose` sub-agents, each searching for library underuse from a different angle (for example: reimplemented library features and deprecated APIs, state-management/UI framework underuse, build-tool configuration and testing patterns).
+   - Include the tech stack inventory, dependency versions, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt.
+   - Each sub-agent should return all findings that meet the quality criteria.
 
 4. **Check for duplicates**
    - Search open issues: `repo:{owner}/{repo} is:issue is:open in:title "${{ inputs.title-prefix }}"`.
@@ -134,8 +152,6 @@ Call `noop` if:
 - You cannot find a concrete simplification where the library feature exists, is stable, and would demonstrably reduce code complexity or improve behavior.
 - Every finding is speculative, subjective, or already tracked.
 - The codebase makes reasonable use of its dependencies.
-
-"Framework Best Practices skipped — no concrete library underuse found."
 
 ### Issue Format
 

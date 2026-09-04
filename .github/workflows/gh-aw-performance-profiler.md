@@ -19,6 +19,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -37,7 +38,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -51,9 +52,11 @@ on:
         type: string
         required: false
         default: "[performance-profiler]"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -61,11 +64,14 @@ concurrency:
   group: ${{ github.workflow }}-performance-profiler
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, labels]
   bash: true
   web-fetch:
@@ -76,6 +82,7 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "${{ inputs.title-prefix }} "
+    close-older-key: "${{ inputs.title-prefix }}"
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90
@@ -84,6 +91,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -134,10 +143,18 @@ Always capture **baseline numbers** before making any change.
 3. Re-run the same profiling or benchmark to capture **after** numbers.
 4. Verify existing tests still pass — run the most relevant test command(s).
 
+### Data Integrity Check (Required)
+
+Before filing, verify the integrity of your evidence:
+- The **before** and **after** benchmark outputs must be **different** — if they are identical, the optimization was not applied or the benchmark did not run correctly. Do not file.
+- The benchmark command used for **before** and **after** must be the same command run against different code states.
+- If you cannot confirm the benchmark actually measured the changed code path, do not file.
+
 ### What to Report
 
 Only file an issue if **all** of these are true:
 - You have concrete before/after benchmark or profiling numbers.
+- The before and after results are **demonstrably different** (not identical output blocks).
 - The improvement is **not trivial** (at least 10% improvement in time or memory for the hot path, or measurably significant for high-frequency operations).
 - Existing tests pass after the change.
 - The change is behavior-preserving — no functional regressions.

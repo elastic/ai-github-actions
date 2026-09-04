@@ -2,6 +2,12 @@
 
 > **Migrating from Claude Workflows?** See the [Migration Guide](migration-guide.md) for step-by-step instructions on migrating from legacy Claude Composite Actions to GitHub Agent Workflows.
 
+## gh-aw compiler v0.83.4
+
+This upgrade adds security hardening, workflow reliability fixes, and support for Google Vertex AI Workload Identity Federation and additional Copilot BYOK frontmatter options.
+
+No breaking changes affect this repository. Source workflows do not use the deprecated `needs.activation.outputs.*` authoring pattern, so no workflow migration is required.
+
 ## gh-aw compiler v0.51.0
 
 Compiler upgrade with new features and bug fixes. No breaking changes — recompile your workflows to pick up improvements.
@@ -23,6 +29,88 @@ Compiler upgrade with new features and bug fixes. No breaking changes — recomp
 - Activation job `contents: read` permission added
 - Report template headers normalized to `h3+` levels
 
+## gh-aw compiler v0.56.x
+
+Compiler updates in this range fix safe-output `workflow_call` output propagation so detector/audit workflows reliably expose created issue outputs (for example, `created_issue_number`).
+
+That enables same-run chaining patterns like:
+- detector/audit job creates an issue
+- caller checks `if: needs.run.outputs.created_issue_number != ''`
+- caller immediately starts `gh-aw-create-pr-from-issue`
+
+## Dedicated fixer removal (breaking)
+
+Six dedicated fixer workflows have been removed. Any detector can now chain directly to `create-pr-from-issue` in the same workflow run, making these standalone fixers redundant.
+
+### Removed workflows
+
+| Removed workflow | Replacement |
+| --- | --- |
+| `gh-aw-bug-exterminator.lock.yml` | Chain Bug Hunter → [gh-aw-create-pr-from-issue](workflows/detector-fixer-chaining.md) |
+| `gh-aw-code-duplication-fixer.lock.yml` | Chain Code Duplication Detector → [gh-aw-create-pr-from-issue](workflows/detector-fixer-chaining.md) |
+| `gh-aw-text-beautifier.lock.yml` | Chain Text Auditor → [gh-aw-create-pr-from-issue](workflows/detector-fixer-chaining.md) |
+| `gh-aw-newbie-contributor-fixer.lock.yml` | Chain Newbie Contributor Patrol → [gh-aw-create-pr-from-issue](workflows/detector-fixer-chaining.md) |
+| `gh-aw-test-improver.lock.yml` | Chain Test Coverage Detector → [gh-aw-create-pr-from-issue](workflows/detector-fixer-chaining.md) |
+| `gh-aw-code-simplifier.lock.yml` | Chain Code Complexity Detector → [gh-aw-create-pr-from-issue](workflows/detector-fixer-chaining.md) |
+
+### Migration
+
+Replace any `uses:` reference to a removed fixer with the chained pattern. For example, if you had separate Bug Hunter and Bug Exterminator workflows:
+
+```yaml
+# Before (two separate workflows)
+# bug-hunter.yml — runs on schedule, creates issues
+# bug-exterminator.yml — runs on schedule, picks up issues and creates PRs
+
+# After (single chained workflow)
+name: Bug Hunt & Fix
+on:
+  schedule:
+    - cron: "0 11 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  detect:
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
+
+  fix:
+    needs: detect
+    if: needs.detect.outputs.created_issue_number != ''
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
+    with:
+      target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
+```
+
+See [Detector / Fixer Chaining](workflows/detector-fixer-chaining.md) for the full pattern and more examples.
+
+### `mention-in-issue-by-id` (deprecated but still available)
+
+`mention-in-issue-by-id` remains available for backwards compatibility. For new workflows, prefer [Create Comment On Issue](workflows/gh-agent-workflows/create-comment-on-issue.md):
+
+```yaml
+# Deprecated (still works)
+uses: elastic/ai-github-actions/.github/workflows/gh-aw-mention-in-issue-by-id.lock.yml@v0
+with:
+  target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
+  prompt: "..."
+
+# Preferred (create-comment-on-issue)
+uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-comment-on-issue.lock.yml@v0
+with:
+  target-issue-number: ${{ needs.detect.outputs.created_issue_number }}
+  prompt: "..."
+```
+
+### New workflow
+
+- **Code Complexity Detector** — Scans source files for overly complex code (deep nesting, redundant conditionals, style outliers) and files a simplification report. Replaces the Code Simplifier. See [Code Complexity](workflows/gh-agent-workflows/code-complexity.md).
+
 ## v0.2.x → Latest (breaking changes)
 
 - `stale-issues` was split: rename to `stale-issues-investigator` and add `stale-issues-remediator` if you want automatic objection handling + auto-close.
@@ -34,7 +122,6 @@ Compiler upgrade with new features and bug fixes. No breaking changes — recomp
 - `gh-aw-deep-research.lock.yml` → `gh-aw-internal-gemini-cli-web-search.lock.yml`
 - `gh-aw-docs-drift.lock.yml` → `gh-aw-docs-patrol.lock.yml`
 - `gh-aw-pr-ci-detective.lock.yml` → `gh-aw-pr-actions-detective.lock.yml`
-- `gh-aw-test-improvement.lock.yml` → `gh-aw-test-improver.lock.yml`
 - `gh-aw-estc-downstream-health.lock.yml` → `internal-downstream-health.lock.yml`
 - `gh-aw-stale-issues.lock.yml` → `gh-aw-stale-issues-investigator.lock.yml`
 

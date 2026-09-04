@@ -114,7 +114,7 @@ else
   PATCH=$(gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate --jq --arg file "$FILE" '.[] | select(.filename==$file) | .patch')
   
   if [ -z "$PATCH" ]; then
-    echo "Error: File '${FILE}' not found in PR diff"
+    echo "Error: File '${FILE}' not found in PR diff, or no patch data is available (binary/too large)."
     echo ""
     echo "Files changed in this PR:"
     gh api "repos/${REPO}/pulls/${PR_NUMBER}/files" --paginate --jq '.[].filename'

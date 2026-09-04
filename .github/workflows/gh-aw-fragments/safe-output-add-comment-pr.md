@@ -5,6 +5,7 @@ safe-outputs:
     issues: false
     pull-requests: true
     discussions: false
+    target: "triggering"
 ---
 
 ## add-comment Limitations

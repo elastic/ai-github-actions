@@ -13,15 +13,10 @@ permissions:
 jobs:
   detect:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-hunter.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 
   fix:
     needs: detect
     if: needs.detect.outputs.created_issue_number != ''
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-bug-exterminator.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
     with:
-      additional-instructions: |
-        Focus on the bug described in ${{ needs.detect.outputs.created_issue_url }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      target-issue-number: ${{ needs.detect.outputs.created_issue_number }}

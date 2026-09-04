@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Issue Fixer"
 description: "Investigate new issues and provide actionable triage analysis with automatic PR creation"
 imports:
+  - gh-aw-fragments/ephemeral-github-token.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
@@ -19,6 +20,7 @@ engine:
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-issue-fixer-${{ github.event.issue.number }}"
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -37,7 +39,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -51,10 +53,20 @@ on:
         type: boolean
         required: false
         default: true
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
+      github-token-policy:
+        description: "Elastic-specific. Backstage TokenPolicy id for elastic/oblt-actions/github/create-token. When set, mint an OIDC ephemeral GitHub token in each token-consuming job so pull requests and comments re-trigger downstream workflows. Requires Elastic TokenPolicy / ephemeral-token infrastructure; leave empty outside Elastic. Callers must grant id-token: write on the job that calls this workflow. Leave empty to use GITHUB_TOKEN or GH_AW_GITHUB_TOKEN."
+        type: string
+        required: false
+        default: ""
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
       EXTRA_COMMIT_GITHUB_TOKEN:
+        required: false
+      GH_AW_GITHUB_TOKEN:
         required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
@@ -64,12 +76,16 @@ concurrency:
   group: ${{ github.workflow }}-issue-fixer-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
   pull-requests: read
+  id-token: write
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
@@ -83,6 +99,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -112,7 +130,7 @@ Follow these steps in order.
 ### Step 2: Investigate the Codebase
 
 1. Read the issue description carefully to understand the request or problem.
-2. Explore the relevant parts of the codebase using `grep` and file reading.
+2. Explore the relevant parts of the codebase using repository search tools (prefer `rg`) and file reading.
 3. Run tests or commands in the workspace to verify reported bugs when possible:
    - Run existing tests to confirm reported behavior
    - Execute scripts to understand current behavior
@@ -144,6 +162,6 @@ Use `<details>` and `<summary>` tags for sections that would otherwise make the 
 ### Step 4: Post Response
 
 1. Call `add_comment` with your triage response.
-2. If you implemented a valid fix with verification, call `create_pull_request` to open a draft PR.
+2. If you implemented a valid fix with verification, call `ready_to_make_pr` and then `create_pull_request` to open a draft PR.
 
 ${{ inputs.additional-instructions }}

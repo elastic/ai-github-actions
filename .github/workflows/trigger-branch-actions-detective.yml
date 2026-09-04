@@ -9,6 +9,7 @@ on:
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   issues: write
 
 jobs:
@@ -18,5 +19,3 @@ jobs:
       github.event.workflow_run.head_branch == github.event.repository.default_branch &&
       toJSON(github.event.workflow_run.pull_requests) == '[]'
     uses: ./.github/workflows/gh-aw-branch-actions-detective.lock.yml
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

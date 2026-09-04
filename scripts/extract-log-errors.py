@@ -10,12 +10,12 @@ Usage:
 
 Options:
   --context N           Lines of context before/after each match (default: 5)
-  --patterns FILE       File with additional grep patterns (one per line)
+  --patterns FILE       File with additional regex patterns (one per line)
   --manifest FILE       Path to manifest.json from fetch-workflow-logs.py
   --output FILE         Write JSON summary to file (default: stdout)
 
 The script searches for common failure patterns:
-  - "##[error]", "Error:", "fatal:", "error:", "FAILED", "failure"
+  - "##[error]", "##[warning]", "error:", "fatal:", "FAILED"
   - Exit code lines: "exited with exit code [^0]"
   - GitHub Actions step failure markers
 """
@@ -31,8 +31,8 @@ from pathlib import Path
 DEFAULT_PATTERNS = [
     r"##\[error\]",
     r"##\[warning\]",
-    r"\bError:",
-    r"\bfatal:",
+    r"(?i)\berror:",
+    r"(?i)\bfatal:",
     r"\bFAILED\b",
     r"exited with exit code [^0]",
     r"Process completed with exit code [^0]",
@@ -60,41 +60,115 @@ def extract_matches(filepath: str, patterns: list[re.Pattern], context: int) -> 
     except OSError as e:
         return [{"file": filepath, "error": str(e)}]
 
-    matched_lines = set()
-    for i, line in enumerate(lines):
-        for pat in patterns:
-            if pat.search(line):
-                matched_lines.add(i)
-                break
-
+    matched_lines = find_matching_lines(lines, patterns)
     if not matched_lines:
         return []
 
-    # Group nearby matches into blocks
+    blocks = coalesce_blocks(matched_lines, len(lines), context)
+    return format_match_results(filepath, lines, blocks)
+
+
+def find_matching_lines(lines: list[str], patterns: list[re.Pattern]) -> set[int]:
+    matched_lines: set[int] = set()
+    for i, line in enumerate(lines):
+        for pattern in patterns:
+            if pattern.search(line):
+                matched_lines.add(i)
+                break
+    return matched_lines
+
+
+def coalesce_blocks(matched_lines: set[int], line_count: int, context: int) -> list[tuple[int, int]]:
     blocks: list[tuple[int, int]] = []
     for lineno in sorted(matched_lines):
         start = max(0, lineno - context)
-        end = min(len(lines) - 1, lineno + context)
+        end = min(line_count - 1, lineno + context)
         if blocks and start <= blocks[-1][1] + 1:
             blocks[-1] = (blocks[-1][0], end)
         else:
             blocks.append((start, end))
+    return blocks
 
+
+def format_match_results(filepath: str, lines: list[str], blocks: list[tuple[int, int]]) -> list[dict]:
     results = []
     for start, end in blocks:
         snippet = "".join(lines[start:end + 1])
-        results.append({
-            "file": filepath,
-            "start_line": start + 1,
-            "end_line": end + 1,
-            "snippet": snippet.rstrip(),
-        })
+        results.append(
+            {
+                "file": filepath,
+                "start_line": start + 1,
+                "end_line": end + 1,
+                "snippet": snippet.rstrip(),
+            }
+        )
     return results
 
 
 def load_manifest(manifest_path: str) -> list[dict]:
     with open(manifest_path) as f:
         return json.load(f)
+
+
+def build_patterns(pattern_file: str | None) -> list[re.Pattern]:
+    patterns = [re.compile(pattern) for pattern in DEFAULT_PATTERNS]
+    if not pattern_file:
+        return patterns
+
+    with open(pattern_file) as f:
+        for line in f:
+            candidate = line.strip()
+            if candidate and not candidate.startswith("#"):
+                patterns.append(re.compile(candidate))
+    return patterns
+
+
+def collect_log_files(log_path: str | None, manifest_path: str | None) -> tuple[list[str], dict[str, dict]]:
+    if manifest_path:
+        return collect_log_files_from_manifest(load_manifest(manifest_path))
+    if log_path:
+        return find_log_files(log_path), {}
+    print("Error: provide either a log path or --manifest.", file=sys.stderr)
+    sys.exit(1)
+
+
+def collect_log_files_from_manifest(manifest: list[dict]) -> tuple[list[str], dict[str, dict]]:
+    log_files: list[str] = []
+    run_meta: dict[str, dict] = {}
+
+    for entry in manifest:
+        run_id = str(entry["run_id"])
+        run_meta[run_id] = {
+            "run_id": entry["run_id"],
+            "conclusion": entry.get("conclusion", ""),
+            "created_at": entry.get("created_at", ""),
+            "html_url": entry.get("html_url", ""),
+        }
+        for log_file in entry.get("log_files", []):
+            log_files.append(log_file)
+
+    return log_files, run_meta
+
+
+def attach_run_metadata(matches: list[dict], run_meta: dict[str, dict]) -> None:
+    for match in matches:
+        filepath = match.get("file", "")
+        parts = Path(filepath).parts
+        for part in parts:
+            if part in run_meta:
+                match["run"] = run_meta[part]
+                break
+
+
+def emit_output(summary: dict, output_path: str | None) -> None:
+    output_text = json.dumps(summary, indent=2)
+    if output_path:
+        with open(output_path, "w") as f:
+            f.write(output_text)
+        print(f"Results written to {output_path}", file=sys.stderr)
+        print(output_path)
+        return
+    print(output_text)
 
 
 def main() -> None:
@@ -111,61 +185,20 @@ def main() -> None:
                         help="Write JSON output to file (default: stdout)")
     args = parser.parse_args()
 
-    patterns = [re.compile(p) for p in DEFAULT_PATTERNS]
-    if args.patterns:
-        with open(args.patterns) as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#"):
-                    patterns.append(re.compile(line))
-
-    # Collect log files
-    log_files: list[str] = []
-    run_meta: dict[str, dict] = {}
-
-    if args.manifest:
-        manifest = load_manifest(args.manifest)
-        for entry in manifest:
-            run_id = str(entry["run_id"])
-            run_meta[run_id] = {
-                "run_id": entry["run_id"],
-                "conclusion": entry.get("conclusion", ""),
-                "created_at": entry.get("created_at", ""),
-                "html_url": entry.get("html_url", ""),
-            }
-            for f in entry.get("log_files", []):
-                log_files.append(f)
-    elif args.log_path:
-        log_files = find_log_files(args.log_path)
-    else:
-        print("Error: provide a log path or --manifest", file=sys.stderr)
-        sys.exit(1)
+    patterns = build_patterns(args.patterns)
+    log_files, run_meta = collect_log_files(args.log_path, args.manifest)
 
     if not log_files:
         print("No log files found.", file=sys.stderr)
-        # Always write an empty result to --output so downstream steps have a consistent file
-        if args.output:
-            empty = {"total_files_scanned": 0, "total_matches": 0, "matches": []}
-            with open(args.output, "w") as f:
-                json.dump(empty, f, indent=2)
-        sys.exit(0)
+        all_matches: list[dict] = []
+    else:
+        print(f"Scanning {len(log_files)} log file(s)...", file=sys.stderr)
+        all_matches = []
+        for filepath in log_files:
+            matches = extract_matches(filepath, patterns, args.context)
+            all_matches.extend(matches)
 
-    print(f"Scanning {len(log_files)} log file(s)...", file=sys.stderr)
-
-    all_matches: list[dict] = []
-    for filepath in log_files:
-        matches = extract_matches(filepath, patterns, args.context)
-        all_matches.extend(matches)
-
-    # Attach run metadata where available
-    for m in all_matches:
-        filepath = m.get("file", "")
-        # Try to extract run_id from path (e.g. /tmp/gh-aw/logs/12345678/...)
-        parts = Path(filepath).parts
-        for part in parts:
-            if part in run_meta:
-                m["run"] = run_meta[part]
-                break
+        attach_run_metadata(all_matches, run_meta)
 
     summary = {
         "total_files_scanned": len(log_files),
@@ -173,14 +206,7 @@ def main() -> None:
         "matches": all_matches,
     }
 
-    output_text = json.dumps(summary, indent=2)
-    if args.output:
-        with open(args.output, "w") as f:
-            f.write(output_text)
-        print(f"Results written to {args.output}", file=sys.stderr)
-        print(args.output)
-    else:
-        print(output_text)
+    emit_output(summary, args.output)
 
 
 if __name__ == "__main__":

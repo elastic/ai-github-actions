@@ -39,6 +39,45 @@ def _workflow_source_link(example_content: str) -> str | None:
     return f"[`{filename}`]({url})"
 
 
+def _rewrite_sibling_workflow_links(readme: str) -> str:
+    """Rewrite sibling workflow links to generated docs pages.
+
+    The generated workflow docs live under docs/workflows/gh-agent-workflows/.
+    Rewrite source-tree links so they resolve from that location:
+    - ../other-workflow/README.md -> other-workflow.md
+    - ../other-workflow/ -> other-workflow.md
+    - ../../docs/workflows/<page>.md -> ../<page>.md
+    """
+
+    def replace_link(match: re.Match[str]) -> str:
+        link_text = match.group(1)
+        target = match.group(2)
+
+        readme_match = re.fullmatch(r"\.\./([a-z0-9-]+)/README\.md(#.*)?", target)
+        if readme_match:
+            slug = readme_match.group(1)
+            anchor = readme_match.group(2) or ""
+            return f"[{link_text}]({slug}.md{anchor})"
+
+        dir_match = re.fullmatch(r"\.\./([a-z0-9-]+)/(#.*)?", target)
+        if dir_match:
+            slug = dir_match.group(1)
+            anchor = dir_match.group(2) or ""
+            return f"[{link_text}]({slug}.md{anchor})"
+
+        docs_workflows_match = re.fullmatch(
+            r"\.\./\.\./docs/workflows/([a-z0-9-]+)\.md(#.*)?", target
+        )
+        if docs_workflows_match:
+            slug = docs_workflows_match.group(1)
+            anchor = docs_workflows_match.group(2) or ""
+            return f"[{link_text}](../{slug}.md{anchor})"
+
+        return match.group(0)
+
+    return re.sub(r"\[([^\]]+)\]\(([^)]+)\)", replace_link, readme)
+
+
 def _generate_page(workflow_dir: Path) -> str:
     readme = (workflow_dir / "README.md").read_text(encoding="utf-8")
     example = (workflow_dir / "example.yml").read_text(encoding="utf-8")
@@ -57,8 +96,7 @@ def _generate_page(workflow_dir: Path) -> str:
     # In the source tree READMEs use ../other-workflow/README.md or
     # ../other-workflow/ to link to neighbours; on the generated docs site the
     # correct target is other-workflow.md (a peer file in the same directory).
-    readme = re.sub(r"\.\./([a-z0-9-]+)/README\.md", r"\1.md", readme)
-    readme = re.sub(r"\.\./([a-z0-9-]+)/(?!README\.md)", r"\1.md", readme)
+    readme = _rewrite_sibling_workflow_links(readme)
 
     # Insert a "Workflow source" link after the first paragraph (the short
     # description that follows the H1 title) so readers can easily navigate

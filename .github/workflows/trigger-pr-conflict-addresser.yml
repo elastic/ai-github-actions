@@ -1,0 +1,24 @@
+name: Trigger PR Conflict Addresser
+on:
+  workflow_dispatch:
+    inputs:
+      pull-request-number:
+        description: "PR number with merge conflicts (e.g. 123)"
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+  copilot-requests: write
+  discussions: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  run:
+    uses: ./.github/workflows/gh-aw-pr-conflict-addresser.lock.yml
+    with:
+      target-pr-number: ${{ inputs.pull-request-number }}
+    secrets:
+      EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}

@@ -18,6 +18,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -36,7 +37,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -50,9 +51,11 @@ on:
         type: string
         required: false
         default: "[information-architecture]"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -60,11 +63,14 @@ concurrency:
   group: ${{ github.workflow }}-information-architecture
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, labels]
   bash: true
   web-fetch:
@@ -75,12 +81,15 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "${{ inputs.title-prefix }} "
+    close-older-key: "${{ inputs.title-prefix }}"
 timeout-minutes: 90
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -133,6 +142,8 @@ Call `noop` if:
 - You cannot find a concrete, user-impacting IA problem supported by specific component paths.
 - All findings are subjective style preferences.
 - A similar issue is already open.
+
+If you do not have a concrete finding after the investigation, do not end the run silently. Call `noop` immediately with a brief reason and stop. Ending without a safe output is a failure for this workflow.
 
 "Information Architecture skipped — no concrete IA problem found."
 

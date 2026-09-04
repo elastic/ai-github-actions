@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Issue Triage"
 description: "Investigate new issues and provide actionable triage analysis"
 imports:
+  - gh-aw-fragments/ephemeral-github-token.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
@@ -11,6 +12,7 @@ imports:
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/playwright-mcp-explorer.md
   - gh-aw-fragments/safe-output-add-comment-issue.md
+  - gh-aw-fragments/safe-output-add-labels.md
   - gh-aw-fragments/pick-three-keep-one.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
@@ -19,6 +21,7 @@ engine:
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-issue-triage-${{ github.event.issue.number }}"
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -37,18 +40,33 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
+      classification-labels:
+        description: "Comma-separated list of labels the agent may apply (e.g. 'bug,needs-triage,enhancement'). If empty, no labels are applied. Define label semantics in additional-instructions."
+        type: string
+        required: false
+        default: ""
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string
         required: false
         default: ""
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
+      github-token-policy:
+        description: "Elastic-specific. Backstage TokenPolicy id for elastic/oblt-actions/github/create-token. When set, mint an OIDC ephemeral GitHub token in each token-consuming job so labels and comments re-trigger downstream workflows. Requires Elastic TokenPolicy / ephemeral-token infrastructure; leave empty outside Elastic. Callers must grant id-token: write on the job that calls this workflow. Leave empty to use GITHUB_TOKEN or GH_AW_GITHUB_TOKEN."
+        type: string
+        required: false
+        default: ""
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+      GH_AW_GITHUB_TOKEN:
+        required: false
   reaction: "eyes"
   roles: [admin, maintainer, write]
   bots:
@@ -57,12 +75,16 @@ concurrency:
   group: ${{ github.workflow }}-issue-triage-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
   pull-requests: read
+  id-token: write
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
@@ -75,6 +97,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -104,7 +128,7 @@ Follow these steps in order.
 
 1. Read the issue description carefully to understand the request or problem.
 2. Use the **Pick Three, Keep One** pattern for the investigation phase: spawn 3 `general-purpose` sub-agents, each exploring the codebase from a different angle (e.g., different areas of the codebase related to the issue, different hypotheses about root cause, different related issues/PRs). Include the issue description, repo conventions, and the full context from Step 1 in each sub-agent prompt. Each sub-agent should return its best findings with file paths and evidence, or recommend `noop`.
-3. Explore the relevant parts of the codebase using `grep` and file reading.
+3. Explore the relevant parts of the codebase using repository search tools (prefer `rg`) and file reading.
 4. Run tests or commands in the workspace to verify reported bugs when possible:
    - Run existing tests to confirm reported behavior
    - Execute scripts to understand current behavior
@@ -165,8 +189,20 @@ Use `<details>` and `<summary>` tags for sections that would otherwise make the 
 > | File | `src/calculator.py:42` | Method that needs updating |
 > </details>
 
-### Step 4: Post Response
+### Step 4: Determine Labels
+
+If `${{ inputs.classification-labels }}` is not empty:
+
+- Parse `${{ inputs.classification-labels }}` as a comma-separated list — these are the **only** valid labels for this step.
+- Use `${{ inputs.additional-instructions }}` to understand what each label means and when to apply it.
+- Determine which labels (if any) apply to this issue based on the triage findings.
+- Never apply a label that is not in the parsed classification label list.
+
+If `${{ inputs.classification-labels }}` is empty, skip this step entirely.
+
+### Step 5: Post Response
 
 1. Call `add_comment` with your triage response.
+2. If labels were determined in Step 4, call `add_labels` to apply them to the issue.
 
 ${{ inputs.additional-instructions }}

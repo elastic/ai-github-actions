@@ -56,7 +56,7 @@ We've organized the agents into squads based on what they do. Each squad has its
 
 **[The Issue Squad](meet-the-issue-squad.md)** — Issue Triage, Duplicate Issue Detector, Stale Issues, Plan, and Deep Research. A new issue lands and within seconds it's labeled, prioritized, and checked against every existing issue for duplicates. Deep Research is the one agent that breaks the mold — it uses Google Gemini instead of Copilot for extended investigation.
 
-**[The Quality Crew](meet-the-quality-crew.md)** — Bug Hunter, Bug Exterminator, Flaky Test Investigator, Code Duplication Detector, Refactor Opportunist, Text Auditor, Framework Best Practices, Autonomy Atomicity Analyzer, and more. They form a spectrum from "find bugs" (reactive) to "prevent bugs" (proactive architecture analysis). Bug Hunter has the highest quality bar in the factory — mandatory local reproduction, concrete failure scenarios, evidence-based findings.
+**[The Quality Crew](meet-the-quality-crew.md)** — Bug Hunter, Flaky Test Investigator, Code Duplication Detector, Code Complexity Detector, Refactor Opportunist, Text Auditor, Framework Best Practices, Autonomy Atomicity Analyzer, and more. They form a spectrum from "find bugs" (reactive) to "prevent bugs" (proactive architecture analysis). Bug Hunter has the highest quality bar in the factory — mandatory local reproduction, concrete failure scenarios, evidence-based findings.
 
 **[The Idea Machines](meet-the-idea-machines.md)** — Product Manager Impersonator configured with different personas, each thinking from a different domain. An SRE, a security analyst, a search engineer — all generating feature ideas daily.
 
@@ -68,13 +68,12 @@ We've organized the agents into squads based on what they do. Each squad has its
 
 ## Quick Start
 
-Getting agents running on your repo takes three steps:
+Getting agents running on your repo takes two steps:
 
-1. **Store a Copilot PAT** as `COPILOT_GITHUB_TOKEN` in your repo secrets
-2. **Copy a workflow's `example.yml`** from the [gh-agent-workflows](https://github.com/elastic/ai-github-actions/tree/main/gh-agent-workflows) directory
-3. **Customize** with `additional-instructions` and `setup-commands` for your project
+1. **Copy a workflow's `example.yml`** from the [gh-agent-workflows](https://github.com/elastic/ai-github-actions/tree/main/gh-agent-workflows) directory
+2. **Customize** with `additional-instructions` and `setup-commands` for your project
 
-That's it. Updates propagate automatically through the `v0` tag. See the [full setup docs](../../workflows/gh-agent-workflows.md) for details.
+No personal access token required — workflows authenticate automatically via the built-in `GITHUB_TOKEN` when GitHub Copilot is available in the repository or organisation. That's it. Updates propagate automatically through the `v0` tag. See the [full setup docs](../../workflows/gh-agent-workflows.md) for details.
 
 ## What We're Learning
 

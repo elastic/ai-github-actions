@@ -6,7 +6,7 @@ This is the legacy workflow path. For new deployments, use [GitHub Agent Workflo
 
 Traditional GitHub Actions wrapping Claude Code, consumed via `uses:` in standard workflows.
 
-> **Note:** This directory was renamed from `workflows/` to `claude-workflows/`. A symlink ensures backwards compatibility — existing `uses: elastic/ai-github-actions/claude-workflows/...@v0` references continue to work.
+> **Note:** This directory was renamed from `workflows/` to `claude-workflows/`. A symlink ensures backwards compatibility — existing `uses: elastic/ai-github-actions/workflows/...@v0` references continue to work.
 
 ## Security
 

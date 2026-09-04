@@ -15,6 +15,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -37,7 +38,7 @@ on:
         type: string
         required: true
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -46,9 +47,12 @@ on:
         type: string
         required: false
         default: ""
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   roles: [admin, maintainer, write]
@@ -58,12 +62,15 @@ concurrency:
   group: ${{ github.workflow }}-pr-actions-fixer-${{ inputs.workflow-run-id }}
   cancel-in-progress: false
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
@@ -77,6 +84,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -87,7 +96,7 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Workflow Run ID**: ${{ inputs.workflow-run-id }}
+- **Workflow Run URL**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ inputs.workflow-run-id }}
 
 ## Constraints
 
@@ -99,30 +108,30 @@ Assist with failed GitHub Actions checks for pull requests in ${{ github.reposit
 ### Step 1: Gather Context
 
 1. Fetch workflow run details using `inputs.workflow-run-id`:
-   ````bash
+   ```bash
    gh api repos/${{ github.repository }}/actions/runs/{run_id} \
      --jq '{id: .id, html_url: .html_url, pull_requests: .pull_requests}'
-   ````
-3. Identify the PRs associated with the workflow run from the response. If there are none, call `noop` with message "No pull request associated with workflow run; nothing to do" and stop.
-4. For each PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status.
-5. Fetch workflow run details and logs with `bash` + `gh api`:
+   ```
+2. Identify the PRs associated with the workflow run from the response. If there are none, call `noop` with message "No pull request associated with workflow run; nothing to do" and stop.
+3. For each PR, call `pull_request_read` with method `get` to capture the author, branches, and fork status.
+4. Fetch workflow run details and logs with `bash` + `gh api`:
    - List jobs and their conclusions:
-     ````bash
+     ```bash
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/jobs \
        --jq '.jobs[] | {id: .id, name: .name, conclusion: .conclusion, html_url: .html_url}'
-     ````
+     ```
    - Download logs to `/tmp/gh-aw/agent/` and inspect the failing step output:
-     ````bash
+     ```bash
      gh api repos/${{ github.repository }}/actions/runs/{run_id}/logs \
        -H "Accept: application/vnd.github+json" \
        > /tmp/gh-aw/agent/workflow-logs-{run_id}.zip
      unzip -o /tmp/gh-aw/agent/workflow-logs-{run_id}.zip -d /tmp/gh-aw/agent/workflow-logs-{run_id}/
-     ````
+     ```
 
 ### Step 2: Analyze and Fix
 
 - Identify the failing job/step and summarize the root cause.
-- If the fix is straightforward and safe, implement it locally, run tests, and push to the PR branch.
+- If the fix is straightforward and safe, implement it locally, run tests, call `ready_to_push_to_pr`, then use `push_to_pull_request_branch` to push to the PR branch.
 - If the fix is risky or requires broader refactoring, propose a concrete remediation plan instead of pushing.
 - If the PR is from a fork, do not push; provide patch guidance in the comment.
 
@@ -135,6 +144,7 @@ Call `add_comment` on the PR with:
 - Any follow-up steps required
 
 **Additional tools:**
+- `ready_to_push_to_pr` — run pre-push safety checks before pushing PR changes
 - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
 
 ${{ inputs.additional-instructions }}

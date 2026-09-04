@@ -44,6 +44,7 @@ See [example.yml](example.yml) for the full workflow file.
 | `setup-commands` | Shell commands run before the agent starts — **do not run fork code here** | No | `""` |
 | `intensity` | Review intensity (`conservative`, `balanced`, `aggressive`) | No | `balanced` |
 | `minimum_severity` | Minimum severity for inline comments (`critical`, `high`, `medium`, `low`, `nitpick`) | No | `low` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
 
 ## Safe Outputs
 

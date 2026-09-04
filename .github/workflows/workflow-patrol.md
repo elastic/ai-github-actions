@@ -17,8 +17,9 @@ engine:
   id: copilot
   model: gpt-5.3-codex
 on:
+  stale-check: false
   schedule:
-    - cron: "daily around 14:00 on weekdays"
+    - cron: "5 13 * * 1-5"
   workflow_dispatch:
     inputs:
       title-prefix:
@@ -32,6 +33,7 @@ concurrency:
   group: ${{ github.workflow }}-workflow-patrol
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read
@@ -50,6 +52,7 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "[workflow-patrol] "
+    close-older-key: "workflow-patrol"
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90

@@ -19,6 +19,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -37,7 +38,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -51,9 +52,11 @@ on:
         type: string
         required: false
         default: "[refactor-opportunist]"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -61,12 +64,15 @@ concurrency:
   group: ${{ github.workflow }}-refactor-opportunist
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, labels, actions]
   bash: true
   web-fetch:
@@ -77,12 +83,15 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "${{ inputs.title-prefix }} "
+    close-older-key: "${{ inputs.title-prefix }}"
 timeout-minutes: 90
 steps:
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -110,6 +119,12 @@ You are a senior software architect reviewing this codebase with fresh eyes. You
 4. **Select one refactor target**
    - Choose the single highest-impact structural improvement you found.
    - The refactor must be decomposable — it should be possible to implement incrementally, not as one massive change.
+   - Use a simple prioritization score when comparing candidates:
+     - Impact on maintainability/changeability (0-3)
+     - Incremental viability and low migration risk (0-3)
+     - Evidence strength from code/churn/issues (0-2)
+     - **Extra reuse bonus (0-2):** award extra points when an existing helper or central implementation already exists and the candidate primarily consolidates usage onto it.
+   - Prefer the highest-scoring candidate; if scores are close, prefer the one with the stronger reuse bonus.
 
 5. **Partially implement to prove viability**
    - Implement the refactor for **one representative slice** of the codebase (e.g., one module, one file pair, one abstraction boundary).

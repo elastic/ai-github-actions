@@ -73,7 +73,7 @@ for arg in "$@"; do
       CATEGORIES+=("$arg")
       ;;
     *)
-      echo "Unknown argument: $arg (expected: detectors, fixers, monitors, --dry-run, --list)" >&2
+      echo "Unknown argument: $arg (expected: detectors, fixers, monitors, --dry-run, --list, --help)" >&2
       exit 1
       ;;
   esac
@@ -141,5 +141,5 @@ if [[ "$DRY_RUN" == "false" ]]; then
       monitors)  total=$((total + ${#MONITORS[@]})) ;;
     esac
   done
-  echo "Dispatched $total workflows across ${#CATEGORIES[@]} category(s)."
+  echo "Attempted to dispatch $total workflows across ${#CATEGORIES[@]} categories."
 fi

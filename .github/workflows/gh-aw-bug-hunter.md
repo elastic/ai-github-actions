@@ -19,6 +19,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -37,7 +38,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -51,9 +52,11 @@ on:
         type: string
         required: false
         default: "[bug-hunter]"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -61,12 +64,15 @@ concurrency:
   group: ${{ github.workflow }}-bug-hunter
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, labels, actions]
   bash: true
   web-fetch:
@@ -77,6 +83,7 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "${{ inputs.title-prefix }} "
+    close-older-key: "${{ inputs.title-prefix }}"
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90
@@ -85,10 +92,12 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
-Find a single reproducible, user-impacting bug in the repository that can be covered by a minimal failing test.
+Find a single reproducible, user-impacting bug in the repository that can be covered by a minimal failing test. Not a number field accepting "ABC", but a real and impactful bug.
 
 **The bar is high: you must actually reproduce the bug before filing.** Most runs should end with `noop` — that means the codebase is healthy.
 
@@ -118,6 +127,11 @@ Find a single reproducible, user-impacting bug in the repository that can be cov
 - Edge cases that require unusual or undocumented inputs.
 - Issues that require large refactors or design changes.
 - Behavior already tracked by an open issue.
+- **By-design behavior.** Before filing, check whether the behavior is intentional:
+  - Look for comments near the code explaining the design choice.
+  - Check if similar code in the same codebase follows the same pattern (e.g., all auth configs use the same optional-fields pattern). Consistency across the codebase suggests a deliberate convention, not a bug.
+  - Search recent PRs and commits for context on why the code was written this way.
+  - If the "bug" requires assuming the developer made an error despite following an established pattern in the codebase, it is probably by-design.
 
 ### Quality Gate — When to Noop
 
@@ -127,6 +141,7 @@ Call `noop` if any of these are true:
 - The bug is speculative — you inferred it from reading code but did not trigger it with code you wrote.
 - A similar issue is already open.
 - The impact is cosmetic or low-severity (e.g., a typo in a log message).
+- The bug is already fixed. Before filing, search for recently merged PRs that may address the issue: `gh pr list --state merged --search 'KEYWORD' --limit 10`. If a merged PR fixes the exact code path, `noop`.
 
 ### Issue Format
 

@@ -69,7 +69,7 @@ workflow (gh-aw-docs-patrol.md)
 For scheduled fixes (fixers):
 
 ```text
-workflow (gh-aw-text-beautifier.md)
+workflow (gh-aw-small-problem-fixer.md)
  ├── gh-aw-fragments/scheduled-fix.md     # shared fix framework
  ├── gh-aw-fragments/workflow-edit-guardrails.md
  ├── gh-aw-fragments/safe-output-create-pr.md
@@ -86,6 +86,7 @@ Fragments live in `.github/workflows/gh-aw-fragments/`. Workflows import them us
 | Fragment | Purpose |
 | --- | --- |
 | [gh-aw-fragments/elastic-tools.md](../.github/workflows/gh-aw-fragments/elastic-tools.md) | Elastic MCP servers (`agents-md-generator`, `public-code-search`) and their network entries |
+| [gh-aw-fragments/ephemeral-github-token.md](../.github/workflows/gh-aw-fragments/ephemeral-github-token.md) | **Elastic-specific.** Mint OIDC ephemeral GitHub tokens (`create-token@v1`) when `github-token-policy` is set; leave empty outside Elastic |
 | [gh-aw-fragments/formatting.md](../.github/workflows/gh-aw-fragments/formatting.md) | Response formatting rules |
 | [gh-aw-fragments/rigor.md](../.github/workflows/gh-aw-fragments/rigor.md) | Accuracy & evidence standards |
 | [gh-aw-fragments/mcp-pagination.md](../.github/workflows/gh-aw-fragments/mcp-pagination.md) | MCP token limit guidance and pagination patterns |
@@ -163,7 +164,7 @@ make compile          # sync + compile
 
 ### workflow_call Convention
 
-All shims include a `workflow_call` trigger with two standard inputs and one secret:
+All shims include a `workflow_call` trigger with two standard inputs:
 
 ```yaml
 on:
@@ -179,9 +180,6 @@ on:
         type: string
         required: false
         default: ""
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
 ```
 
 And a setup step that runs the caller's commands:

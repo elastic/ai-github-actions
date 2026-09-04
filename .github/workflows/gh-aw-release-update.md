@@ -14,6 +14,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -32,7 +33,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -46,9 +47,12 @@ on:
         type: boolean
         required: false
         default: true
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   roles: [admin, maintainer, write]
@@ -58,12 +62,15 @@ concurrency:
   group: ${{ github.workflow }}-release-update
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
@@ -78,6 +85,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -92,7 +101,7 @@ Check for new releases of `elastic/ai-github-actions` and open a PR that updates
 ## Constraints
 
 - **CAN**: Read files, search code, modify files locally, run tests and commands, create a pull request.
-- **CANNOT**: Push directly to the repository — use `create_pull_request`.
+- **CANNOT**: Push directly to the repository — use `ready_to_make_pr` then `create_pull_request`.
 - **Only one PR per run.**
 - Only update workflow references to `elastic/ai-github-actions/.github/workflows/gh-aw-*.lock.yml@...`.
 - If no updates are needed, call `noop` with a brief reason.
@@ -124,7 +133,7 @@ rg -n "elastic/ai-github-actions/.github/workflows/gh-aw-.*\\.lock\\.yml@\\S+" .
 ## Step 4: Create the PR
 
 1. Commit the changes locally.
-2. Call `create_pull_request` with:
+2. Call `ready_to_make_pr`, then call `create_pull_request` with:
    - **Title**: `Update ai-github-actions workflows to <latest tag>`
    - **Body**: Summary of updated refs (old → new), release note highlights that matter, suggested workflow updates, and tests run (if none, say "Not run (workflow reference updates only)").
 

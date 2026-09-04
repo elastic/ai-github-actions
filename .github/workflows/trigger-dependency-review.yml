@@ -8,8 +8,10 @@ on:
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   issues: write
   pull-requests: write
+  id-token: write
 
 jobs:
   run:
@@ -18,8 +20,19 @@ jobs:
       github.event.pull_request.user.login == 'renovate[bot]' ||
       startsWith(github.head_ref, 'updatecli')
     uses: ./.github/workflows/gh-aw-dependency-review.lock.yml
-    # For updatecli: uncomment and set your repo's updatecli bot actor (it varies per repo).
     # with:
-    #   allowed-bot-users: "github-actions[bot]"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      # Configure which labels the agent may apply and define their semantics in additional-instructions.
+      # classification-labels: "needs-human-review,higher-risk,merge-ready"
+      # additional-instructions: |
+      #   - `needs-human-review`: Apply when breaking changes are found, a major version bump, unverified SHA, or mutable tag move.
+      #   - `higher-risk`: Apply when the dependency is only used in push/release/schedule/dispatch workflows.
+      #   - `merge-ready`: Apply when all dependency updates are safe to merge without human review.
+      # For updatecli: uncomment and set your repo's updatecli bot actor (it varies per repo).
+      # allowed-bot-users: "github-actions[bot]"
+      # Elastic-specific (OIDC): mint an ephemeral token inside the lock workflow so
+      # labels re-trigger downstream workflows. Requires Elastic TokenPolicy /
+      # ephemeral-token infrastructure and id-token: write on this job. Leave unset outside Elastic.
+      # github-token-policy: "<shared-token-policy-id>"
+    #secrets:
+      # Optional override when not using github-token-policy.
+      # GH_AW_GITHUB_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}

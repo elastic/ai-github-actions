@@ -14,10 +14,12 @@ imports:
   - gh-aw-fragments/pick-three-keep-many.md
   - gh-aw-fragments/scheduled-audit.md
   - gh-aw-fragments/network-ecosystems.md
+  - gh-aw-fragments/code-quality-audit.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -46,7 +48,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -55,14 +57,21 @@ on:
         type: string
         required: false
         default: ""
+      severity-threshold:
+        description: "Minimum severity to include in the report. 'high' = only duplications causing active maintenance problems. 'medium' (default) = also include clear consolidation opportunities. 'low' = also include minor near-duplicates."
+        type: string
+        required: false
+        default: "medium"
       title-prefix:
         description: "Title prefix for created issues (e.g. '[refactor]')"
         type: string
         required: false
         default: "[refactor]"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -70,15 +79,33 @@ concurrency:
   group: ${{ github.workflow }}-code-duplication-detector
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
-  serena: ["go", "python", "typescript", "java", "csharp", "rust"]
+# Serena MCP (oraios/serena) — symbolic / LSP-backed code tools; stdio via uvx (setup-uv is emitted by the compiler).
+mcp-servers:
+  serena:
+    command: uvx
+    args:
+      - "-p"
+      - "3.13"
+      - "--from"
+      - "git+https://github.com/oraios/serena"
+      - "serena"
+      - "start-mcp-server"
+      - "--context"
+      - "ide"
+      - "--project-from-cwd"
+      - "--open-web-dashboard"
+      - "false"
 strict: false
 safe-outputs:
   activation-comments: false
@@ -86,6 +113,7 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "${{ inputs.title-prefix }} "
+    close-older-key: "${{ inputs.title-prefix }}"
     close-older-issues: false
     expires: 7d
 timeout-minutes: 90
@@ -94,6 +122,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 

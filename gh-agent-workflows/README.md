@@ -33,11 +33,7 @@ Pre-built workflows with domain-specific prompts. These import the same base fra
 - [Stale Issues Investigator](stale-issues-investigator/) — detect stale issues
 - [Stale Issues Remediator](stale-issues-remediator/) — process and close stale issues
 - [Test Coverage Detector](test-coverage-detector/) — find under-tested code paths
-**Fixers** (create PRs):
-- [Bug Exterminator](bug-exterminator/) — fix bug-hunter issues
-- [Text Beautifier](text-beautifier/) — fix text-auditor issues
-- [Code Duplication Fixer](code-duplication-fixer/) — fix code-duplication-detector issues
-- [Test Improver](test-improver/) — fix test-coverage-detector issues
+- [Code Complexity Detector](code-complexity-detector/) — find overly complex code
 
 **Event-driven** (comment on PRs):
 - [Dependency Review](dependency-review/) — analyze Dependabot/Renovate dependency update PRs across ecosystems (GitHub Actions, Go, npm, Python, Java, Buildkite)
@@ -55,7 +51,7 @@ curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/script
 ````
 
 This installs a recommended set of triggers, adds `agentics-maintenance.yml`, sets up
-`COPILOT_GITHUB_TOKEN`, creates a setup branch, and opens a PR.
+creates a setup branch, and opens a PR.
 
 Default workflows:
 - `pr-review`
@@ -70,8 +66,8 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 
 `--continuous-improvement` adds:
 - `bug-hunter`
-- `bug-exterminator`
-- `code-simplifier`
+- `code-complexity-detector`
+- `code-duplication-detector`
 - `docs-patrol`
 - `newbie-contributor-patrol`
 - `product-manager-impersonator`
@@ -80,14 +76,14 @@ workflows, or `--repo OWNER/REPO` when auto-detection is not available.
 - `stale-issues-investigator`
 - `stale-issues-remediator`
 - `test-coverage-detector`
-- `test-improver`
 - `breaking-change-detector`
-- `code-duplication-detector`
 - `update-pr-body`
 
 ## Elastic-specific Workflows
 
 These workflows are tailored for Elastic's internal tooling, documentation platform, and infrastructure. They reference Elastic's published documentation on `elastic.co/docs`, Elastic's style guide and `applies_to` tag conventions, or Elastic-owned infrastructure (Buildkite CI, downstream repositories). Use these if you are working in an Elastic repository.
+
+> **Warning — optional Elastic dependency on common workflows:** [Issue Triage](issue-triage/), [Dependency Review](dependency-review/), and [Issue Fixer](issue-fixer/) remain common workflows. Their optional `github-token-policy` input mints OIDC ephemeral GitHub tokens via `elastic/oblt-actions/github/create-token` and requires Elastic's TokenPolicy / ephemeral-token infrastructure. Leave `github-token-policy` empty (the default) outside Elastic; setting it will not work without that platform.
 
 - [Docs PR Review (Elastic-specific)](estc-docs-pr-review/) — review docs for Elastic style guide, `applies_to` tags, and consistency with `elastic.co/docs`
 - [PR Buildkite Detective (Elastic-specific)](estc-pr-buildkite-detective/) — diagnose Buildkite CI failures and recommend fixes

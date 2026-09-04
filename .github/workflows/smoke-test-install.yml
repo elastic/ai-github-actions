@@ -1,30 +1,64 @@
 ---
 name: "Internal: Smoke Test — Install & Compile"
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/smoke-test-install.yml"
   schedule:
     - cron: "0 6 * * *" # Daily at 06:00 UTC
   workflow_dispatch:
 
+permissions:
+  contents: none
+
 jobs:
   smoke-test:
-    name: Install and compile all workflows
-    runs-on: ubuntu-latest
-    env:
-      GH_AW_VERSION: "v0.48.1"
+    name: Install and compile ${{ matrix.workflow }}
+    runs-on: ubuntu-slim
+    strategy:
+      fail-fast: false
+      matrix:
+        workflow:
+          - agent-suggestions
+          - breaking-change-detector
+          - bug-hunter
+          - code-complexity-detector
+          - code-duplication-detector
+          - docs-patrol
+          - duplicate-issue-detector
+          - estc-docs-patrol-external
+          - estc-docs-pr-review
+          - estc-newbie-contributor-patrol-external
+          - estc-pr-buildkite-detective
+          - flaky-test-investigator
+          - issue-fixer
+          - issue-triage
+          - mention-in-issue
+          - mention-in-pr
+          - newbie-contributor-patrol
+          - performance-profiler
+          - pr-actions-detective
+          - pr-actions-fixer
+          - pr-review
+          - project-summary
+          - release-update
+          - scheduled-audit
+          - scheduled-fix
+          - small-problem-fixer
+          - test-coverage-detector
+          - text-auditor
+          - update-pr-body
     steps:
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.25"
-          cache: false
+      - name: Checkout
+        uses: actions/checkout@v7
 
       - name: Install pinned gh-aw CLI
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          GOBIN="$HOME/.local/bin" go install "github.com/github/gh-aw/cmd/gh-aw@${GH_AW_VERSION}"
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          "$HOME/.local/bin/gh-aw" version
+          make setup-gh-aw
+          echo "$GITHUB_WORKSPACE/.bin" >> "$GITHUB_PATH"
+          "$GITHUB_WORKSPACE/.bin/gh-aw" version
 
       - name: Create a fresh repo
         run: |
@@ -34,101 +68,31 @@ jobs:
           git config user.email "smoke-test@localhost"
           git commit --allow-empty -m "init"
 
-      - name: Install every workflow
+      - name: Install workflow
         working-directory: /tmp/test-repo
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
-
-          WORKFLOWS=(
-            agent-efficiency
-            agent-suggestions
-            breaking-change-detector
-            bug-exterminator
-            bug-hunter
-            code-duplication-detector
-            code-duplication-fixer
-            code-simplifier
-            docs-patrol
-            duplicate-issue-detector
-            estc-docs-patrol-external
-            estc-docs-pr-review
-            estc-newbie-contributor-patrol-external
-            estc-pr-buildkite-detective
-            flaky-test-investigator
-            issue-fixer
-            issue-triage
-            mention-in-issue
-            mention-in-pr
-            newbie-contributor-fixer
-            newbie-contributor-patrol
-            performance-profiler
-            pr-actions-detective
-            pr-actions-fixer
-            pr-review
-            project-summary
-            release-update
-            scheduled-audit
-            scheduled-fix
-            small-problem-fixer
-            stale-issues
-            test-coverage-detector
-            test-improver
-            text-auditor
-            text-beautifier
-            update-pr-body
-          )
-
-          FAILED=0
-
-          for wf in "${WORKFLOWS[@]}"; do
-            echo "::group::Installing ${wf}"
-            if gh-aw add "elastic/ai-github-actions/.github/workflows/gh-aw-${wf}.md" --non-interactive; then
-              echo "::endgroup::"
-            else
-              echo "::endgroup::"
-              echo "::error::Failed to install ${wf}"
-              FAILED=$((FAILED + 1))
-            fi
-          done
-
-          echo ""
-          echo "=== Installed shims ==="
-          ls -la .github/workflows/*.md
-          echo ""
-          echo "=== Compiled lock files ==="
-          ls -lh .github/workflows/*.lock.yml
-
-          if [ "$FAILED" -gt 0 ]; then
-            echo "::error::${FAILED} workflow(s) failed to install"
-            exit 1
-          fi
+          gh-aw add "elastic/ai-github-actions/.github/workflows/gh-aw-${{ matrix.workflow }}.md"
 
       - name: Verify lock files
         working-directory: /tmp/test-repo
         run: |
           set -euo pipefail
-          SHIMS=$(find .github/workflows -maxdepth 1 -name "*.md" | wc -l | tr -d ' ')
-          LOCKS=$(find .github/workflows -maxdepth 1 -name "*.lock.yml" | wc -l | tr -d ' ')
+          SHIM=".github/workflows/gh-aw-${{ matrix.workflow }}.md"
+          LOCK=".github/workflows/gh-aw-${{ matrix.workflow }}.lock.yml"
 
-          echo "Shims: ${SHIMS}"
-          echo "Lock files: ${LOCKS}"
+          echo "Shim: ${SHIM}"
+          echo "Lock file: ${LOCK}"
 
-          if [ "$LOCKS" -eq 0 ]; then
-            echo "::error::No lock files generated"
+          if [ ! -f "$SHIM" ]; then
+            echo "::error::Expected shim was not generated: ${SHIM}"
             exit 1
           fi
 
-          if [ "$LOCKS" -ne "$SHIMS" ]; then
-            echo "::error::Shim count (${SHIMS}) does not match lock file count (${LOCKS})"
-            echo ""
-            echo "Shims:"
-            find .github/workflows -maxdepth 1 -name "*.md" | sort
-            echo ""
-            echo "Lock files:"
-            find .github/workflows -maxdepth 1 -name "*.lock.yml" | sort
+          if [ ! -f "$LOCK" ]; then
+            echo "::error::Expected lock file was not generated: ${LOCK}"
             exit 1
           fi
 
-          echo "All ${SHIMS} workflows installed and compiled successfully."
+          echo "${{ matrix.workflow }} installed and compiled successfully."

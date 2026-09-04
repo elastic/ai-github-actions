@@ -14,8 +14,9 @@ engine:
   id: copilot
   model: gpt-5.3-codex
 on:
+  stale-check: false
   schedule:
-    - cron: "daily around 16:00 on weekdays"
+    - cron: "19 15 * * 1-5"
   workflow_dispatch:
   roles: [admin, maintainer, write]
   bots:
@@ -24,6 +25,7 @@ concurrency:
   group: ${{ github.workflow }}-agent-efficiency
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
@@ -47,6 +49,7 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "[agent-efficiency] "
+    close-older-key: "agent-efficiency"
     close-older-issues: false
     expires: 7d
 timeout-minutes: 60

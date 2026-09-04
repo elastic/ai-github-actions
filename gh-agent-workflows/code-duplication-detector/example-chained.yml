@@ -14,17 +14,11 @@ jobs:
   detect:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-duplication-detector.lock.yml@v0
     with:
-      languages: TypeScript, JavaScript
-      file-globs: "src/**/*.ts, src/**/*.js"
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      languages: "go,python,typescript"
 
   fix:
     needs: detect
     if: needs.detect.outputs.created_issue_number != ''
-    uses: elastic/ai-github-actions/.github/workflows/gh-aw-code-duplication-fixer.lock.yml@v0
+    uses: elastic/ai-github-actions/.github/workflows/gh-aw-create-pr-from-issue.lock.yml@v0
     with:
-      additional-instructions: |
-        Focus on the duplication described in ${{ needs.detect.outputs.created_issue_url }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+      target-issue-number: ${{ needs.detect.outputs.created_issue_number }}

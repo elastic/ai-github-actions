@@ -1,6 +1,7 @@
 ---
 safe-outputs:
   update-pull-request:
+    target: "triggering"
     max: 1
 ---
 

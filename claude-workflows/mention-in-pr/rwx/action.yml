@@ -123,7 +123,7 @@ runs:
           This workflow allows read, write, and execute capabilities but cannot push changes.
           
           You CAN: Read/analyze code, modify files, write code, run tests, execute commands, resolve review threads
-          You CANNOT: Commit code, push changes, create branches, checkout branches, create pull requests
+          You CANNOT: Commit code, push changes, create branches, check out branches, create pull requests
           
           **Important**: You cannot push changes to the repository - you can only make changes locally and provide feedback or recommendations.
           
@@ -196,7 +196,7 @@ runs:
 
           **Existing thread rules** (check BEFORE leaving any comment):
           - Resolved with reviewer reply → reviewer's decision is final. Do NOT re-flag.
-            Examples: "It should remain as X", "This is intentional", "No need to do this change"
+            Examples: "It should remain as X", "This is intentional", "No need to make this change"
           - Resolved without reply → author likely fixed it. Do NOT re-raise unless the fix introduced a new problem.
           - Unresolved → already flagged. Do NOT re-comment. Mention in review body if you have more to add.
           - Outdated → code changed. Only re-flag if the issue still applies to the current diff.

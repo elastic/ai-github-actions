@@ -24,3 +24,5 @@ env/
 .DS_Store
 Thumbs.db
 site/
+
+.env

@@ -71,14 +71,26 @@ shift 2
 while [ $# -gt 0 ]; do
   case "$1" in
     --severity)
+      if [ $# -lt 2 ] || [[ "${2:-}" == --* ]]; then
+        echo "Error: Missing value for --severity. Use: --severity <critical|high|medium|low|nitpick>" >&2
+        exit 1
+      fi
       SEVERITY="$2"
       shift 2
       ;;
     --title)
+      if [ $# -lt 2 ] || [[ "${2:-}" == --* ]]; then
+        echo "Error: Missing value for --title. Use: --title <description>" >&2
+        exit 1
+      fi
       TITLE="$2"
       shift 2
       ;;
     --why)
+      if [ $# -lt 2 ] || [[ "${2:-}" == --* ]]; then
+        echo "Error: Missing value for --why. Use: --why <reason>" >&2
+        exit 1
+      fi
       WHY="$2"
       shift 2
       ;;
@@ -87,7 +99,7 @@ while [ $# -gt 0 ]; do
       shift
       ;;
     *)
-      echo "Error: Unknown argument: $1"
+      echo "Error: Unknown argument: $1. Use: --severity <critical|high|medium|low|nitpick> --title <description> --why <reason> [--no-suggestion]"
       exit 1
       ;;
   esac

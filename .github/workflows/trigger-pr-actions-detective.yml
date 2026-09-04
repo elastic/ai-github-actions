@@ -3,14 +3,15 @@
 name: Trigger PR Actions Detective
 on:
   workflow_run:
-    workflows: ["CI", "Build", "Test"]
+    workflows: ["Internal: CI", "Internal: Tests", "CI", "Build", "Test"]
     types: [completed]
 
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   issues: write
-  pull-requests: read
+  pull-requests: write
 
 jobs:
   run:
@@ -18,5 +19,3 @@ jobs:
       github.event.workflow_run.conclusion == 'failure' &&
       toJSON(github.event.workflow_run.pull_requests) != '[]'
     uses: ./.github/workflows/gh-aw-pr-actions-detective.lock.yml
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

@@ -1,5 +1,5 @@
 ---
-safe-inputs:
+mcp-scripts:
   ready-to-make-pr:
     description: "Run the PR readiness checklist before creating or updating a PR"
     py: |
@@ -12,8 +12,7 @@ safe-inputs:
           except subprocess.TimeoutExpired:
               return subprocess.CompletedProcess(cmd, 1, stdout='', stderr='diff timed out')
 
-      # Guard: detect merge commits
-      # Find the fork point with the upstream branch to scope the check
+      # Find the fork point with the upstream branch to scope diff
       upstream_sha = ''
       for ref in ['@{upstream}', 'origin/HEAD', 'origin/main']:
           r = run(['git', 'merge-base', 'HEAD', ref])
@@ -21,15 +20,7 @@ safe-inputs:
               upstream_sha = r.stdout.strip()
               break
       if not upstream_sha:
-          print(json.dumps({'status': 'error', 'error': 'Unable to determine upstream fork point for merge-commit validation. Fix: ensure remotes are fetched and a tracking branch is set (e.g., `git branch --set-upstream-to origin/<default-branch>`), then rerun ready_to_make_pr.'}))
-          raise SystemExit(0)
-      log = run(['git', 'rev-list', '--min-parents=2', f'{upstream_sha}..HEAD'])
-      if log.returncode != 0:
-          print(json.dumps({'status': 'error', 'error': f'Failed to check for merge commits (git rev-list exited {log.returncode}): {log.stderr.strip()}. Cannot verify commit history is safe for PR creation.'}))
-          raise SystemExit(0)
-      merge_shas = log.stdout.strip()
-      if merge_shas:
-          print(json.dumps({'status': 'error', 'error': f'Merge commit(s) detected: {merge_shas.splitlines()[0][:12]}... create_pull_request uses git format-patch which breaks on merge commits. Fix: re-apply your changes as direct file edits (no git merge/rebase/commit-tree with multiple -p flags) and commit as regular single-parent commits.'}))
+          print(json.dumps({'status': 'error', 'error': 'Unable to determine upstream fork point. Fix: ensure remotes are fetched and a tracking branch is set (e.g., `git branch --set-upstream-to origin/<default-branch>`), then rerun ready_to_make_pr.'}))
           raise SystemExit(0)
 
       contributing = find('CONTRIBUTING.md', 'CONTRIBUTING.rst', 'docs/CONTRIBUTING.md', 'docs/contributing.md')
@@ -113,6 +104,7 @@ safe-inputs:
           '',
           'Look for bugs, logic errors, missed edge cases, and style issues.',
           'Focus on what the author might have MISSED rather than re-deriving their reasoning.',
+          'Do not run tests, linters, or type checkers in this self-review step; the parent agent is responsible for validation and has already run the required checks.',
           '',
           '## What NOT to flag',
           '',
@@ -131,6 +123,7 @@ safe-inputs:
       print(json.dumps({'status': 'ok', 'checklist': checklist, 'contributing_guide': contributing, 'pr_template': pr_template, 'diff_line_count': diff_line_count}))
 safe-outputs:
   create-pull-request:
+    patch-format: bundle
     draft: ${{ inputs.draft-prs }}
     github-token-for-extra-empty-commit: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
 ---
@@ -146,4 +139,3 @@ Before calling `create_pull_request`, call `ready_to_make_pr` and apply its chec
 - **Committed changes required**: You must have locally committed changes before creating a PR.
 - **Base branch**: The PR targets the repository's default branch.
 - **Max per run**: Typically 1 PR creation per workflow run.
-- You may not submit code that modifies files in `.github/workflows/`. Doing so will cause the submission to be rejected. If asked to modify workflow files, propose the change in a copy placed in a `github/` folder (without the leading period) and note in the PR that the file needs to be relocated by someone with workflow write access.

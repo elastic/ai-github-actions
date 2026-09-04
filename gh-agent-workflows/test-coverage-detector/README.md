@@ -29,7 +29,8 @@ See [example.yml](example.yml) for the full workflow file.
 | --- | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
-| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `allowed-bot-users` | Allowed bot actor usernames (comma-separated); also GH-AW trusted-users under min-integrity approved | No | `github-actions[bot]` |
+| `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | No | `true` |
 
 ## Safe Outputs
 
@@ -37,4 +38,4 @@ See [example.yml](example.yml) for the full workflow file.
 
 ## Pairing
 
-This workflow is the read-only companion to [Test Improver](../test-improver/). The detector finds test coverage gaps; the improver adds the tests.
+This detector finds test coverage gaps. Chain it to [Create PR from Issue](../../docs/workflows/detector-fixer-chaining.md) to automatically fix findings.

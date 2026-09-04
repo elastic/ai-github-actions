@@ -9,14 +9,17 @@ imports:
   - gh-aw-fragments/rigor.md
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-add-comment-issue.md
+  - gh-aw-fragments/safe-output-add-comment-issue-or-pr.md
   - gh-aw-fragments/safe-output-create-issue.md
 engine:
   id: gemini
   model: ${{ inputs.model }}
+  env:
+    GEMINI_MAX_ATTEMPTS: "10"
   concurrency:
     group: "gh-aw-gemini-${{ github.workflow }}-internal-gemini-cli-web-search-${{ github.event.issue.number }}"
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -35,7 +38,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -49,6 +52,11 @@ on:
         type: string
         required: false
         default: "[research]"
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
     secrets:
       GEMINI_API_KEY:
         required: true
@@ -60,21 +68,26 @@ concurrency:
   group: ${{ github.workflow }}-internal-gemini-cli-web-search-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search]
   bash: false
   web-fetch:
 network:
-  firewall: false
+  allowed:
+    - defaults
 safe-outputs:
   activation-comments: false
   create-issue:
     max: 1
     title-prefix: "${{ inputs.title-prefix }} "
+    close-older-key: "${{ inputs.title-prefix }}"
     close-older-issues: true
     expires: 7d
 strict: false
@@ -84,6 +97,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 

@@ -19,6 +19,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -37,7 +38,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -56,9 +57,11 @@ on:
         type: string
         required: false
         default: "[ux-design-patrol]"
-    secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -66,11 +69,14 @@ concurrency:
   group: ${{ github.workflow }}-ux-design-patrol
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search]
   bash: true
   web-fetch:
@@ -81,6 +87,7 @@ safe-outputs:
   create-issue:
     max: 1
     title-prefix: "${{ inputs.title-prefix }} "
+    close-older-key: "${{ inputs.title-prefix }}"
     close-older-issues: true
     expires: 7d
 timeout-minutes: 90
@@ -89,6 +96,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -101,7 +110,10 @@ Use a lookback window of `--since="${{ inputs.lookback-window }}"` for all runs 
 1. Run `git log --since="${{ inputs.lookback-window }}" --oneline --stat` to get a summary of recent commits. If there are no commits in the lookback window, report no findings and stop.
 2. For each commit, read the full diff to understand what user-facing patterns were added or changed.
 3. Discover existing user-facing patterns in the codebase dynamically — search for related code in source files, templates, and configuration that handles output, prompts, messages, or other user interactions.
-4. Use the **Pick Three, Keep One** pattern for the analysis phase: spawn 3 `general-purpose` sub-agents, each checking for design drift from a different angle (e.g., one focusing on output/message formatting and CLI flag naming, one examining confirmation dialogs and status/state representation, one auditing color/icon/symbol usage and loading/progress indicators). Include the git log output, recent diffs, existing pattern inventory, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt. Each sub-agent should return its best candidate finding or recommend `noop`.
+4. Use the **Pick Three, Keep One** pattern for the analysis phase:
+   - Spawn 3 `general-purpose` sub-agents, each checking for design drift from a different angle (for example: output/message formatting and CLI naming, confirmation dialogs and status representation, color/icon/symbol and progress indicator usage).
+   - Include the git log output, recent diffs, existing pattern inventory, and the full "What to Look For" / "What to Skip" criteria in each sub-agent prompt.
+   - Each sub-agent should return its best candidate finding or recommend `noop`.
 
 ### What to Look For
 

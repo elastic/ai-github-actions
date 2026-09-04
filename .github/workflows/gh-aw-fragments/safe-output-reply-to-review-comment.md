@@ -2,6 +2,7 @@
 safe-outputs:
   reply-to-pull-request-review-comment:
     max: 10
+    target: "triggering"
 ---
 
 ## reply-to-pull-request-review-comment Limitations

@@ -26,8 +26,9 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-no-sandbox-${{ github.event.issue.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-mention-pr-no-sandbox-${{ github.event.pull_request.number || github.event.issue.number }}"
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -46,7 +47,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -65,9 +66,12 @@ on:
         type: string
         required: false
         default: "10"
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   reaction: "eyes"
@@ -75,17 +79,22 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: ${{ github.workflow }}-mention-pr-no-sandbox-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-mention-pr-no-sandbox-${{ github.event.pull_request.number || github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
   pull-requests: read
+features:
+  dangerously-disable-sandbox-agent: "Docker access required for setup-commands that build or run containers"
 sandbox:
   agent: false
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
@@ -109,6 +118,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -119,7 +130,7 @@ Assist with pull requests on ${{ github.repository }} — review code, fix issue
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **PR**: #${{ github.event.issue.number }} — ${{ github.event.issue.title }}
+- **PR**: #${{ github.event.pull_request.number || github.event.issue.number }} — ${{ github.event.pull_request.title || github.event.issue.title }}
 - **PR context on disk**: `/tmp/pr-context/` — PR metadata, diff, files, reviews, comments, and linked issues are pre-fetched. Use these as your primary source; fall back to API tools only when required data is unavailable.
 - **Request**: "${{ steps.sanitized.outputs.text }}"
 
@@ -139,7 +150,7 @@ PR context is pre-fetched to `/tmp/pr-context/`. Read `/tmp/pr-context/README.md
 1. Read `/tmp/pr-context/pr.json` for PR details (author, description, branches).
 2. Read `/tmp/pr-context/issue-*.json` if any exist to understand linked issue motivation and requirements.
 3. Read `/tmp/pr-context/comments.json` and `/tmp/pr-context/review_comments.json` to understand the conversation context and what's being asked.
-4. Do not modify, review, comment on, or resolve threads for any PR other than #${{ github.event.issue.number }}.
+4. Do not modify, review, comment on, or resolve threads for any PR other than #${{ github.event.pull_request.number || github.event.issue.number }}.
 
 ### Step 2: Handle the Request
 
@@ -165,6 +176,8 @@ Based on what's asked, do the appropriate thing:
    - If the fix isn't obvious from the code change alone, call `reply_to_pull_request_review_comment` with the comment's numeric ID to briefly explain what you changed.
    - If you disagree with feedback or it's unclear, call `reply_to_pull_request_review_comment` to explain your reasoning instead of making changes. Do NOT resolve the thread — let the reviewer decide.
 - Run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config relevant to the change and include results. If required commands cannot be run, explain why and do not push changes.
+- Use `ready_to_push_to_pr` to check if the changes are ready to push.
+- If `ready_to_push_to_pr` results in any additional edits (including merge-conflict resolutions), rerun the same required repo commands against the final state before pushing. If required commands cannot be run, explain why and do not push.
 - Use `push_to_pull_request_branch` to push your changes.
 - After pushing, resolve every review thread that your changes address by calling `resolve_pull_request_review_thread` with the thread's GraphQL node ID (the `id` field, e.g., `PRRT_kwDO...`). This includes threads left by other reviewers AND threads from your own prior reviews. Check `/tmp/pr-context/unresolved_threads.json` for all unresolved threads — also check `/tmp/pr-context/outdated_threads.json` for threads where the underlying code changed since the comment was made and verify whether your changes address them. Do NOT resolve threads you disagreed with, skipped, or only partially addressed — leave those open for the reviewer.
 - **Fork PRs**: Check via `pull_request_read` with method `get` whether the PR head repo differs from the base repo. If it's a fork, you cannot push — reply explaining that you do not have permission to push to fork branches and suggest that the PR author apply the changes themselves. This is a GitHub security limitation. You can still review code, make local changes, and provide suggestions.
@@ -182,6 +195,7 @@ Based on what's asked, do the appropriate thing:
 If you did not submit a PR review, call `add_comment` with your response. If you submitted a review, do NOT call `add_comment` unless explicitly requested or to report a review submission failure.
 
 **Additional tools:**
+- `ready_to_push_to_pr` — run pre-push safety checks before pushing PR changes
 - `push_to_pull_request_branch` — push committed changes to the PR branch (same-repo PRs only)
 - `reply_to_pull_request_review_comment` — reply inline to a review comment thread to explain what you changed or why you disagree
 - `resolve_pull_request_review_thread` — resolve a review thread after addressing the feedback (pass the thread's GraphQL node ID)

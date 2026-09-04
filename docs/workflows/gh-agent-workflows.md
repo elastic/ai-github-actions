@@ -15,18 +15,16 @@ on:
 jobs:
   run:
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-pr-review.lock.yml@v0
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ````
 
 Each workflow directory contains an `example.yml` starter and a README for trigger details, inputs, and safe outputs.
 
 ## Recommended workflow sets
 
-The quick setup script includes two opinionated sets:
+The [quick setup script](https://github.com/elastic/ai-github-actions/blob/main/scripts/quick-setup.sh) bundles two opinionated sets. The [homepage](../index.md) shows how to install the core workflows with a single copy-paste command.
 
-- **Starter repo operations set (default):** `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
-- **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `bug-exterminator`, `code-simplifier`, `docs-patrol`, `newbie-contributor-patrol`, `small-problem-fixer`, `stale-issues-investigator`, `stale-issues-remediator`, `test-coverage-detector`, `test-improver`, `breaking-change-detector`, `code-duplication-detector`, `update-pr-body`
+- **Core (default):** `pr-review`, `issue-triage`, `mention-in-issue`, `mention-in-pr`, `pr-actions-detective`
+- **Continuous improvement add-ons (`--continuous-improvement`):** `bug-hunter`, `code-complexity-detector`, `code-duplication-detector`, `docs-patrol`, `newbie-contributor-patrol`, `product-manager-impersonator`, `refactor-opportunist`, `small-problem-fixer`, `stale-issues-investigator`, `stale-issues-remediator`, `test-coverage-detector`, `breaking-change-detector`, `update-pr-body`
 
 ## Available workflows
 
@@ -58,6 +56,7 @@ These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves 
 | [Duplicate Issue Detector](gh-agent-workflows/duplicate-issue-detector.md) | New issues | Detect duplicate issues and comment with links |
 | [Issue Triage](gh-agent-workflows/issue-triage.md) | New issues | Investigate and provide implementation plans |
 | [Issue Fixer](gh-agent-workflows/issue-fixer.md) | New issues | Triage plus automatic draft PR for straightforward fixes |
+| [Branch Actions Detective](gh-agent-workflows/branch-actions-detective.md) | Failed branch CI | Diagnose post-merge CI failures and file tracking issues |
 | [PR Actions Detective](gh-agent-workflows/pr-actions-detective.md) | Failed PR checks | Diagnose failures and recommend fixes |
 | [PR Review](gh-agent-workflows/pr-review.md) | PR opened/updated | AI code review with inline comments |
 | [PR Review (Fork)](gh-agent-workflows/pr-review-fork.md) | PR opened/updated (`pull_request_target`) | AI code review for fork PRs — **private repos or trusted contributors only** |
@@ -67,19 +66,20 @@ These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves 
 
 #### Detector / fixer pairs
 
-Many scheduled workflows follow a **detector / fixer** pattern: the detector finds issues and files reports, then the fixer picks up those reports and creates PRs to resolve them. Install both for a fully autonomous loop, or use the detector alone for human-in-the-loop review.
+Many scheduled workflows follow a **detector** pattern: the detector finds issues and files reports. Any detector can chain to [Create PR from Issue](detector-fixer-chaining.md) in the same workflow run for a fully autonomous detect-and-fix loop. For comment-only responses (no PR), chain to [Create Comment On Issue](gh-agent-workflows/create-comment-on-issue.md). Or use the detector alone for human-in-the-loop review.
 
-**Single-run chaining:** Instead of running detector and fixer on separate schedules, you can chain them in one workflow run so the fixer acts immediately on findings. See [Detector / Fixer Chaining](detector-fixer-chaining.md).
+| Detector | Domain |
+| --- | --- |
+| [Bug Hunter](gh-agent-workflows/bug-hunter.md) | Reproducible bugs |
+| [Code Complexity Detector](gh-agent-workflows/code-complexity.md) | Overly complex code |
+| [Code Duplication Detector](gh-agent-workflows/code-duplication.md) | Duplicate / clustered code |
+| [Docs Patrol](gh-agent-workflows/docs-patrol.md) | Stale internal documentation |
+| [Newbie Contributor Patrol](gh-agent-workflows/newbie-contributor.md) | Onboarding documentation gaps |
+| [Stale Issues Investigator](gh-agent-workflows/stale-issues.md) | Stale issue lifecycle |
+| [Test Coverage Detector](gh-agent-workflows/test-coverage.md) | Test coverage gaps |
+| [Text Auditor](gh-agent-workflows/text-quality.md) | User-facing text quality |
 
-| Detector | Fixer | Domain |
-| --- | --- | --- |
-| [Bug Hunter](gh-agent-workflows/bug-hunter.md) | [Bug Exterminator](gh-agent-workflows/bug-exterminator.md) | Reproducible bugs |
-| [Code Duplication Detector](gh-agent-workflows/code-duplication-detector.md) | [Code Duplication Fixer](gh-agent-workflows/code-duplication-fixer.md) | Duplicate / clustered code |
-| [Docs Patrol](gh-agent-workflows/docs-patrol.md) | — | Stale internal documentation |
-| [Newbie Contributor Patrol](gh-agent-workflows/newbie-contributor-patrol.md) | [Newbie Contributor Fixer](gh-agent-workflows/newbie-contributor-fixer.md) | Onboarding documentation gaps |
-| [Stale Issues Investigator](gh-agent-workflows/stale-issues-investigator.md) | [Stale Issues Remediator](gh-agent-workflows/stale-issues-remediator.md) | Stale issue lifecycle |
-| [Test Coverage Detector](gh-agent-workflows/test-coverage.md) | [Test Improver](gh-agent-workflows/test-coverage.md#test-improver-fixer) | Test coverage gaps |
-| [Text Auditor](gh-agent-workflows/text-auditor.md) | [Text Beautifier](gh-agent-workflows/text-beautifier.md) | User-facing text quality |
+Stale Issues Investigator pairs with [Stale Issues Remediator](gh-agent-workflows/stale-issues-remediator.md) for label-based lifecycle management (not issue-driven chaining).
 
 #### Standalone scheduled workflows
 
@@ -88,7 +88,6 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Agent Suggestions](gh-agent-workflows/agent-suggestions.md) | Weekly schedule | Suggest new agent workflows based on repo and downstream needs |
 | [Autonomy Atomicity Analyzer](gh-agent-workflows/autonomy-atomicity-analyzer.md) | Weekday schedule | Find patterns that block concurrent development by multiple agents or developers |
 | [Breaking Change Detector](gh-agent-workflows/breaking-change-detector.md) | Weekday schedule | Detect undocumented public breaking changes |
-| [Code Simplifier](gh-agent-workflows/code-simplifier.md) | Weekday schedule | Simplify overcomplicated code with high-confidence refactors |
 | [Flaky Test Investigator](gh-agent-workflows/flaky-test-investigator.md) | Weekday schedule + failed CI runs | Identify repeated flaky failures and file root-cause-first triage reports |
 | [Framework Best Practices](gh-agent-workflows/framework-best-practices.md) | Weekday schedule | Find where library-native features could replace hand-rolled solutions |
 | [Information Architecture](gh-agent-workflows/information-architecture.md) | Weekday schedule | Audit UI information architecture for navigation, placement, and consistency |
@@ -97,11 +96,13 @@ Many scheduled workflows follow a **detector / fixer** pattern: the detector fin
 | [Project Summary](gh-agent-workflows/project-summary.md) | Daily schedule | Summarize recent activity and priorities |
 | [Release Update Check](gh-agent-workflows/release-update.md) | Weekly schedule | Open a PR updating pinned ai-github-actions workflow SHAs and suggest workflow changes |
 | [Small Problem Fixer](gh-agent-workflows/small-problem-fixer.md) | Weekday schedule | Fix small, related issues and open a focused PR |
-| [Test Improver](gh-agent-workflows/test-improver.md) | Weekly schedule | Add targeted tests and clean up redundant coverage |
+| [UX Design Patrol](gh-agent-workflows/ux-design-patrol.md) | Weekday schedule | Detect UI/UX design drift and file consolidation reports |
 
 ### Elastic-specific workflows
 
 These workflows are tailored for Elastic's internal tooling and documentation platform. They reference Elastic's published documentation on `elastic.co/docs`, Elastic's style guide and `applies_to` tag conventions, or Elastic-owned infrastructure (Buildkite, downstream repositories). Use these if you are working in an Elastic repository.
+
+> **Warning — optional Elastic dependency on common workflows:** [Issue Triage](gh-agent-workflows/issue-triage.md), [Dependency Review](gh-agent-workflows/dependency-review.md), [Issue Fixer](gh-agent-workflows/issue-fixer.md), and [Mention in PR](gh-agent-workflows/mention-in-pr.md) remain common workflows. Their optional `github-token-policy` input mints OIDC ephemeral GitHub tokens via `elastic/oblt-actions/github/create-token` and requires Elastic's TokenPolicy / ephemeral-token infrastructure. Leave `github-token-policy` empty (the default) outside Elastic; setting it will not work without that platform.
 
 #### Human-coordinated
 
@@ -128,18 +129,7 @@ These workflows are tailored for Elastic's internal tooling and documentation pl
 
 ## Secrets
 
-These workflows require a Copilot PAT stored as `COPILOT_GITHUB_TOKEN`.
-
-1. [Create a Copilot PAT](https://github.com/settings/personal-access-tokens/new?name=COPILOT_GITHUB_TOKEN&description=GitHub+Agentic+Workflows+-+Copilot+engine+authentication&user_copilot_requests=read) with the `copilot-requests` scope (the scope is only available for public repositories). The link pre-fills the name, description, and scope. **Set the expiry to longer than the 30-day default** (e.g., 90 days or 1 year) to avoid frequent rotation.
-2. Store it as a repository secret:
-
-````bash
-printf '%s' "(pat)" | gh secret set COPILOT_GITHUB_TOKEN --repo OWNER/REPO
-````
-
-UI path: Settings → Secrets and variables → Actions → New repository secret.
-
-See the upstream [gh-aw auth docs](https://github.com/github/gh-aw/blob/main/docs/src/content/docs/reference/auth.mdx) for canonical steps.
+The workflows are configured with `copilot-requests: write` permission in the lock files, which enables organisation-level billing for Copilot usage through the built-in `GITHUB_TOKEN`.
 
 Some workflows require additional provider-specific secrets (for example, `PR Buildkite Detective` requires `BUILDKITE_API_TOKEN`).
 
@@ -148,10 +138,17 @@ Some workflows require additional provider-specific secrets (for example, `PR Bu
 Any workflow that uses safe-outputs with `expires` (create-issue, create-pull-request, create-discussion) requires the `agentics-maintenance` workflow so expired items are closed automatically. Install it once per repo:
 
 ````bash
-mkdir -p .github/workflows && curl -sL \
+mkdir -p .github/workflows && curl -fsSL \
   https://raw.githubusercontent.com/elastic/ai-github-actions/v0/.github/workflows/agentics-maintenance.yml \
   -o .github/workflows/agentics-maintenance.yml
 ````
+
+The same workflow also supports manual `workflow_dispatch` operations:
+
+- `safe_outputs`: replay safe outputs from a specific workflow run (`run_url` input required).
+- `create_labels`: create any missing repository labels used by these workflows.
+
+Use `create_labels` after first-time installation or if workflow labels were removed. This dispatch path only runs on non-fork repositories and enforces the same admin/maintainer membership check as other manual maintenance operations.
 
 ## Standard inputs
 
@@ -188,7 +185,7 @@ setup-commands: |
 
 Each workflow has two layers:
 
-1. **Workflow** (`gh-aw-*.md` -> `gh-aw-*.lock.yml`): The agent logic, compiled by `gh-aw`. Triggers only on `workflow_call` with standard inputs (`additional-instructions`, `setup-commands`) and a `COPILOT_GITHUB_TOKEN` secret.
+1. **Workflow** (`gh-aw-*.md` -> `gh-aw-*.lock.yml`): The agent logic, compiled by `gh-aw`. Triggers only on `workflow_call` with standard inputs (`additional-instructions`, `setup-commands`).
 2. **Trigger** (`<name>/example.yml`): A plain YAML file that defines the actual event triggers (schedule, PR events, slash commands, etc.) and calls the compiled `.lock.yml` via `uses:`. These serve as both examples for consumers and dogfood for this repo (copied to `.github/workflows/trigger-*.yml` by `scripts/dogfood.sh` for workflows not listed in `EXCLUDED_WORKFLOWS`).
 
 Consumer repos copy a workflow's `example.yml`, change the `uses:` path if needed, and customize the `with:` inputs. Updates propagate automatically when this repo updates the `v0` tag on release.

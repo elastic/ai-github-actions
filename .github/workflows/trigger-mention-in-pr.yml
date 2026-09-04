@@ -10,9 +10,11 @@ on:
 permissions:
   actions: read
   contents: write
+  copilot-requests: write
   discussions: write
   issues: write
   pull-requests: write
+  id-token: write
 
 jobs:
   run:
@@ -23,5 +25,10 @@ jobs:
     with:
       allowed-bot-users: "github-actions[bot],copilot"
     secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
       EXTRA_COMMIT_GITHUB_TOKEN: ${{ secrets.EXTRA_COMMIT_GITHUB_TOKEN }}
+    # with:
+      # Elastic-specific (OIDC): mint an ephemeral token inside the lock workflow so
+      # comments and reviews re-trigger downstream workflows. Requires Elastic
+      # TokenPolicy / ephemeral-token infrastructure and id-token: write on this job.
+      # Leave unset outside Elastic.
+      # github-token-policy: "<shared-token-policy-id>"

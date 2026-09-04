@@ -21,6 +21,7 @@ engine:
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-mention-issue-no-sandbox-${{ github.event.issue.number }}"
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -39,7 +40,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -53,9 +54,12 @@ on:
         type: boolean
         required: false
         default: true
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
       EXTRA_COMMIT_GITHUB_TOKEN:
         required: false
   reaction: "eyes"
@@ -66,14 +70,19 @@ concurrency:
   group: ${{ github.workflow }}-mention-issue-no-sandbox-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
   pull-requests: read
+features:
+  dangerously-disable-sandbox-agent: "Docker access required for setup-commands that build or run containers"
 sandbox:
   agent: false
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
@@ -88,6 +97,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -104,9 +115,9 @@ Assist with issues on ${{ github.repository }} — answer questions, debug probl
 ## Constraints
 
 - **CAN**: Read files, search code, modify files locally, run tests and commands, comment on issues, create pull requests, create issues
-- **CANNOT**: Directly push or commit to the repository — use `create_pull_request` to propose changes
+- **CANNOT**: Directly push or commit to the repository — use `ready_to_make_pr` then `create_pull_request` to propose changes
 
-When creating pull requests, make the changes in the workspace first, then use `create_pull_request` — branches are managed automatically.
+When creating pull requests, make the changes in the workspace first, call `ready_to_make_pr`, then use `create_pull_request` — branches are managed automatically.
 
 ## Instructions
 
@@ -126,7 +137,7 @@ Based on the request, do what's appropriate:
 - **Debug reported problems** — reproduce locally, run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config, and trace the code path
 - **Suggest solutions** — provide concrete code examples and implementation guidance
 - **Clarify requirements** — ask follow-up questions if the request is ambiguous
-- **Create a PR** — if asked to implement something, make the changes in the workspace, then use `create_pull_request` to submit them
+- **Create a PR** — if asked to implement something, make the changes in the workspace, call `ready_to_make_pr`, then use `create_pull_request` to submit them
 
 When making code changes, identify and run required repo commands (lint/build/test) from README, CONTRIBUTING, DEVELOPING, Makefile, or CI config and include results. If required commands cannot be run, explain why.
 
@@ -135,6 +146,7 @@ When making code changes, identify and run required repo commands (lint/build/te
 Call `add_comment` with your response. Be concise and actionable — no filler or praise. If the request is unclear, ask clarifying questions rather than guessing.
 
 **Additional tools:**
+- `ready_to_make_pr` — run pre-PR safety checks before opening a PR
 - `create_pull_request` — create a PR with your changes
 - `create_issue` — create a new issue (e.g. to split off sub-tasks)
 

@@ -1,8 +1,13 @@
 # Tool versions
-ACTIONLINT_VERSION := 1.7.10
-ACTION_VALIDATOR_VERSION := 0.8.0
-GH_AW_VERSION := v0.51.6
-GH_AW_COMPAT_VERSION := v0.49.4
+ACTIONLINT_VERSION := 1.7.12
+ACTION_VALIDATOR_VERSION := 0.9.0
+GH_AW_VERSION := v0.87.1
+GH_AW_BUILD_VERSION := v0.87.1
+GH_AW_COMPAT_VERSION := v0.87.1
+GH_AW_MODULE_REPO := github.com/github/gh-aw
+GH_AW_SOURCE_REPO := github.com/github/gh-aw
+GH_AW_SETUP_ACTION_REPO := $(patsubst github.com/%,%,$(GH_AW_SOURCE_REPO))
+GH_AW_SETUP_ACTION_REF := $(GH_AW_BUILD_VERSION)
 
 # Workflows that must be compiled with the compat compiler
 # (no-sandbox workflows hit a threat-detection bug in newer versions)
@@ -40,11 +45,26 @@ define download-file
 	fi
 endef
 
-.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile sync lint-workflows lint-actions test docs-install docs-serve docs-build release
+# Download an official gh-aw release binary (release builds emit setup-cli in compiled workflows).
+# Usage: $(call install-gh-aw-from-release,VERSION,OUTPUT_PATH)
+define install-gh-aw-from-release
+	VERSION="$(1)"; OUTPUT="$(2)"; \
+	$(DETECT_OS_ARCH); \
+	case "$$OS" in \
+		darwin|linux) ;; \
+		*) echo "Error: unsupported OS $$OS for gh-aw release binary"; exit 1 ;; \
+	esac; \
+	ASSET="$${OS}-$${ARCH}"; \
+	URL="https://github.com/github/gh-aw/releases/download/$$VERSION/$$ASSET"; \
+	echo "Downloading gh-aw $$VERSION ($$ASSET) from $$URL..."; \
+	$(call download-file,$$URL,$$OUTPUT) && chmod +x "$$OUTPUT"
+endef
+
+.PHONY: help setup setup-actionlint setup-action-validator setup-gh setup-gh-macos setup-gh-debian setup-gh-aw compile postprocess-setup-action sync lint-workflows lint-actions test docs-install docs-serve docs-build release build
 
 help:
 	@echo "This repository contains GitHub Actions workflows and gh-agent-workflows templates."
-	@echo "Edit claude-workflows/*/action.yml (composite actions) or gh-agent-workflows/*.md (agentic workflows)."
+	@echo "Edit claude-workflows/**/action.yml (composite actions) or gh-agent-workflows/*/example.yml (agentic workflows)."
 	@echo ""
 	@echo "Available targets:"
 	@echo "  setup                - Set up development environment (install tools)"
@@ -55,6 +75,7 @@ help:
 	@echo "  lint-actions         - Validate GitHub Actions composite action files"
 	@echo "  sync                 - Run scripts/dogfood.sh to copy shims, prompts, and fragments"
 	@echo "  compile              - Sync files + compile agentic workflows to lock files"
+	@echo "  build                - No-op (workflows use gh-aw setup action, not local build)"
 	@echo "  lint                 - Run all linters"
 	@echo "  docs-build           - Build the MkDocs site (outputs to site/)"
 	@echo "  docs-serve           - Serve the MkDocs site locally with live reload"
@@ -117,37 +138,52 @@ setup-gh-debian:
 setup-gh-aw:
 	@echo "Setting up gh-aw compiler..."
 	@mkdir -p .bin
-	@if ! command -v go >/dev/null 2>&1; then \
-		echo "Error: Go is required to install gh-aw compiler."; \
-		echo "Install Go: https://go.dev/dl/"; \
-		exit 1; \
-	elif case "$(GH_AW_VERSION)" in v*) true ;; *) false ;; esac && \
-	     [ -x ".bin/gh-aw" ] && .bin/gh-aw version 2>/dev/null | grep -q "$(GH_AW_VERSION)"; then \
-		echo "✓ gh-aw compiler already installed: $(GH_AW_VERSION)"; \
+	@if [ -x ".bin/gh-aw" ] && [ -f ".bin/.gh-aw-version" ] && [ "$$(cat .bin/.gh-aw-version 2>/dev/null)" = "$(GH_AW_BUILD_VERSION)" ]; then \
+		echo "✓ gh-aw compiler already installed: $(GH_AW_BUILD_VERSION)"; \
+	elif case "$(GH_AW_BUILD_VERSION)" in v*) true ;; *) false ;; esac; then \
+		echo "Installing gh-aw compiler $(GH_AW_BUILD_VERSION) from GitHub releases..."; \
+		$(call install-gh-aw-from-release,$(GH_AW_BUILD_VERSION),.bin/gh-aw) && \
+		printf '%s' "$(GH_AW_BUILD_VERSION)" > .bin/.gh-aw-version && \
+		echo "✓ gh-aw compiler installed: $$(.bin/gh-aw version 2>/dev/null)"; \
 	else \
-		echo "Installing gh-aw compiler $(GH_AW_VERSION) from github/gh-aw..."; \
-		$(if $(filter v%,$(GH_AW_VERSION)),,GONOSUMDB=github.com/github/gh-aw) \
-		GOBIN="$(CURDIR)/.bin" go install github.com/github/gh-aw/cmd/gh-aw@$(GH_AW_VERSION) && \
-		echo "✓ gh-aw compiler installed: $$(.bin/gh-aw version)"; \
+		if ! command -v go >/dev/null 2>&1; then \
+			echo "Error: Go is required to install non-release gh-aw compiler builds."; \
+			echo "Install Go: https://go.dev/dl/"; \
+			exit 1; \
+		fi; \
+		echo "Installing gh-aw compiler $(GH_AW_BUILD_VERSION) from $(GH_AW_SOURCE_REPO) via go install..."; \
+		TMPDIR=$$(mktemp -d); \
+		git clone --filter=blob:none "https://$(GH_AW_SOURCE_REPO).git" "$$TMPDIR/gh-aw-src" >/dev/null 2>&1 && \
+		git -C "$$TMPDIR/gh-aw-src" checkout "$(GH_AW_BUILD_VERSION)" >/dev/null 2>&1 && \
+		( cd "$$TMPDIR/gh-aw-src" && GOBIN="$(CURDIR)/.bin" go install ./cmd/gh-aw ) && \
+		rm -rf "$$TMPDIR" && \
+		printf '%s' "$(GH_AW_BUILD_VERSION)" > .bin/.gh-aw-version && \
+		echo "✓ gh-aw compiler installed: $$(.bin/gh-aw version 2>/dev/null || echo 'gh aw version dev')"; \
 	fi
 
 setup-gh-aw-compat:
 	@echo "Setting up gh-aw compat compiler..."
 	@mkdir -p .bin
-	@if ! command -v go >/dev/null 2>&1; then \
-		echo "Error: Go is required to install gh-aw compiler."; \
-		echo "Install Go: https://go.dev/dl/"; \
-		exit 1; \
-	elif case "$(GH_AW_COMPAT_VERSION)" in v*) true ;; *) false ;; esac && \
-	     [ -x ".bin/gh-aw-compat" ] && .bin/gh-aw-compat version 2>/dev/null | grep -q "$(GH_AW_COMPAT_VERSION)"; then \
+	@if [ -x ".bin/gh-aw-compat" ] && [ -f ".bin/.gh-aw-compat-version" ] && [ "$$(cat .bin/.gh-aw-compat-version 2>/dev/null)" = "$(GH_AW_COMPAT_VERSION)" ]; then \
 		echo "✓ gh-aw compat compiler already installed: $(GH_AW_COMPAT_VERSION)"; \
+	elif case "$(GH_AW_COMPAT_VERSION)" in v*) true ;; *) false ;; esac; then \
+		echo "Installing gh-aw compat compiler $(GH_AW_COMPAT_VERSION) from GitHub releases..."; \
+		$(call install-gh-aw-from-release,$(GH_AW_COMPAT_VERSION),.bin/gh-aw-compat) && \
+		printf '%s' "$(GH_AW_COMPAT_VERSION)" > .bin/.gh-aw-compat-version && \
+		echo "✓ gh-aw compat compiler installed: $$(.bin/gh-aw-compat version 2>/dev/null)"; \
 	else \
-		echo "Installing gh-aw compat compiler $(GH_AW_COMPAT_VERSION) from github/gh-aw..."; \
+		if ! command -v go >/dev/null 2>&1; then \
+			echo "Error: Go is required to install non-release gh-aw compiler builds."; \
+			echo "Install Go: https://go.dev/dl/"; \
+			exit 1; \
+		fi; \
+		echo "Installing gh-aw compat compiler $(GH_AW_COMPAT_VERSION) from github/gh-aw via go install..."; \
 		TMPGOBIN=$$(mktemp -d) && \
 		$(if $(filter v%,$(GH_AW_COMPAT_VERSION)),,GONOSUMDB=github.com/github/gh-aw) \
 		GOBIN="$$TMPGOBIN" go install github.com/github/gh-aw/cmd/gh-aw@$(GH_AW_COMPAT_VERSION) && \
 		mv "$$TMPGOBIN/gh-aw" .bin/gh-aw-compat && \
 		rm -rf "$$TMPGOBIN" && \
+		printf '%s' "$(GH_AW_COMPAT_VERSION)" > .bin/.gh-aw-compat-version && \
 		echo "✓ gh-aw compat compiler installed: $$(.bin/gh-aw-compat version)"; \
 	fi
 
@@ -156,25 +192,43 @@ sync:
 
 compile: setup-gh-aw setup-gh-aw-compat sync
 	@echo "Compiling agentic workflows..."
-	-@.bin/gh-aw compile --action-mode release --action-tag $(GH_AW_VERSION)
+	@.bin/gh-aw compile --action-tag $(GH_AW_VERSION)
 	@echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."
 	if [ -n "$(GH_AW_COMPAT_WORKFLOWS)" ]; then \
 		echo "Compiling compat workflows with $(GH_AW_COMPAT_VERSION)..."; \
-		@.bin/gh-aw-compat compile --action-mode release --action-tag $(GH_AW_COMPAT_VERSION) $(GH_AW_COMPAT_WORKFLOWS); \
+		.bin/gh-aw-compat compile --action-tag $(GH_AW_COMPAT_VERSION) $(GH_AW_COMPAT_WORKFLOWS); \
 		echo "✓ Compat workflows compiled"; \
 	else \
 		echo "No compat workflows to compile"; \
 	fi
+	@$(MAKE) postprocess-setup-action
 	@./scripts/backwards-compat.sh
+	@./scripts/wire-report-failure-input.sh
+	@python3 ./scripts/wire-ephemeral-token.py
+	@./scripts/validate-uses-references.sh
+
+postprocess-setup-action:
+	@echo "Rewriting setup action references to $(GH_AW_SETUP_ACTION_REPO)@$(GH_AW_SETUP_ACTION_REF)..."
+# @python3 ./scripts/rewrite_setup_action_refs.py "$(GH_AW_SETUP_ACTION_REPO)" "$(GH_AW_SETUP_ACTION_REF)"
 
 setup-actionlint:
 	@echo "Setting up actionlint..."
 	@mkdir -p bin
 	@ACTIONLINT_VERSION="$(ACTIONLINT_VERSION)"; \
 	ACTIONLINT_BIN="bin/actionlint"; \
-	if [ -f "$$ACTIONLINT_BIN" ]; then \
-		echo "✓ actionlint already installed: $$($$ACTIONLINT_BIN --version 2>&1 | head -1)"; \
-	else \
+	INSTALL_ACTIONLINT=1; \
+	if [ -x "$$ACTIONLINT_BIN" ]; then \
+		INSTALLED_VERSION="$$($$ACTIONLINT_BIN --version 2>&1 | head -1 | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')"; \
+		if [ "$$INSTALLED_VERSION" = "$$ACTIONLINT_VERSION" ]; then \
+			echo "✓ actionlint already installed: $$($$ACTIONLINT_BIN --version 2>&1 | head -1)"; \
+			INSTALL_ACTIONLINT=0; \
+		else \
+			echo "actionlint version mismatch (have: $$($$ACTIONLINT_BIN --version 2>&1 | head -1), want: v$$ACTIONLINT_VERSION). Reinstalling..."; \
+		fi; \
+	elif [ -f "$$ACTIONLINT_BIN" ]; then \
+		echo "actionlint binary exists but is not executable. Reinstalling..."; \
+	fi; \
+	if [ "$$INSTALL_ACTIONLINT" -eq 1 ]; then \
 		echo "Downloading actionlint v$$ACTIONLINT_VERSION..."; \
 		$(DETECT_OS_ARCH); \
 		URL="https://github.com/rhysd/actionlint/releases/download/v$$ACTIONLINT_VERSION/actionlint_$${ACTIONLINT_VERSION}_$${OS}_$${ARCH}.tar.gz"; \
@@ -188,14 +242,12 @@ lint-workflows: setup-actionlint
 	@ACTIONLINT="bin/actionlint"; \
 	( \
 		find claude-workflows -name "example.yml" -o -name "example.yaml"; \
-		find .github/workflows -maxdepth 1 \( \
-			-name "trigger-*.yml" -o -name "trigger-*.yaml" -o \
-			-name "agentics-maintenance.yml" -o -name "ci.yml" -o \
-			-name "release.yml" -o -name "smoke-test-install.yml" \
-		\); \
+		find .github/workflows -maxdepth 1 -type f \( -name "*.yml" -o -name "*.yaml" \) \
+			! -name "*.lock.yml" ! -name "*.lock.yaml" \
+			! -name "agentics-maintenance.yml"; \
 	) 2>/dev/null | while read -r file; do \
 		echo "Checking $$file..."; \
-		$$ACTIONLINT "$$file" || exit 1; \
+		$$ACTIONLINT -ignore 'unknown permission scope "copilot-requests"' "$$file" || exit 1; \
 	done
 
 setup-action-validator:
@@ -224,6 +276,11 @@ lint-actions: setup-action-validator
 
 lint: lint-workflows lint-actions
 	@python3 scripts/check-nav-catalog.py
+
+build:
+	@echo "This repository does not build gh-aw from source."
+	@echo "Workflows use the official gh-aw setup action to install the compiler."
+	@echo "Run 'make setup' to install gh-aw locally for development."
 
 test:
 	@uv run --extra test pytest tests/ -v

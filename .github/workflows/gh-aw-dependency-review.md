@@ -3,6 +3,7 @@ inlined-imports: true
 name: "Dependency Review"
 description: "Analyze Dependabot, Renovate, and Updatecli dependency update PRs"
 imports:
+  - gh-aw-fragments/ephemeral-github-token.md
   - gh-aw-fragments/elastic-tools.md
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
@@ -10,6 +11,7 @@ imports:
   - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
   - gh-aw-fragments/safe-output-add-comment-pr.md
+  - gh-aw-fragments/safe-output-add-labels.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
@@ -17,6 +19,7 @@ engine:
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}"
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -35,18 +38,33 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
+      classification-labels:
+        description: "Comma-separated list of labels the agent may apply (e.g. 'needs-human-review,higher-risk,merge-ready'). If empty, no labels are applied. Define label semantics in additional-instructions."
+        type: string
+        required: false
+        default: ""
       messages-footer:
         description: "Footer appended to all agent comments and reviews"
         type: string
         required: false
         default: ""
+      report-failure-as-issue:
+        description: "When true, agent failures are reported as GitHub issues"
+        type: boolean
+        required: false
+        default: true
+      github-token-policy:
+        description: "Elastic-specific. Backstage TokenPolicy id for elastic/oblt-actions/github/create-token. When set, mint an OIDC ephemeral GitHub token in each token-consuming job so labels and comments re-trigger downstream workflows. Requires Elastic TokenPolicy / ephemeral-token infrastructure; leave empty outside Elastic. Callers must grant id-token: write on the job that calls this workflow. Leave empty to use GITHUB_TOKEN or GH_AW_GITHUB_TOKEN."
+        type: string
+        required: false
+        default: ""
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
+      GH_AW_GITHUB_TOKEN:
+        required: false
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
@@ -56,22 +74,21 @@ concurrency:
   group: ${{ github.workflow }}-dependency-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
   pull-requests: read
+  id-token: write
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
 safe-outputs:
   activation-comments: false
-  add-labels:
-    max: 3
-    allowed:
-      - "needs-human-review"
-      - "higher-risk"
 strict: false
 timeout-minutes: 60
 steps:
@@ -79,6 +96,8 @@ steps:
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -100,7 +119,7 @@ This workflow is read-only. You can read files, search code, run commands, and c
 
 ### Step 1: Gather Context
 
-1. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get full PR details (author, description, branches).
+1. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get the full PR details (author, description, branches).
 2. Call `pull_request_read` with method `get_diff` to see exactly what changed.
 3. Call `pull_request_read` with method `get_files` to get the list of changed files.
 
@@ -217,19 +236,13 @@ Apply the following additional checks based on the dependency ecosystem:
 
 ### Step 4: Determine Labels
 
-Based on the analysis, determine if labels should be applied:
+Based on the analysis, determine if any labels from the configured `classification-labels` set should be applied:
 
-- **`needs-human-review`**: Apply when ANY of these conditions are met:
-  - A dependency update introduces breaking changes that affect this repo's usage
-  - A GitHub Actions commit SHA is not verified
-  - A Buildkite plugin moves from SHA-pinned to mutable tag, or between mutable tags
-  - The changelog indicates breaking changes
-  - A major version bump in any ecosystem (e.g. v1 → v2 in Go, major semver in npm/Python/Java)
-
-- **`higher-risk`**: Apply when:
-  - The updated dependency is used only in workflows triggered by push-to-main, release, schedule, or workflow_dispatch (cannot be validated in PR context)
-
-Only apply `needs-human-review` and `higher-risk` labels.
+- **Allowed classification labels**: `${{ inputs.classification-labels }}`
+- Parse `${{ inputs.classification-labels }}` as a comma-separated list and treat that list as the only valid labels for this step.
+- If `${{ inputs.classification-labels }}` is empty, skip this step entirely.
+- Use `${{ inputs.additional-instructions }}` to understand what each label means and when to apply it.
+- Never apply a label that is not in the parsed classification label list.
 
 ### Step 5: Post Analysis Comment
 

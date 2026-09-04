@@ -6,14 +6,14 @@ imports:
   - gh-aw-fragments/runtime-setup.md
   - gh-aw-fragments/formatting.md
   - gh-aw-fragments/rigor.md
-  - gh-aw-fragments/mcp-pagination.md
   - gh-aw-fragments/messages-footer.md
-  - gh-aw-fragments/safe-output-add-comment-pr.md
+  - gh-aw-fragments/safe-output-add-comment-pr-hide-older.md
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
   model: ${{ inputs.model }}
 on:
+  stale-check: false
   workflow_call:
     inputs:
       model:
@@ -32,7 +32,7 @@ on:
         required: false
         default: ""
       allowed-bot-users:
-        description: "Allowlisted bot actor usernames (comma-separated)"
+        description: "Allowed bot actor usernames (comma-separated)"
         type: string
         required: false
         default: "github-actions[bot]"
@@ -41,68 +41,175 @@ on:
         type: string
         required: false
         default: ""
-      buildkite-org:
-        description: "Buildkite organization slug"
-        type: string
+      report-failure-as-issue:
+        description: "When true, agent failures and failed jobs are reported as GitHub issues"
+        type: boolean
         required: false
-        default: "elastic"
-      buildkite-pipeline:
-        description: "Buildkite pipeline slug (optional; auto-discovered from repository if empty)"
-        type: string
-        required: false
-        default: ""
+        default: false
     secrets:
-      COPILOT_GITHUB_TOKEN:
-        required: true
       BUILDKITE_API_TOKEN:
-        required: false
+        required: true
   roles: [admin, maintainer, write]
   bots:
     - "${{ inputs.allowed-bot-users }}"
+    - "buildkite-limited-access[bot]"
 concurrency:
-  group: ${{ github.workflow }}-estc-pr-buildkite-detective-${{ github.run_id }}
+  group: ${{ github.workflow }}-estc-pr-buildkite-detective-${{ github.event.check_run.id || github.run_id }}
   cancel-in-progress: false
 permissions:
+  copilot-requests: write
   actions: read
   contents: read
   issues: read
   pull-requests: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:
-mcp-servers:
-  buildkite:
-    url: "https://mcp.buildkite.com/mcp/readonly"
-    headers:
-      Authorization: "Bearer ${{ secrets.BUILDKITE_API_TOKEN }}"
 network:
   allowed:
-    - "mcp.buildkite.com"
     - "buildkite.com"
 safe-outputs:
   activation-comments: false
+  noop:
 strict: false
 timeout-minutes: 30
 steps:
-  - name: Resolve event context
+  - name: Resolve event context and fetch Buildkite data
+    env:
+      BUILDKITE_API_TOKEN: ${{ secrets.BUILDKITE_API_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_RUN_ID: ${{ github.run_id }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
     run: |
-      set -euo pipefail
-      echo "BK_EVENT_NAME=$GITHUB_EVENT_NAME" >> "$GITHUB_ENV"
-      if [ "$GITHUB_EVENT_NAME" = "status" ]; then
-        echo "BK_EVENT_ID=$(jq -r '.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-        echo "BK_FAILURE_STATE=$(jq -r '.state' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-        echo "BK_COMMIT_SHA=$(jq -r '.sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-      else
-        echo "BK_EVENT_ID=$(jq -r '.check_run.id' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-        echo "BK_FAILURE_STATE=$(jq -r '.check_run.conclusion' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-        echo "BK_COMMIT_SHA=$(jq -r '.check_run.head_sha' "$GITHUB_EVENT_PATH")" >> "$GITHUB_ENV"
-      fi
+      python3 - << 'PYEOF'
+      import json, os, re, subprocess, sys, urllib.request
+
+      BK_TOKEN = os.environ['BUILDKITE_API_TOKEN']
+      EVENT_NAME = os.environ['GITHUB_EVENT_NAME']
+      LOG_TAIL = 150
+      ANSI_RE = re.compile(r'\x1b(?:\[[0-9;]*[A-Za-z]|_[^\x07]*\x07|[()][AB012]|[=>])')
+      BK_URL_RE = re.compile(r'https://buildkite\.com/([^/]+)/([^/]+)/builds/(\d+)')
+
+      os.makedirs('/tmp/gh-aw/buildkite-logs', exist_ok=True)
+
+      def bk_get(path):
+          url = f'https://api.buildkite.com/v2/{path}'
+          req = urllib.request.Request(url, headers={'Authorization': f'Bearer {BK_TOKEN}'})
+          with urllib.request.urlopen(req) as r:
+              return json.load(r)
+
+      def slugify(name):
+          return re.sub(r'\s+', '-', re.sub(r'[^\w\s-]', '', name).strip()).lower()[:60].strip('-')
+
+      with open(os.environ['GITHUB_EVENT_PATH']) as f:
+          event = json.load(f)
+
+      if EVENT_NAME == 'status':
+          commit_sha = event['commit']['sha']
+          target_url = event.get('target_url', '')
+      else:
+          cr = event['check_run']
+          commit_sha = cr['head_sha']
+          target_url = cr.get('details_url', '')
+
+      m = BK_URL_RE.search(target_url)
+      if not m:
+          print(f'No Buildkite build URL in target_url: {target_url}')
+          sys.exit(1)
+
+      bk_org, bk_pipeline, bk_number = m.group(1), m.group(2), m.group(3)
+      build = bk_get(f'organizations/{bk_org}/pipelines/{bk_pipeline}/builds/{bk_number}')
+
+      pr_info = build.get('pull_request') or {}
+      pr_number = pr_info.get('id', '')
+      branch = build.get('branch', '')
+
+      with open('/tmp/gh-aw/buildkite-event.txt', 'w') as f:
+          f.write(f'event_name: {EVENT_NAME}\n')
+          f.write(f'commit_sha: {commit_sha}\n')
+          f.write(f'build_url: {m.group(0)}\n')
+          f.write(f'pipeline: {bk_pipeline}\n')
+          f.write(f'branch: {branch}\n')
+          f.write(f'pr_number: {pr_number}\n')
+      print('Buildkite event context:')
+      print(open('/tmp/gh-aw/buildkite-event.txt').read())
+
+      def skip(reason):
+          subprocess.run(['bash', '-c', f'echo "::notice::{reason}"'], check=False)
+          print(reason)
+          sys.exit(1)
+
+      if not pr_number:
+          skip('Build is not associated with a PR; skipping')
+
+      if build['state'] not in ('failed', 'failing'):
+          skip(f'Build is not finished (state: {build["state"]}); skipping')
+
+      def collect_failed_jobs(build_data, pipeline_slug, build_url):
+          """Collect failed script jobs, following trigger jobs to child builds."""
+          FAIL_STATES = ('failed', 'timed_out')
+          results = []
+
+          for job in build_data.get('jobs', []):
+              if job.get('state') not in FAIL_STATES:
+                  continue
+              if job.get('type') == 'script':
+                  results.append((pipeline_slug, build_url, job))
+              elif job.get('type') == 'trigger':
+                  triggered = job.get('triggered_build') or {}
+                  child_url = triggered.get('web_url', '')
+                  cm = BK_URL_RE.search(child_url)
+                  if cm:
+                      child = bk_get(f'organizations/{cm.group(1)}/pipelines/{cm.group(2)}/builds/{cm.group(3)}')
+                      results.extend(collect_failed_jobs(child, cm.group(2), child_url))
+
+          return results
+
+      failed = collect_failed_jobs(build, bk_pipeline, m.group(0))
+      if not failed:
+          skip(f'No failed script jobs in build (build state: {build["state"]})')
+
+      summary = [
+          f'## Build: {m.group(0)}',
+          f'Pipeline: {bk_pipeline}  State: {build["state"]}',
+          f'PR: #{pr_number}  Branch: {branch}',
+          f'Failed jobs: {len(failed)}',
+          '',
+      ]
+
+      for pipeline_slug, build_url, job in failed:
+          slug = slugify(job.get('name', f'job-{job["id"]}'))
+          log_file = f'/tmp/gh-aw/buildkite-logs/{pipeline_slug}-{slug}.txt'
+
+          summary.append(f'### {job["name"]}')
+          summary.append(f'Pipeline: {pipeline_slug}  Build: {build_url}')
+          summary.append(f'State: {job["state"]}  Exit status: {job.get("exit_status")}')
+          summary.append(f'Command: {job.get("command", "").strip()}')
+          summary.append(f'Log: {log_file}')
+          summary.append('')
+
+          raw_url = job.get('raw_log_url', '')
+          if raw_url:
+              req = urllib.request.Request(raw_url, headers={'Authorization': f'Bearer {BK_TOKEN}'})
+              with urllib.request.urlopen(req) as r:
+                  lines = r.read().decode('utf-8', errors='replace').splitlines()
+              with open(log_file, 'w') as f:
+                  f.write('\n'.join(ANSI_RE.sub('', l) for l in lines[-LOG_TAIL:]))
+
+      with open('/tmp/gh-aw/buildkite-failures.txt', 'w') as f:
+          f.write('\n'.join(summary))
+      print(f'Fetched {len(failed)} failed job(s)')
+      PYEOF
   - name: Repo-specific setup
     if: ${{ inputs.setup-commands != '' }}
     env:
       SETUP_COMMANDS: ${{ inputs.setup-commands }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: eval "$SETUP_COMMANDS"
 ---
 
@@ -113,101 +220,73 @@ Analyze failed Buildkite CI builds for pull requests in ${{ github.repository }}
 ## Context
 
 - **Repository**: ${{ github.repository }}
-- **Event Name**: ${{ env.BK_EVENT_NAME }}
-- **Event ID**: ${{ env.BK_EVENT_ID }}
-- **Failure State**: ${{ env.BK_FAILURE_STATE }}
-- **Commit SHA**: ${{ env.BK_COMMIT_SHA }}
-- **Buildkite Organization**: ${{ inputs.buildkite-org }}
+- **Pre-fetched data**: `/tmp/gh-aw/buildkite-event.txt` (build URL, pipeline, branch, PR number, commit SHA) and `/tmp/gh-aw/buildkite-failures.txt` (failed job summary with log file paths under `/tmp/gh-aw/buildkite-logs/`)
 
 ## Constraints
 
-- **CAN**: Read files, search code, run tests and commands, query Buildkite via MCP, comment on PRs
+- **CAN**: Read files, search code, run tests and commands, comment on PRs
 - **CANNOT**: Push changes, merge PRs, or modify `.github/workflows/`
-
-## Investigation Tools
-
-Use the right tool for each task:
-
-- **Buildkite MCP** (`list_pipelines`, `list_builds`, `get_build`, `get_job_logs`, `search_logs`, `tail_logs`, `list_annotations`): Query build information, job logs, and annotations
-- **`search_code`**: Search code in *other* public GitHub repositories — use for finding upstream API changes, reference implementations, or migration guides. Use `grep` and file reading for the local codebase.
-- **`web-fetch`**: Fetch documentation pages, changelogs, or API references for libraries and tools involved in the failure
-- **`bash`**: Run tests locally to verify your analysis, reproduce failures, or check dependency versions
-
-## Failure Categories
-
-Classify each failure to guide your investigation:
-
-- **Code bug**: Logic error, syntax error, type mismatch, nil/null dereference — trace to the specific source file and line
-- **Test failure**: Assertion mismatch, test timeout, flaky test — check if the test itself is wrong or if the code under test changed
-- **Dependency issue**: Missing package, version conflict, lockfile drift, network fetch failure — check dependency files and lockfiles
-- **Infrastructure**: Resource exhaustion, service unavailability, timeout, Docker pull failure — often transient; recommend retry if so
-- **Configuration**: Invalid settings, missing secrets/env vars, incorrect paths — check CI config, environment setup, and workflow definitions
 
 ## Instructions
 
-### Step 1: Gather Context
+### Step 1: Read Pre-Fetched Data
 
-1. Use the commit SHA provided in the Context section above. If it is empty, discover it from the PR's commit statuses or check runs.
-2. Call `list_pull_requests` for the repository (open PRs), then call `pull_request_read` with method `get` on candidates and keep PRs where `head.sha` matches the failed commit SHA. If none match, call `noop` with message "No pull request associated with failed commit status; nothing to do" and stop.
-3. For each matching PR, keep author, branches, and fork status for downstream analysis.
+1. Read `/tmp/gh-aw/buildkite-event.txt` for the PR number, build URL, branch, and commit SHA.
+2. Read `/tmp/gh-aw/buildkite-failures.txt` for the failed job summary. If it does not exist, call `noop` with "No Buildkite failure data" and stop.
+3. Read the individual log files listed in the summary (under `/tmp/gh-aw/buildkite-logs/`).
+4. Call `pull_request_read` with method `get` on the PR number to get the author, diff, and recent changes.
 
-### Step 2: Find the Buildkite Build
+### Step 2: Analyze
 
-> **If Buildkite MCP is unavailable** (connection error, 401, timeout, or empty token): Proceed with the **public pipeline** fallback described in Step 2b. Public Buildkite pipelines expose build pages and logs without authentication.
+Classify each failure:
 
-#### Step 2a: Via Buildkite MCP (when API token is available)
+- **Code bug**: Logic error, syntax error, type mismatch, nil/null dereference
+- **Test failure**: Assertion mismatch, test timeout, flaky test
+- **Dependency issue**: Missing package, version conflict, lockfile drift
+- **Infrastructure**: Resource exhaustion, service unavailability, timeout — recommend retry if transient
+- **Configuration**: Invalid settings, missing secrets/env vars, incorrect paths
 
-1. **Resolve the pipeline**: If `${{ inputs.buildkite-pipeline }}` is provided, use it. Otherwise, call `list_pipelines` for organization `${{ inputs.buildkite-org }}` and find the pipeline whose slug matches the repository name (extract the repo name from `${{ github.repository }}`). If multiple pipelines match, prefer an exact slug match.
-2. **Find the failed build**: Call `list_builds` for the resolved pipeline, filtering by the failed commit SHA resolved in Step 1. If no match by SHA, use the PR's head branch (from the `pull_request_read` response in Step 1) to filter builds and select the most recent failed one.
-3. **Collect failure evidence**:
-   - Call `get_build` for the matched build to get overall status and job list.
-   - For each **failed** job:
-     - `get_job_logs` — retrieve the full log
-     - `search_logs` with patterns: `error|Error|ERROR`, `failed|Failed|FAILED`, `panic|exception|traceback`
-     - `tail_logs` — get the last 100 lines (often contains the final error and exit code)
-   - Call `list_annotations` to capture any warnings, errors, or context the pipeline attached to the build.
+For each:
 
-#### Step 2b: Via public Buildkite pages (fallback when no API token)
+1. Identify the specific error from the logs.
+2. Trace to source code using `grep` and file reading. Check recent PR changes that may have introduced the failure.
+3. If the error involves an external library or tool, use `web-fetch` to check docs/changelogs.
+4. Propose a concrete fix or, if inconclusive, state what additional data is needed.
 
-Use this path when the Buildkite MCP server is unavailable (missing token, 401, connection error).
+**Deduplication**: Check the most recent prior detective comment on the PR. If the root cause and remediation are the same, call `noop` instead of posting a duplicate.
 
-1. **Discover the Buildkite build URL** from the PR's commit statuses or check runs:
-   - Call `pull_request_read` with method `get_status` for the PR to retrieve commit status contexts.
-   - Look for status contexts or check runs whose `target_url` contains `buildkite.com`. The URL typically follows the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>`.
+### Step 3: Respond
 
-1. **Fetch the public build page**: Use `web-fetch` to retrieve the Buildkite build URL found above. The page contains the build status, job list, and links to individual job logs.
+Call `add_comment` on the PR using this structure:
 
-3. **Collect failure evidence from public pages**:
-   - Parse the fetched build page to identify failed jobs. Look for job links matching the pattern `https://buildkite.com/<org>/<pipeline>/builds/<number>#<job-uuid>`.
-   - For each failed job, use `web-fetch` to retrieve the job log page at `https://buildkite.com/<org>/<pipeline>/builds/<number>/jobs/<job-uuid>/log`.
-   - Extract error messages, stack traces, and the final output from the fetched log content.
-   - If the pipeline is not publicly accessible (403/404), note this in your comment and proceed with whatever evidence is available from GitHub status contexts.
+```markdown
+### TL;DR
+[1-2 sentences: what failed and the immediate action needed]
 
-### Step 3: Analyze
+## Remediation
+- [specific fix step]
+- [specific validation step]
 
-1. **Identify the failure**: Which job(s) and step(s) failed? What is the specific error message or stack trace?
-2. **Trace to source code**: Use `grep` and file reading to find the relevant source files. Check recent changes in the PR diff that may have introduced the failure.
-3. **Classify the failure**: Use the failure categories above to determine the type. This guides your fix recommendation.
-4. **Research if needed**: If the error involves an external library, API, or tool, use `web-fetch` to check documentation or changelogs for known issues, breaking changes, or migration guides.
-5. **Propose a fix**: Provide a concrete, minimal fix or remediation plan. If you can run tests locally to verify your theory, do so.
-6. **Handle inconclusive cases**: If logs are insufficient to determine root cause, state exactly what additional data is needed and suggest next steps the author can take.
+<details>
+<summary>Investigation details</summary>
 
-### Step 4: Respond
+## Root Cause
+[concise explanation with file paths and line numbers where applicable]
 
-Call `add_comment` on the PR with the following structure:
+## Evidence
+- Build: [link to Buildkite build]
+- Job/step: [name]
+- Key log excerpt: [snippet]
 
-**Build**: Link to the Buildkite build
+## Verification
+- [tests/commands run or "not run" with reason]
 
-**What failed**: Which job(s) and step(s) failed
+## Follow-up
+- [optional next steps]
 
-**Error**: The key error message(s) or stack trace
+</details>
+```
 
-**Root cause**: What caused the failure and why (with file paths and line numbers where applicable)
-
-**Recommended fix**: Specific steps to resolve, with code snippets if applicable
-
-**Verification**: Tests you ran locally (if any) and their results
-
-Use `<details>` blocks for long log excerpts or stack traces to keep the comment scannable.
+Put the TL;DR and Remediation outside the `<details>` block so they are immediately visible. Put root cause evidence, log excerpts, tests run, and follow-up details inside the collapsed block.
 
 ${{ inputs.additional-instructions }}
