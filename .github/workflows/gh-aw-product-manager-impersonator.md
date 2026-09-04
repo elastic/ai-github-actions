@@ -154,6 +154,12 @@ If you cannot find a genuinely useful, non-duplicate idea that meets all the cri
 
 **Do not force a low-quality idea just to file something.** Noop is the correct outcome when nothing passes the bar.
 
+### Final Safe-Output Requirement
+
+This workflow is complete only after you emit exactly one safe-output tool call. If no new feature proposal qualifies, do not end with a plain-text summary — call `noop` immediately with the exact message above and stop.
+
+When the workflow ends with no created issue, `noop` is the required final action. A brief narrative answer without a safe-output call is considered a failure.
+
 ### Issue Format
 
 **Issue title:** Short, punchy feature name
