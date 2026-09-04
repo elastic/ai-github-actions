@@ -536,7 +536,9 @@ jobs:
         with:
           python-version: '3.12'
           python-version-file: '.python-version'
-      - name: Setup uv
+      - id: setup-uv
+        if: hashFiles('pyproject.toml', 'uv.lock') != ''
+        name: Setup uv
         # zizmor: ignore[github_action_from_unverified_creator_used]
         uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
       - name: Create gh-aw temp directory
