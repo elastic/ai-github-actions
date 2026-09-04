@@ -46,8 +46,13 @@ steps:
       set -euo pipefail
       # AWF-friendly location: gh-aw scans /opt/hostedtoolcache/**/bin paths.
       toolcache_bin="/opt/hostedtoolcache/gh-aw-tools/current/x64/bin"
+      uv_bin="${UV_PATH:-$(command -v uv || true)}"
+      if [ -z "$uv_bin" ]; then
+        echo "::error::uv was not installed or not discoverable after setup-uv" >&2
+        exit 1
+      fi
       sudo mkdir -p "$toolcache_bin"
-      sudo ln -sf "$UV_PATH" "$toolcache_bin/uv"
+      sudo ln -sf "$uv_bin" "$toolcache_bin/uv"
   
   - name: Configure Copilot CLI settings
     shell: bash
