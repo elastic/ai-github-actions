@@ -71,6 +71,8 @@ permissions:
   pull-requests: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, pull_requests, search, actions]
   bash: true
   web-fetch:

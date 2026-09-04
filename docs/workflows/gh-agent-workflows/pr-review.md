@@ -26,7 +26,7 @@ mkdir -p .github/workflows && curl -fsSL \
 | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
-| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | `github-actions[bot]` |
+| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated). Also elevates those logins to GH-AW `trusted-users` integrity (`min-integrity: approved`) | `github-actions[bot]` |
 | `intensity` | Review intensity (`conservative`, `balanced`, `aggressive`) | `balanced` |
 | `minimum_severity` | Minimum severity for inline comments (`critical`, `high`, `medium`, `low`, `nitpick`) | `low` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |

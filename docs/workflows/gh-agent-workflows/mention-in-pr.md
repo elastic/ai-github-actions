@@ -27,7 +27,7 @@ mkdir -p .github/workflows && curl -fsSL \
 | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
-| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | `github-actions[bot]` |
+| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated). Also elevates those logins to GH-AW `trusted-users` integrity (`min-integrity: approved`) | `github-actions[bot]` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 | `github-token-policy` | **Elastic-specific.** Backstage TokenPolicy id for `elastic/oblt-actions/github/create-token`. When set, mint an OIDC ephemeral GitHub token in each token-consuming job so comments, reviews, and pushes re-trigger downstream workflows (and can satisfy CODEOWNERS when the Vault app is listed). Requires Elastic TokenPolicy / ephemeral-token infrastructure; leave empty outside Elastic. The caller job must grant `id-token: write`. | `""` |
 

@@ -26,7 +26,7 @@ mkdir -p .github/workflows && curl -fsSL \
 | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt. Use this to define label semantics for `classification-labels`. | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
-| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | `github-actions[bot]` |
+| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated). Also elevates those logins to GH-AW `trusted-users` integrity (`min-integrity: approved`) | `github-actions[bot]` |
 | `classification-labels` | Comma-separated list of labels the agent may apply (e.g. `bug,needs-triage,enhancement`). If empty, no labels are applied. Define label semantics in `additional-instructions`. | `""` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 | `github-token-policy` | **Elastic-specific.** Backstage TokenPolicy id for `elastic/oblt-actions/github/create-token`. When set, mint an OIDC ephemeral GitHub token in each token-consuming job so labels re-trigger downstream workflows. Requires Elastic TokenPolicy / ephemeral-token infrastructure; leave empty outside Elastic. The caller job must grant `id-token: write`. | `""` |

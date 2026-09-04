@@ -66,6 +66,8 @@ permissions:
   issues: read
 tools:
   github:
+    min-integrity: approved
+    trusted-users: ${{ inputs.allowed-bot-users }}
     toolsets: [repos, issues, search, actions]
   bash: true
   web-fetch:
