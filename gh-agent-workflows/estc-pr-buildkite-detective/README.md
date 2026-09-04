@@ -29,7 +29,7 @@ See [example.yml](example.yml) for the full workflow file.
 | --- | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | No | `""` |
 | `setup-commands` | Shell commands run before the agent starts | No | `""` |
-| `allowed-bot-users` | Allowed bot actor usernames (comma-separated) | No | `github-actions[bot]` |
+| `allowed-bot-users` | Allowed bot actor usernames (comma-separated); also GH-AW trusted-users under min-integrity approved | No | `github-actions[bot]` |
 | `report-failure-as-issue` | When `true`, agent failures and failed jobs are reported as GitHub issues | No | `true` |
 
 ## Required Secrets

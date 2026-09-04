@@ -35,7 +35,7 @@ if: >-
 | --- | --- | --- |
 | `additional-instructions` | Repo-specific instructions appended to the agent prompt | `""` |
 | `setup-commands` | Shell commands run before the agent starts | `""` |
-| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated) | `github-actions[bot]` |
+| `allowed-bot-users` | Allowlisted bot actor usernames (comma-separated). Also elevates those logins to GH-AW `trusted-users` integrity (`min-integrity: approved`) | `github-actions[bot]` |
 | `report-failure-as-issue` | When `true`, agent failures are reported as a GitHub issue | `true` |
 
 ## Required secrets
