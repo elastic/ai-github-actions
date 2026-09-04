@@ -24,6 +24,7 @@ on:
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   issues: write
 
 jobs:
@@ -34,5 +35,3 @@ jobs:
       search-terms: ${{ inputs.search-terms }}
       days: ${{ inputs.days }}
       conclusion: ${{ inputs.conclusion }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
