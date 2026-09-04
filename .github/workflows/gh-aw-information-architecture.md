@@ -141,6 +141,8 @@ Call `noop` if:
 - All findings are subjective style preferences.
 - A similar issue is already open.
 
+If you do not have a concrete finding after the investigation, do not end the run silently. Call `noop` immediately with a brief reason and stop. Ending without a safe output is a failure for this workflow.
+
 "Information Architecture skipped — no concrete IA problem found."
 
 ### Issue Format
