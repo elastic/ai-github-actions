@@ -43,10 +43,6 @@ See [example.yml](example.yml) for the full workflow file.
 
 - `add-comment` — post an analysis comment on the PR (max 1)
 - `add-labels` — apply labels from the configured `classification-labels` allowlist (max 3); semantics defined via `additional-instructions`
-- `noop` — explicit no-action when the PR has no dependency updates to review
-- `report-incomplete` / `missing-tool` / `missing-data` — when a real dependency PR cannot be analyzed
-
-The agent must call at least one safe-output tool before finishing. A text-only exit with zero safe outputs is treated as a failure (and may open a `[aw] Dependency Review produced no safe outputs` issue when `report-failure-as-issue` is enabled). Prefer the local PR checkout / `git diff` for dependency discovery; use GitHub MCP for API enrichment when shell `gh` is unauthenticated.
 
 ## Manual usage with mention-in-pr
 
