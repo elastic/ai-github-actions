@@ -187,6 +187,10 @@ Analyze source code to identify semantic function clusters, misplaced functions,
 - Subjective code organization preferences — only flag placements that are clearly wrong, not "could be slightly better"
 - Near-duplicates that exist for good reasons (different error handling, different types, intentional specialization)
 
+### No-op Guardrail
+
+After filtering for evidence, actionability, and duplication, if no findings survive, call `noop` with a brief reason and stop. Do not end the run silently. A skipped run with a noop safe output is the expected outcome when there is nothing actionable to report.
+
 ### Issue Format
 
 **Issue title:** Code duplication findings (date)
