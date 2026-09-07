@@ -89,6 +89,10 @@ tools:
   web-fetch:
 safe-outputs:
   activation-comments: false
+  noop:
+    max: 1
+    report-as-issue: false
+  report-incomplete:
 strict: false
 timeout-minutes: 60
 steps:
@@ -110,18 +114,30 @@ Analyze dependency update pull requests (Dependabot, Renovate, Updatecli) in ${{
 - **Repository**: ${{ github.repository }}
 - **PR**: #${{ github.event.pull_request.number }} — ${{ github.event.pull_request.title }}
 - **PR Author**: ${{ github.actor }}
+- **Workspace**: `${{ github.workspace }}` (PR head is already checked out)
 
 ## Constraints
 
-This workflow is read-only. You can read files, search code, run commands, and comment on PRs — but your only outputs are an analysis comment and optional labels.
+This workflow is read-only for repository mutation. You can read files, search code, run commands, and emit safe outputs — your allowed write path is safe-output tools only (`add_comment`, `add_labels`, `noop`, `report_incomplete`, `missing_tool`, `missing_data`).
+
+**Mandatory safe-output contract (failure mode #1):**
+- Before finishing you **MUST** call at least one safe-output tool. A text-only exit with zero safe outputs is a failure.
+- Shell `gh` is often **not** authenticated in the agent sandbox. That does **not** mean GitHub is unreachable — use the read-only **GitHub MCP** / `github` CLI on `PATH` for API reads.
+- Use `noop` **only** when the PR truly has no dependency updates to review.
+- If this is a real dependency-update PR but you cannot gather enough context, call `report_incomplete` (or `missing_tool` / `missing_data`). Do **not** claim noop in prose and exit without a tool call.
 
 ## Instructions
 
 ### Step 1: Gather Context
 
-1. Call `pull_request_read` with method `get` on PR #${{ github.event.pull_request.number }} to get the full PR details (author, description, branches).
-2. Call `pull_request_read` with method `get_diff` to see exactly what changed.
-3. Call `pull_request_read` with method `get_files` to get the list of changed files.
+1. **Start local.** The PR head is already checked out in `${{ github.workspace }}`. Identify changed files and the dependency diff with local tools first, for example:
+   - `git diff --name-only ${{ github.event.pull_request.base.sha }}...HEAD`
+   - `git diff ${{ github.event.pull_request.base.sha }}...HEAD -- .github/workflows go.mod package.json pyproject.toml requirements.txt pom.xml`
+   - Read changed manifests/workflows directly from disk
+2. Optionally enrich with GitHub MCP (not shell `gh`) when needed:
+   - `pull_request_read` method `get` on PR #${{ github.event.pull_request.number }} for title/body/author
+   - `pull_request_read` method `get_diff` / `get_files` if the local diff is incomplete
+3. Do **not** stop the run solely because a GitHub API read failed — continue from the local checkout and call `report_incomplete` only if you still cannot classify any dependency updates.
 
 ### Step 2: Identify and Classify Updated Dependencies
 
@@ -291,5 +307,15 @@ If the analysis found no issues, keep the comment concise — do not pad with un
 ### Step 6: Apply Labels
 
 If any labels were determined in Step 4, call `add_labels` to apply them to the PR.
+
+### Step 7: Complete with a Safe Output
+
+Before ending the run, confirm you called at least one safe-output tool:
+
+- Dependency updates analyzed → `add_comment` (and `add_labels` when applicable)
+- No dependency updates to review → `noop` with a brief reason
+- Blocked / incomplete analysis on a real dependency PR → `report_incomplete`, `missing_tool`, or `missing_data`
+
+Ending without a safe-output tool call is a failure for this workflow.
 
 ${{ inputs.additional-instructions }}
