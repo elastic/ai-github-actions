@@ -208,7 +208,7 @@ compile: setup-gh-aw setup-gh-aw-compat sync
 	@./scripts/validate-uses-references.sh
 
 postprocess-setup-action:
-	@echo "Rewriting setup action references to $(GH_AW_SETUP_ACTION_REPO)@$(GH_AW_SETUP_ACTION_REF)..."
+	@echo "Skipping setup action reference rewrite (rewrite step is disabled)."
 # @python3 ./scripts/rewrite_setup_action_refs.py "$(GH_AW_SETUP_ACTION_REPO)" "$(GH_AW_SETUP_ACTION_REF)"
 
 setup-actionlint:
