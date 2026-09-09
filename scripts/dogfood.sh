@@ -23,6 +23,7 @@ EXCLUDED_WORKFLOWS=(
   "estc-newbie-contributor-patrol-external"
   "flaky-test-investigator"
   "issue-fixer"
+  "issue-fixer-workflows"
   "log-searching-agent"
   "mention-in-issue-no-sandbox"
   "mention-in-pr-no-sandbox"

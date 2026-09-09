@@ -56,6 +56,7 @@ These pair together: a Scheduled Audit finds problems, a Scheduled Fix resolves 
 | [Duplicate Issue Detector](gh-agent-workflows/duplicate-issue-detector.md) | New issues | Detect duplicate issues and comment with links |
 | [Issue Triage](gh-agent-workflows/issue-triage.md) | New issues | Investigate and provide implementation plans |
 | [Issue Fixer](gh-agent-workflows/issue-fixer.md) | New issues | Triage plus automatic draft PR for straightforward fixes |
+| [Issue Fixer — workflows](../../gh-agent-workflows/issue-fixer-workflows/README.md) | New issues | Like Issue Fixer, but may open draft PRs that change `.github/` / workflow YAML |
 | [Branch Actions Detective](gh-agent-workflows/branch-actions-detective.md) | Failed branch CI | Diagnose post-merge CI failures and file tracking issues |
 | [PR Actions Detective](gh-agent-workflows/pr-actions-detective.md) | Failed PR checks | Diagnose failures and recommend fixes |
 | [PR Review](gh-agent-workflows/pr-review.md) | PR opened/updated | AI code review with inline comments |
@@ -102,7 +103,7 @@ Stale Issues Investigator pairs with [Stale Issues Remediator](gh-agent-workflow
 
 These workflows are tailored for Elastic's internal tooling and documentation platform. They reference Elastic's published documentation on `elastic.co/docs`, Elastic's style guide and `applies_to` tag conventions, or Elastic-owned infrastructure (Buildkite, downstream repositories). Use these if you are working in an Elastic repository.
 
-> **Warning — optional Elastic dependency on common workflows:** [Issue Triage](gh-agent-workflows/issue-triage.md), [Dependency Review](gh-agent-workflows/dependency-review.md), [Issue Fixer](gh-agent-workflows/issue-fixer.md), and [Mention in PR](gh-agent-workflows/mention-in-pr.md) remain common workflows. Their optional `github-token-policy` input mints OIDC ephemeral GitHub tokens via `elastic/oblt-actions/github/create-token` and requires Elastic's TokenPolicy / ephemeral-token infrastructure. Leave `github-token-policy` empty (the default) outside Elastic; setting it will not work without that platform.
+> **Warning — optional Elastic dependency on common workflows:** [Issue Triage](gh-agent-workflows/issue-triage.md), [Dependency Review](gh-agent-workflows/dependency-review.md), [Issue Fixer](gh-agent-workflows/issue-fixer.md), [Issue Fixer — workflows](../../gh-agent-workflows/issue-fixer-workflows/README.md), and [Mention in PR](gh-agent-workflows/mention-in-pr.md) remain common workflows. Their optional `github-token-policy` input mints OIDC ephemeral GitHub tokens via `elastic/oblt-actions/github/create-token` and requires Elastic's TokenPolicy / ephemeral-token infrastructure. Leave `github-token-policy` empty (the default) outside Elastic; setting it will not work without that platform. Prefer a non-empty policy for Issue Fixer — workflows when remediations touch `.github/workflows/`.
 
 #### Human-coordinated
 
