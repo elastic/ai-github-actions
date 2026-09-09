@@ -6,6 +6,8 @@ Investigate new issues and provide actionable triage analysis. For straightforwa
 
 Same as Issue Triage, but also implements the fix and opens a draft PR when the fix is straightforward and safe to land quickly.
 
+For remediations that must change `.github/workflows/` (or other `.github/` paths), use [Issue Fixer — unrestricted](../issue-fixer-unrestricted/README.md) instead.
+
 ## Quick Install
 
 ```bash
