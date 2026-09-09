@@ -1,13 +1,13 @@
-# Issue Fixer — workflows
+# Issue Fixer — unrestricted
 
 Investigate new issues and provide actionable triage analysis. For straightforward fixes — including verified remediations under `.github/workflows/` — implement and open a draft PR.
 
 ## How it differs from Issue Fixer
 
-| | [Issue Fixer](../issue-fixer/README.md) | Issue Fixer — workflows |
+| | [Issue Fixer](../issue-fixer/README.md) | Issue Fixer — unrestricted |
 | --- | --- | --- |
-| Workflow / `.github/` PRs | Prompt guardrails discourage; safe-outputs block top-level dot folders | Allowed when verified; `.github/` opted out of dot-folder protection |
-| Typical use | General issue remediations | Security / CI remediations that edit workflow YAML |
+| Top-level dot-folder / `.github/` PRs | Prompt guardrails discourage; safe-outputs block top-level dot folders | Allowed when verified; `.github/` opted out of dot-folder protection |
+| Typical use | General issue remediations | Trusted callers that need PRs touching `.github/` (and any other paths) |
 | Token | Prefer `github-token-policy` for CI re-trigger | Prefer `github-token-policy` (required in practice for workflow-file pushes) |
 
 Keep using `gh-aw-issue-fixer` for generic fixers. Use this lock when callers intentionally need draft PRs that touch `.github/`.
@@ -16,8 +16,8 @@ Keep using `gh-aw-issue-fixer` for generic fixers. Use this lock when callers in
 
 ```bash
 mkdir -p .github/workflows && curl -sL \
-  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/issue-fixer-workflows/example.yml \
-  -o .github/workflows/issue-fixer-workflows.yml
+  https://raw.githubusercontent.com/elastic/ai-github-actions/v0/gh-agent-workflows/issue-fixer-unrestricted/example.yml \
+  -o .github/workflows/issue-fixer-unrestricted.yml
 ```
 
 See [example.yml](example.yml) for the full workflow file.

@@ -1,7 +1,7 @@
 ---
 inlined-imports: true
-name: "Issue Fixer — workflows"
-description: "Investigate issues and open draft PRs, including verified remediations under .github/workflows"
+name: "Issue Fixer — unrestricted"
+description: "Investigate issues and open draft PRs without workflow-edit / top-level-dot-folder restrictions (trusted callers)"
 imports:
   - gh-aw-fragments/ephemeral-github-token.md
   - gh-aw-fragments/elastic-tools.md
@@ -18,7 +18,7 @@ engine:
   id: copilot
   model: ${{ inputs.model }}
   concurrency:
-    group: "gh-aw-copilot-${{ github.workflow }}-issue-fixer-workflows-${{ github.event.issue.number }}"
+    group: "gh-aw-copilot-${{ github.workflow }}-issue-fixer-unrestricted-${{ github.event.issue.number }}"
 on:
   stale-check: false
   workflow_call:
@@ -73,7 +73,7 @@ on:
   bots:
     - "${{ inputs.allowed-bot-users }}"
 concurrency:
-  group: ${{ github.workflow }}-issue-fixer-workflows-${{ github.event.issue.number }}
+  group: ${{ github.workflow }}-issue-fixer-unrestricted-${{ github.event.issue.number }}
   cancel-in-progress: true
 permissions:
   copilot-requests: write
@@ -113,9 +113,9 @@ steps:
     run: eval "$SETUP_COMMANDS"
 ---
 
-# Issue Fixer — workflows
+# Issue Fixer — unrestricted
 
-Investigate and fix issues in ${{ github.repository }}. Provide actionable analysis with implementation plans. For straightforward fixes — including verified changes under `.github/workflows/` — implement and open a draft PR.
+Investigate and fix issues in ${{ github.repository }}. Provide actionable analysis with implementation plans. For straightforward fixes — including verified changes under `.github/` when needed — implement and open a draft PR.
 
 ## Context
 
@@ -126,7 +126,7 @@ Investigate and fix issues in ${{ github.repository }}. Provide actionable analy
 
 - **CAN**: Read files, search code, run tests and commands, comment on the issue, and open a draft PR for straightforward fixes (including `.github/` / workflow YAML when required).
 - This workflow is primarily for investigation and planning. Local file changes are for verification only unless you implement a fix.
-- Prefer this lock over `gh-aw-issue-fixer` when remediations commonly touch workflow files and a capable write token (`github-token-policy`) is available.
+- Prefer this lock over `gh-aw-issue-fixer` when remediations may touch `.github/` (or other top-level dot folders) and a capable write token (`github-token-policy`) is available.
 
 ## Triage Process
 
