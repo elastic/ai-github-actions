@@ -160,6 +160,28 @@ def test_pr_existing_comments_paginates_threads_and_comments(tmp_path):
     env["PR_REVIEW_PR_NUMBER"] = "714"
 
     result = subprocess.run(
+        ["bash", str(PR_EXISTING_COMMENTS)],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    assert "## src/example.py (1 threads)" in result.stdout
+    assert "## src/another.py (1 threads)" in result.stdout
+    example_output, another_output = result.stdout.split("## src/another.py", 1)
+    assert example_output.count("@reviewer:") == 51
+    assert another_output.count("@reviewer:") == 1
+    assert "Comment 51" in example_output
+    assert "Comment 1000" in another_output
+
+
+def test_pr_existing_comments_summary_format(tmp_path):
+    env = _env_with_stub(tmp_path)
+    env["PR_REVIEW_REPO"] = "elastic/ai-github-actions"
+    env["PR_REVIEW_PR_NUMBER"] = "714"
+
+    result = subprocess.run(
         ["bash", str(PR_EXISTING_COMMENTS), "--summary"],
         env=env,
         capture_output=True,
@@ -168,8 +190,6 @@ def test_pr_existing_comments_paginates_threads_and_comments(tmp_path):
     )
 
     assert "Existing review threads: 2 total" in result.stdout
-    assert "src/example.py" in result.stdout
-    assert "src/another.py" in result.stdout
     assert "1 with replies" in result.stdout
 
 
