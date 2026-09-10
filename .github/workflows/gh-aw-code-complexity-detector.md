@@ -201,6 +201,10 @@ A finding must clear at least one of these bars to be worth reporting:
 - Subjective complexity preferences — only flag code that is clearly overcomplicated, not "could be slightly cleaner"
 - Functions that are long but straightforward (e.g., switch statements mapping many values)
 
+### No-op Guardrail
+
+After filtering for evidence, actionability, and duplication, if no findings survive, call `noop` with a brief reason and stop. Do not end the run silently. A skipped run with a noop safe output is the expected outcome when there is nothing actionable to report.
+
 ### Issue Format
 
 **Issue title:** Code complexity findings (date)
