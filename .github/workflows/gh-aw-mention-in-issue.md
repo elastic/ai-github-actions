@@ -145,6 +145,6 @@ Call `add_comment` with your response. Be concise and actionable — no filler o
 - `create_pull_request` — create a PR with your changes
 - `create_issue` — create a new issue (e.g. to split off sub-tasks)
 
-Unless instructred otherwise, if you do create an issue or a pull request, assign it to the user who requested the change that resulted in the creation of the issue or pull request.
+Unless instructed otherwise, if you do create an issue or a pull request, assign it to the user who requested the change that resulted in the creation of the issue or pull request.
 
 ${{ inputs.additional-instructions }}
