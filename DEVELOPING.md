@@ -1,5 +1,7 @@
 # Development Guide
 
+This page is the source of truth for repository prerequisites. See the [docs-site Developing guide](docs/developing.md) for the equivalent onboarding page.
+
 ## Repository Structure
 
 | Directory | What | Docs |
@@ -16,7 +18,7 @@ Internal-only workflows (e.g., `upgrade-check.md`, `workflow-patrol.md`, `ci.yml
 - [GitHub CLI (`gh`)](https://cli.github.com/) — installed automatically by `make setup` on Linux, but must be pre-installed on macOS
 - `curl` or `wget` — used to download the official gh-aw release compiler binary
 
-Verify with:
+If building the compiler from source, verify Go with:
 
 ```bash
 go version

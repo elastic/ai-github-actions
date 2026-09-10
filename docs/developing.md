@@ -1,5 +1,7 @@
 # Developing
 
+> This page mirrors the repository [Development Guide](https://github.com/elastic/ai-github-actions/blob/main/DEVELOPING.md), which is the source of truth for prerequisites.
+
 ## Repository structure
 
 | Directory | What | Docs |
@@ -12,10 +14,11 @@ Internal-only workflows (e.g., `upgrade-check.md`, `workflow-patrol.md`, `ci.yml
 
 ## Prerequisites
 
-- [Go](https://go.dev/dl/) — required by `make setup` to build the `gh-aw` compiler
+- [Go](https://go.dev/dl/) — optional; only needed for non-release gh-aw compiler builds
 - [GitHub CLI (`gh`)](https://cli.github.com/) — installed automatically by `make setup` on Linux, but must be pre-installed on macOS
+- `curl` or `wget` — used to download the official gh-aw release compiler binary
 
-Verify with:
+If building the compiler from source, verify Go with:
 
 ```bash
 go version
