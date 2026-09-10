@@ -255,9 +255,19 @@ setup-action-validator:
 	@mkdir -p bin
 	@ACTION_VALIDATOR_VERSION="$(ACTION_VALIDATOR_VERSION)"; \
 	ACTION_VALIDATOR_BIN="bin/action-validator"; \
-	if [ -f "$$ACTION_VALIDATOR_BIN" ]; then \
-		echo "✓ action-validator already installed: $$($$ACTION_VALIDATOR_BIN --version 2>&1 | head -1)"; \
-	else \
+	INSTALL_ACTION_VALIDATOR=1; \
+	if [ -x "$$ACTION_VALIDATOR_BIN" ]; then \
+		INSTALLED_VERSION="$$($$ACTION_VALIDATOR_BIN --version 2>&1 | head -1 | grep -oE 'v?[0-9]+\.[0-9]+\.[0-9]+' | head -1 | sed 's/^v//')"; \
+		if [ "$$INSTALLED_VERSION" = "$$ACTION_VALIDATOR_VERSION" ]; then \
+			echo "✓ action-validator already installed: $$($$ACTION_VALIDATOR_BIN --version 2>&1 | head -1)"; \
+			INSTALL_ACTION_VALIDATOR=0; \
+		else \
+			echo "action-validator version mismatch (have: $$($$ACTION_VALIDATOR_BIN --version 2>&1 | head -1), want: v$$ACTION_VALIDATOR_VERSION). Reinstalling..."; \
+		fi; \
+	elif [ -f "$$ACTION_VALIDATOR_BIN" ]; then \
+		echo "action-validator binary exists but is not executable. Reinstalling..."; \
+	fi; \
+	if [ "$$INSTALL_ACTION_VALIDATOR" -eq 1 ]; then \
 		echo "Downloading action-validator v$$ACTION_VALIDATOR_VERSION..."; \
 		$(DETECT_OS_ARCH); \
 		URL="https://github.com/mpalmer/action-validator/releases/download/v$$ACTION_VALIDATOR_VERSION/action-validator_$${OS}_$${ARCH}"; \
