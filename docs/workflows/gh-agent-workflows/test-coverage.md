@@ -1,6 +1,6 @@
 # Test Coverage
 
-Find under-tested code and automatically add focused tests.
+Find under-tested code, with optional focused test additions via detector-fixer chaining.
 
 **Test Coverage Detector** identifies code paths with no or minimal test coverage by running coverage tools (when available) and analyzing recent changes for missing tests. Chain it to [Create PR from Issue](../detector-fixer-chaining.md) for a fully autonomous detect-and-fix loop. Most runs end with `noop`.
 
