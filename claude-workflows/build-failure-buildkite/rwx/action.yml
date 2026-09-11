@@ -126,7 +126,7 @@ runs:
       id: claude
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
-      uses: elastic/ai-github-claude-code-action@working-forks
+      uses: elastic/ai-github-claude-code-action@93b29e0893796474092432753830760c396fcf8c
       with:
         claude_code_oauth_token: ${{ inputs.claude-oauth-token }}
         github_token: ${{ inputs.github-token }}
