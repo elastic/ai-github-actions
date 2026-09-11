@@ -88,6 +88,19 @@ Template path: gh-agent-workflows/review-pr/example.yml
     }
 
 
+def test_extract_mentioned_slugs_ignores_html_comments() -> None:
+    page = """
+<!--
+Mentioned only in comment:
+gh-agent-workflows/ghost-workflow.md
+gh-agent-workflows/another-ghost/
+-->
+Visible mention: gh-agent-workflows/bug-hunter.md
+"""
+
+    assert check_nav_catalog.extract_mentioned_slugs(page) == {"bug-hunter"}
+
+
 def test_covered_slugs_includes_transitive_mentions(tmp_path: Path, monkeypatch) -> None:
     docs_dir = tmp_path / "docs" / "workflows" / "gh-agent-workflows"
     docs_dir.mkdir(parents=True)

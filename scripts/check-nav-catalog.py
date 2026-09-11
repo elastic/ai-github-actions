@@ -101,15 +101,17 @@ def extract_mentioned_slugs(page_content: str) -> set[str]:
     * Directory references:    ``gh-agent-workflows/<slug>/``
       (e.g. in curl install snippets: ``.../gh-agent-workflows/bug-hunter/example.yml``)
     """
+    active_page_content = strip_html_comments(page_content)
     link_slugs = {
         m.group(1)
         for m in re.finditer(
-            r"\bgh-agent-workflows/([a-z0-9-]+)\.md(?:[?#][^\s)\]\"']+)?", page_content
+            r"\bgh-agent-workflows/([a-z0-9-]+)\.md(?:[?#][^\s)\]\"']+)?",
+            active_page_content,
         )
     }
     dir_slugs = {
         m.group(1)
-        for m in re.finditer(r"\bgh-agent-workflows/([a-z0-9-]+)/", page_content)
+        for m in re.finditer(r"\bgh-agent-workflows/([a-z0-9-]+)/", active_page_content)
     }
     return link_slugs | dir_slugs
 
