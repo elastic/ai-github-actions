@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Extract errors and failures from GitHub Actions log files.
+Extract warnings, errors, and failures from GitHub Actions log files.
 
-Reads log files produced by fetch-workflow-logs.py and outputs each error/failure
+Reads log files produced by fetch-workflow-logs.py and outputs each warning/error/failure
 with surrounding context lines, suitable for agent analysis.
 
 Usage:
@@ -172,7 +172,9 @@ def emit_output(summary: dict, output_path: str | None) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Extract errors from GitHub Actions log files.")
+    parser = argparse.ArgumentParser(
+        description="Extract warnings, errors, and failures from GitHub Actions log files."
+    )
     parser.add_argument("log_path", nargs="?", default=None,
                         help="Directory or file containing log files")
     parser.add_argument("--context", type=int, default=5,
