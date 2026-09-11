@@ -14,7 +14,7 @@ Code changes. Docs don't. These agents make sure they stay in sync.
 
 Documentation rot is one of the most predictable problems in software engineering. A function gets renamed, a configuration flag gets deprecated, an onboarding step changes — and the docs that reference them quietly become wrong. Nobody notices until a new contributor follows the guide and hits a wall. We built the Docs Patrol agents to close that gap automatically.
 
-## [Docs Patrol](../../workflows/gh-agent-workflows/docs-patrol.md)
+## [Docs Patrol](../../workflows/gh-agent-workflows/docs-patrol-overview.md)
 
 This agent runs on a weekday schedule and scans for stale internal documentation — READMEs, inline docs, and any other documentation that lives inside the repository. It operates as a detector: it identifies places where the docs have drifted from the code. There is no dedicated fixer paired with it yet, so when it finds staleness it opens an issue describing what is out of date and what changed. A human still makes the call on how to update the wording, but the hard part — noticing the drift in the first place — is handled.
 
