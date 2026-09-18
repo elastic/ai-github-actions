@@ -119,27 +119,27 @@ for category in "${CATEGORIES[@]}"; do
   echo "## $(capitalize "$category")"
   echo ""
 
-  get_workflows "$category" | while read -r name; do
+  while read -r name; do
     if [[ "$DRY_RUN" == "true" ]]; then
       echo "  [dry-run] $name"
     elif gh workflow run "$name" --repo "$REPO" --ref "$REF" 2>/dev/null; then
+      total=$((total + 1))
+      succeeded=$((succeeded + 1))
       echo "  ✓ $name"
     else
+      total=$((total + 1))
+      failed=$((failed + 1))
       echo "  ✗ $name (dispatch failed)" >&2
     fi
-  done
+  done < <(get_workflows "$category")
 
   echo ""
 done
 
 if [[ "$DRY_RUN" == "false" ]]; then
-  # Re-count for summary (subshell above doesn't propagate counts)
-  for category in "${CATEGORIES[@]}"; do
-    case "$category" in
-      detectors) total=$((total + ${#DETECTORS[@]})) ;;
-      fixers)    total=$((total + ${#FIXERS[@]})) ;;
-      monitors)  total=$((total + ${#MONITORS[@]})) ;;
-    esac
-  done
   echo "Attempted to dispatch $total workflows across ${#CATEGORIES[@]} categories."
+  echo "Succeeded: $succeeded, Failed: $failed."
+  if [[ "$failed" -gt 0 ]]; then
+    exit 1
+  fi
 fi
