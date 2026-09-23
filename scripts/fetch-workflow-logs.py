@@ -22,19 +22,37 @@ import io
 import json
 import os
 import sys
-import urllib.request
 import zipfile
 
+import requests
 
-def github_api(path: str, token: str, accept: str = "application/vnd.github+json") -> bytes:
-    url = f"https://api.github.com{path}"
-    req = urllib.request.Request(url, headers={
+GITHUB_API_BASE = "https://api.github.com"
+DEFAULT_TIMEOUT_SECONDS = 30
+
+
+def _github_session(token: str, accept: str = "application/vnd.github+json") -> requests.Session:
+    session = requests.Session()
+    session.headers.update({
         "Authorization": f"Bearer {token}",
         "Accept": accept,
         "X-GitHub-Api-Version": "2022-11-28",
     })
-    with urllib.request.urlopen(req) as resp:
-        return resp.read()
+    return session
+
+
+def github_api(path: str, token: str, accept: str = "application/vnd.github+json",
+               *, params: dict | None = None, timeout: int = DEFAULT_TIMEOUT_SECONDS,
+               session: requests.Session | None = None) -> requests.Response:
+    url = f"{GITHUB_API_BASE}{path}"
+    owned_session = session is None
+    sess = session or _github_session(token, accept=accept)
+    try:
+        response = sess.get(url, params=params, timeout=timeout)
+        response.raise_for_status()
+        return response
+    finally:
+        if owned_session:
+            sess.close()
 
 
 def _normalize_until(until: str | None) -> str | None:
@@ -50,16 +68,20 @@ def _normalize_until(until: str | None) -> str | None:
 
 def _iter_workflow_run_pages(repo: str, workflow: str, token: str):
     """Yield workflow runs page-by-page in API order (newest-first)."""
-    page = 1
-    per_page = 100
-    while True:
-        path = f"/repos/{repo}/actions/workflows/{workflow}/runs?per_page={per_page}&page={page}"
-        data = json.loads(github_api(path, token))
-        batch = data.get("workflow_runs", [])
-        if not batch:
-            return
-        yield batch
-        page += 1
+    path = f"/repos/{repo}/actions/workflows/{workflow}/runs"
+    with _github_session(token) as session:
+        next_url = f"{GITHUB_API_BASE}{path}"
+        params = {"per_page": 100}
+        while next_url:
+            response = session.get(next_url, params=params, timeout=DEFAULT_TIMEOUT_SECONDS)
+            response.raise_for_status()
+            data = response.json()
+            batch = data.get("workflow_runs", [])
+            if not batch:
+                return
+            yield batch
+            next_url = response.links.get("next", {}).get("url")
+            params = None
 
 
 def _run_matches_conclusion(run: dict, conclusion: str | None) -> bool:
@@ -105,14 +127,14 @@ def download_run_logs(repo: str, run_id: int, token: str, output_dir: str) -> li
     run_dir = os.path.join(output_dir, str(run_id))
     os.makedirs(run_dir, exist_ok=True)
     try:
-        data = github_api(f"/repos/{repo}/actions/runs/{run_id}/logs", token,
-                          accept="application/vnd.github+json")
+        response = github_api(f"/repos/{repo}/actions/runs/{run_id}/logs", token,
+                              accept="application/vnd.github+json")
     except Exception as e:
         print(f"  Warning: could not download logs for run {run_id}: {e}", file=sys.stderr)
         return []
 
     saved = []
-    with zipfile.ZipFile(io.BytesIO(data)) as zf:
+    with zipfile.ZipFile(io.BytesIO(response.content)) as zf:
         for name in zf.namelist():
             if not name.endswith(".txt"):
                 continue

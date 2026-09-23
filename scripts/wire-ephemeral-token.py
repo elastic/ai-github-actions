@@ -14,6 +14,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import yaml
+
 MINTED_PREFIX = "steps.create-token.outputs.token || "
 
 # Longer fallback chains first so the short GH_AW_GITHUB_TOKEN suffix is not
@@ -31,8 +33,6 @@ REPLACEMENTS: tuple[tuple[str, str], ...] = (
     ),
 )
 
-ID_TOKEN_LINE = "      id-token: write"
-
 
 def wire_token_expressions(text: str) -> str:
     """Prefer minted step outputs in known GH-AW token fallback expressions."""
@@ -49,55 +49,46 @@ def wire_token_expressions(text: str) -> str:
     return "".join(rewritten)
 
 
-def _job_blocks(text: str) -> list[tuple[int, int]]:
-    """Return (start, end) line-index spans for top-level jobs.* blocks."""
-    lines = text.splitlines(keepends=True)
-    jobs_idx = None
-    for i, line in enumerate(lines):
-        if line == "jobs:\n" or line == "jobs:":
-            jobs_idx = i
-            break
-    if jobs_idx is None:
-        return []
-
-    starts: list[int] = []
-    for i in range(jobs_idx + 1, len(lines)):
-        line = lines[i]
-        if line.startswith("  ") and not line.startswith("    ") and line.strip().endswith(":"):
-            starts.append(i)
-            continue
-        if line and not line.startswith(" ") and line.strip():
-            break
-    spans: list[tuple[int, int]] = []
-    for i, start in enumerate(starts):
-        end = starts[i + 1] if i + 1 < len(starts) else len(lines)
-        spans.append((start, end))
-    return spans
+def _job_mints_token(job_definition: object) -> bool:
+    if not isinstance(job_definition, dict):
+        return False
+    steps = job_definition.get("steps")
+    if not isinstance(steps, list):
+        return False
+    return any(
+        isinstance(step, dict) and step.get("id") == "create-token"
+        for step in steps
+    )
 
 
 def ensure_id_token_write(text: str) -> str:
     """Add id-token: write to permissions of jobs that mint create-token."""
-    lines = text.splitlines(keepends=True)
-    spans = _job_blocks(text)
-    inserts: list[tuple[int, str]] = []
-    for start, end in spans:
-        block = "".join(lines[start:end])
-        if "id: create-token" not in block:
-            continue
-        if "id-token: write" in block:
-            continue
-        perm_rel = None
-        for j, line in enumerate(lines[start:end]):
-            if line == "    permissions:\n":
-                perm_rel = j
-                break
-        if perm_rel is None:
-            continue
-        inserts.append((start + perm_rel + 1, ID_TOKEN_LINE + "\n"))
+    data = yaml.safe_load(text)
+    if not isinstance(data, dict):
+        raise ValueError("Expected a top-level YAML mapping")
 
-    for idx, line in sorted(inserts, reverse=True):
-        lines.insert(idx, line)
-    return "".join(lines)
+    jobs = data.get("jobs")
+    if not isinstance(jobs, dict):
+        raise ValueError("Expected a top-level jobs mapping")
+
+    changed = False
+    for job_name, job_definition in jobs.items():
+        if not _job_mints_token(job_definition):
+            continue
+        assert isinstance(job_definition, dict)
+        permissions = job_definition.get("permissions")
+        if not isinstance(permissions, dict):
+            raise ValueError(
+                f"Job '{job_name}' mints create-token but has no permissions mapping"
+            )
+        if permissions.get("id-token") != "write":
+            permissions["id-token"] = "write"
+            changed = True
+
+    if not changed:
+        return text
+
+    return yaml.safe_dump(data, sort_keys=False)
 
 
 def process_lock_file(path: Path) -> bool:
