@@ -18,6 +18,7 @@ Each run's logs are saved as individual .txt files under output-dir/<run_id>/.
 """
 
 import argparse
+from datetime import datetime, timezone
 import io
 import json
 import os
@@ -48,6 +49,25 @@ def _normalize_until(until: str | None) -> str | None:
     return until + "T23:59:59Z"
 
 
+def _normalize_since(since: str | None) -> str | None:
+    """Normalize --since to a start-of-day timestamp when a date-only value is given."""
+    if since is None:
+        return None
+    # If already a full datetime (contains 'T'), use as-is
+    if "T" in since:
+        return since
+    # Date-only input (e.g. "2025-01-01"): treat as start of that UTC day
+    return since + "T00:00:00Z"
+
+
+def _parse_iso8601_utc(value: str) -> datetime:
+    """Parse ISO 8601 timestamp into timezone-aware UTC datetime."""
+    dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
 def _iter_workflow_run_pages(repo: str, workflow: str, token: str):
     """Yield workflow runs page-by-page in API order (newest-first)."""
     page = 1
@@ -71,23 +91,24 @@ def _run_matches_conclusion(run: dict, conclusion: str | None) -> bool:
 def _is_before_since_boundary(run: dict, since: str | None) -> bool:
     if since is None:
         return False
-    return run.get("created_at", "") < since
+    return _parse_iso8601_utc(run.get("created_at", "")) < _parse_iso8601_utc(since)
 
 
 def _is_after_until_boundary(run: dict, until: str | None) -> bool:
     if until is None:
         return False
-    return run.get("created_at", "") > until
+    return _parse_iso8601_utc(run.get("created_at", "")) > _parse_iso8601_utc(until)
 
 
 def list_workflow_runs(repo: str, workflow: str, token: str, since: str | None, until: str | None,
                        conclusion: str | None, last: int) -> list[dict]:
     """Return up to `last` workflow runs matching the filters."""
+    since_normalized = _normalize_since(since)
     until_normalized = _normalize_until(until)
     runs = []
     for batch in _iter_workflow_run_pages(repo=repo, workflow=workflow, token=token):
         for run in batch:
-            if _is_before_since_boundary(run, since):
+            if _is_before_since_boundary(run, since_normalized):
                 # Runs are sorted newest-first; once we go past since, stop paging
                 return runs
             if not _run_matches_conclusion(run, conclusion):
