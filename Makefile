@@ -72,7 +72,7 @@ help:
 	@echo "  setup-action-validator - Install action-validator tool"
 	@echo "  setup-gh             - Check GitHub CLI installation"
 	@echo "  lint-workflows       - Validate GitHub Actions workflow files"
-	@echo "  lint-actions         - Validate GitHub Actions composite action files"
+	@echo "  lint-actions         - Validate Claude workflow composite action files"
 	@echo "  sync                 - Run scripts/dogfood.sh to copy shims, prompts, and fragments"
 	@echo "  compile              - Sync files + compile agentic workflows to lock files"
 	@echo "  build                - No-op (workflows use gh-aw setup action, not local build)"
@@ -267,7 +267,7 @@ setup-action-validator:
 	fi
 
 lint-actions: setup-action-validator
-	@echo "Validating GitHub Actions composite action files..."
+	@echo "Validating Claude workflow composite action files..."
 	@ACTION_VALIDATOR="bin/action-validator"; \
 	find claude-workflows base -name "action.yml" -o -name "action.yaml" 2>/dev/null | while read -r file; do \
 		echo "Checking $$file..."; \

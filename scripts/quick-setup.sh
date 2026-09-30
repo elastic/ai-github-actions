@@ -166,7 +166,7 @@ fi
 
 if [ "$dry_run" = true ]; then
   echo "dry-run: git fetch origin $default_branch"
-  echo "dry-run: git checkout -b $branch origin/$default_branch"
+  echo "dry-run: git checkout existing '$branch' or create it from origin/$default_branch"
 else
   git fetch --quiet origin "$default_branch"
   if git show-ref --verify --quiet "refs/heads/$branch"; then
