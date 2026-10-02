@@ -12,35 +12,36 @@ set -euo pipefail
 
 REPO="elastic/ai-github-actions"
 REF="main"
+WORKFLOWS_DIR=".github/workflows"
 
 # --- Categories ---
 
 DETECTORS=(
-  "Trigger Autonomy Atomicity Analyzer"
-  "Trigger Breaking Change Detector"
-  "Trigger Bug Hunter"
-  "Trigger Code Duplication Detector"
-  "Trigger Docs Patrol"
-  "Trigger Framework Best Practices"
-  "Trigger Information Architecture"
-  "Trigger Newbie Contributor Patrol"
-  "Trigger Prompt Audit"
-  "Trigger Stale Issues Investigator"
-  "Trigger Test Coverage Detector"
-  "Trigger Text Auditor"
-  "Trigger UX Design Patrol"
+  "trigger-autonomy-atomicity-analyzer.yml"
+  "trigger-breaking-change-detector.yml"
+  "trigger-bug-hunter.yml"
+  "trigger-code-duplication-detector.yml"
+  "trigger-docs-patrol.yml"
+  "trigger-framework-best-practices.yml"
+  "trigger-information-architecture.yml"
+  "trigger-newbie-contributor-patrol.yml"
+  "trigger-prompt-audit.yml"
+  "trigger-stale-issues-investigator.yml"
+  "trigger-test-coverage-detector.yml"
+  "trigger-text-auditor.yml"
+  "trigger-ux-design-patrol.yml"
 )
 
 FIXERS=(
-  "Trigger Refactor Opportunist"
-  "Trigger Stale Issues Remediator"
+  "trigger-refactor-opportunist.yml"
+  "trigger-stale-issues-remediator.yml"
 )
 
 MONITORS=(
-  "Trigger Agent Suggestions"
-  "Trigger Estc Downstream Health"
-  "Trigger Product Manager Impersonator"
-  "Trigger Project Summary"
+  "trigger-agent-suggestions.yml"
+  "trigger-internal-downstream-health.yml"
+  "trigger-product-manager-impersonator.yml"
+  "trigger-project-summary.yml"
 )
 
 ALL_CATEGORIES=(detectors fixers monitors)
@@ -98,13 +99,21 @@ capitalize() {
   echo "$1" | awk '{print toupper(substr($0,1,1)) substr($0,2)}'
 }
 
+validate_workflow_target() {
+  local workflow_file="$1"
+  if [[ ! -f "$WORKFLOWS_DIR/$workflow_file" ]]; then
+    echo "  ✗ missing workflow file: $WORKFLOWS_DIR/$workflow_file" >&2
+    return 1
+  fi
+}
+
 # --- Main ---
 
 if [[ "$LIST_ONLY" == "true" ]]; then
   for category in "${CATEGORIES[@]}"; do
     echo "## $(capitalize "$category")"
-    get_workflows "$category" | while read -r name; do
-      echo "  $name"
+    get_workflows "$category" | while read -r workflow_file; do
+      echo "  $workflow_file"
     done
     echo ""
   done
@@ -119,13 +128,17 @@ for category in "${CATEGORIES[@]}"; do
   echo "## $(capitalize "$category")"
   echo ""
 
-  get_workflows "$category" | while read -r name; do
+  get_workflows "$category" | while read -r workflow_file; do
+    if ! validate_workflow_target "$workflow_file"; then
+      exit 1
+    fi
+
     if [[ "$DRY_RUN" == "true" ]]; then
-      echo "  [dry-run] $name"
-    elif gh workflow run "$name" --repo "$REPO" --ref "$REF" 2>/dev/null; then
-      echo "  ✓ $name"
+      echo "  [dry-run] $workflow_file"
+    elif gh workflow run "$workflow_file" --repo "$REPO" --ref "$REF" 2>/dev/null; then
+      echo "  ✓ $workflow_file"
     else
-      echo "  ✗ $name (dispatch failed)" >&2
+      echo "  ✗ $workflow_file (dispatch failed)" >&2
     fi
   done
 
