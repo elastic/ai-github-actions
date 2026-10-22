@@ -183,7 +183,7 @@ if [ -n "$FILTER" ]; then
   echo "$THREADS" | jq --arg author "$FILTER" '
     map(select(
       .isResolved == false and
-      .comments.nodes | any(.author.login == $author)
+      (.comments.nodes | any(.author.login == $author))
     ))'
 else
   echo "$THREADS"

@@ -191,3 +191,21 @@ def test_gh_get_review_threads_paginates_threads_and_comments(tmp_path):
     assert threads[0]["id"] == "thread-1"
     assert len(threads[0]["comments"]["nodes"]) == 51
     assert threads[1]["id"] == "thread-2"
+
+
+def test_gh_get_review_threads_filters_by_author_and_unresolved(tmp_path):
+    env = _env_with_stub(tmp_path)
+    env["MENTION_REPO"] = "elastic/ai-github-actions"
+    env["MENTION_PR_NUMBER"] = "714"
+
+    result = subprocess.run(
+        ["bash", str(GET_REVIEW_THREADS), "reviewer"],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    threads = json.loads(result.stdout)
+
+    assert len(threads) == 1
+    assert threads[0]["id"] == "thread-1"
