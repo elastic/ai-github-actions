@@ -51,8 +51,8 @@ Because Claude reads `AGENTS.md` automatically, you can reference documentation 
 | `issue-title` | Title for the created issue | No | `""` (defaults to `Report - YYYY-MM-DD` at runtime) |
 | `issue-labels` | Comma-separated labels for the issue | No | `report,automated` |
 | `mcp-servers` | MCP server configuration JSON | No | See main README |
-| `repository-owner` | Repository owner | No | Auto-detected |
-| `repository-name` | Repository name | No | Auto-detected |
+| `repository-owner` | Repository owner | No | Auto-detected (`github.repository_owner`) |
+| `repository-name` | Repository name | No | Auto-detected (`github.event.repository.name`) |
 | `assignee` | Comma-separated GitHub usernames to assign the issue | No | `""` |
 
 ## Outputs
