@@ -64,6 +64,36 @@ def test_list_workflow_runs_stops_at_since_boundary_before_conclusion_filter(mon
     assert len(calls) == 1
 
 
+def test_list_workflow_runs_compares_since_offset_chronologically(monkeypatch):
+    module = _load_module()
+    calls = []
+
+    def fake_github_api(path, token, accept="application/vnd.github+json"):
+        calls.append(path)
+        if path.endswith("page=1"):
+            return (
+                b'{"workflow_runs":['
+                b'{"id":102,"created_at":"2025-01-01T00:00:00Z","conclusion":"failure"},'
+                b'{"id":101,"created_at":"2024-12-31T23:00:00Z","conclusion":"failure"}'
+                b']}'
+            )
+        return b'{"workflow_runs":[{"id":100,"created_at":"2024-12-31T22:59:59Z","conclusion":"failure"}]}'
+
+    monkeypatch.setattr(module, "github_api", fake_github_api)
+    runs = module.list_workflow_runs(
+        repo="elastic/ai-github-actions",
+        workflow="ci.yml",
+        token="x",
+        since="2025-01-01T01:00:00+02:00",
+        until=None,
+        conclusion="failure",
+        last=20,
+    )
+
+    assert [run["id"] for run in runs] == [102, 101]
+    assert len(calls) == 2
+
+
 def test_list_workflow_runs_inclusive_date_only_until(monkeypatch):
     module = _load_module()
 
@@ -85,6 +115,34 @@ def test_list_workflow_runs_inclusive_date_only_until(monkeypatch):
         token="x",
         since=None,
         until="2025-01-01",
+        conclusion="failure",
+        last=20,
+    )
+
+    assert [run["id"] for run in runs] == [2, 1]
+
+
+def test_list_workflow_runs_compares_until_offset_chronologically(monkeypatch):
+    module = _load_module()
+
+    def fake_github_api(path, token, accept="application/vnd.github+json"):
+        return (
+            b'{"workflow_runs":['
+            b'{"id":3,"created_at":"2025-01-01T00:00:00Z","conclusion":"failure"},'
+            b'{"id":2,"created_at":"2024-12-31T23:00:00Z","conclusion":"failure"},'
+            b'{"id":1,"created_at":"2024-12-31T22:59:59Z","conclusion":"failure"}'
+            b']}'
+            if path.endswith("page=1")
+            else b'{"workflow_runs":[]}'
+        )
+
+    monkeypatch.setattr(module, "github_api", fake_github_api)
+    runs = module.list_workflow_runs(
+        repo="elastic/ai-github-actions",
+        workflow="ci.yml",
+        token="x",
+        since=None,
+        until="2025-01-01T01:00:00+02:00",
         conclusion="failure",
         last=20,
     )

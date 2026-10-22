@@ -24,6 +24,7 @@ import os
 import sys
 import urllib.request
 import zipfile
+from datetime import datetime, time, timezone
 
 
 def github_api(path: str, token: str, accept: str = "application/vnd.github+json") -> bytes:
@@ -37,15 +38,26 @@ def github_api(path: str, token: str, accept: str = "application/vnd.github+json
         return resp.read()
 
 
-def _normalize_until(until: str | None) -> str | None:
-    """Normalize --until to an inclusive end-of-day timestamp when a date-only value is given."""
+def _parse_iso_datetime(value: str, *, date_only_time: time) -> datetime:
+    if "T" not in value:
+        return datetime.combine(datetime.fromisoformat(value).date(), date_only_time, tzinfo=timezone.utc)
+
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
+def _parse_since(since: str | None) -> datetime | None:
+    if since is None:
+        return None
+    return _parse_iso_datetime(since, date_only_time=time.min)
+
+
+def _parse_until(until: str | None) -> datetime | None:
     if until is None:
         return None
-    # If already a full datetime (contains 'T'), use as-is
-    if "T" in until:
-        return until
-    # Date-only input (e.g. "2025-01-01"): treat as end of that UTC day
-    return until + "T23:59:59Z"
+    return _parse_iso_datetime(until, date_only_time=time.max)
 
 
 def _iter_workflow_run_pages(repo: str, workflow: str, token: str):
@@ -68,31 +80,37 @@ def _run_matches_conclusion(run: dict, conclusion: str | None) -> bool:
     return run.get("conclusion") == conclusion
 
 
-def _is_before_since_boundary(run: dict, since: str | None) -> bool:
+def _run_created_at(run: dict) -> datetime:
+    return _parse_iso_datetime(run["created_at"], date_only_time=time.min)
+
+
+def _is_before_since_boundary(created_at: datetime, since: datetime | None) -> bool:
     if since is None:
         return False
-    return run.get("created_at", "") < since
+    return created_at < since
 
 
-def _is_after_until_boundary(run: dict, until: str | None) -> bool:
+def _is_after_until_boundary(created_at: datetime, until: datetime | None) -> bool:
     if until is None:
         return False
-    return run.get("created_at", "") > until
+    return created_at > until
 
 
 def list_workflow_runs(repo: str, workflow: str, token: str, since: str | None, until: str | None,
                        conclusion: str | None, last: int) -> list[dict]:
     """Return up to `last` workflow runs matching the filters."""
-    until_normalized = _normalize_until(until)
+    since_boundary = _parse_since(since)
+    until_boundary = _parse_until(until)
     runs = []
     for batch in _iter_workflow_run_pages(repo=repo, workflow=workflow, token=token):
         for run in batch:
-            if _is_before_since_boundary(run, since):
+            created_at = _run_created_at(run)
+            if _is_before_since_boundary(created_at, since_boundary):
                 # Runs are sorted newest-first; once we go past since, stop paging
                 return runs
             if not _run_matches_conclusion(run, conclusion):
                 continue
-            if _is_after_until_boundary(run, until_normalized):
+            if _is_after_until_boundary(created_at, until_boundary):
                 continue
             runs.append(run)
             if len(runs) >= last:
