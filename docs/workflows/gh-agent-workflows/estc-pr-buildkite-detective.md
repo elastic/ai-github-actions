@@ -53,9 +53,18 @@ if: >-
 - Proceeds only when failed script jobs are found, writes summaries/log tails under `/tmp/gh-aw/`, and analyzes those logs.
 - Performs deduplication against the latest prior detective comment; emits `noop` instead of a duplicate diagnosis.
 
+## Comment lifecycle
+
+The workflow keeps **at most one detective comment** per PR:
+
+- Every detective comment includes an invisible HTML marker: `<!-- gh-aw-detective: estc-pr-buildkite-detective -->`.
+- On each run the agent searches PR comments for this marker to find the existing detective comment.
+- **Same diagnosis**: the agent emits `noop`; the existing comment is left untouched.
+- **New diagnosis**: the agent calls `add_comment` with `reply_to_id` set to the existing comment's ID, updating it in place. If no prior comment exists, a new one is created.
+
 ## Safe outputs
 
-- `add-comment` — post a PR comment with root cause and remediation (max 1, older detective comments hidden)
+- `add-comment` — post or update a PR comment with root cause and remediation (max 1 per run; uses `reply_to_id` to update existing detective comment in place)
 - `noop` — emitted when:
   - the agent starts but Buildkite failure data is unavailable, or
   - diagnosis is unchanged from the most recent detective report
