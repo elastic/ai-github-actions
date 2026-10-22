@@ -269,7 +269,7 @@ setup-action-validator:
 lint-actions: setup-action-validator
 	@echo "Validating GitHub Actions composite action files..."
 	@ACTION_VALIDATOR="bin/action-validator"; \
-	find claude-workflows base -name "action.yml" -o -name "action.yaml" 2>/dev/null | while read -r file; do \
+	git ls-files '**/action.yml' '**/action.yaml' | while read -r file; do \
 		echo "Checking $$file..."; \
 		$$ACTION_VALIDATOR "$$file" || exit 1; \
 	done
