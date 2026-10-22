@@ -13,28 +13,96 @@ Options:
   --conclusion STATUS   Filter by conclusion: success, failure, cancelled, skipped, any (default: failure)
   --output-dir DIR      Directory to save logs (default: /tmp/gh-aw/logs)
   --token TOKEN         GitHub token (default: $GH_TOKEN or $GITHUB_TOKEN)
+  --retries N            Retries for transient API failures (default: 3)
+  --backoff-seconds N   Initial retry backoff in seconds (default: 1)
+  --timeout N            HTTP request timeout in seconds (default: 30)
 
 Each run's logs are saved as individual .txt files under output-dir/<run_id>/.
 """
 
 import argparse
+import datetime
 import io
 import json
 import os
 import sys
+import time
+import urllib.error
 import urllib.request
 import zipfile
+from email.utils import parsedate_to_datetime
 
 
-def github_api(path: str, token: str, accept: str = "application/vnd.github+json") -> bytes:
+DEFAULT_RETRIES = 3
+DEFAULT_BACKOFF_SECONDS = 1.0
+DEFAULT_TIMEOUT = 30.0
+
+
+class ApiResponse(bytes):
+    """Response bytes with the number of HTTP attempts used to fetch them."""
+
+    def __new__(cls, data: bytes, attempts: int):
+        response = super().__new__(cls, data)
+        response.attempts = attempts
+        return response
+
+
+def _request(path: str, token: str, accept: str, retries: int,
+             backoff_seconds: float, timeout: float) -> bytes:
+    kwargs = {
+        "accept": accept,
+        "retries": retries,
+        "backoff_seconds": backoff_seconds,
+        "timeout": timeout,
+    }
+    if (retries, backoff_seconds, timeout) == (
+            DEFAULT_RETRIES, DEFAULT_BACKOFF_SECONDS, DEFAULT_TIMEOUT):
+        return github_api(path, token, accept=accept)
+    return github_api(path, token, **kwargs)
+
+
+def github_api(path: str, token: str, accept: str = "application/vnd.github+json",
+               retries: int = DEFAULT_RETRIES,
+               backoff_seconds: float = DEFAULT_BACKOFF_SECONDS,
+               timeout: float = DEFAULT_TIMEOUT) -> bytes:
     url = f"https://api.github.com{path}"
     req = urllib.request.Request(url, headers={
         "Authorization": f"Bearer {token}",
         "Accept": accept,
         "X-GitHub-Api-Version": "2022-11-28",
     })
-    with urllib.request.urlopen(req) as resp:
-        return resp.read()
+    for attempt in range(1, retries + 2):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                return ApiResponse(resp.read(), attempt)
+        except urllib.error.HTTPError as error:
+            if error.code != 429 and not 500 <= error.code < 600:
+                error.attempts = attempt
+                print(f"  Request failed on attempt {attempt}: {error}", file=sys.stderr)
+                raise
+            if attempt > retries:
+                error.attempts = attempt
+                print(f"  Request failed after {attempt} attempt(s): {error}", file=sys.stderr)
+                raise
+            delay = backoff_seconds * (2 ** (attempt - 1))
+            retry_after = error.headers.get("Retry-After")
+            if retry_after:
+                try:
+                    delay = max(0, float(retry_after))
+                except ValueError:
+                    try:
+                        delay = max(0, (parsedate_to_datetime(retry_after) -
+                                        datetime.datetime.now(datetime.timezone.utc)).total_seconds())
+                    except (TypeError, ValueError):
+                        pass
+            print(f"  Request attempt {attempt} failed ({error.code}); retrying in {delay:g}s",
+                  file=sys.stderr)
+            time.sleep(delay)
+        except Exception as error:
+            error.attempts = attempt
+            print(f"  Request failed on attempt {attempt}: {error}", file=sys.stderr)
+            raise
+    raise RuntimeError("unreachable")
 
 
 def _normalize_until(until: str | None) -> str | None:
@@ -48,13 +116,17 @@ def _normalize_until(until: str | None) -> str | None:
     return until + "T23:59:59Z"
 
 
-def _iter_workflow_run_pages(repo: str, workflow: str, token: str):
+def _iter_workflow_run_pages(repo: str, workflow: str, token: str,
+                             retries: int = DEFAULT_RETRIES,
+                             backoff_seconds: float = DEFAULT_BACKOFF_SECONDS,
+                             timeout: float = DEFAULT_TIMEOUT):
     """Yield workflow runs page-by-page in API order (newest-first)."""
     page = 1
     per_page = 100
     while True:
         path = f"/repos/{repo}/actions/workflows/{workflow}/runs?per_page={per_page}&page={page}"
-        data = json.loads(github_api(path, token))
+        data = json.loads(_request(path, token, "application/vnd.github+json", retries,
+                                   backoff_seconds, timeout))
         batch = data.get("workflow_runs", [])
         if not batch:
             return
@@ -81,11 +153,16 @@ def _is_after_until_boundary(run: dict, until: str | None) -> bool:
 
 
 def list_workflow_runs(repo: str, workflow: str, token: str, since: str | None, until: str | None,
-                       conclusion: str | None, last: int) -> list[dict]:
+                       conclusion: str | None, last: int,
+                       retries: int = DEFAULT_RETRIES,
+                       backoff_seconds: float = DEFAULT_BACKOFF_SECONDS,
+                       timeout: float = DEFAULT_TIMEOUT) -> list[dict]:
     """Return up to `last` workflow runs matching the filters."""
     until_normalized = _normalize_until(until)
     runs = []
-    for batch in _iter_workflow_run_pages(repo=repo, workflow=workflow, token=token):
+    for batch in _iter_workflow_run_pages(repo=repo, workflow=workflow, token=token,
+                                          retries=retries, backoff_seconds=backoff_seconds,
+                                          timeout=timeout):
         for run in batch:
             if _is_before_since_boundary(run, since):
                 # Runs are sorted newest-first; once we go past since, stop paging
@@ -100,14 +177,24 @@ def list_workflow_runs(repo: str, workflow: str, token: str, since: str | None, 
     return runs
 
 
-def download_run_logs(repo: str, run_id: int, token: str, output_dir: str) -> list[str]:
+def download_run_logs(repo: str, run_id: int, token: str, output_dir: str,
+                      retries: int = DEFAULT_RETRIES,
+                      backoff_seconds: float = DEFAULT_BACKOFF_SECONDS,
+                      timeout: float = DEFAULT_TIMEOUT,
+                      metadata: dict | None = None) -> list[str]:
     """Download and unzip logs for a run. Returns list of saved file paths."""
     run_dir = os.path.join(output_dir, str(run_id))
     os.makedirs(run_dir, exist_ok=True)
     try:
-        data = github_api(f"/repos/{repo}/actions/runs/{run_id}/logs", token,
-                          accept="application/vnd.github+json")
+        data = _request(f"/repos/{repo}/actions/runs/{run_id}/logs", token,
+                        "application/vnd.github+json", retries, backoff_seconds, timeout)
+        if metadata is not None:
+            metadata["attempts"] = getattr(data, "attempts", 1)
+            metadata["final_error"] = None
     except Exception as e:
+        if metadata is not None:
+            metadata["attempts"] = getattr(e, "attempts", retries + 1)
+            metadata["final_error"] = str(e)
         print(f"  Warning: could not download logs for run {run_id}: {e}", file=sys.stderr)
         return []
 
@@ -141,6 +228,12 @@ def _parse_args() -> argparse.Namespace:
                         help="Directory to save logs (default: /tmp/gh-aw/logs)")
     parser.add_argument("--token", default=os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN", ""),
                         help="GitHub token (default: $GH_TOKEN or $GITHUB_TOKEN)")
+    parser.add_argument("--retries", type=int, default=DEFAULT_RETRIES,
+                        help="Number of retries for transient API failures (default: 3)")
+    parser.add_argument("--backoff-seconds", type=float, default=DEFAULT_BACKOFF_SECONDS,
+                        help="Initial retry backoff in seconds (default: 1)")
+    parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT,
+                        help="HTTP request timeout in seconds (default: 30)")
     return parser.parse_args()
 
 
@@ -151,10 +244,17 @@ def _validate_args(args: argparse.Namespace) -> None:
     if not args.token:
         print("Error: --token is required (or set $GH_TOKEN / $GITHUB_TOKEN)", file=sys.stderr)
         sys.exit(1)
+    if args.retries < 0 or args.backoff_seconds < 0 or args.timeout <= 0:
+        print("Error: --retries and --backoff-seconds must be non-negative, and --timeout must be positive",
+              file=sys.stderr)
+        sys.exit(1)
 
 
 def _fetch_runs(args: argparse.Namespace) -> list[dict]:
     conclusion_filter = None if args.conclusion == "any" else args.conclusion
+    retries = getattr(args, "retries", DEFAULT_RETRIES)
+    backoff_seconds = getattr(args, "backoff_seconds", DEFAULT_BACKOFF_SECONDS)
+    timeout = getattr(args, "timeout", DEFAULT_TIMEOUT)
 
     print(f"Listing runs for {args.workflow} in {args.repo}...", file=sys.stderr)
     return list_workflow_runs(
@@ -165,6 +265,9 @@ def _fetch_runs(args: argparse.Namespace) -> list[dict]:
         until=args.until,
         conclusion=conclusion_filter,
         last=args.last,
+        retries=retries,
+        backoff_seconds=backoff_seconds,
+        timeout=timeout,
     )
 
 
@@ -173,19 +276,26 @@ def _download_runs(args: argparse.Namespace, runs: list[dict]) -> list[dict]:
     os.makedirs(args.output_dir, exist_ok=True)
 
     results = []
+    retries = getattr(args, "retries", DEFAULT_RETRIES)
+    backoff_seconds = getattr(args, "backoff_seconds", DEFAULT_BACKOFF_SECONDS)
+    timeout = getattr(args, "timeout", DEFAULT_TIMEOUT)
     for run in runs:
         run_id = run["id"]
         created = run.get("created_at", "")
         conclusion = run.get("conclusion", "")
         url = run.get("html_url", "")
         print(f"  Run {run_id} ({conclusion}, {created}): {url}", file=sys.stderr)
-        files = download_run_logs(args.repo, run_id, args.token, args.output_dir)
+        fetch_metadata = {}
+        files = download_run_logs(args.repo, run_id, args.token, args.output_dir,
+                                  retries=retries, backoff_seconds=backoff_seconds,
+                                  timeout=timeout, metadata=fetch_metadata)
         results.append({
             "run_id": run_id,
             "conclusion": conclusion,
             "created_at": created,
             "html_url": url,
             "log_files": files,
+            "fetch": fetch_metadata,
         })
     return results
 
