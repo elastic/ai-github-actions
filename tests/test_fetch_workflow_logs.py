@@ -92,6 +92,33 @@ def test_list_workflow_runs_inclusive_date_only_until(monkeypatch):
     assert [run["id"] for run in runs] == [2, 1]
 
 
+def test_list_workflow_runs_since_with_timezone_offset(monkeypatch):
+    module = _load_module()
+
+    def fake_github_api(path, token, accept="application/vnd.github+json"):
+        if path.endswith("page=1"):
+            return (
+                b'{"workflow_runs":['
+                b'{"id":2,"created_at":"2025-01-01T05:00:00Z","conclusion":"failure"},'
+                b'{"id":1,"created_at":"2025-01-01T04:30:00Z","conclusion":"failure"}'
+                b']}'
+            )
+        return b'{"workflow_runs":[]}'
+
+    monkeypatch.setattr(module, "github_api", fake_github_api)
+    runs = module.list_workflow_runs(
+        repo="elastic/ai-github-actions",
+        workflow="ci.yml",
+        token="x",
+        since="2025-01-01T00:00:00-05:00",
+        until=None,
+        conclusion="failure",
+        last=20,
+    )
+
+    assert [run["id"] for run in runs] == [2]
+
+
 def test_conclusion_any_in_fetch_runs(monkeypatch, capsys):
     module = _load_module()
 
