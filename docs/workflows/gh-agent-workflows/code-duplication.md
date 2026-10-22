@@ -1,6 +1,6 @@
 # Code Duplication
 
-Find duplicate and misplaced functions, then consolidate them automatically.
+Find duplicate and misplaced functions, with optional automated consolidation via detector-fixer chaining.
 
 **Code Duplication Detector** scans source files to find semantically related functions that live in different files, duplicate implementations of the same logic, and functions that belong in a different module. Chain it to [Create PR from Issue](../detector-fixer-chaining.md) for a fully autonomous detect-and-fix loop. Most runs end with `noop`.
 
