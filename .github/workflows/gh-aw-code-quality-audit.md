@@ -18,6 +18,8 @@ imports:
   - gh-aw-fragments/code-quality-audit.md
 engine:
   id: copilot
+  # Required on gh-aw >= v0.91.x: BYOK Copilot disables native web-fetch unless SDK mode is on.
+  copilot-sdk: true
   model: ${{ inputs.model }}
 on:
   stale-check: false

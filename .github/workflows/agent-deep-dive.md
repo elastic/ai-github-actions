@@ -12,6 +12,8 @@ imports:
   - gh-aw-fragments/scheduled-audit.md
 engine:
   id: copilot
+  # Required on gh-aw >= v0.91.x: BYOK Copilot disables native web-fetch unless SDK mode is on.
+  copilot-sdk: true
   model: gpt-5.3-codex
 on:
   stale-check: false

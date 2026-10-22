@@ -1,13 +1,3 @@
----
-safe-outputs:
-  create-issue:
-    max: 1
-    title-prefix: "${{ inputs.title-prefix }} "
-    close-older-key: "${{ inputs.title-prefix }}"
-    close-older-issues: ${{ inputs.close-older-issues }}
-    expires: 7d
----
-
 ## create-issue Limitations
 
 - **Title**: Max 128 characters. Sanitized (special characters escaped).

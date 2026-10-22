@@ -10,6 +10,8 @@ imports:
   - gh-aw-fragments/safe-output-add-comment-issue.md
 engine:
   id: copilot
+  # Required on gh-aw >= v0.91.x: BYOK Copilot disables native web-fetch unless SDK mode is on.
+  copilot-sdk: true
   model: ${{ inputs.model }}
   concurrency:
     group: "gh-aw-copilot-${{ github.workflow }}-duplicate-issue-detector-${{ github.event.issue.number }}"

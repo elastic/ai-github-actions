@@ -14,6 +14,8 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
+  # Required on gh-aw >= v0.91.x: BYOK Copilot disables native web-fetch unless SDK mode is on.
+  copilot-sdk: true
   model: ${{ inputs.model }}
 on:
   workflow_call:
