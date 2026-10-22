@@ -62,7 +62,10 @@ Default workflows:
 
 Use `--workflows` (comma-separated) to override the defaults, `--skip-secret` to set the
 secret manually, `--continuous-improvement` to also install selected continuous improvement
-workflows, or `--repo OWNER/REPO` when auto-detection is not available.
+workflows, or `--repo OWNER/REPO` when auto-detection is not available. When
+`--repo` is provided, it must match the checked-out repository's `origin`
+remote. Use `--allow-repo-mismatch` only for intentional cross-repository
+setups.
 
 `--continuous-improvement` adds:
 - `bug-hunter`

@@ -4,7 +4,7 @@
 # Usage:
 #   ./scripts/quick-setup.sh [--repo OWNER/REPO] [--branch NAME]
 #                            [--workflows "pr-review,issue-triage,..."]
-#                            [--set-secret] [--dry-run]
+#                            [--allow-repo-mismatch] [--dry-run]
 
 set -euo pipefail
 
@@ -13,6 +13,7 @@ repo=""
 workflows_csv=""
 continuous_improvement=false
 dry_run=false
+allow_repo_mismatch=false
 
 usage() {
   cat <<'EOF'
@@ -25,6 +26,8 @@ Options:
   --continuous-improvement
                         Add recommended continuous improvement workflows
   --dry-run             Print actions without making changes
+  --allow-repo-mismatch
+                        Allow --repo to differ from the local origin
   -h, --help            Show this help
 EOF
 }
@@ -49,6 +52,10 @@ while [ $# -gt 0 ]; do
       ;;
     --dry-run)
       dry_run=true
+      shift
+      ;;
+    --allow-repo-mismatch)
+      allow_repo_mismatch=true
       shift
       ;;
     -h|--help)
@@ -91,13 +98,40 @@ if ! gh auth status -h github.com >/dev/null 2>&1; then
   exit 1
 fi
 
+local_repo=""
+origin_url="$(git remote get-url origin 2>/dev/null || true)"
+case "$origin_url" in
+  git@github.com:*)
+    local_repo="${origin_url#git@github.com:}"
+    ;;
+  http://github.com/*|https://github.com/*|ssh://git@github.com/*)
+    local_repo="${origin_url#*github.com/}"
+    ;;
+esac
+local_repo="${local_repo%.git}"
+if [ -z "$local_repo" ]; then
+  local_repo="$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || true)"
+fi
+
 if [ -z "$repo" ]; then
-  repo="$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null || true)"
+  repo="$local_repo"
 fi
 
 if [ -z "$repo" ]; then
   echo "Unable to determine repository. Use --repo OWNER/REPO." >&2
   exit 1
+fi
+
+if [ "$allow_repo_mismatch" = false ]; then
+  if [ -z "$local_repo" ]; then
+    echo "Unable to determine the checked-out repository from origin. Use --allow-repo-mismatch to bypass this guard." >&2
+    exit 1
+  fi
+  if [ "$(printf '%s' "$repo" | tr '[:upper:]' '[:lower:]')" != "$(printf '%s' "$local_repo" | tr '[:upper:]' '[:lower:]')" ]; then
+    echo "Repository mismatch: --repo $repo does not match the checked-out repository $local_repo." >&2
+    echo "Run this command from the target repository, update origin, or use --allow-repo-mismatch for an intentional cross-repository setup." >&2
+    exit 1
+  fi
 fi
 
 if [ -z "$branch" ]; then
