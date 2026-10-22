@@ -46,7 +46,7 @@ on:
         required: false
         default: ""
       close-older-issues:
-        description: "When false (default), list previous findings so the agent can noop on duplicates. When true, skip that listing. Note: gh-aw v0.92.5 does not accept expressions on safe-outputs.create-issue.close-older-issues, so compiler auto-close stays off; replacement of older issues is not automatic."
+        description: "Retained for callers; ignored for compiler auto-close on gh-aw v0.92.5 (expressions rejected on safe-outputs.create-issue.close-older-issues). Previous findings are always listed so the agent can noop on duplicates. Automatic replacement of older issues is not available until expression support returns."
         type: boolean
         required: false
         default: false
@@ -97,7 +97,6 @@ safe-outputs:
 timeout-minutes: 90
 steps:
   - name: List previous findings
-    if: ${{ !inputs.close-older-issues }}
     env:
       GH_TOKEN: ${{ github.token }}
       TITLE_PREFIX: ${{ inputs.title-prefix }}
@@ -121,13 +120,11 @@ steps:
 
 ## Previous Findings
 
-When `close-older-issues` is `false` (current: `${{ inputs.close-older-issues }}`), check `/tmp/previous-findings.json` for issues this agent has already filed before filing a new one.
+Always check `/tmp/previous-findings.json` for issues this agent has already filed before filing a new one. Previous findings are listed on every run (including when callers pass `close-older-issues: true`) because gh-aw v0.92.5 rejects expressions on `safe-outputs.create-issue.close-older-issues`, so compiler auto-close / replacement is not available.
 
 - Run `cat /tmp/previous-findings.json` to read the list of previously filed issue numbers and titles.
 - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
 - Only file a new issue when the finding is genuinely distinct from all previous findings.
-
-When `close-older-issues` is `true`, the previous findings listing step is skipped. Compiler auto-close of older issues is not available on gh-aw v0.92.5 for this workflow (expressions are rejected on `safe-outputs.create-issue.close-older-issues`).
 
 ### Labeling
 
