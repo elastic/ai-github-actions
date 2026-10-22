@@ -36,7 +36,7 @@ while IFS= read -r -d '' file; do
   mv "$file" "$dest"
   echo "  $src/$rel → $dest"
   moved_files+=("$dest")
-  ((count++))
+  ((++count))
 done < <(find "$src" -type f -print0)
 
 # Clean up empty directories left behind
