@@ -15,6 +15,8 @@ imports:
   - gh-aw-fragments/network-ecosystems.md
 engine:
   id: copilot
+  # Required on gh-aw >= v0.91.x: BYOK Copilot disables native web-fetch unless SDK mode is on.
+  copilot-sdk: true
   model: ${{ inputs.model }}
 on:
   stale-check: false
@@ -44,7 +46,7 @@ on:
         required: false
         default: ""
       close-older-issues:
-        description: "Close older issues when a new one is filed. When false (default), previous findings are checked to avoid duplicates. When true, the previous report is replaced by the new one."
+        description: "When false (default), list previous findings so the agent can noop on duplicates. When true, skip that listing. Note: gh-aw v0.92.5 does not accept expressions on safe-outputs.create-issue.close-older-issues, so compiler auto-close stays off; replacement of older issues is not automatic."
         type: boolean
         required: false
         default: false
@@ -86,6 +88,12 @@ strict: false
 safe-outputs:
   activation-comments: false
   noop:
+  create-issue:
+    max: 1
+    title-prefix: "${{ inputs.title-prefix }} "
+    close-older-key: "${{ inputs.title-prefix }}"
+    close-older-issues: false
+    expires: 7d
 timeout-minutes: 90
 steps:
   - name: List previous findings
@@ -119,7 +127,7 @@ When `close-older-issues` is `false` (current: `${{ inputs.close-older-issues }}
 - If your finding closely matches an open or recently-closed issue in that list, call `noop` instead of filing a duplicate.
 - Only file a new issue when the finding is genuinely distinct from all previous findings.
 
-When `close-older-issues` is `true`, the previous findings check is not needed — any older open issue is automatically closed when a new one is filed.
+When `close-older-issues` is `true`, the previous findings listing step is skipped. Compiler auto-close of older issues is not available on gh-aw v0.92.5 for this workflow (expressions are rejected on `safe-outputs.create-issue.close-older-issues`).
 
 ### Labeling
 
