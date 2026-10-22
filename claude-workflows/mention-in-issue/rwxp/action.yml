@@ -108,7 +108,7 @@ runs:
           ${{ inputs.allowed-tools }}
           ${{ inputs.extra-allowed-tools }}
           
-          You can only use tools that are explicitly listed above. For Bash commands, the pattern `Bash(command:*)` means you can run that command with any arguments. If a command is not listed, it is not available.
+          You can only use tools that are explicitly listed above. For Bash commands, `Bash(*)` allows any command with any arguments, while `Bash(command:*)` allows only that specific command with any arguments. If a command is not listed, it is not available.
           </allowed_tools>
 
           <getting_started>
