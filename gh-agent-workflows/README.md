@@ -60,9 +60,12 @@ Default workflows:
 - `mention-in-pr`
 - `pr-actions-detective`
 
-Use `--workflows` (comma-separated) to override the defaults, `--skip-secret` to set the
-secret manually, `--continuous-improvement` to also install selected continuous improvement
-workflows, or `--repo OWNER/REPO` when auto-detection is not available.
+Use `--workflows` (comma-separated) to override the defaults, `--continuous-improvement`
+to also install selected continuous improvement workflows, or `--repo OWNER/REPO` when
+auto-detection is not available.
+
+For backward compatibility, `--set-secret` and `--skip-secret` are accepted as deprecated
+no-op flags and are no longer needed.
 
 `--continuous-improvement` adds:
 - `bug-hunter`
