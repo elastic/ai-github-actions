@@ -37,6 +37,9 @@ curl -fsSL https://raw.githubusercontent.com/elastic/ai-github-actions/v0/script
 By default, this installs recommended GitHub Agent Workflow triggers, adds `agentics-maintenance.yml`,
 creates branch `ai-gh-aw-setup`, pushes it, and opens a PR. No personal access token is required —
 workflows authenticate via the built-in `GITHUB_TOKEN`. Use `--continuous-improvement` to also install
-selected continuous improvement workflows. Use `--set-secret` (deprecated and no longer needed).## License
+selected continuous improvement workflows. `--set-secret` and `--skip-secret` are deprecated no-op flags
+and no longer needed.
+
+## License
 
 MIT

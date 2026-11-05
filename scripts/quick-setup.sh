@@ -4,7 +4,7 @@
 # Usage:
 #   ./scripts/quick-setup.sh [--repo OWNER/REPO] [--branch NAME]
 #                            [--workflows "pr-review,issue-triage,..."]
-#                            [--set-secret] [--dry-run]
+#                            [--set-secret] [--skip-secret] [--dry-run]
 
 set -euo pipefail
 
@@ -24,6 +24,8 @@ Options:
   --workflows CSV       Comma-separated workflow list (default: recommended set)
   --continuous-improvement
                         Add recommended continuous improvement workflows
+  --set-secret          Deprecated no-op (kept for backward compatibility)
+  --skip-secret         Deprecated no-op (kept for backward compatibility)
   --dry-run             Print actions without making changes
   -h, --help            Show this help
 EOF
@@ -45,6 +47,10 @@ while [ $# -gt 0 ]; do
       ;;
     --continuous-improvement)
       continuous_improvement=true
+      shift
+      ;;
+    --set-secret|--skip-secret)
+      echo "Warning: $1 is deprecated and no longer needed; ignoring." >&2
       shift
       ;;
     --dry-run)
